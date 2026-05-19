@@ -5,7 +5,10 @@ goal:
   slug: "tdd-identity-vault-skeleton"
   kind: specific
   tranche: "Create a test-first final skeleton for the agentic identity vault, with one complete representative acceptance scenario and final memory state."
-  status: active
+  status: done
+  oracle:
+    signal: "node scripts/verify-identity-vault-tdd.mjs passes, git status reports main aligned with origin/main, and T999 maps the delivered vault back to the original request."
+    final_proof: "PASS acme-meeting-complete plus commit 438b776348c9336120697dd24bd7b56023d305c6 present on origin/main at https://github.com/arnaudlopez/SuperMemory.git."
   intake:
     original_request: "Prepare a GoalBuddy board for a TDD approach: create the final architecture skeleton, representative data, and a complete test showing the final result."
     interpreted_outcome: "A future /goal run can create and verify a minimal but final-shaped identity vault skeleton driven by one comprehensive acceptance test."
@@ -88,7 +91,7 @@ visual_board:
     command: "npx goalbuddy extend github-projects"
     missing: []
 
-active_task: T005
+active_task: null
 
 tasks:
   - id: T001
@@ -353,7 +356,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: blocked
+    status: done
     reasoning_hint: default
     objective: "Ship verified GoalBuddy work if the workspace supports GitHub shipping; otherwise record the exact blocker."
     constraints:
@@ -376,26 +379,24 @@ tasks:
       - "Committed files, if any"
       - "Verification commands and results"
     receipt:
-      result: blocked
-      shipping_blocker: no_git_repository
-      summary: "Local verification passed, but shipping cannot be completed because the workspace is not a git repository."
+      result: done
+      shipping_blocker: null
+      summary: "Shipping proof resolved: workspace is a git repository with a GitHub remote, and the verified initial SuperMemory vault is committed and present on origin/main."
       commands:
         - cmd: "git status --short"
-          status: fail
-          output: "fatal: not a git repository (or any of the parent directories): .git"
+          status: pass
+          output: "## main...origin/main"
         - cmd: "git diff --check"
-          status: fail
-          output: "Not a git repository."
+          status: pass
         - cmd: "node scripts/verify-identity-vault-tdd.mjs"
           status: pass
-        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.6/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/tdd-identity-vault-skeleton/state.yaml"
-          status: fail
-          output: "T998 must be done before final completion; T998 was active at the time of the check."
-      committed_files: []
-      commit_sha: null
-      remote_branch: null
-      push_result: null
-      unrelated_dirty_files_left_untouched: "unknown; no git status available outside a repository"
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/tdd-identity-vault-skeleton/state.yaml"
+          status: pass
+      committed_files: ["Initial SuperMemory vault"]
+      commit_sha: "438b776348c9336120697dd24bd7b56023d305c6"
+      remote_branch: "origin/main"
+      push_result: "present on origin/main"
+      unrelated_dirty_files_left_untouched: "none"
 
   - id: T999
     type: judge
@@ -428,22 +429,23 @@ tasks:
       - "next task if not complete"
     receipt:
       result: done
-      complete: not_complete
-      full_outcome_complete: false
+      decision: complete
+      complete: complete
+      full_outcome_complete: true
       mapping_to_original_request:
         tdd_approach: "Satisfied locally: expected fixture exists before and alongside implementation."
         final_architecture_skeleton: "Satisfied locally: identity-vault contains final-shaped entrypoints, raw inputs, compiled memory, signals, review queues, governance, and evals."
         representative_data: "Satisfied locally: Acme/Project Y/Paul scenario plus personal-to-professional availability redaction represents the desired memory behavior."
         complete_test_example: "Satisfied locally: scripts/verify-identity-vault-tdd.mjs passes against the acceptance fixture."
-      missing_evidence:
-        - "Commit SHA and successful push result are missing because the workspace is not a git repository."
-      next_task: "T005"
-      summary: "Local owner outcome is implemented and verified, but GoalBuddy completion remains blocked by shipping proof."
+        shipping: "Satisfied: commit 438b776348c9336120697dd24bd7b56023d305c6 exists on origin/main at https://github.com/arnaudlopez/SuperMemory.git."
+      missing_evidence: []
+      next_task: null
+      summary: "The TDD identity vault skeleton satisfies the original outcome and has shipping proof."
 
   - id: T005
     type: pm
     assignee: PM
-    status: active
+    status: done
     reasoning_hint: default
     objective: "Resolve the no_git_repository shipping blocker by owner decision."
     constraints:
@@ -453,12 +455,22 @@ tasks:
     expected_output:
       - "Decision: initialize_git | waive_shipping_for_non_repo | stop"
       - "Updated T998/T999 path based on the decision"
-    receipt: null
+    receipt:
+      result: done
+      decision: initialize_git
+      summary: "The owner-approved continuation found that git initialization and GitHub shipping had already been completed. T998 and T999 were updated with the current commit and remote evidence."
+      evidence:
+        - "git status --short --branch => ## main...origin/main"
+        - "origin => https://github.com/arnaudlopez/SuperMemory.git"
+        - "HEAD => 438b776348c9336120697dd24bd7b56023d305c6"
+        - "node scripts/verify-identity-vault-tdd.mjs => PASS acme-meeting-complete"
 
 checks:
-  dirty_fingerprint: unknown
+  dirty_fingerprint: "state.yaml updated to reconcile shipping proof"
   last_verification:
     result: pass
-    task: T002
+    task: T005
     commands:
       - "node scripts/verify-identity-vault-tdd.mjs"
+      - "git status --short --branch"
+      - "git diff --check"
