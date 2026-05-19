@@ -1,0 +1,464 @@
+version: 2
+
+goal:
+  title: "TDD Identity Vault Skeleton"
+  slug: "tdd-identity-vault-skeleton"
+  kind: specific
+  tranche: "Create a test-first final skeleton for the agentic identity vault, with one complete representative acceptance scenario and final memory state."
+  status: active
+  intake:
+    original_request: "Prepare a GoalBuddy board for a TDD approach: create the final architecture skeleton, representative data, and a complete test showing the final result."
+    interpreted_outcome: "A future /goal run can create and verify a minimal but final-shaped identity vault skeleton driven by one comprehensive acceptance test."
+    input_shape: specific
+    audience: "Arnaud and future memory-maintenance agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A documented/runnable acceptance case exists and passes against the produced vault skeleton, proving raw input, compiled views, signals, review queues, governance, and eval expectations align."
+    likely_misfire: "Creating a large empty architecture or generic templates without a complete test fixture proving final behavior."
+    blind_spots_considered:
+      - "The example must include implicit entity ambiguity, not only easy explicit facts."
+      - "The example must show personal-to-professional publication without leaking private details."
+      - "The skeleton must include governance and monitoring, not just folders."
+      - "Verification must prove behavior, not just file existence."
+      - "The board must account for a pre-existing accidental identity-vault directory and avoid assuming it is correct."
+    existing_plan_facts:
+      - "Architecture docs exist under docs/."
+      - "Target folders include 00_inbox, 10_shared, 20_professional, 30_personal, 40_private, 50_review, 60_signals, 70_agent_contracts, 75_governance, 80_logs, 90_evals."
+      - "Retrieval escalation should remain evaluation-triggered: Markdown/indexes first, then BM25, then hybrid/RAG/rerank/graph only if benchmarks justify it."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: bundled_not_installed
+  worker: bundled_not_installed
+  judge: bundled_not_installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/tdd-identity-vault-skeleton/"
+    command: "npx goalbuddy board docs/goals/tdd-identity-vault-skeleton"
+  github_projects:
+    status: not_requested
+    url: null
+    command: "npx goalbuddy extend github-projects"
+    missing: []
+
+active_task: T005
+
+tasks:
+  - id: T001
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Validate the TDD slice shape before implementation and define the exact Worker contract for the first complete acceptance scenario."
+    inputs:
+      - "docs/README.md"
+      - "docs/audit-memoire-agentique.md"
+      - "docs/prd-memoire-agentique.md"
+      - "docs/evaluation-comparative-retrieval-rappel.md"
+      - "User request for TDD final skeleton and comprehensive expected result"
+    constraints:
+      - "Read-only."
+      - "Do not implement vault files."
+      - "Reject a Worker plan that only creates empty folders."
+      - "Require a red -> green acceptance fixture."
+      - "Account for any pre-existing identity-vault files as untrusted until verified."
+    expected_output:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "architecture_review: whether the requested slice is coherent with current docs"
+      - "design_concept: final-shaped memory vault proven by one acceptance scenario"
+      - "ubiquitous_language: raw source, compiled note, signal, review queue, governance, eval"
+      - "test_strategy: exact red -> green flow and verification command/checklist"
+      - "interface_contract: expected file paths and schema fields"
+      - "module_map: target vault areas touched by the Worker"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+    receipt:
+      result: done
+      decision: approved
+      architecture_review: "The requested TDD slice is coherent with the current docs: the vault should be proven by one complete scenario linking raw notes, compiled memory, signals, review queues, governance, and evals."
+      design_concept: "A final-shaped Markdown identity vault is proven by a representative Acme scenario before broader automation is attempted."
+      ubiquitous_language:
+        raw_source: "Immutable input note in 00_inbox."
+        compiled_note: "Curated, source-backed domain memory such as client/project/person/profile pages."
+        signal: "Typed minimal consumable fact for specialized agents."
+        review_queue: "Human clarification surface for ambiguity, contradiction, or sensitive publication."
+        governance: "Policies controlling threat, forgetting, ontology, time, source reliability, and conflicts."
+        eval: "Golden questions and canaries proving retrieval, permissions, ambiguity, and routing."
+      test_strategy: "Write the acceptance fixture first under identity-vault/90_evals/cases/acme-meeting-complete/, then create representative vault files, then verify with node scripts/verify-identity-vault-tdd.mjs."
+      interface_contract:
+        required_paths:
+          - "identity-vault/AGENTS.md"
+          - "identity-vault/memory_map.md"
+          - "identity-vault/00_inbox/meetings/2026-05-19-acme-project-y.md"
+          - "identity-vault/10_shared/availability.md"
+          - "identity-vault/20_professional/clients/acme.md"
+          - "identity-vault/20_professional/projects/project-y.md"
+          - "identity-vault/20_professional/people/paul-martin.md"
+          - "identity-vault/50_review/ambiguity_queue.md"
+          - "identity-vault/50_review/calendar_queue.md"
+          - "identity-vault/60_signals/actions.jsonl"
+          - "identity-vault/60_signals/availability.jsonl"
+          - "identity-vault/70_agent_contracts/calendar.md"
+          - "identity-vault/75_governance/ontology.md"
+          - "identity-vault/75_governance/source_reliability.md"
+          - "identity-vault/90_evals/golden_questions.md"
+          - "identity-vault/90_evals/cases/acme-meeting-complete/expected/final-state.md"
+        required_schema_fields:
+          - "source_ref"
+          - "confidence"
+          - "visibility"
+          - "sensitivity"
+          - "status"
+          - "suggested_consumers"
+      module_map:
+        vault_entrypoints: ["AGENTS.md", "memory_map.md"]
+        raw_inputs: ["00_inbox/"]
+        compiled_memory: ["10_shared/", "20_professional/", "30_personal/"]
+        review_surfaces: ["50_review/"]
+        agent_consumption: ["60_signals/", "70_agent_contracts/"]
+        governance_and_evals: ["75_governance/", "90_evals/"]
+      feedback_policy: "Keep the example complete but bounded; if the fixture cannot prove a behavior, add one representative assertion instead of expanding into many examples."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none; representative fixture only"
+        env_secrets: "none"
+        auth_permissions: "documentary contracts only"
+        api_contract: "none"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "not applicable"
+        observability: "verification script and eval run notes"
+        docs: "identity-vault README-style entrypoints and GoalBuddy receipts"
+      exact_worker_objective: "Implement the first complete TDD acceptance scenario for the identity vault skeleton: expected fixture first, representative final vault files second, verification script last."
+      allowed_files:
+        - "identity-vault/**"
+        - "scripts/verify-identity-vault-tdd.mjs"
+        - "docs/goals/tdd-identity-vault-skeleton/notes/**"
+      verify:
+        - "node scripts/verify-identity-vault-tdd.mjs"
+        - "find identity-vault -maxdepth 3 -type f | sort"
+      stop_if:
+        - "The expected acceptance fixture cannot be written before implementation."
+        - "Need external services, credentials, RAG infrastructure, database, or network."
+        - "Need to delete or overwrite pre-existing user content without explicit approval."
+
+  - id: T002
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement the first complete TDD acceptance scenario for the identity vault skeleton: expected test fixture first, then representative final vault files and verification."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "docs/README.md"
+      - "docs/audit-memoire-agentique.md"
+      - "docs/prd-memoire-agentique.md"
+      - "docs/evaluation-comparative-retrieval-rappel.md"
+    impact_assessment_ref: "T001 receipt"
+    allowed_files:
+      - "identity-vault/**"
+      - "scripts/verify-identity-vault-tdd.mjs"
+      - "docs/goals/tdd-identity-vault-skeleton/notes/**"
+    verify:
+      - "node scripts/verify-identity-vault-tdd.mjs"
+      - "find identity-vault -maxdepth 3 -type f | sort"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "The expected acceptance fixture cannot be written before implementation."
+      - "Need to edit architecture docs instead of producing the vault skeleton."
+      - "Need external services, credentials, RAG infrastructure, database, or network."
+      - "Need to delete or overwrite pre-existing user content without explicit approval."
+      - "Verification fails twice."
+    receipt:
+      result: done
+      changed_files:
+        - "identity-vault/90_evals/cases/acme-meeting-complete/expected/assertions.json"
+        - "identity-vault/90_evals/cases/acme-meeting-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/acme-meeting-complete/input/raw-notes.md"
+        - "identity-vault/90_evals/cases/acme-meeting-complete/actual/README.md"
+        - "identity-vault/AGENTS.md"
+        - "identity-vault/memory_map.md"
+        - "identity-vault/00_inbox/meetings/2026-05-19-acme-project-y.md"
+        - "identity-vault/30_personal/journal/2026-05-19.md"
+        - "identity-vault/10_shared/availability.md"
+        - "identity-vault/10_shared/scheduling_preferences.md"
+        - "identity-vault/20_professional/clients/index.md"
+        - "identity-vault/20_professional/clients/acme.md"
+        - "identity-vault/20_professional/projects/project-y.md"
+        - "identity-vault/20_professional/people/paul-martin.md"
+        - "identity-vault/20_professional/actions.md"
+        - "identity-vault/20_professional/decisions/2026-05-19-acme-project-y.md"
+        - "identity-vault/50_review/ambiguity_queue.md"
+        - "identity-vault/50_review/calendar_queue.md"
+        - "identity-vault/50_review/publication_queue.md"
+        - "identity-vault/60_signals/actions.jsonl"
+        - "identity-vault/60_signals/availability.jsonl"
+        - "identity-vault/60_signals/relationships.jsonl"
+        - "identity-vault/60_signals/unrouted.md"
+        - "identity-vault/70_agent_contracts/calendar.md"
+        - "identity-vault/70_agent_contracts/email.md"
+        - "identity-vault/70_agent_contracts/memory.md"
+        - "identity-vault/75_governance/threat_model.md"
+        - "identity-vault/75_governance/ontology.md"
+        - "identity-vault/75_governance/source_reliability.md"
+        - "identity-vault/75_governance/temporal_model.md"
+        - "identity-vault/75_governance/forgetting_policy.md"
+        - "identity-vault/75_governance/conflict_arbitration.md"
+        - "identity-vault/75_governance/academic_research_map.md"
+        - "identity-vault/90_evals/golden_questions.md"
+        - "identity-vault/90_evals/eval_runs.md"
+        - "identity-vault/90_evals/canaries.md"
+        - "scripts/verify-identity-vault-tdd.mjs"
+      commands:
+        - cmd: "node scripts/verify-identity-vault-tdd.mjs"
+          status: pass
+        - cmd: "find identity-vault -maxdepth 3 -type f | sort"
+          status: pass
+      summary: "Implemented one complete TDD acceptance slice: expected fixture, representative raw inputs, compiled memory, redacted shared availability, typed signals, agent contracts, governance policies, eval questions, canaries, and a verification script."
+      design_delta: "Moved from documentation-only architecture to a concrete final-shaped vault fixture that proves the intended raw -> compiled -> signal -> review -> governance -> eval flow."
+
+  - id: T003
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the implemented TDD vault skeleton for completeness, clarity, and alignment with the conceptual model."
+    inputs:
+      - "T002 receipt"
+      - "identity-vault/"
+      - "scripts/verify-identity-vault-tdd.mjs"
+    constraints:
+      - "Read-only."
+      - "Reject if the example is too shallow to represent the final desired memory behavior."
+      - "Reject if raw, compiled, signal, review, governance, and eval layers are not connected."
+      - "Reject if personal details leak into professional outputs without redaction."
+    expected_output:
+      - "approved | changes_required"
+      - "coverage assessment against original request"
+      - "missing layers or unclear parts"
+      - "next Worker task if changes are required"
+      - "design_delta evidence"
+    receipt:
+      result: done
+      decision: approved
+      coverage_assessment: "The implementation satisfies the requested first base of work: it includes a TDD acceptance fixture, final-shaped architecture skeleton, representative data for Arnaud's desired memory model, and a verification script that proves raw, compiled, signal, review, governance, and eval layers are connected."
+      evidence:
+        - "node scripts/verify-identity-vault-tdd.mjs passed"
+        - "identity-vault/90_evals/cases/acme-meeting-complete/expected/assertions.json"
+        - "identity-vault/20_professional/clients/acme.md"
+        - "identity-vault/10_shared/availability.md"
+        - "identity-vault/60_signals/availability.jsonl"
+        - "identity-vault/50_review/ambiguity_queue.md"
+        - "identity-vault/75_governance/threat_model.md"
+      missing_layers: []
+      design_delta: "The skeleton now demonstrates actual memory behavior rather than just a conceptual folder layout."
+      next_worker_required: false
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: blocked
+    reasoning_hint: medium
+    objective: "Apply the bounded fixes required by T003, if any, while preserving the TDD fixture."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt"
+    allowed_files:
+      - "identity-vault/**"
+      - "scripts/verify-identity-vault-tdd.mjs"
+      - "docs/goals/tdd-identity-vault-skeleton/notes/**"
+    verify:
+      - "node scripts/verify-identity-vault-tdd.mjs"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 did not request changes."
+      - "Need files outside allowed_files."
+      - "Verification fails twice."
+    receipt:
+      result: blocked
+      reason: "T003 approved the implementation and requested no changes; this fix Worker is not required."
+      blocked_by: "No changes requested"
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: blocked
+    reasoning_hint: default
+    objective: "Ship verified GoalBuddy work if the workspace supports GitHub shipping; otherwise record the exact blocker."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Verify this is a git repository with an active GitHub remote."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.6/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/tdd-identity-vault-skeleton/state.yaml."
+      - "Run the goal's required verification commands."
+      - "Commit all goal-related changes with a clear message if git and GitHub remote exist."
+      - "Push the current branch to origin if git and GitHub remote exist."
+      - "If no git repository or no GitHub remote exists, mark blocked with shipping_blocker and do not invent commit or push proof."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "shipping_blocker: no_git_repository | no_github_remote, or commit SHA and push result"
+      - "Unrelated dirty files left untouched"
+      - "Committed files, if any"
+      - "Verification commands and results"
+    receipt:
+      result: blocked
+      shipping_blocker: no_git_repository
+      summary: "Local verification passed, but shipping cannot be completed because the workspace is not a git repository."
+      commands:
+        - cmd: "git status --short"
+          status: fail
+          output: "fatal: not a git repository (or any of the parent directories): .git"
+        - cmd: "git diff --check"
+          status: fail
+          output: "Not a git repository."
+        - cmd: "node scripts/verify-identity-vault-tdd.mjs"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.6/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/tdd-identity-vault-skeleton/state.yaml"
+          status: fail
+          output: "T998 must be done before final completion; T998 was active at the time of the check."
+      committed_files: []
+      commit_sha: null
+      remote_branch: null
+      push_result: null
+      unrelated_dirty_files_left_untouched: "unknown; no git status available outside a repository"
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Final audit: prove whether the TDD identity vault skeleton satisfies the original user outcome."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "T998 receipt"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if TDD evidence is missing."
+      - "Reject completion if final vault files are unconnected placeholders."
+      - "Reject completion if T998 lacks either commit/push proof or an explicit no_git_repository/no_github_remote blocker."
+      - "Reject completion unless T998 has a commit SHA and successful push result."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "mapping to original request"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      complete: not_complete
+      full_outcome_complete: false
+      mapping_to_original_request:
+        tdd_approach: "Satisfied locally: expected fixture exists before and alongside implementation."
+        final_architecture_skeleton: "Satisfied locally: identity-vault contains final-shaped entrypoints, raw inputs, compiled memory, signals, review queues, governance, and evals."
+        representative_data: "Satisfied locally: Acme/Project Y/Paul scenario plus personal-to-professional availability redaction represents the desired memory behavior."
+        complete_test_example: "Satisfied locally: scripts/verify-identity-vault-tdd.mjs passes against the acceptance fixture."
+      missing_evidence:
+        - "Commit SHA and successful push result are missing because the workspace is not a git repository."
+      next_task: "T005"
+      summary: "Local owner outcome is implemented and verified, but GoalBuddy completion remains blocked by shipping proof."
+
+  - id: T005
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: default
+    objective: "Resolve the no_git_repository shipping blocker by owner decision."
+    constraints:
+      - "Do not initialize git, commit, or push without explicit user approval."
+      - "If the user approves git initialization, create a bounded Worker/PM follow-up for shipping."
+      - "If the user waives shipping for this non-repo workspace, record the waiver and rerun the final audit."
+    expected_output:
+      - "Decision: initialize_git | waive_shipping_for_non_repo | stop"
+      - "Updated T998/T999 path based on the decision"
+    receipt: null
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: pass
+    task: T002
+    commands:
+      - "node scripts/verify-identity-vault-tdd.mjs"

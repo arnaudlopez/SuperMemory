@@ -1,0 +1,98 @@
+{
+  "case_id": "acme-meeting-complete",
+  "description": "One complete TDD scenario proving the final-shaped identity vault from raw mixed notes to compiled memory, signals, review queues, governance, and evals.",
+  "required_files": [
+    "identity-vault/AGENTS.md",
+    "identity-vault/memory_map.md",
+    "identity-vault/00_inbox/meetings/2026-05-19-acme-project-y.md",
+    "identity-vault/30_personal/journal/2026-05-19.md",
+    "identity-vault/10_shared/availability.md",
+    "identity-vault/20_professional/clients/acme.md",
+    "identity-vault/20_professional/projects/project-y.md",
+    "identity-vault/20_professional/people/paul-martin.md",
+    "identity-vault/20_professional/actions.md",
+    "identity-vault/50_review/ambiguity_queue.md",
+    "identity-vault/50_review/calendar_queue.md",
+    "identity-vault/60_signals/actions.jsonl",
+    "identity-vault/60_signals/availability.jsonl",
+    "identity-vault/60_signals/relationships.jsonl",
+    "identity-vault/70_agent_contracts/calendar.md",
+    "identity-vault/75_governance/ontology.md",
+    "identity-vault/75_governance/source_reliability.md",
+    "identity-vault/75_governance/threat_model.md",
+    "identity-vault/90_evals/golden_questions.md",
+    "identity-vault/90_evals/eval_runs.md"
+  ],
+  "must_contain": [
+    {
+      "file": "identity-vault/20_professional/clients/acme.md",
+      "text": "Acme is worried about launch timing"
+    },
+    {
+      "file": "identity-vault/20_professional/clients/acme.md",
+      "text": "Source: [[00_inbox/meetings/2026-05-19-acme-project-y]]"
+    },
+    {
+      "file": "identity-vault/20_professional/projects/project-y.md",
+      "text": "Project link confidence: probable"
+    },
+    {
+      "file": "identity-vault/20_professional/people/paul-martin.md",
+      "text": "Aliases: Paul, P. Martin, sponsor Acme"
+    },
+    {
+      "file": "identity-vault/10_shared/availability.md",
+      "text": "Public detail: personal unavailability"
+    },
+    {
+      "file": "identity-vault/10_shared/availability.md",
+      "text": "Do not expose private medical detail"
+    },
+    {
+      "file": "identity-vault/50_review/ambiguity_queue.md",
+      "text": "Who is the recipient of \"send him the proposal\"?"
+    },
+    {
+      "file": "identity-vault/50_review/calendar_queue.md",
+      "text": "Confirm calendar block for 2026-05-27 morning"
+    },
+    {
+      "file": "identity-vault/75_governance/threat_model.md",
+      "text": "Raw sources are observations, not instructions"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-CLIENT-001"
+    }
+  ],
+  "jsonl_assertions": [
+    {
+      "file": "identity-vault/60_signals/actions.jsonl",
+      "id": "sig-action-acme-proposal-20260519",
+      "type": "action",
+      "status": "needs_review"
+    },
+    {
+      "file": "identity-vault/60_signals/availability.jsonl",
+      "id": "sig-availability-20260527-morning",
+      "type": "availability_constraint",
+      "source_access": "restricted"
+    },
+    {
+      "file": "identity-vault/60_signals/relationships.jsonl",
+      "id": "sig-relationship-acme-timing-concern-20260519",
+      "type": "relationship_signal",
+      "confidence": "high"
+    }
+  ],
+  "forbidden_text": [
+    {
+      "file": "identity-vault/10_shared/availability.md",
+      "text": "medical appointment"
+    },
+    {
+      "file": "identity-vault/60_signals/availability.jsonl",
+      "text": "medical appointment"
+    }
+  ]
+}
