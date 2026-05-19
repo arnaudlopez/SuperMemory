@@ -6,6 +6,10 @@ No confirmed decision was made in the 2026-05-19 meeting.
 
 - Analytics proposal discussed.
 - Timing concern captured.
-- Recipient and next action need review before becoming a stable commitment.
+- Captured email clarified Paul Martin as proposal recipient.
+- Next action still needs Arnaud confirmation before becoming an external commitment.
 
-Source: [[00_inbox/meetings/2026-05-19-acme-project-y]]
+Sources:
+
+- [[00_inbox/meetings/2026-05-19-acme-project-y]]
+- [[00_inbox/emails/2026-05-19-paul-analytics-proposal]]

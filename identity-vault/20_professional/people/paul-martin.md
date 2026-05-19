@@ -15,8 +15,10 @@ Aliases: Paul, P. Martin, sponsor Acme
 - Acme sponsor/contact in the 2026-05-19 meeting.
   Source: [[00_inbox/meetings/2026-05-19-acme-project-y]]
 
-## Ambiguity
+## Proposal Recipient Evidence
 
-Paul Martin is the probable but unconfirmed recipient of "send him the proposal".
+- Paul explicitly asked to receive the analytics proposal before Friday.
+  Source: [[00_inbox/emails/2026-05-19-paul-analytics-proposal]]
+  Source ID: `email:gmail:2026-05-19:paul-analytics-proposal`
 
 Review: [[50_review/ambiguity_queue]]

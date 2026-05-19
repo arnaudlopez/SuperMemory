@@ -18,6 +18,10 @@ Acme is an active client in the representative memory scenario.
   Source: [[00_inbox/meetings/2026-05-19-acme-project-y]]
   Confidence: high
   Signal: `sig-relationship-acme-timing-concern-20260519`
+- 2026-05-19: Contract excerpt confirms Project Y has a contractual June rollout milestone.
+  Source: [[00_inbox/documents/2026-05-19-acme-contract-excerpt]]
+  Source ID: `doc:2026-05-19:acme-contract-excerpt`
+  Confidence: high
 
 ## Linked People
 
@@ -29,4 +33,4 @@ Acme is an active client in the representative memory scenario.
 
 ## Open Questions
 
-- The recipient of "send him the proposal" is ambiguous. See [[50_review/ambiguity_queue]].
+- The original meeting phrase "send him the proposal" was ambiguous, then clarified by a captured email from Paul. See [[50_review/ambiguity_queue]].

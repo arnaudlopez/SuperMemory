@@ -10,7 +10,9 @@ Expected:
 
 - Raw-to-compiled recall passes.
 - Personal availability publication is redacted.
-- Ambiguous recipient remains in review.
+- External source registry tracks the captured PDF excerpt and email.
+- Captured email resolves the ambiguous recipient, but sending still requires confirmation.
+- Prompt-injection-like email text is ignored as an instruction.
 - Signals are typed and source-backed.
 
 Verification:

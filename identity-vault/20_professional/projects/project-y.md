@@ -23,7 +23,13 @@ Reason: the meeting body did not repeat the project name, but the source metadat
 ## Related Source
 
 - [[00_inbox/meetings/2026-05-19-acme-project-y]]
+- [[00_inbox/documents/2026-05-19-acme-contract-excerpt]]
+
+## External Evidence
+
+- Contract excerpt source `doc:2026-05-19:acme-contract-excerpt` confirms a contractual June rollout milestone.
+- The original PDF remains outside the vault; this captured excerpt is the usable memory source.
 
 ## Open Actions
 
-- Prepare or send an analytics proposal after the recipient is confirmed.
+- Prepare or send an analytics proposal to Paul Martin after Arnaud confirms the external email action.

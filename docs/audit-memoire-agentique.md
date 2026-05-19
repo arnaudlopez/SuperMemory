@@ -183,6 +183,9 @@ Zone d'arrivee des informations brutes :
 - Notes de meeting.
 - Journaux quotidiens.
 - Transcriptions.
+- Documents externes importes : PDF, contrats, rapports, exports.
+- Emails ou fils de discussion captures depuis une boite mail autorisee.
+- References vers fichiers locaux ou espaces cloud autorises.
 - Exports.
 - Captures rapides.
 - Idees non classees.
@@ -297,6 +300,114 @@ Exemple :
 
 L'agent ne doit pas remplacer la source brute par la synthese.
 La synthese doit toujours pointer vers les sources.
+
+### 11.1 Documents externes et ingestion controlee
+
+Un document externe n'est pas automatiquement de la memoire.
+
+Exemples :
+
+- PDF dans un dossier local.
+- Email dans une boite mail.
+- Document Google Drive.
+- Export CSV, compte rendu, contrat ou facture.
+- Page web sauvegardee.
+
+Ces elements sont d'abord des sources externes. Ils deviennent utilisables par la memoire seulement apres capture controlee dans `00_inbox/`, avec provenance, statut et sensibilite.
+
+Flux recommande :
+
+```text
+document externe
+  -> capture sourcee dans 00_inbox
+  -> extraction structuree
+  -> notes compilees
+  -> signaux publies
+  -> files de revue
+  -> usage par agents specialises
+```
+
+La capture peut prendre plusieurs formes :
+
+- Copie textuelle extraite dans une note Markdown.
+- Reference vers le fichier original avec chemin, hash et date de capture.
+- Resume source avec liens vers pages, pieces jointes ou message original.
+- Extrait partiel si le document est trop long ou trop sensible.
+
+Le point critique est que le vault doit connaitre la chaine de provenance :
+
+```yaml
+source_id: doc:2026-05-19:contrat-acme
+source_type: pdf
+original_path: /chemin/vers/contrat-acme.pdf
+sha256: ...
+captured_at: 2026-05-19
+visibility: professional
+sensitivity: confidential
+status: raw_captured
+processed: false
+```
+
+Pour un email :
+
+```yaml
+source_id: email:gmail:thread-id/message-id
+source_type: email
+mailbox: gmail
+from: paul@example.com
+to: arnaud@example.com
+date: 2026-05-18
+subject: Proposition analytics
+visibility: professional
+sensitivity: normal
+status: raw_captured
+processed: false
+```
+
+Cette approche evite deux erreurs symetriques :
+
+- Laisser des documents utiles invisibles a la memoire parce qu'ils restent hors vault.
+- Donner a la memoire un acces global non gouverne a tous les fichiers, emails ou dossiers.
+
+Le bon modele est donc une ingestion explicite, selective et auditable.
+
+### 11.2 Codex comme orchestrateur de connecteurs d'ingestion
+
+Codex, ou l'agent memoire equivalent, doit etre pense comme l'orchestrateur des connecteurs d'ingestion.
+
+Il ne doit pas devenir un aspirateur global de donnees. Son role est de piloter des connecteurs bornes :
+
+- Connecteur fichier local : lire un dossier autorise contenant Markdown, PDF, texte, exports ou pieces jointes.
+- Connecteur email : interroger Gmail ou une autre boite mail sur des requetes, labels, threads ou messages autorises.
+- Connecteur cloud document : recuperer un document Google Drive, Notion, SharePoint ou equivalent si l'acces est autorise.
+- Connecteur web/API : importer une page, un ticket, un CRM, un outil projet ou un service en ligne via API.
+- Connecteur manuel : transformer un fichier depose par Arnaud dans une zone d'import en source brute gouvernee.
+
+Les mecanismes possibles sont des outils locaux, MCP, plugins, connecteurs applicatifs, API ou scripts. Le choix technique est secondaire par rapport au contrat d'ingestion.
+
+Contrat minimal d'un connecteur :
+
+```yaml
+connector_id: gmail.primary
+connector_type: email
+authority: user_authorized
+allowed_scope: label:SuperMemory OR thread:<id>
+read_permissions: metadata_and_body
+write_permissions: none
+capture_policy: selected_items_only
+default_sensitivity: medium
+output_folder: 00_inbox/emails/
+```
+
+Regle critique :
+
+> Un connecteur donne acces a une source potentielle. Il ne transforme pas cette source en memoire stable. Seule la capture dans `00_inbox/`, puis la compilation sourcee, rend l'information utilisable par les agents.
+
+Cette separation protege le systeme contre trois risques :
+
+- Confondre capacite technique d'acces et droit de memorisation.
+- Importer trop de donnees et perdre la gouvernance.
+- Laisser un agent specialise contourner les contrats en lisant directement Gmail, un dossier local ou une API externe.
 
 ## 12. Liens explicites et graphe de memoire
 
@@ -1174,6 +1285,8 @@ Les questions critiques non encore assez traitees etaient :
 - Comment gerer les conflits entre agents ?
 - Comment distinguer correction explicite, note brute, transcription automatique et inference ?
 - Comment eviter que la memoire fige une ancienne version d'Arnaud ?
+- Comment un PDF, un email ou un document externe devient-il une source utilisable sans donner un acces illimite aux agents ?
+- Comment tracer qu'une information vient d'un original externe, d'une extraction automatique ou d'une compilation humaine ?
 
 Conclusion critique :
 
@@ -1229,6 +1342,7 @@ Implications :
 - Les actions externes restent confirmees.
 - Les agents specialises ne gagnent pas de nouveaux droits parce qu'une source le demande.
 - Les tests de permission doivent inclure des cas de prompt injection.
+- Les emails, PDF et documents importes doivent etre nettoyes de toute autorite instructionnelle : leur contenu peut produire des faits candidats, jamais modifier les regles du vault.
 
 ## 42. Oubli, expiration et revision de soi
 
@@ -1332,6 +1446,8 @@ Chaque fait stable doit conserver :
 
 - Source.
 - Type de source.
+- Reference a l'original externe si applicable : chemin local, identifiant email, URL ou hash.
+- Mode de capture : copie complete, extrait, OCR, resume, piece jointe, export.
 - Date.
 - Niveau de confiance.
 - Transformation effectuee.
@@ -1396,6 +1512,8 @@ Mais sa qualite depend maintenant moins de la sophistication du retrieval que de
 
 ```text
 source brute
+  ou source externe autorisee
+  -> capture dans 00_inbox
   -> extraction
   -> hypothese
   -> clarification

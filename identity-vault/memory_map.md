@@ -12,6 +12,9 @@
 ## Current Representative Scenario
 
 - Raw meeting: `00_inbox/meetings/2026-05-19-acme-project-y.md`
+- External source registry: `00_inbox/source_registry.md`
+- Captured PDF excerpt: `00_inbox/documents/2026-05-19-acme-contract-excerpt.md`
+- Captured email: `00_inbox/emails/2026-05-19-paul-analytics-proposal.md`
 - Raw personal journal: `30_personal/journal/2026-05-19.md`
 - Client memory: `20_professional/clients/acme.md`
 - Project memory: `20_professional/projects/project-y.md`
@@ -23,3 +26,9 @@
 ## Retrieval Escalation
 
 Use Markdown links and indexes first. Add BM25, embeddings, hybrid retrieval, reranking, or graph/entity resolution only when `90_evals/` shows measured failure.
+
+## External Source Rule
+
+External files, emails, cloud documents, or web pages are not active memory until captured in `00_inbox/` or recorded in `00_inbox/source_registry.md`.
+
+Connectors such as Gmail, local folders, APIs, MCP tools, or plugins provide bounded source access only. They do not create stable memory until the captured item is registered and compiled.
