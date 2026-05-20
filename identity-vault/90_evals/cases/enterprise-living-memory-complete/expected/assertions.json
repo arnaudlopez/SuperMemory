@@ -18,6 +18,7 @@
     "identity-vault/75_governance/hindsight_contract.md",
     "identity-vault/75_governance/living_memory.md",
     "identity-vault/75_governance/memory_engine_ports.md",
+    "identity-vault/75_governance/sequential_relational_model.md",
     "identity-vault/75_governance/source_freshness.md",
     "identity-vault/75_governance/source_reliability.md",
     "identity-vault/75_governance/threat_model.md",
@@ -42,7 +43,48 @@
     "fail-closed tags",
     "external_draft",
     "strategic_analysis",
-    "audit_and_proof"
+    "audit_and_proof",
+    "SourceSnapshot",
+    "MemoryCandidate",
+    "ValidatedMemory",
+    "supports_answer",
+    "opens_review"
+  ],
+  "required_relation_verbs": [
+    "has_snapshot",
+    "supersedes_snapshot",
+    "contains_observation",
+    "proposes_memory",
+    "validates_memory",
+    "cites_snapshot",
+    "derives_from",
+    "concerns_entity",
+    "supersedes_memory",
+    "conflicts_with",
+    "restricts_access",
+    "promotes_to",
+    "recalled_by",
+    "supports_answer",
+    "creates_feedback",
+    "opens_review"
+  ],
+  "golden_relation_verbs": [
+    "has_snapshot",
+    "supersedes_snapshot",
+    "contains_observation",
+    "proposes_memory",
+    "validates_memory",
+    "cites_snapshot",
+    "derives_from",
+    "concerns_entity",
+    "supersedes_memory",
+    "conflicts_with",
+    "restricts_access",
+    "promotes_to",
+    "recalled_by",
+    "supports_answer",
+    "creates_feedback",
+    "opens_review"
   ],
   "target_must_contain": [
     {
@@ -92,6 +134,34 @@
     {
       "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
       "text": "use_patterns.md"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+      "text": "sequential_relational_model.md"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+      "text": "Stable Relation Contract"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "SourceSnapshot"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "Required Relation Behavior"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "supports_answer"
+    },
+    {
+      "file": "identity-vault/75_governance/sequential_relational_model.md",
+      "text": "Source -> SourceSnapshot -> Observation -> MemoryCandidate"
+    },
+    {
+      "file": "identity-vault/75_governance/sequential_relational_model.md",
+      "text": "supports_answer"
     },
     {
       "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",

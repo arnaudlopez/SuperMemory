@@ -1,0 +1,433 @@
+version: 2
+goal:
+  slug: conceptualiser-modele-sequentiel-relationnel-v2
+  title: Conceptualiser le modele sequentiel relationnel V2
+  status: active
+  created_at: "2026-05-20"
+  updated_at: "2026-05-20"
+  original_request: "prepapre ce travail"
+  interpreted_outcome: "Aligner le modele sequentiel/relationnel abstrait de SuperMemory avec le Golden Case, les specs V2 et les structures finales TDD, sans coder le moteur."
+  input_shape: specific
+  audience: "Product/architecture team building SuperMemory"
+  authority: requested
+  proof_type: artifact
+  completion_proof: "Docs/specs/fixtures/verifications prove one coherent sequential relational architecture and the enterprise Golden Case passes."
+  goal_oracle: "The enterprise Golden Case exercises Source -> Snapshot -> Observation -> Memory Candidate -> Validated Memory -> Relations -> Retrieval -> Answer -> Feedback/Change and all verification commands pass."
+  intake:
+    completion_proof: "A final Judge audit maps the updated docs/specs/fixtures to the enterprise Golden Case oracle, with verification commands passing and no unresolved parallel truths between the sequential relational model, V2 specs and TDD target structures."
+  oracle:
+    signal: "The enterprise Golden Case explicitly exercises Source -> Snapshot -> Observation -> Memory Candidate -> Validated Memory -> Relations -> Retrieval -> Answer -> Feedback/Change, and the updated verification commands pass."
+    final_proof: "Final Judge receipt states full_outcome_complete: true and cites passing verification for docs/specs/fixtures plus the Golden Case lifecycle assertions."
+  likely_misfire: "Creating a theoretical model that is not exercised by the Golden Case or usable as TDD structure."
+  non_goals:
+    - "No SuperMemory engine implementation."
+    - "No UI work."
+    - "No new external connector integration."
+    - "No replacement of Hindsight."
+  constraints:
+    - "Docs/specs/fixtures/verifications only."
+    - "Keep Hindsight as the adopted default memory engine."
+    - "Mutable sources are pointers; snapshots are proof."
+    - "Business concepts remain adaptive and demand-created."
+    - "Memory lifecycle must include freshness, change, conflict, history and governed recall."
+  existing_plan_facts:
+    - "Golden Case already exists and should become the oracle rather than be recreated from scratch."
+    - "The target is architecture executable enough to become contracts, fixtures and tests."
+goal_policy:
+  mode: docs
+  requires_tdd: false
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+rules:
+  allow_read_only_goal_without_shipping: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  require_quality_checker: true
+  one_active_task: true
+  goal_pressure_requires_oracle: true
+  require_impact_assessment: true
+  docs_worker_flow: "worker_kind docs or verification; no red/green engine-code TDD required"
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  allow_parallel_workers: false
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Map the current V2 docs, Golden Case, final target structures and verification scripts relevant to the sequential/relational memory lifecycle."
+    inputs:
+      - "docs/audit-memoire-agentique-v2.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "docs/README.md"
+      - "identity-vault/75_governance/"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/"
+      - "scripts/verify-supermemory-specs.mjs"
+      - "scripts/verify-enterprise-living-memory-target.mjs"
+      - "scripts/verify-identity-vault-tdd.mjs"
+    constraints:
+      - "Read-only."
+      - "Do not redesign yet; map evidence and gaps."
+      - "Identify exact files and sections that need alignment."
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "Current lifecycle vocabulary and relations already present."
+      - "Gaps between docs, Golden Case and verification."
+      - "Suggested files to edit in the next Worker task."
+      - "Notes on any over-programmatic or under-flexible assumptions."
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "The lifecycle exists across PRD V2, living_memory, source_freshness, hindsight_contract, type_lifecycle, and the enterprise Golden Case, but it is distributed rather than expressed as one executable sequential/relational contract."
+      design_concept: "SuperMemory is a governed living-memory protocol: mutable sources become immutable snapshots, snapshots yield observations, observations become candidate memories, validated memories create typed relations, and only governed active memory reaches Hindsight and agent answers."
+      ubiquitous_language:
+        - "Use Source, Snapshot, Observation, Memory Candidate, Validated Memory, Relation, Retrieval, Answer, Feedback/Change as the canonical flow vocabulary."
+        - "Keep Source as a mutable pointer and Snapshot as immutable proof."
+        - "Use freshness/status terms already present: fresh, stale, changed, conflicting, unavailable, needs_review, historical_only, do_not_use."
+      module_map:
+        - "docs/prd-memoire-agentique-v2.md owns the product architecture and should cite the canonical flow."
+        - "identity-vault/75_governance/living_memory.md owns lifecycle semantics."
+        - "identity-vault/75_governance/source_freshness.md owns mutable source and snapshot behavior."
+        - "identity-vault/75_governance/hindsight_contract.md owns promotion/recall boundaries."
+        - "identity-vault/75_governance/type_lifecycle.md and entity_type_registry.md own adaptive type creation."
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/* owns the Golden Case oracle."
+      gaps:
+        - "No single architecture document currently defines the object graph, transition rules, relation verbs, and invariants end to end."
+        - "The Golden Case covers the right behaviors but does not explicitly assert every canonical lifecycle object and relation."
+        - "Target structure lists stable fields but lacks the full relation vocabulary needed to become a TDD contract."
+        - "Verification checks concept strings, but not the sequential flow or relation vocabulary."
+      over_programmatic_risk: "Avoid making one workflow per enterprise use case; keep use patterns flexible and relation vocabulary minimal."
+      impact_assessment:
+        db_schema_migrations: "none; docs/fixtures only"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "no runtime auth change; only access-policy vocabulary in docs"
+        api_contract: "no runtime API change; docs define future contracts"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "none"
+        observability: "verification scripts may add assertions only"
+        docs: "primary impact"
+      suggested_files:
+        - "identity-vault/75_governance/sequential_relational_model.md"
+        - "identity-vault/75_governance/living_memory.md"
+        - "identity-vault/75_governance/source_freshness.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+        - "scripts/verify-enterprise-living-memory-target.mjs"
+      evidence:
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/living_memory.md"
+        - "identity-vault/75_governance/source_freshness.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "identity-vault/75_governance/type_lifecycle.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Decide the smallest coherent docs/fixture work package that will align the sequential relational model with the Golden Case oracle."
+    inputs:
+      - "T001 receipt"
+      - "Current docs and Golden Case evidence"
+    constraints:
+      - "Read-only."
+      - "No engine implementation."
+      - "Choose a work package large enough to produce a coherent architecture, not one tiny helper note."
+    expected_output:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Exact Worker objective"
+      - "Allowed files"
+      - "Verification commands"
+      - "Stop conditions"
+      - "Architecture risks to preserve in the Worker brief"
+    receipt:
+      result: done
+      decision: approved
+      rationale: "The smallest coherent package is not a narrow note edit: it must create one canonical sequential/relational contract and make the Golden Case/assertions prove that contract."
+      exact_worker_objective: "Create and wire a canonical sequential_relational_model document, then align PRD V2, living/source/Hindsight governance, enterprise Golden Case target structure/final state, and verification assertions to that vocabulary."
+      allowed_files:
+        - "identity-vault/75_governance/sequential_relational_model.md"
+        - "identity-vault/75_governance/living_memory.md"
+        - "identity-vault/75_governance/source_freshness.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+        - "scripts/verify-enterprise-living-memory-target.mjs"
+        - "docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+      verify:
+        - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-board-repair.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+        - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+        - "node scripts/verify-enterprise-living-memory-target.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      stop_if:
+        - "Need engine implementation or Hindsight runtime installation."
+        - "Need files outside allowed_files."
+        - "The Golden Case cannot express the lifecycle without product clarification."
+      feedback_policy: "Use existing Node verification plus Golden Case string/assertion checks; no runtime code TDD."
+      test_strategy: "Strengthen the enterprise target verifier so it proves canonical flow objects, relation verbs, and contract references across docs and fixtures."
+      module_map:
+        - "sequential_relational_model.md becomes the canonical relation contract."
+        - "PRD V2 references it as executable architecture."
+        - "living_memory/source_freshness/hindsight_contract reference the same lifecycle."
+        - "enterprise Golden Case expected files become the TDD oracle."
+      interface_contract: "Docs must define stable object fields, relation verbs, transition gates, and Hindsight handoff metadata without prescribing database tables."
+      architecture_review: "Approve only if the result avoids parallel truths and preserves adaptive, non-over-programmatic business modeling."
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: docs
+    objective: "Implement the Judge-approved docs/fixture alignment package for the sequential relational SuperMemory V2 model."
+    impact_assessment_ref: T001
+    allowed_files:
+      - "identity-vault/75_governance/sequential_relational_model.md"
+      - "identity-vault/75_governance/living_memory.md"
+      - "identity-vault/75_governance/source_freshness.md"
+      - "identity-vault/75_governance/hindsight_contract.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+      - "scripts/verify-enterprise-living-memory-target.mjs"
+      - "docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 Worker brief"
+    constraints:
+      - "Before any docs/fixtures edits, rerun GoalBuddy board repair and quality check against this state.yaml using the installed GoalBuddy scripts or repo wrappers if they exist."
+      - "Edit only allowed_files once T002 fills them."
+      - "No engine implementation."
+      - "Docs worker: no red/green engine-code TDD; use docs/fixture verification and Golden Case assertions."
+      - "Keep vocabulary consistent across docs, Golden Case and verification."
+      - "Preserve adaptive business-type creation and living-memory status semantics."
+    expected_output:
+      - "Updated architecture/docs/fixtures/verifications as approved."
+      - "Design delta describing what changed and why."
+      - "Verification results."
+    verify:
+      - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-board-repair.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+      - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+      - "node scripts/verify-enterprise-living-memory-target.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "The existing Golden Case contradicts the intended oracle and requires product clarification."
+      - "Verification fails twice after reasonable local repair."
+      - "The task starts requiring engine implementation."
+    receipt:
+      result: done
+      summary: "Created a canonical sequential relational architecture contract and aligned PRD V2, living/source/Hindsight governance, enterprise Golden Case, target structure, assertions, and verifier around it."
+      design_delta: "SuperMemory V2 now has one named executable architecture: Source -> SourceSnapshot -> Observation -> MemoryCandidate -> ValidatedMemory -> Relation -> HindsightDocument/Retrieval -> Answer -> Feedback/Change. The Golden Case now proves relation verbs instead of only broad capabilities."
+      changed_files:
+        - "identity-vault/75_governance/sequential_relational_model.md"
+        - "identity-vault/75_governance/living_memory.md"
+        - "identity-vault/75_governance/source_freshness.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+        - "scripts/verify-enterprise-living-memory-target.mjs"
+      commands:
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-board-repair.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+          status: pass
+        - cmd: "node scripts/verify-enterprise-living-memory-target.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      impact_assessment_ref: T001
+      verification: "enterprise Golden Case, full SuperMemory spec verifier, and diff whitespace check pass."
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review the implemented architecture alignment for coherence, flexibility and TDD usefulness."
+    inputs:
+      - "T003 receipt"
+      - "Updated docs and fixtures"
+      - "Verification output"
+    constraints:
+      - "Read-only."
+      - "Be skeptical about over-programmatic modeling, hidden parallel truths, and untested relations."
+    expected_output:
+      - "approved | changes_required"
+      - "Whether the Golden Case now proves the lifecycle"
+      - "Remaining blind spots or follow-up tasks"
+      - "Whether another Worker package is needed"
+    receipt:
+      result: done
+      decision: changes_required
+      summary: "Architecture alignment is coherent and useful, but the Golden Case should explicitly exercise every core relation verb, not merely list them in the target structure."
+      approved:
+        - "Canonical contract is correctly separated from database schema."
+        - "PRD and governance now reference one lifecycle vocabulary."
+        - "Verification passes and Hindsight remains a governed engine, not source of truth."
+      required_changes:
+        - "Add Golden Case relation behavior for proposes_memory, concerns_entity, supersedes_memory, and recalled_by."
+        - "Strengthen assertions/verifier so relation verbs must appear in the final-state Golden Case behavior, not only in the contract document."
+      whether_golden_case_proves_lifecycle: "partial_until_T005"
+      next_worker_required: true
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: docs
+    objective: "Apply any bounded corrections required by the architecture review."
+    impact_assessment_ref: T001
+    allowed_files:
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+      - "scripts/verify-enterprise-living-memory-target.mjs"
+      - "docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 review"
+    constraints:
+      - "Before any docs/fixtures edits, rerun GoalBuddy board repair and quality check against this state.yaml using the installed GoalBuddy scripts or repo wrappers if they exist."
+      - "Only activate if T004 requires changes."
+      - "Edit only files explicitly authorized by PM after T004."
+      - "No engine implementation."
+      - "Docs worker: no red/green engine-code TDD; use docs/fixture verification and Golden Case assertions."
+    expected_output:
+      - "Corrections applied."
+      - "Verification results."
+    verify:
+      - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-board-repair.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+      - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+      - "node scripts/verify-enterprise-living-memory-target.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "No changes are required by T004."
+      - "Need files outside allowed_files."
+      - "Correction scope becomes a new design phase."
+    receipt:
+      result: done
+      summary: "Added explicit Golden Case coverage for the relation verbs that were only implied, and strengthened the verifier so the final-state Golden Case must exercise each core relation verb."
+      changed_files:
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+        - "scripts/verify-enterprise-living-memory-target.mjs"
+      commands:
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-board-repair.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/conceptualiser-modele-sequentiel-relationnel-v2/state.yaml"
+          status: pass
+        - cmd: "node scripts/verify-enterprise-living-memory-target.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      impact_assessment_ref: T001
+      design_delta: "The Golden Case now exercises has_snapshot, supersedes_snapshot, contains_observation, proposes_memory, validates_memory, cites_snapshot, derives_from, concerns_entity, supersedes_memory, conflicts_with, restricts_access, promotes_to, recalled_by, supports_answer, creates_feedback, and opens_review."
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Ship verified goal-related changes to GitHub before final completion."
+    inputs:
+      - "Final diff"
+      - "Verification results"
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run the goal's verification commands."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+      - "If no GitHub remote exists, mark this task blocked with shipping_blocker: no_github_remote."
+      - "If credentials, network or permissions block push, mark this task blocked and do not mark the goal done."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

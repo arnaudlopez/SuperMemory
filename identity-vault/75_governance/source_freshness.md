@@ -38,6 +38,16 @@ external source checked
   -> re-promote active Hindsight document after review
 ```
 
+In the canonical sequential model, this creates or updates these relations:
+
+```text
+Source has_snapshot SourceSnapshot
+SourceSnapshot supersedes_snapshot SourceSnapshot
+SourceSnapshot contains_observation Observation
+ValidatedMemory derives_from SourceSnapshot
+Feedback opens_review ReviewItem
+```
+
 ## Derived Memory
 
 Compiled notes should record `derived_from` snapshot ids when they depend on mutable sources.
@@ -47,3 +57,5 @@ If a snapshot changes, every derived note with `staleness_policy: needs_review_o
 ## Answering Rule
 
 If active memory depends on a stale or changed source, the agent must say which snapshot it is using and avoid pretending the answer is current.
+
+If a source is `unavailable`, the system may use last-known snapshot wording, but it must not treat the unavailable check as proof that the source is unchanged.

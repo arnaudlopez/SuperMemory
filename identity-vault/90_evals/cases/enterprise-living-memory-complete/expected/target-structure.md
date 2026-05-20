@@ -69,6 +69,7 @@ identity-vault/
     memory_engine_ports.md
     source_freshness.md
     source_reliability.md
+    sequential_relational_model.md
     threat_model.md
     type_lifecycle.md
     use_patterns.md
@@ -107,3 +108,28 @@ retention_policy
 use_pattern
 source_path or compiled_path
 ```
+
+## Stable Relation Contract
+
+Every implementation must be able to explain promoted memory and answers with these relation verbs:
+
+```text
+has_snapshot
+supersedes_snapshot
+contains_observation
+proposes_memory
+validates_memory
+cites_snapshot
+derives_from
+concerns_entity
+supersedes_memory
+conflicts_with
+restricts_access
+promotes_to
+recalled_by
+supports_answer
+creates_feedback
+opens_review
+```
+
+These relation verbs are semantic requirements, not a mandatory database schema.

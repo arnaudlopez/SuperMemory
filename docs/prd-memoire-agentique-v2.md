@@ -151,6 +151,51 @@ Optional engine ports
   source capture
 ```
 
+## 6.1 Architecture executable sequentielle et relationnelle
+
+La V2 doit etre concue comme un modele de circulation de preuve, pas seulement comme une arborescence de fichiers.
+
+Le contrat canonique vit dans `identity-vault/75_governance/sequential_relational_model.md`.
+
+Flux abstrait :
+
+```text
+Source
+  -> SourceSnapshot
+  -> Observation
+  -> MemoryCandidate
+  -> ValidatedMemory
+  -> Relation
+  -> HindsightDocument / Retrieval
+  -> Answer
+  -> Feedback / Change
+```
+
+Relations minimales :
+
+```text
+has_snapshot
+supersedes_snapshot
+contains_observation
+proposes_memory
+validates_memory
+cites_snapshot
+derives_from
+concerns_entity
+supersedes_memory
+conflicts_with
+restricts_access
+promotes_to
+recalled_by
+supports_answer
+creates_feedback
+opens_review
+```
+
+Cette couche ne force pas un workflow metier par cas d'usage. Elle force seulement que chaque reponse, promotion Hindsight ou correction soit explicable par des objets, relations, snapshots et gates de gouvernance.
+
+Le Golden Case entreprise doit devenir l'oracle principal de ce contrat : si une notion du modele n'est jamais exercee par le cas, elle doit etre justifiee ou retiree.
+
 ## 7. Source lifecycle
 
 Chaque source suit un cycle explicite :

@@ -66,6 +66,32 @@ for (const concept of assertions.required_concepts ?? []) {
   }
 }
 
+const relationCorpus = [
+  targetCorpus,
+  "identity-vault/75_governance/sequential_relational_model.md"
+]
+  .filter((relPathOrText) => relPathOrText.includes("\n") || fs.existsSync(path.join(root, relPathOrText)))
+  .map((relPathOrText) =>
+    relPathOrText.includes("\n") ? relPathOrText : readText(relPathOrText)
+  )
+  .join("\n");
+
+for (const relationVerb of assertions.required_relation_verbs ?? []) {
+  if (!relationCorpus.includes(relationVerb)) {
+    fail(`target fixture must cover relation verb ${JSON.stringify(relationVerb)}`);
+  }
+}
+
+const goldenState = readText(
+  "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+);
+
+for (const relationVerb of assertions.golden_relation_verbs ?? []) {
+  if (!goldenState.includes(relationVerb)) {
+    fail(`Golden Case final state must exercise relation verb ${JSON.stringify(relationVerb)}`);
+  }
+}
+
 if (!Array.isArray(assertions.future_required_files) || assertions.future_required_files.length < 5) {
   fail("future_required_files must list the implementation target files");
 }

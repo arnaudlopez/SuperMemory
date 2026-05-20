@@ -23,6 +23,16 @@ Hindsight provides:
 - temporal and graph-like consolidation;
 - trace data for failed evals.
 
+The canonical handoff relation is:
+
+```text
+ValidatedMemory promotes_to HindsightDocument
+HindsightDocument recalled_by Retrieval
+Retrieval supports_answer Answer
+```
+
+The full object and relation contract lives in `75_governance/sequential_relational_model.md`.
+
 ## Promotion Gate
 
 An item may be promoted only when:

@@ -13,17 +13,20 @@ A useful memory system must know whether a memory item is current, stale, histor
 ## Lifecycle
 
 ```text
-discovered
-  -> captured
-  -> snapshotted
-  -> compiled
-  -> promoted
-  -> used
-  -> monitored
-  -> changed
-  -> reviewed
-  -> active | historical_only | do_not_use
+Source
+  -> SourceSnapshot
+  -> Observation
+  -> MemoryCandidate
+  -> ValidatedMemory
+  -> Relation
+  -> HindsightDocument / Retrieval
+  -> Answer
+  -> Feedback / Change
 ```
+
+The canonical object and relation contract lives in `75_governance/sequential_relational_model.md`.
+
+This flow is a governance sequence, not a rigid business workflow. Reusable use patterns remain in `75_governance/use_patterns.md`.
 
 ## Health States
 
@@ -67,3 +70,4 @@ Every memory feature should answer:
 - Is it active, historical, or forbidden?
 - What should happen if the source changes tomorrow?
 - Which use pattern governs this workflow?
+- Which canonical relation explains why this memory can support the answer?

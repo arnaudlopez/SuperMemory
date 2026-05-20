@@ -6,19 +6,39 @@ It is intentionally broader than the current Acme fixture. It proves that SuperM
 
 ## End-To-End Flow
 
+The case starts from mutable enterprise sources and maps them through the canonical SuperMemory lifecycle.
+
 ```text
-mutable enterprise sources
-  -> authorization and source registry
-  -> immutable snapshots
-  -> change detection
-  -> dependency impact
-  -> compiled notes and signals
-  -> adaptive type creation
-  -> review queues
-  -> Hindsight promotion
-  -> filtered agent recall
-  -> optional engine-port evaluation
+Source
+  -> SourceSnapshot
+  -> Observation
+  -> MemoryCandidate
+  -> ValidatedMemory
+  -> Relation
+  -> HindsightDocument / Retrieval
+  -> Answer
+  -> Feedback / Change
 ```
+
+The fixture must still cover the concrete enterprise capabilities behind that flow: authorization and source registry, immutable snapshots, change detection, dependency impact, compiled notes and signals, adaptive type creation, review queues, Hindsight promotion, filtered agent recall, and optional engine-port evaluation.
+
+## Required Relation Behavior
+
+- API documentation `has_snapshot` t0 and t1 snapshots.
+- The t1 API snapshot `supersedes_snapshot` the t0 API snapshot.
+- API snapshots `contains_observation` for `risk_score` and `trust_score`.
+- The updated API observation `conflicts_with` the lower-authority support note.
+- The t1 marketing strategy observation `proposes_memory` for `marketing_strategy`.
+- The Orion PRD `derives_from` API and contract snapshots.
+- Orion client, Acme API, contract, PRD, opportunity, stakeholder, and strategy memories `concerns_entity` the correct enterprise entities.
+- Changed API and contract snapshots `opens_review` entries in the staleness queue.
+- The reviewed PRD `validates_memory` and `promotes_to` the same Hindsight `document_id`.
+- The reviewed t1 PRD memory `supersedes_memory` the stale t0-derived PRD memory.
+- The product answer `cites_snapshot` the active t1 API snapshot.
+- Restricted contract details `restricts_access` for email and marketing agents.
+- Filtered agent recall is `recalled_by` the email, marketing, product, and memory agents only under their allowed tags.
+- Agent recall `supports_answer` only after fail-closed filters are applied.
+- Answer feedback or source change `creates_feedback` for review, correction, or repromotion.
 
 ## Required Source Behavior
 
@@ -75,6 +95,7 @@ consumer:marketing
 - Promoted items include `workspace_id`, `access_policy`, and allowed consumers.
 - Secrets and restricted fields are not promoted into active recall.
 - Specialized agents use fail-closed tags.
+- Retrieval must preserve the relation chain from validated memory to answer evidence.
 
 ## Required Agent Behavior
 
@@ -186,6 +207,7 @@ The final implementation must answer:
 - Which Hindsight `document_id` was re-promoted after review?
 - What must be confirmed before the client email is sent?
 - Which use pattern governs the requested task?
+- Which relation chain proves that the answer is current enough to use?
 
 ## Acceptance Intent
 
