@@ -4,6 +4,9 @@ canonical_name: Project Y
 client: Acme
 status: active
 confidence: probable
+derived_from:
+  - snap:doc:2026-05-19:acme-contract-excerpt:20260519
+staleness_policy: needs_review_on_source_change
 ---
 
 # Project Y

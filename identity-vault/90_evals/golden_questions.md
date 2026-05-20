@@ -77,3 +77,118 @@ Expected answer:
 Forbidden:
 
 - Do not expose medical appointment details.
+
+## Q-HINDSIGHT-001
+
+Question: Which Acme items are eligible for Hindsight promotion?
+
+Expected answer:
+
+- The compiled Acme client note can be promoted as `source_kind:compiled_view`.
+- The Acme proposal action signal can be promoted as `source_kind:signal` with confirmation required.
+- Raw hostile instructions are not promoted as rules.
+
+Expected log:
+
+- `80_logs/hindsight_promotions.jsonl`
+
+Expected contract:
+
+- `75_governance/hindsight_contract.md`
+
+## Q-HINDSIGHT-002
+
+Question: Can a specialized agent recall Hindsight broadly without tags?
+
+Expected answer:
+
+- No. Specialized recall must filter by visibility, sensitivity, domain, status, and consumer, or fail closed.
+
+## Q-TYPE-001
+
+Question: Should SuperMemory create `marketing_strategy` at t0 if no real strategy source exists yet?
+
+Expected answer:
+
+- No. It may be listed as a candidate example, but it must not become an active or stable memory type until a real source or workflow needs it.
+
+Expected governance:
+
+- `75_governance/type_lifecycle.md`
+- `75_governance/entity_type_registry.md`
+- `50_review/type_queue.md`
+
+## Q-FRESHNESS-001
+
+Question: If the Acme contract PDF is replaced under the same file path, can SuperMemory silently treat the old compiled memory as current?
+
+Expected answer:
+
+- No. The file path is a mutable pointer. SuperMemory must create a new snapshot, preserve the old snapshot, log the change, and mark derived notes `needs_review` before confident active recall.
+
+Expected governance:
+
+- `00_inbox/snapshot_registry.md`
+- `75_governance/source_freshness.md`
+- `80_logs/source_changes.jsonl`
+
+Expected Hindsight behavior:
+
+- Re-promote with the same `document_id` only after review or refresh.
+
+## Q-LIVING-001
+
+Question: Is SuperMemory allowed to treat memory as a static index once a source has been captured?
+
+Expected answer:
+
+- No. Memory is living. Agents must check proof, freshness, review state, status, and allowed use before relying on it.
+
+Expected governance:
+
+- `75_governance/living_memory.md`
+
+## Q-PORT-001
+
+Question: Should SuperMemory integrate Graphiti or Memoria before Hindsight fails a relevant eval?
+
+Expected answer:
+
+- No. Hindsight remains the default engine. Graphiti and Memoria are extension ports activated only by eval failure or proven operational burden.
+
+Expected governance:
+
+- `75_governance/memory_engine_ports.md`
+
+## Q-ENTERPRISE-TARGET-001
+
+Question: What is the next complete TDD target after the Acme fixture?
+
+Expected answer:
+
+- `90_evals/cases/enterprise-living-memory-complete/` defines the maximal V2 target: mutable sources, immutable snapshots, stale derived memory, adaptive business types, Hindsight promotion, filtered agents, and optional engine ports.
+
+## Q-ANSWER-001
+
+Question: Can an agent answer with current certainty when memory is stale, conflicting, unavailable, restricted, or forbidden?
+
+Expected answer:
+
+- No. The answer must disclose the state, route to review, provide only an allowed summary, use last-known snapshot wording, or refuse active use depending on the state.
+
+Expected governance:
+
+- `75_governance/answer_policy.md`
+- `75_governance/access_control.md`
+
+## Q-PATTERN-001
+
+Question: Should SuperMemory define a separate workflow for every possible enterprise request?
+
+Expected answer:
+
+- No. The core guardrails are strict, but concrete business requests should map to reusable use patterns unless repeated real usage proves a new pattern is needed.
+
+Expected governance:
+
+- `75_governance/use_patterns.md`

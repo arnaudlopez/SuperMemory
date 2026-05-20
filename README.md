@@ -1,60 +1,253 @@
 # SuperMemory
 
-SuperMemory is a local-first Markdown memory system for building a governed personal and professional agentic memory.
+> Governed, living memory for personal, professional, and enterprise AI agents.
 
-The project starts from a TDD fixture rather than an empty architecture. The first scenario proves the intended flow:
+SuperMemory is a local-first memory architecture built around a Markdown/Obsidian vault, explicit governance, immutable source snapshots, and a memory-engine integration layer.
+
+It treats memory as **living**, not static: sources change, facts age, contexts move, permissions matter, and agents must know whether memory is fresh, stale, conflicting, unavailable, restricted, historical, or forbidden.
+
+## Why SuperMemory?
+
+Most AI memory systems optimize retrieval. SuperMemory focuses on the harder question:
+
+> Should this memory be used, by which agent, in which context, with which proof, and under which constraints?
+
+The project separates governance from retrieval:
+
+- **SuperMemory vault**: source of truth, provenance, review, access control, snapshots, policies, evals.
+- **Hindsight**: default memory engine for recall, chunks, observations, temporal context, and graph-like consolidation.
+- **Optional engine ports**: Graphiti, Memoria, ArchiveBox, Docling, changedetection.io, and others can be added only when evals prove the need.
+
+## Core Features
+
+- **Living memory lifecycle**
+  - Tracks memory as `fresh`, `stale`, `changed`, `conflicting`, `unavailable`, `needs_review`, `historical_only`, or `do_not_use`.
+
+- **Governed ingestion**
+  - Sources must be captured, authorized, classified, and reviewed before they become active memory.
+
+- **Immutable snapshots for mutable sources**
+  - URLs, file paths, CRM records, docs, and email threads are treated as mutable pointers.
+  - Captured snapshots are the proof.
+
+- **Source provenance and derived memory**
+  - Compiled notes declare `derived_from` snapshot ids.
+  - Changed sources mark derived notes stale or `needs_review`.
+
+- **Hindsight integration contract**
+  - Promoted memory carries stable `document_id`, tags, provenance metadata, freshness, source paths, and access policy.
+
+- **Fail-closed agent recall**
+  - Specialized agents must query memory with restrictive tags and forbidden-tag rules.
+
+- **Adaptive business ontology**
+  - New business types are created only when real sources or workflows require them.
+  - Types move through `candidate -> experimental -> stable | deprecated`.
+
+- **Flexible use patterns**
+  - SuperMemory does not hard-code every enterprise workflow.
+  - Concrete tasks map to reusable patterns such as `external_draft`, `internal_draft`, `decision_support`, `strategic_analysis`, and `audit_and_proof`.
+
+- **Access and answer policies**
+  - Workspace boundaries, data owners, restricted fields, secrets, and response uncertainty are handled explicitly.
+
+- **TDD-style fixtures**
+  - The repo starts from executable acceptance fixtures instead of abstract architecture alone.
+
+## Architecture
 
 ```text
-raw notes
+sources
+  -> capture gate
+  -> immutable snapshots
+  -> source registry
   -> compiled memory
-  -> redacted shared signals
   -> review queues
-  -> agent contracts
-  -> governance
+  -> governed Hindsight promotion
+  -> filtered recall
+  -> specialized agents
   -> evals
 ```
 
-## Start Here
-
-- `docs/README.md` - documentation map and current decision.
-- `docs/audit-memoire-agentique.md` - reasoning, risks, governance, academic research themes.
-- `docs/prd-memoire-agentique.md` - product requirements and target architecture.
-- `docs/evaluation-comparative-retrieval-rappel.md` - retrieval/RAG benchmark comparison.
-- `CHAT_HISTORY.md` - conversation-derived history and continuity notes.
-
-## Test
-
-Run:
-
-```bash
-node scripts/verify-identity-vault-tdd.mjs
-```
-
-Expected result:
-
-```text
-PASS acme-meeting-complete
-```
-
-## Current Architecture
+Current vault shape:
 
 ```text
 identity-vault/
   AGENTS.md
   memory_map.md
-  00_inbox/
-  10_shared/
-  20_professional/
-  30_personal/
-  40_private/
-  50_review/
-  60_signals/
-  70_agent_contracts/
-  75_governance/
-  80_logs/
-  90_evals/
+  00_inbox/              # captured sources and snapshot registry
+  10_shared/             # redacted shared constraints/signals
+  20_professional/       # compiled professional memory
+  30_personal/           # personal memory
+  40_private/            # restricted memory
+  50_review/             # ambiguity, stale, permission, action queues
+  60_signals/            # typed JSONL signals for agents
+  70_agent_contracts/    # agent read/write/action rules
+  75_governance/         # policies and contracts
+  80_logs/               # source changes and Hindsight promotions
+  90_evals/              # golden questions and acceptance cases
 ```
 
-## Principle
+## Key Concepts
 
-The vault is the source of truth. RAG, BM25, graph/entity resolution, and other retrieval systems are future layers that must be justified by evaluation failures, not added by default.
+### Living Memory
+
+Memory can become stale, conflicted, unavailable, historical, or forbidden. Agents must adapt their answers instead of pretending every retrieved fact is current.
+
+See [`identity-vault/75_governance/living_memory.md`](identity-vault/75_governance/living_memory.md).
+
+### Mutable Sources
+
+External sources are pointers, not proof. A stable URL, file path, CRM id, or email thread can change. SuperMemory captures immutable snapshots and tracks freshness.
+
+See [`identity-vault/75_governance/source_freshness.md`](identity-vault/75_governance/source_freshness.md).
+
+### Engine Ports
+
+Hindsight is the default engine. Other tools are optional ports, not default dependencies:
+
+- Graphiti: temporal graph port.
+- Memoria or equivalent: memory versioning/rollback port.
+- changedetection.io, urlwatch, ArchiveBox, Docling, DVC, Nango, Airbyte, Meltano: source capture/parsing/sync ports.
+
+See [`identity-vault/75_governance/memory_engine_ports.md`](identity-vault/75_governance/memory_engine_ports.md).
+
+### Use Patterns
+
+The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
+
+See [`identity-vault/75_governance/use_patterns.md`](identity-vault/75_governance/use_patterns.md).
+
+## Quickstart
+
+Requirements:
+
+- Node.js 18+
+
+Run the full spec verification:
+
+```bash
+node scripts/verify-supermemory-specs.mjs
+```
+
+Run individual checks:
+
+```bash
+node scripts/verify-identity-vault-tdd.mjs
+node scripts/verify-enterprise-living-memory-target.mjs
+```
+
+Expected output:
+
+```text
+PASS acme-meeting-complete
+PASS enterprise-living-memory-complete
+PASS supermemory specs
+```
+
+## Acceptance Fixtures
+
+### `acme-meeting-complete`
+
+The first executable fixture. It proves the initial vault architecture:
+
+- raw notes;
+- external source registry;
+- captured PDF/email sources;
+- compiled client/project/person memory;
+- redacted shared availability;
+- action signals;
+- prompt-injection resistance;
+- Hindsight promotion logs;
+- governance and eval coverage.
+
+See [`identity-vault/90_evals/cases/acme-meeting-complete/`](identity-vault/90_evals/cases/acme-meeting-complete/).
+
+### `enterprise-living-memory-complete`
+
+The maximal V2 target fixture. It is currently `spec_only` and defines what enterprise readiness should eventually prove:
+
+- mutable API docs;
+- overwritten contract records;
+- immutable snapshots;
+- stale PRD detection;
+- source conflicts;
+- unavailable connectors;
+- secrets redaction;
+- legal hold and retention;
+- adaptive business types;
+- Hindsight promotion;
+- optional Graphiti/Memoria engine-port evaluation.
+
+See [`identity-vault/90_evals/cases/enterprise-living-memory-complete/`](identity-vault/90_evals/cases/enterprise-living-memory-complete/).
+
+## Documentation
+
+Start here:
+
+- [`docs/README.md`](docs/README.md) - documentation map and current decision.
+- [`docs/audit-memoire-agentique-v2.md`](docs/audit-memoire-agentique-v2.md) - V2 audit and rationale.
+- [`docs/prd-memoire-agentique-v2.md`](docs/prd-memoire-agentique-v2.md) - V2 product requirements.
+- [`identity-vault/AGENTS.md`](identity-vault/AGENTS.md) - operating rules for agents.
+- [`identity-vault/memory_map.md`](identity-vault/memory_map.md) - vault entry points.
+
+Historical context:
+
+- [`docs/audit-memoire-agentique.md`](docs/audit-memoire-agentique.md)
+- [`docs/prd-memoire-agentique.md`](docs/prd-memoire-agentique.md)
+- [`docs/evaluation-comparative-retrieval-rappel.md`](docs/evaluation-comparative-retrieval-rappel.md)
+
+## Non-Goals
+
+SuperMemory is not trying to be:
+
+- a custom RAG engine;
+- a vector database;
+- a graph database;
+- a generic document management system;
+- a replacement for Hindsight;
+- an automation system that executes external actions without confirmation.
+
+## Project Status
+
+This repository is currently a **specification-first prototype**.
+
+Implemented:
+
+- vault skeleton;
+- governance documents;
+- Acme executable fixture;
+- enterprise target fixture;
+- verification scripts;
+- Hindsight promotion contract and logs as local fixtures.
+
+Not yet implemented:
+
+- live Hindsight API integration;
+- source capture connectors;
+- real change detection;
+- automated snapshot refresh;
+- promptfoo CI runner;
+- Graphiti/Memoria ports.
+
+## Roadmap
+
+1. Prototype Hindsight locally with the Acme fixture.
+2. Implement vault-to-Hindsight promotion script.
+3. Add evals for filters, freshness, and `do_not_use`.
+4. Implement source snapshot refresh for mutable sources.
+5. Expand toward the enterprise living-memory target.
+6. Add optional source-capture tools only when needed.
+7. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.
+
+## Design Principles
+
+- The vault is the source of truth.
+- Retrieval is not authorization.
+- A mutable external reference is not proof.
+- Stale memory is not current memory.
+- Forbidden memory must not be used for active answers.
+- New business types emerge from real use, not speculation.
+- Concrete workflows map to flexible patterns, not exhaustive hard-coded processes.
+- External actions require confirmation.
+- Engines are replaceable ports; governance is the product.

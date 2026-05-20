@@ -1,0 +1,274 @@
+# GoalBuddy v2 state.yaml
+# Board truth lives here. goal.md is the editable charter; notes/ holds long receipts only.
+
+version: 2
+
+goal:
+  title: "Adopt Hindsight And Create Audit/PRD V2"
+  slug: "adopt-hindsight-create-audit-prd-v2"
+  kind: existing_plan
+  tranche: "Create a separate V2 SuperMemory audit memo and PRD from the latest Hindsight adoption decisions, without implementing the integration."
+  status: done
+  oracle:
+    signal: "Final Judge audit confirms newly created V2 audit and PRD documents encode the Hindsight-backed, lean-tooling SuperMemory architecture while preserving governance requirements and repository verification."
+    cadence: "after the V2 documentation Worker package and at final audit"
+    final_proof: "Final Judge receipt with full_outcome_complete: true, changed-file list, and verification results."
+  intake:
+    original_request: "$goalbuddy:goal-prep ok adapter un nouvel audit, un nouveau prd a partir de nos dernieres conceptions."
+    interpreted_outcome: "Create a separate V2 SuperMemory audit memo and PRD reflecting the latest decision to adopt Hindsight as the memory engine while keeping SuperMemory as the governed Markdown/Obsidian layer."
+    input_shape: existing_plan
+    audience: "Arnaud and future Codex/Claude Code agents maintaining SuperMemory."
+    authority: requested
+    proof_type: artifact
+    completion_proof: "A final Judge receipt proving that separate V2 audit and PRD documents exist, preserve governance, adopt Hindsight as memory engine, avoid tool sprawl, and pass or explain repository verification."
+    likely_misfire: "Edit the existing V1 docs in place, mention Hindsight superficially, over-integrate many tools, or collapse SuperMemory into a generic Hindsight client and lose the governance model."
+    blind_spots_considered:
+      - "Hindsight auto-retain/auto-recall can conflict with selective governed ingestion."
+      - "The V2 PRD must explicitly reject broad automatic ingestion."
+      - "The V2 audit must separate adopted dependencies from watchlist tools."
+      - "promptfoo should remain optional unless the V2 plan justifies it as a lightweight regression runner."
+    existing_plan_facts:
+      - "Adopt Hindsight as the memory engine candidate."
+      - "Do not rebuild retrieval, graph, embeddings, document chunks, observations, MCP, or benchmark infrastructure if Hindsight covers it."
+      - "Keep SuperMemory as the governed Markdown/Obsidian source-of-truth and policy layer."
+      - "promptfoo may be useful as a lightweight regression/eval runner."
+      - "Presidio, OPA, ArchiveBox, Langfuse/Phoenix, Basic Memory, Mem0, Graphiti, Khoj, Letta, AnythingLLM, Docling, and MarkItDown are not default dependencies for this tranche."
+      - "Create separate V2 audit and PRD documents rather than overwriting docs/audit-memoire-agentique.md and docs/prd-memoire-agentique.md as the primary output."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: bundled_not_installed
+  worker: bundled_not_installed
+  judge: bundled_not_installed
+
+visual_board:
+  selected: local
+  local:
+    status: blocked
+    url: "http://goalbuddy.localhost:41737/adopt-hindsight-create-audit-prd-v2/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/adopt-hindsight-create-audit-prd-v2"
+    error: "GoalBuddy local board hub tried to copy an asset from cached path goalbuddy/0.3.6/.../goalbuddy-mark.png, but only the 0.3.7 asset path exists."
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: default
+    objective: "Map the current audit memo, PRD, and related design docs as source context for a separate V2 audit and PRD."
+    inputs:
+      - "docs/audit-memoire-agentique.md"
+      - "docs/prd-memoire-agentique.md"
+      - "docs/README.md"
+      - "README.md"
+      - "identity-vault/memory_map.md"
+      - "goal.intake.existing_plan_facts"
+    constraints:
+      - "Read-only."
+      - "Do not browse or inspect external repos unless a later task explicitly allows it."
+      - "Focus on documentation drift and required V2 structure, not implementation."
+    expected_output:
+      - "Which V1 sections should be preserved conceptually in V2."
+      - "Which V1 sections should be superseded by the Hindsight-backed direction."
+      - "Where governance requirements must be preserved or sharpened in V2."
+      - "Recommended V2 audit and PRD structure."
+    receipt:
+      result: done
+      summary: "V1 docs preserve the right governance model but still frame advanced retrieval as a future internal escalation; V2 should adopt Hindsight for memory-engine work while keeping the vault as governed source-of-truth."
+      preserve_in_v2:
+        - "Markdown/Obsidian vault as human-readable source of truth."
+        - "Raw source versus compiled memory separation."
+        - "source_registry.md with connector_id, connector_type, connector_scope, provenance, status, and sensitivity."
+        - "Review queues, signals, agent contracts, threat model, forgetting/do_not_use, and action confirmation."
+        - "Golden questions and canaries for permissions, prompt injection, routing, ambiguity, and external source capture."
+      supersede_in_v2:
+        - "Replace 'add BM25/RAG/graph later' as a likely in-house path with 'use Hindsight as adopted memory engine'."
+        - "Replace custom chunking/embeddings/retrieval/observations/MCP work with Hindsight integration boundaries."
+        - "Reframe promptfoo as an optional lightweight regression runner, not a platform dependency."
+      recommended_v2_structure:
+        - "Audit V2: decision, why Hindsight, ownership split, risks, rejected tools, migration implications, eval strategy."
+        - "PRD V2: product scope, architecture, ingestion-to-Hindsight contract, metadata/tags, evals, milestones, non-goals."
+      evidence:
+        - "docs/audit-memoire-agentique.md"
+        - "docs/prd-memoire-agentique.md"
+        - "docs/README.md"
+        - "README.md"
+        - "identity-vault/memory_map.md"
+        - "identity-vault/75_governance/threat_model.md"
+        - "identity-vault/90_evals/golden_questions.md"
+        - "identity-vault/90_evals/canaries.md"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: default
+    objective: "Approve the V2 documentation creation strategy and define the exact bounded Worker slice."
+    inputs:
+      - "T001 receipt"
+      - "docs/goals/adopt-hindsight-create-audit-prd-v2/goal.md"
+    constraints:
+      - "Read-only."
+      - "Keep the architecture lean."
+      - "Do not approve implementation work beyond V2 documentation and verification for this tranche."
+    expected_output:
+      - "Decision: approved | revise | blocked"
+      - "Exact Worker objective"
+      - "Allowed files"
+      - "Verification commands"
+      - "Stop conditions"
+    receipt:
+      result: done
+      decision: approved
+      exact_worker_objective: "Create docs/audit-memoire-agentique-v2.md and docs/prd-memoire-agentique-v2.md as the V2 plan for Hindsight-backed SuperMemory."
+      allowed_files:
+        - "docs/audit-memoire-agentique-v2.md"
+        - "docs/prd-memoire-agentique-v2.md"
+      verify:
+        - "node scripts/verify-identity-vault-tdd.mjs"
+        - "git diff --check"
+      stop_if:
+        - "Need to install or run Hindsight."
+        - "Need to edit V1 docs in place."
+        - "Need a product decision not already captured in the goal."
+        - "Verification fails twice for reasons caused by the edits."
+      rationale: "The highest-value slice is a clean V2 artifact pair. Updating README, V1 docs, or eval files would blur the user's correction that this is a V2 plan, not an in-place update."
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: default
+    objective: "Create the V2 audit memo and V2 PRD for the approved Hindsight-backed SuperMemory architecture."
+    inputs:
+      - "T001 receipt"
+      - "T002 decision"
+      - "docs/audit-memoire-agentique.md"
+      - "docs/prd-memoire-agentique.md"
+    constraints:
+      - "Do not edit implementation files."
+      - "Create separate V2 documents; do not overwrite V1 as the primary output."
+      - "Keep Hindsight as memory engine and SuperMemory as governance layer."
+      - "Keep other tools optional or out of scope unless needed for promptfoo-oriented eval framing."
+    allowed_files:
+      - "docs/audit-memoire-agentique-v2.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "docs/README.md"
+      - "README.md"
+      - "identity-vault/90_evals/golden_questions.md"
+      - "identity-vault/90_evals/canaries.md"
+      - "identity-vault/90_evals/eval_runs.md"
+    verify:
+      - "node scripts/verify-identity-vault-tdd.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need to install or run Hindsight."
+      - "Need to edit files outside allowed_files."
+      - "The docs require a product decision not already captured in the goal."
+      - "Verification fails twice for reasons caused by the edits."
+    receipt:
+      result: done
+      changed_files:
+        - "docs/audit-memoire-agentique-v2.md"
+        - "docs/prd-memoire-agentique-v2.md"
+      commands:
+        - cmd: "node scripts/verify-identity-vault-tdd.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      summary: "Created separate V2 audit and PRD documents. V2 adopts Hindsight as the memory engine, keeps SuperMemory as governed Markdown/Obsidian policy/source layer, rejects rebuilding retrieval/MCP/observations, and keeps promptfoo optional."
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: default
+    objective: "Review the V2 docs for architecture consistency, overengineering risk, and preservation of governance constraints."
+    inputs:
+      - "T003 receipt"
+      - "Current diff"
+      - "Verification output"
+    constraints:
+      - "Read-only."
+      - "Prioritize concrete mismatches and missing proof."
+    expected_output:
+      - "Decision: approved | needs_revision"
+      - "Architecture consistency findings"
+      - "Overengineering findings"
+      - "Governance preservation findings"
+      - "Required follow-up Worker task if not approved"
+    receipt:
+      result: done
+      decision: approved
+      architecture_consistency:
+        - "Audit V2 explicitly states Hindsight is the memory engine and SuperMemory is the governance layer."
+        - "PRD V2 assigns raw sources, source registry, compiled notes, signals, contracts, and evals to SuperMemory while assigning retain/recall/reflect/chunks/observations to Hindsight."
+      overengineering_findings:
+        - "The V2 docs keep promptfoo optional and list other candidate tools as non-adopted for the socle."
+        - "No implementation or dependency installation was added."
+      governance_preservation:
+        - "The docs preserve source capture, connector scope, sensitivity, review, revocation/do_not_use, prompt-injection handling, and external action confirmation."
+      required_follow_up_worker_task: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: default
+    objective: "Audit whether the documentation tranche satisfies the original request."
+    inputs:
+      - "All task receipts"
+      - "Final diff"
+      - "Last verification output"
+      - "docs/goals/adopt-hindsight-create-audit-prd-v2/goal.md"
+    constraints:
+      - "Read-only."
+      - "Do not mark complete if separate V2 audit and PRD documents do not both exist or if governance is weakened."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Evidence mapped to original request"
+      - "Missing work if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      evidence_mapped_to_original_request:
+        - "Created docs/audit-memoire-agentique-v2.md as a new audit V2 artifact."
+        - "Created docs/prd-memoire-agentique-v2.md as a new PRD V2 artifact."
+        - "V2 docs adopt Hindsight as memory engine and preserve SuperMemory as governed Markdown/Obsidian layer."
+        - "V2 docs distinguish what Hindsight owns from what SuperMemory owns."
+        - "V2 docs explicitly say not to rebuild RAG, graph, vector store, MCP memory, observations, or other Hindsight-covered engine work."
+        - "V2 docs preserve provenance, connector scope, sensitivity, review, revocation/do_not_use, prompt-injection resistance, and action confirmation."
+      verification:
+        - cmd: "node scripts/verify-identity-vault-tdd.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      missing_work: null
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: pass
+    task: T003
+    commands:
+      - "node scripts/verify-identity-vault-tdd.mjs"
+      - "git diff --check"

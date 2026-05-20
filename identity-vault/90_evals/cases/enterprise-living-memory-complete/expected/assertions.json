@@ -1,0 +1,132 @@
+{
+  "case_id": "enterprise-living-memory-complete",
+  "description": "Maximal target scenario for SuperMemory V2: mutable enterprise sources, snapshots, staleness, adaptive types, Hindsight promotion, filtered agents, and optional engine ports.",
+  "target_status": "spec_only",
+  "target_required_files": [
+    "identity-vault/90_evals/cases/enterprise-living-memory-complete/input/scenario.md",
+    "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+    "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+    "identity-vault/90_evals/cases/enterprise-living-memory-complete/actual/README.md"
+  ],
+  "supporting_governance_files": [
+    "docs/audit-memoire-agentique-v2.md",
+    "docs/prd-memoire-agentique-v2.md",
+    "identity-vault/75_governance/access_control.md",
+    "identity-vault/75_governance/answer_policy.md",
+    "identity-vault/75_governance/conflict_arbitration.md",
+    "identity-vault/75_governance/forgetting_policy.md",
+    "identity-vault/75_governance/hindsight_contract.md",
+    "identity-vault/75_governance/living_memory.md",
+    "identity-vault/75_governance/memory_engine_ports.md",
+    "identity-vault/75_governance/source_freshness.md",
+    "identity-vault/75_governance/source_reliability.md",
+    "identity-vault/75_governance/threat_model.md",
+    "identity-vault/75_governance/use_patterns.md"
+  ],
+  "required_concepts": [
+    "mutable enterprise sources",
+    "immutable snapshots",
+    "needs_review",
+    "do_not_use",
+    "workspace_id",
+    "access_policy",
+    "legal_hold",
+    "retention_policy",
+    "unavailable",
+    "support/API disagreement",
+    "Secrets and restricted fields",
+    "marketing_strategy",
+    "Hindsight remains the default engine",
+    "Graphiti not activated",
+    "Memoria not activated",
+    "fail-closed tags",
+    "external_draft",
+    "strategic_analysis",
+    "audit_and_proof"
+  ],
+  "target_must_contain": [
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "mutable enterprise sources"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "trust_score"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "marketing_strategy"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "Graphiti not activated"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "Memoria not activated"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "failed connector check is recorded as `unavailable`"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "Secrets and restricted fields are not promoted into active recall"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "support/API disagreement"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+      "text": "engine_port_evals.jsonl"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+      "text": "answer_policy.md"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+      "text": "access_control.md"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md",
+      "text": "use_patterns.md"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "Do not add a bespoke workflow for every possible enterprise request"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/input/scenario.md",
+      "text": "source changed"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/input/scenario.md",
+      "text": "legal hold"
+    }
+  ],
+  "future_required_files": [
+    "identity-vault/00_inbox/snapshot_registry.md",
+    "identity-vault/20_professional/prds/orion-checkout-integration.md",
+    "identity-vault/20_professional/strategies/orion-checkout-recovery.md",
+    "identity-vault/50_review/staleness_queue.md",
+    "identity-vault/50_review/conflict_queue.md",
+    "identity-vault/60_signals/product_changes.jsonl",
+    "identity-vault/80_logs/engine_port_evals.jsonl"
+  ],
+  "future_jsonl_assertions": [
+    {
+      "file": "identity-vault/80_logs/engine_port_evals.jsonl",
+      "id": "engine-port-graphiti-enterprise-living-memory",
+      "candidate": "Graphiti",
+      "status": "not_activated"
+    },
+    {
+      "file": "identity-vault/80_logs/engine_port_evals.jsonl",
+      "id": "engine-port-memoria-enterprise-living-memory",
+      "candidate": "Memoria",
+      "status": "not_activated"
+    }
+  ]
+}

@@ -4,6 +4,9 @@ canonical_name: Paul Martin
 confidence: confirmed
 linked_orgs:
   - Acme
+derived_from:
+  - snap:email:gmail:2026-05-19:paul-analytics-proposal:20260519
+staleness_policy: needs_review_on_source_change
 ---
 
 # Paul Martin

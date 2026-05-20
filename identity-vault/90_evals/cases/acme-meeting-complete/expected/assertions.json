@@ -5,6 +5,7 @@
     "identity-vault/AGENTS.md",
     "identity-vault/memory_map.md",
     "identity-vault/00_inbox/source_registry.md",
+    "identity-vault/00_inbox/snapshot_registry.md",
     "identity-vault/00_inbox/meetings/2026-05-19-acme-project-y.md",
     "identity-vault/00_inbox/documents/2026-05-19-acme-contract-excerpt.md",
     "identity-vault/00_inbox/emails/2026-05-19-paul-analytics-proposal.md",
@@ -16,13 +17,25 @@
     "identity-vault/20_professional/actions.md",
     "identity-vault/50_review/ambiguity_queue.md",
     "identity-vault/50_review/calendar_queue.md",
+    "identity-vault/50_review/type_queue.md",
     "identity-vault/60_signals/actions.jsonl",
     "identity-vault/60_signals/availability.jsonl",
     "identity-vault/60_signals/relationships.jsonl",
     "identity-vault/70_agent_contracts/calendar.md",
+    "identity-vault/75_governance/access_control.md",
+    "identity-vault/75_governance/answer_policy.md",
+    "identity-vault/75_governance/hindsight_contract.md",
+    "identity-vault/75_governance/entity_type_registry.md",
+    "identity-vault/75_governance/living_memory.md",
+    "identity-vault/75_governance/memory_engine_ports.md",
     "identity-vault/75_governance/ontology.md",
     "identity-vault/75_governance/source_reliability.md",
+    "identity-vault/75_governance/source_freshness.md",
     "identity-vault/75_governance/threat_model.md",
+    "identity-vault/75_governance/type_lifecycle.md",
+    "identity-vault/75_governance/use_patterns.md",
+    "identity-vault/80_logs/hindsight_promotions.jsonl",
+    "identity-vault/80_logs/source_changes.jsonl",
     "identity-vault/90_evals/golden_questions.md",
     "identity-vault/90_evals/eval_runs.md"
   ],
@@ -49,6 +62,22 @@
     },
     {
       "file": "identity-vault/00_inbox/source_registry.md",
+      "text": "snap:doc:2026-05-19:acme-contract-excerpt:20260519"
+    },
+    {
+      "file": "identity-vault/00_inbox/source_registry.md",
+      "text": "mutable_external"
+    },
+    {
+      "file": "identity-vault/00_inbox/snapshot_registry.md",
+      "text": "Never overwrite a snapshot"
+    },
+    {
+      "file": "identity-vault/00_inbox/snapshot_registry.md",
+      "text": "snap:email:gmail:2026-05-19:paul-analytics-proposal:20260519"
+    },
+    {
+      "file": "identity-vault/00_inbox/source_registry.md",
       "text": "gmail.primary"
     },
     {
@@ -70,6 +99,10 @@
     {
       "file": "identity-vault/20_professional/clients/acme.md",
       "text": "contractual June rollout milestone"
+    },
+    {
+      "file": "identity-vault/20_professional/clients/acme.md",
+      "text": "staleness_policy: needs_review_on_source_change"
     },
     {
       "file": "identity-vault/20_professional/projects/project-y.md",
@@ -120,6 +153,106 @@
       "text": "External Source Provenance"
     },
     {
+      "file": "identity-vault/75_governance/source_reliability.md",
+      "text": "external_ref"
+    },
+    {
+      "file": "identity-vault/75_governance/source_freshness.md",
+      "text": "An external mutable source is a pointer, not proof"
+    },
+    {
+      "file": "identity-vault/75_governance/hindsight_contract.md",
+      "text": "Hindsight is the adopted memory engine"
+    },
+    {
+      "file": "identity-vault/75_governance/hindsight_contract.md",
+      "text": "Specialized recall must provide restrictive filters"
+    },
+    {
+      "file": "identity-vault/75_governance/hindsight_contract.md",
+      "text": "snapshot_id: <snapshot id if source is external or mutable>"
+    },
+    {
+      "file": "identity-vault/75_governance/access_control.md",
+      "text": "deny-by-default access"
+    },
+    {
+      "file": "identity-vault/75_governance/answer_policy.md",
+      "text": "Agents must adapt answers to the health of the memory they use"
+    },
+    {
+      "file": "identity-vault/75_governance/living_memory.md",
+      "text": "SuperMemory treats memory as a living governed system"
+    },
+    {
+      "file": "identity-vault/75_governance/living_memory.md",
+      "text": "What should happen if the source changes tomorrow?"
+    },
+    {
+      "file": "identity-vault/75_governance/use_patterns.md",
+      "text": "SuperMemory does not try to anticipate every business use case"
+    },
+    {
+      "file": "identity-vault/75_governance/memory_engine_ports.md",
+      "text": "Candidate engine: Graphiti"
+    },
+    {
+      "file": "identity-vault/75_governance/memory_engine_ports.md",
+      "text": "Candidate engine: Memoria"
+    },
+    {
+      "file": "identity-vault/75_governance/memory_engine_ports.md",
+      "text": "The vault remains the source of truth"
+    },
+    {
+      "file": "identity-vault/75_governance/ontology.md",
+      "text": "SuperMemory uses an adaptive ontology"
+    },
+    {
+      "file": "identity-vault/75_governance/type_lifecycle.md",
+      "text": "SuperMemory does not assume a complete business ontology at t0"
+    },
+    {
+      "file": "identity-vault/75_governance/entity_type_registry.md",
+      "text": "`marketing_strategy` | candidate"
+    },
+    {
+      "file": "identity-vault/50_review/type_queue.md",
+      "text": "Do not add a type because it might be useful later"
+    },
+    {
+      "file": "identity-vault/80_logs/hindsight_promotions.jsonl",
+      "text": "\"document_id\":\"compiled:20_professional:clients:acme\""
+    },
+    {
+      "file": "identity-vault/80_logs/hindsight_promotions.jsonl",
+      "text": "\"source_kind\":\"compiled_view\""
+    },
+    {
+      "file": "identity-vault/80_logs/hindsight_promotions.jsonl",
+      "text": "\"confirmation_required\":true"
+    },
+    {
+      "file": "identity-vault/80_logs/hindsight_promotions.jsonl",
+      "text": "\"entity_type:client\""
+    },
+    {
+      "file": "identity-vault/80_logs/hindsight_promotions.jsonl",
+      "text": "\"schema_status:stable\""
+    },
+    {
+      "file": "identity-vault/80_logs/hindsight_promotions.jsonl",
+      "text": "\"derived_from\":[\"snap:doc:2026-05-19:acme-contract-excerpt:20260519\"]"
+    },
+    {
+      "file": "identity-vault/80_logs/source_changes.jsonl",
+      "text": "\"operation\":\"initial_snapshot\""
+    },
+    {
+      "file": "identity-vault/80_logs/source_changes.jsonl",
+      "text": "\"freshness\":\"fresh\""
+    },
+    {
       "file": "identity-vault/90_evals/golden_questions.md",
       "text": "Q-CLIENT-001"
     },
@@ -130,6 +263,30 @@
     {
       "file": "identity-vault/90_evals/golden_questions.md",
       "text": "Q-INJECTION-001"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-HINDSIGHT-001"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-TYPE-001"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-FRESHNESS-001"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-LIVING-001"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-PORT-001"
+    },
+    {
+      "file": "identity-vault/90_evals/golden_questions.md",
+      "text": "Q-ANSWER-001"
     }
   ],
   "jsonl_assertions": [
@@ -151,6 +308,18 @@
       "id": "sig-relationship-acme-timing-concern-20260519",
       "type": "relationship_signal",
       "confidence": "high"
+    },
+    {
+      "file": "identity-vault/80_logs/source_changes.jsonl",
+      "id": "source-change-acme-contract-initial-20260519",
+      "operation": "initial_snapshot",
+      "freshness": "fresh"
+    },
+    {
+      "file": "identity-vault/80_logs/source_changes.jsonl",
+      "id": "source-change-paul-email-initial-20260519",
+      "operation": "initial_snapshot",
+      "freshness": "fresh"
     }
   ],
   "forbidden_text": [

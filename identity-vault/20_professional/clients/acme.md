@@ -4,6 +4,9 @@ canonical_name: Acme
 status: active
 confidence: confirmed
 last_reviewed: 2026-05-19
+derived_from:
+  - snap:doc:2026-05-19:acme-contract-excerpt:20260519
+staleness_policy: needs_review_on_source_change
 ---
 
 # Acme

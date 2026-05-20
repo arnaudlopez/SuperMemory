@@ -30,8 +30,25 @@ An inference cannot have the same authority as an explicit user correction.
 Every external source used for memory must preserve:
 
 - `source_id`
+- `snapshot_id`
 - original reference such as local path, email id, URL, or cloud document id
 - capture method
 - capture date
+- content hash or connector version when available
 - sensitivity
 - compiled targets
+
+## Mutable Source Rule
+
+External sources can change without warning. A stable URL, path, thread id, or business app id is not enough to prove the content that memory used.
+
+Every mutable source must be represented as:
+
+```text
+external_ref
+  -> immutable snapshot
+  -> compiled note or signal
+  -> Hindsight promotion
+```
+
+If the external content changes, preserve the old snapshot, create a new snapshot, and mark derived notes according to `75_governance/source_freshness.md`.

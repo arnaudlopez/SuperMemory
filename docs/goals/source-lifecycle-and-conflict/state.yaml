@@ -1,0 +1,217 @@
+version: 2
+
+goal:
+  title: "Source Lifecycle And Conflict"
+  slug: "source-lifecycle-and-conflict"
+  kind: specific
+  tranche: "Create a second TDD tranche proving source lifecycle, connector scope, contradictions, revocation, and external-action confirmation."
+  status: active
+  oracle:
+    signal: "A new source-lifecycle-and-conflict acceptance fixture passes while the existing acme-meeting-complete fixture still passes."
+    final_proof: "Verification commands pass and final audit maps the tranche to source updates, contradictions, explicit correction precedence, do_not_use handling, connector-scope refusal, and action confirmation."
+  intake:
+    original_request: "Address the model's blind spots after the audit: source lifecycle, conflicts, connector scope, and automation/action safety."
+    interpreted_outcome: "A second executable TDD scenario proves the memory model handles realistic source lifecycle and conflict cases without losing provenance or violating permissions."
+    input_shape: specific
+    audience: "Arnaud and future memory-maintenance agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A runnable fixture and verification script prove source lifecycle, connector scope, conflict arbitration, revocation, and confirmation behavior."
+    likely_misfire: "Writing more conceptual documentation without a runnable acceptance case."
+    blind_spots_considered:
+      - "Source moved, updated, superseded, revoked, or marked do_not_use."
+      - "Email, PDF, meeting note, and explicit user correction disagree."
+      - "Connector attempts to read beyond authorized scope."
+      - "Compiled memory continues using stale or revoked facts."
+      - "External action is executed or duplicated without confirmation."
+    existing_plan_facts:
+      - "The existing acme-meeting-complete fixture passes."
+      - "The vault already has source_registry.md and simulated PDF/email external sources."
+      - "Codex is the orchestrator; connectors are bounded source access, not stable memory."
+      - "No real external services should be called in this tranche."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  require_tdd_worker_flow: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: false
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: false
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: bundled_not_installed
+  worker: bundled_not_installed
+  judge: bundled_not_installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/source-lifecycle-and-conflict/"
+    command: "npx goalbuddy board docs/goals/source-lifecycle-and-conflict"
+  github_projects:
+    status: not_requested
+    url: null
+    command: "npx goalbuddy extend github-projects"
+    missing: []
+
+active_task: T001
+
+tasks:
+  - id: T001
+    type: judge
+    assignee: Judge
+    status: active
+    reasoning_hint: high
+    objective: "Validate the second TDD tranche shape and define the exact Worker contract before implementation."
+    inputs:
+      - "docs/prd-memoire-agentique.md"
+      - "docs/audit-memoire-agentique.md"
+      - "identity-vault/90_evals/cases/acme-meeting-complete/"
+      - "Current blind-spot audit"
+    constraints:
+      - "Read-only."
+      - "Do not implement fixture or governance files."
+      - "Require a meaningful red -> green acceptance scenario."
+      - "Reject broad documentation-only work."
+      - "No real connector, email, API, MCP, or cloud calls."
+    expected_output:
+      - "architecture_review"
+      - "design_concept"
+      - "ubiquitous_language"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "impact_assessment"
+      - "exact_worker_objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+    receipt: null
+
+  - id: T002
+    type: worker
+    assignee: Worker
+    status: queued
+    reasoning_hint: medium
+    objective: "Implement the source-lifecycle-and-conflict TDD fixture and minimal final-shaped files after T001 approves the contract."
+    inputs:
+      - "T001 Judge receipt"
+      - "Existing Acme fixture"
+      - "PRD and audit ingestion/connectors/lifecycle guidance"
+    allowed_files:
+      - "identity-vault/**"
+      - "scripts/**"
+      - "docs/goals/source-lifecycle-and-conflict/**"
+    verify:
+      - "node scripts/verify-identity-vault-tdd.mjs"
+      - "node scripts/verify-source-lifecycle-conflict.mjs"
+      - "git diff --check"
+    stop_if:
+      - "T001 is not approved."
+      - "Need real external service credentials or network connector calls."
+      - "Cannot preserve existing Acme fixture."
+      - "Verification fails twice."
+    receipt: null
+
+  - id: T003
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Review the implemented second tranche for completeness and alignment with the blind-spot audit."
+    inputs:
+      - "T002 receipt"
+      - "New fixture"
+      - "Verification results"
+    constraints:
+      - "Read-only unless assigning a bounded fix task."
+      - "Reject if the scenario does not prove lifecycle, conflict, connector scope, and confirmation behavior."
+    expected_output:
+      - "approved | changes_required"
+      - "coverage assessment"
+      - "missing cases"
+      - "next worker if required"
+      - "design_delta evidence"
+    receipt: null
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: queued
+    reasoning_hint: medium
+    objective: "Apply bounded fixes required by T003, if any."
+    inputs:
+      - "T003 receipt"
+    allowed_files:
+      - "identity-vault/**"
+      - "scripts/**"
+      - "docs/goals/source-lifecycle-and-conflict/**"
+    verify:
+      - "node scripts/verify-identity-vault-tdd.mjs"
+      - "node scripts/verify-source-lifecycle-conflict.mjs"
+      - "git diff --check"
+    stop_if:
+      - "T003 approved with no changes."
+      - "Need files outside allowed scope."
+      - "Verification fails twice."
+    receipt: null
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Final audit: prove whether the source lifecycle and conflict tranche satisfies the owner outcome."
+    inputs:
+      - "All task receipts"
+      - "Verification commands"
+      - "Current dirty diff"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if verification evidence is missing."
+    expected_output:
+      - "decision: complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "mapping to blind spots"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
+
+checks:
+  dirty_fingerprint: "goal prepared; implementation not started"
+  last_verification:
+    result: pending
+    task: T001
+    commands: []
