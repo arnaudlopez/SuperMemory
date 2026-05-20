@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: implement-memory-contracts-t1
   title: Implement Memory Contracts T1
-  status: active
+  status: done
   created_at: "2026-05-20"
   updated_at: "2026-05-20"
   original_request: "on lance un goal afin d'implementer les T1.X ?"
@@ -64,7 +64,7 @@ workflow_safeguards:
   requires_interface_contract: true
   requires_architecture_review: true
   requires_design_delta: true
-active_task: T998
+active_task: null
 tasks:
   - id: T001
     type: judge
@@ -402,7 +402,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Ship verified T1 changes to GitHub before final completion."
     inputs:
       - "Final diff"
@@ -423,11 +423,40 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "Or shipping_blocker: no_git_repository | no_github_remote"
-    receipt: null
+    receipt:
+      result: done
+      commit_sha: "619991f945a41aa825a9dd7b17672bb30ff19950"
+      remote_branch: "origin/main"
+      push_result: "successfully pushed main to origin, f7db739..619991f"
+      committed_files:
+        - "docs/README.md"
+        - "docs/goals/implement-memory-contracts-t1/goal.md"
+        - "docs/goals/implement-memory-contracts-t1/state.yaml"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+        - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+        - "scripts/verify-memory-contracts.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/memory-contracts.test.mjs"
+      unrelated_dirty_files_left_untouched: "none; git status --short was clean after push before recording this receipt"
+      commands:
+        - cmd: "git status --short"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node --test tests/memory-contracts.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-memory-contracts.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git push origin main"
+          status: pass
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Final audit: prove whether the T1 memory-contract implementation goal is complete."
     inputs:
@@ -453,4 +482,46 @@ tasks:
       - "T1 coverage map"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      summary: "T1 memory contracts are implemented in TDD form: red evidence was captured, T1.1-T1.8 are covered by deterministic invalid fixtures, the valid minimum fixture passes, and the verifier is included in the global SuperMemory specs."
+      t1_coverage_map:
+        T1.1: "ValidatedMemory without snapshot proof returns exactly missing_snapshot_proof."
+        T1.2: "Duplicate SourceSnapshot id with different hash returns exactly snapshot_id_collision."
+        T1.3: "Pending MemoryCandidate proposed as active returns exactly candidate_not_validated."
+        T1.4: "Candidate schema status proposed as active returns exactly candidate_type_not_promotable."
+        T1.5: "do_not_use ValidatedMemory with active promotion payload returns exactly do_not_use_not_promotable."
+        T1.6: "Unsafe RecallPolicy without fail-closed scoped filters returns exactly unsafe_recall_policy."
+        T1.7: "Current AnswerEvidence without used memory or cited snapshot returns exactly missing_answer_evidence."
+        T1.8: "supports_answer relation with invalid endpoints returns exactly invalid_relation_endpoints."
+      workflow_safeguards_result:
+        design_concept: "fixture-driven deterministic memory-contract validator before runtime engine work"
+        ubiquitous_language: "Source, SourceSnapshot, Observation, MemoryCandidate, ValidatedMemory, Relation, HindsightPromotionPayload, RecallPolicy, AnswerEvidence"
+        feedback_policy: "invalid fixtures fail with exact named errors; valid fixture must pass"
+        test_strategy: "red verifier skeleton first, then minimal validator green, plus node --test wrapper"
+        module_map: "scripts/verify-memory-contracts.mjs, tests/memory-contracts.test.mjs, memory-contracts fixture, global specs"
+        interface_contract: "T1 object collections and expected errors are encoded in fixture/assertions"
+        architecture_review: "T004 required exact-error tightening and T005 completed it"
+        design_delta: "SuperMemory now has executable T1 contract tests before Hindsight integration"
+      evidence:
+        - "scripts/verify-memory-contracts.mjs"
+        - "tests/memory-contracts.test.mjs"
+        - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+        - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+        - "scripts/verify-supermemory-specs.mjs"
+      verification:
+        - cmd: "node --test tests/memory-contracts.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-memory-contracts.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/implement-memory-contracts-t1/state.yaml"
+          status: pass
+      shipping: "Primary implementation commit 619991f945a41aa825a9dd7b17672bb30ff19950 was pushed to origin/main; final board receipt will be committed after this audit."
+      missing_evidence: "none"
+      next_task: "none"
