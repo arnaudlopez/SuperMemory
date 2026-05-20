@@ -1,0 +1,29 @@
+{
+  "case_id": "memory-contracts",
+  "target_status": "tdd_contract",
+  "required_test_ids": [
+    "T1.1",
+    "T1.2",
+    "T1.3",
+    "T1.4",
+    "T1.5",
+    "T1.6",
+    "T1.7",
+    "T1.8"
+  ],
+  "expected_errors": {
+    "T1.1": "missing_snapshot_proof",
+    "T1.2": "snapshot_id_collision",
+    "T1.3": "candidate_not_validated",
+    "T1.4": "candidate_type_not_promotable",
+    "T1.5": "do_not_use_not_promotable",
+    "T1.6": "unsafe_recall_policy",
+    "T1.7": "missing_answer_evidence",
+    "T1.8": "invalid_relation_endpoints"
+  },
+  "valid_case_must_pass": true,
+  "non_goals": [
+    "No Hindsight runtime integration.",
+    "No service, API, database, connector, or UI."
+  ]
+}

@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 
 const commands = [
+  ["node", ["scripts/verify-memory-contracts.mjs"]],
   ["node", ["scripts/verify-identity-vault-tdd.mjs"]],
   ["node", ["scripts/verify-enterprise-living-memory-target.mjs"]]
 ];

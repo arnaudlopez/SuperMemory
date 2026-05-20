@@ -14,19 +14,29 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
    - Contrat de promotion vers Hindsight.
    - Evals et milestones V2.
 
-3. `audit-memoire-agentique.md`
+3. `golden-case-implementation-roadmap.md`
+   - Decoupage des tranches d'implementation.
+   - Objectifs intermediaires et oracles menant au Golden Case enterprise.
+   - Ordre recommande entre contrats, Hindsight, source lifecycle, agents, acces, ports et CI.
+
+4. `golden-case-tdd-matrix.md`
+   - Tests rouges precis par tranche.
+   - Fixtures, commandes ciblees et criteres de passage.
+   - Backlog TDD pour driver le developpement jusqu'au Golden Case.
+
+5. `audit-memoire-agentique.md`
    - Pourquoi cette architecture existe.
    - Decisions critiques.
    - Risques, angles morts, gouvernance et recherche academique.
    - Contexte V1 conserve pour historique.
 
-4. `prd-memoire-agentique.md`
+6. `prd-memoire-agentique.md`
    - Ce que le produit doit faire.
    - Structure cible du vault.
    - Protocoles d'ingestion, navigation, revue, publication, monitoring et multi-agent.
    - Contexte V1 conserve pour historique.
 
-5. `evaluation-comparative-retrieval-rappel.md`
+7. `evaluation-comparative-retrieval-rappel.md`
    - Comparaison avec les benchmarks et architectures retrieval/RAG.
    - Estimation de rappel et vitesse.
    - Trajectoire BM25, embeddings, hybrid retrieval, reranking, graph.
