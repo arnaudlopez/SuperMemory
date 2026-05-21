@@ -10,6 +10,7 @@
 - Hindsight promotion logs: `80_logs/hindsight_promotions.jsonl`
 - Snapshot registry: `00_inbox/snapshot_registry.md`
 - Living memory policy: `75_governance/living_memory.md`
+- Interpretation contract: `75_governance/interpretation_contract.md`
 - Access control: `75_governance/access_control.md`
 - Answer policy: `75_governance/answer_policy.md`
 - Use patterns: `75_governance/use_patterns.md`
@@ -56,6 +57,10 @@ Stale, changed, conflicting, unavailable, restricted, or forbidden memory cannot
 ## Use Pattern Rule
 
 Do not hard-code every business use case. Map concrete requests to reusable patterns in `75_governance/use_patterns.md`.
+
+## Interpretation Rule
+
+Let the LLM adapt to unfamiliar sources and requests, but require evidence, confidence, uncertainty, assumptions, and a use pattern before an interpretation can advance to governed memory.
 
 ## Engine Port Rule
 

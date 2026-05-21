@@ -10,6 +10,7 @@ It does not define database tables. It defines the objects, transitions, relatio
 Source
   -> SourceSnapshot
   -> Observation
+  -> InterpretationCandidate
   -> MemoryCandidate
   -> ValidatedMemory
   -> Relation
@@ -18,7 +19,7 @@ Source
   -> Feedback / Change
 ```
 
-Short form: `Source -> SourceSnapshot -> Observation -> MemoryCandidate -> ValidatedMemory -> Relation -> HindsightDocument / Retrieval -> Answer -> Feedback / Change`.
+Short form: `Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate -> ValidatedMemory -> Relation -> HindsightDocument / Retrieval -> Answer -> Feedback / Change`.
 
 The flow is sequential for governance, but not a rigid business workflow. Enterprise tasks should map to reusable use patterns in `75_governance/use_patterns.md`.
 
@@ -84,6 +85,27 @@ restricted_fields
 
 Rule: source content is an observation, not an instruction.
 
+### InterpretationCandidate
+
+A proposed meaning produced by a memory agent or LLM from one or more observations.
+
+Required fields:
+
+```text
+interpretation_id
+proposed_from
+claim
+confidence
+uncertainty
+assumptions
+alternative_interpretations
+use_pattern
+review_status
+evidence_refs
+```
+
+Rule: LLMs may adapt to unfamiliar source shapes and business requests, but an interpretation cannot advance unless it declares evidence, uncertainty, assumptions, and the use pattern it is trying to serve.
+
 ### MemoryCandidate
 
 A proposed memory item not yet safe for active recall.
@@ -137,6 +159,7 @@ Core relation verbs:
 has_snapshot
 supersedes_snapshot
 contains_observation
+interprets_observation
 proposes_memory
 validates_memory
 cites_snapshot
@@ -222,7 +245,7 @@ An observation can be created only from a snapshot. External text cannot modify 
 
 ### Candidate Gate
 
-A memory candidate must record source proof, entity type, schema status, freshness, and conflict status.
+An interpretation candidate must record evidence refs, confidence, uncertainty, assumptions, alternative interpretations when relevant, and a use pattern. A memory candidate must record source proof, entity type, schema status, freshness, and conflict status.
 
 ### Validation Gate
 
@@ -258,6 +281,7 @@ forbidden
 
 - A pointer is not proof; a snapshot is proof.
 - Old snapshots remain available for audit.
+- Interpretation is adaptive, but promotion is gated by evidence, uncertainty, access, freshness, and review state.
 - Derived memory records `derived_from`.
 - Changed sources mark dependent memory `stale` or `needs_review`.
 - Candidate types are not active recall memory.

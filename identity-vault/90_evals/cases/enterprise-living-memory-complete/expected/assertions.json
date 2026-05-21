@@ -16,6 +16,7 @@
     "identity-vault/75_governance/conflict_arbitration.md",
     "identity-vault/75_governance/forgetting_policy.md",
     "identity-vault/75_governance/hindsight_contract.md",
+    "identity-vault/75_governance/interpretation_contract.md",
     "identity-vault/75_governance/living_memory.md",
     "identity-vault/75_governance/memory_engine_ports.md",
     "identity-vault/75_governance/sequential_relational_model.md",
@@ -45,6 +46,7 @@
     "strategic_analysis",
     "audit_and_proof",
     "SourceSnapshot",
+    "InterpretationCandidate",
     "MemoryCandidate",
     "ValidatedMemory",
     "supports_answer",
@@ -54,6 +56,7 @@
     "has_snapshot",
     "supersedes_snapshot",
     "contains_observation",
+    "interprets_observation",
     "proposes_memory",
     "validates_memory",
     "cites_snapshot",
@@ -72,6 +75,7 @@
     "has_snapshot",
     "supersedes_snapshot",
     "contains_observation",
+    "interprets_observation",
     "proposes_memory",
     "validates_memory",
     "cites_snapshot",
@@ -149,6 +153,10 @@
     },
     {
       "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
+      "text": "InterpretationCandidate"
+    },
+    {
+      "file": "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md",
       "text": "Required Relation Behavior"
     },
     {
@@ -157,7 +165,7 @@
     },
     {
       "file": "identity-vault/75_governance/sequential_relational_model.md",
-      "text": "Source -> SourceSnapshot -> Observation -> MemoryCandidate"
+      "text": "Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate"
     },
     {
       "file": "identity-vault/75_governance/sequential_relational_model.md",

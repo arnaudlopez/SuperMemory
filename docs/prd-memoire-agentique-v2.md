@@ -163,6 +163,7 @@ Flux abstrait :
 Source
   -> SourceSnapshot
   -> Observation
+  -> InterpretationCandidate
   -> MemoryCandidate
   -> ValidatedMemory
   -> Relation
@@ -177,6 +178,7 @@ Relations minimales :
 has_snapshot
 supersedes_snapshot
 contains_observation
+interprets_observation
 proposes_memory
 validates_memory
 cites_snapshot
@@ -193,6 +195,8 @@ opens_review
 ```
 
 Cette couche ne force pas un workflow metier par cas d'usage. Elle force seulement que chaque reponse, promotion Hindsight ou correction soit explicable par des objets, relations, snapshots et gates de gouvernance.
+
+L'interpretation est LLM-first : le modele peut proposer une signification adaptee a une source ou une demande inconnue. La validation reste deterministe : preuve, confidence, incertitude, assumptions, alternatives, use pattern, review state, acces, fraicheur et statut doivent etre explicites avant promotion.
 
 Le Golden Case entreprise doit devenir l'oracle principal de ce contrat : si une notion du modele n'est jamais exercee par le cas, elle doit etre justifiee ou retiree.
 
@@ -588,6 +592,8 @@ Objectif :
 - stabiliser les entites et classifications ;
 - reduire le code maison.
 
+Ces missions ne remplacent pas le contrat `InterpretationCandidate`. Hindsight peut aider a extraire ou consolider, mais SuperMemory garde la decision de promotion et l'audit de l'interpretation dans le vault.
+
 Exemple de `retain_mission` :
 
 ```text
@@ -920,6 +926,7 @@ promptfoo peut devenir le runner de ces tests si les commandes Node actuelles de
 - Lancer Hindsight localement.
 - Creer une banque `supermemory-main`.
 - Promouvoir uniquement le scenario Acme existant.
+- Promouvoir uniquement les memoires Acme qui passent par une interpretation sourcee ou par une capture brute approuvee pour audit.
 - Tester recall avec tags.
 - Verifier que les canaries restent vraies.
 - Utiliser `include.chunks` pour les audits de provenance.

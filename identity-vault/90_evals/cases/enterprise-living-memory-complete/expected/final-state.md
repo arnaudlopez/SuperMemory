@@ -12,6 +12,7 @@ The case starts from mutable enterprise sources and maps them through the canoni
 Source
   -> SourceSnapshot
   -> Observation
+  -> InterpretationCandidate
   -> MemoryCandidate
   -> ValidatedMemory
   -> Relation
@@ -27,8 +28,10 @@ The fixture must still cover the concrete enterprise capabilities behind that fl
 - API documentation `has_snapshot` t0 and t1 snapshots.
 - The t1 API snapshot `supersedes_snapshot` the t0 API snapshot.
 - API snapshots `contains_observation` for `risk_score` and `trust_score`.
+- LLM-first memory agents create `InterpretationCandidate` objects that `interprets_observation` before proposing governed memory.
 - The updated API observation `conflicts_with` the lower-authority support note.
 - The t1 marketing strategy observation `proposes_memory` for `marketing_strategy`.
+- Product, marketing, and email interpretations declare confidence, uncertainty, assumptions, alternatives when relevant, and the governing use pattern before any active memory promotion.
 - The Orion PRD `derives_from` API and contract snapshots.
 - Orion client, Acme API, contract, PRD, opportunity, stakeholder, and strategy memories `concerns_entity` the correct enterprise entities.
 - Changed API and contract snapshots `opens_review` entries in the staleness queue.

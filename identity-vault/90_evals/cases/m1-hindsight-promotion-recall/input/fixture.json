@@ -31,6 +31,20 @@
         "confidence": "high"
       }
     ],
+    "interpretation_candidates": [
+      {
+        "interpretation_id": "interp-acme-trust-score",
+        "proposed_from": ["obs-acme-trust-score"],
+        "claim": "Client-facing communication about Acme Project Y customer scoring should refer to trust_score, not the legacy risk_score field.",
+        "confidence": "high",
+        "uncertainty": "none",
+        "assumptions": ["The active API documentation is the controlling source for field names."],
+        "alternative_interpretations": [],
+        "use_pattern": "decision_support",
+        "review_status": "approved",
+        "evidence_refs": ["obs-acme-trust-score", "snap-acme-api-doc-2026-05-20"]
+      }
+    ],
     "validated_memories": [
       {
         "memory_id": "mem-acme-trust-score",
@@ -42,7 +56,7 @@
         "schema_status": "stable",
         "entity_type": "api_fact",
         "snapshot_id": "snap-acme-api-doc-2026-05-20",
-        "derives_from": ["obs-acme-trust-score"]
+        "derives_from": ["interp-acme-trust-score"]
       },
       {
         "memory_id": "mem-acme-risk-score-legacy",
@@ -54,15 +68,21 @@
         "schema_status": "stable",
         "entity_type": "api_fact",
         "snapshot_id": "snap-acme-api-doc-2026-05-20",
-        "derives_from": ["obs-acme-trust-score"]
+        "derives_from": ["interp-acme-trust-score"]
       }
     ],
     "relations": [
       {
-        "relation_id": "rel-obs-to-mem-acme-trust-score",
+        "relation_id": "rel-obs-to-interp-acme-trust-score",
+        "relation_type": "interprets_observation",
+        "from": "interp-acme-trust-score",
+        "to": "obs-acme-trust-score"
+      },
+      {
+        "relation_id": "rel-interp-to-mem-acme-trust-score",
         "relation_type": "derives_from",
         "from": "mem-acme-trust-score",
-        "to": "obs-acme-trust-score"
+        "to": "interp-acme-trust-score"
       },
       {
         "relation_id": "rel-mem-to-answer-acme-trust-score",
@@ -88,6 +108,7 @@
           "source_id": "src-acme-api-doc",
           "snapshot_id": "snap-acme-api-doc-2026-05-20",
           "observation_id": "obs-acme-trust-score",
+          "interpretation_id": "interp-acme-trust-score",
           "memory_id": "mem-acme-trust-score",
           "freshness": "fresh",
           "sensitivity": "medium"
@@ -106,6 +127,20 @@
       }
     ]
   },
+  "equivalent_valid_interpretations": [
+    {
+      "interpretation_id": "interp-acme-trust-score-alt",
+      "proposed_from": ["obs-acme-trust-score"],
+      "claim": "For Acme Project Y customer scoring, the governed client-facing reference is the active trust_score field.",
+      "confidence": "high",
+      "uncertainty": "none",
+      "assumptions": ["The active API documentation controls the client-facing field name."],
+      "alternative_interpretations": [],
+      "use_pattern": "decision_support",
+      "review_status": "approved",
+      "evidence_refs": ["obs-acme-trust-score", "snap-acme-api-doc-2026-05-20"]
+    }
+  ],
   "invalid_cases": [
     {
       "id": "T2.1",
@@ -147,6 +182,129 @@
             "document_id": "doc-acme-trust-score",
             "status": "active",
             "snapshot_id": "snap-acme-api-doc-2026-05-20"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.7",
+      "description": "Interpretation without evidence is rejected.",
+      "expected_error": "interpretation_without_evidence",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-acme-trust-score",
+            "claim": "Use trust_score in client-facing communication.",
+            "confidence": "high",
+            "uncertainty": "none",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.8",
+      "description": "Interpretation without confidence is rejected.",
+      "expected_error": "interpretation_without_confidence",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-acme-trust-score",
+            "proposed_from": ["obs-acme-trust-score"],
+            "claim": "Use trust_score in client-facing communication.",
+            "uncertainty": "none",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-trust-score"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.9",
+      "description": "Interpretation without uncertainty is rejected.",
+      "expected_error": "interpretation_without_uncertainty",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-acme-trust-score",
+            "proposed_from": ["obs-acme-trust-score"],
+            "claim": "Use trust_score in client-facing communication.",
+            "confidence": "high",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-trust-score"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.10",
+      "description": "Interpretation with unknown use_pattern is rejected.",
+      "expected_error": "interpretation_unknown_use_pattern",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-acme-trust-score",
+            "proposed_from": ["obs-acme-trust-score"],
+            "claim": "Use trust_score in client-facing communication.",
+            "confidence": "high",
+            "uncertainty": "none",
+            "use_pattern": "custom_client_field_workflow",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-trust-score"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.11",
+      "description": "Active memory cannot derive from an interpretation that still needs review.",
+      "expected_error": "interpretation_not_reviewed_for_active_memory",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-acme-trust-score",
+            "proposed_from": ["obs-acme-trust-score"],
+            "claim": "Use trust_score in client-facing communication.",
+            "confidence": "medium",
+            "uncertainty": "Support still mentions risk_score.",
+            "use_pattern": "decision_support",
+            "review_status": "needs_review",
+            "evidence_refs": ["obs-acme-trust-score"]
+          }
+        ],
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-trust-score",
+            "document_id": "doc-acme-trust-score",
+            "status": "active",
+            "snapshot_id": "snap-acme-api-doc-2026-05-20",
+            "derives_from": ["interp-acme-trust-score"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.12",
+      "description": "Promotion payload for interpreted memory must preserve interpretation provenance.",
+      "expected_error": "promotion_missing_interpretation_provenance",
+      "input": {
+        "promotion_payloads": [
+          {
+            "document_id": "doc-acme-trust-score",
+            "memory_id": "mem-acme-trust-score",
+            "status": "active",
+            "text": "trust_score exists",
+            "tags": ["status:active"],
+            "metadata": {
+              "source_id": "src-acme-api-doc",
+              "snapshot_id": "snap-acme-api-doc-2026-05-20",
+              "observation_id": "obs-acme-trust-score",
+              "memory_id": "mem-acme-trust-score"
+            }
           }
         ]
       }

@@ -16,6 +16,7 @@ A useful memory system must know whether a memory item is current, stale, histor
 Source
   -> SourceSnapshot
   -> Observation
+  -> InterpretationCandidate
   -> MemoryCandidate
   -> ValidatedMemory
   -> Relation
@@ -42,6 +43,7 @@ This flow is a governance sequence, not a rigid business workflow. Reusable use 
 ## Governing Rules
 
 - Preserve proof before interpretation.
+- Let the LLM adapt the interpretation, but require evidence, confidence, uncertainty, assumptions, and a use pattern before governance accepts it.
 - Prefer immutable snapshots over mutable external pointers.
 - Keep derived notes linked to the snapshots they depend on.
 - Re-promote Hindsight documents when source-backed memory changes.

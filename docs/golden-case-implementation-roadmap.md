@@ -35,7 +35,7 @@ Le Golden Case est atteint quand SuperMemory sait traiter ce scenario complet :
 Le contrat conceptuel de reference est :
 
 ```text
-Source -> SourceSnapshot -> Observation -> MemoryCandidate -> ValidatedMemory
+Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate -> ValidatedMemory
 -> Relation -> HindsightDocument / Retrieval -> Answer -> Feedback / Change
 ```
 
@@ -74,6 +74,7 @@ Objets a definir :
 - `Source`
 - `SourceSnapshot`
 - `Observation`
+- `InterpretationCandidate`
 - `MemoryCandidate`
 - `ValidatedMemory`
 - `Relation`
@@ -86,6 +87,7 @@ Livrables :
 - schemas ou types minimaux ;
 - fixture courte lisible ;
 - verificateur qui refuse un objet sans provenance, status, freshness ou access policy.
+- verificateur qui refuse une interpretation sans evidence, confidence, uncertainty, use pattern connu, review state sur, ou provenance de promotion.
 
 Oracle :
 
@@ -111,8 +113,9 @@ Scenario minimal :
 - une source externe Acme ;
 - une snapshot ;
 - une observation ;
+- une interpretation candidate approuvee ;
 - une memoire validee ;
-- une relation `derives_from` ;
+- des relations `interprets_observation` et `derives_from` ;
 - une promotion attendue ;
 - une question de rappel ;
 - une reponse avec `snapshot_id`.
@@ -126,7 +129,7 @@ Livrables :
 Oracle :
 
 ```text
-La fixture prouve qu'une memoire gouvernee peut passer de snapshot a reponse sourcee.
+La fixture prouve qu'une memoire gouvernee peut passer de snapshot a interpretation sourcee, puis a reponse sourcee.
 ```
 
 ## Tranche 3 - Adaptateur Hindsight local minimal
@@ -437,4 +440,3 @@ Chaque tranche doit ajouter au moins une preuve executable :
 - ou rapport d'eval.
 
 Le Golden Case doit rester la cible. Les tranches ne doivent pas devenir une nouvelle architecture parallele.
-

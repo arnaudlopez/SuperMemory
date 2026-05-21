@@ -19,6 +19,7 @@ function validateM1(input) {
 
   checkSourcesHaveSnapshots(input, errors);
   checkObservations(input, errors);
+  checkInterpretationCandidates(input, errors);
   checkValidatedMemories(input, errors);
   checkPromotionPayloads(input, errors);
   checkAnswerEvidence(input, errors);
@@ -29,6 +30,16 @@ function validateM1(input) {
 function list(input, key) {
   return Array.isArray(input?.[key]) ? input[key] : [];
 }
+
+const knownUsePatterns = new Set([
+  "external_draft",
+  "internal_draft",
+  "decision_support",
+  "interaction_brief",
+  "strategic_analysis",
+  "audit_and_proof",
+  "external_system_update"
+]);
 
 function checkSourcesHaveSnapshots(input, errors) {
   const snapshotIds = new Set(list(input, "snapshots").map((snapshot) => snapshot.snapshot_id).filter(Boolean));
@@ -48,11 +59,46 @@ function checkObservations(input, errors) {
   }
 }
 
+function checkInterpretationCandidates(input, errors) {
+  for (const interpretation of list(input, "interpretation_candidates")) {
+    const evidenceRefs = Array.isArray(interpretation.evidence_refs) ? interpretation.evidence_refs : [];
+    const proposedFrom = Array.isArray(interpretation.proposed_from) ? interpretation.proposed_from : [];
+    const hasEvidence = evidenceRefs.length > 0 || proposedFrom.length > 0;
+    if (!hasEvidence) {
+      errors.add("interpretation_without_evidence");
+    }
+    if (!interpretation.confidence) {
+      errors.add("interpretation_without_confidence");
+    }
+    if (typeof interpretation.uncertainty !== "string") {
+      errors.add("interpretation_without_uncertainty");
+    }
+    if (!knownUsePatterns.has(interpretation.use_pattern)) {
+      errors.add("interpretation_unknown_use_pattern");
+    }
+  }
+}
+
 function checkValidatedMemories(input, errors) {
+  const interpretationsById = new Map(
+    list(input, "interpretation_candidates")
+      .map((interpretation) => [interpretation.interpretation_id, interpretation])
+      .filter(([interpretationId]) => Boolean(interpretationId))
+  );
+
   for (const memory of list(input, "validated_memories")) {
     const derivesFrom = Array.isArray(memory.derives_from) ? memory.derives_from : [];
     if (memory.status === "active" && derivesFrom.length === 0) {
       errors.add("memory_without_derives_from");
+    }
+    if (
+      memory.status === "active" &&
+      derivesFrom.some((id) => {
+        const interpretation = interpretationsById.get(id);
+        return interpretation && interpretation.review_status !== "approved";
+      })
+    ) {
+      errors.add("interpretation_not_reviewed_for_active_memory");
     }
   }
 }
@@ -80,14 +126,16 @@ function checkPromotionPayloads(input, errors) {
 
     const tags = Array.isArray(payload.tags) ? payload.tags : [];
     const metadata = payload.metadata ?? {};
-    const hasProvenance =
+    const hasBaseProvenance =
       Boolean(metadata.source_id) &&
       Boolean(metadata.snapshot_id) &&
       Boolean(metadata.observation_id) &&
       Boolean(metadata.memory_id);
 
-    if (!payload.document_id || tags.length === 0 || !hasProvenance) {
+    if (!payload.document_id || tags.length === 0 || !hasBaseProvenance) {
       errors.add("incomplete_promotion_payload");
+    } else if (!metadata.interpretation_id) {
+      errors.add("promotion_missing_interpretation_provenance");
     }
   }
 }
@@ -133,11 +181,14 @@ function verifyExpectedOutputs(fixture, assertions) {
   const source = list(valid, "sources").find((item) => item.source_id === finalState.source_id);
   const snapshot = list(valid, "snapshots").find((item) => item.snapshot_id === finalState.snapshot_id);
   const observation = list(valid, "observations").find((item) => item.observation_id === finalState.observation_id);
+  const interpretation = list(valid, "interpretation_candidates").find(
+    (item) => item.interpretation_id === finalState.interpretation_id
+  );
   const memory = list(valid, "validated_memories").find((item) => item.memory_id === finalState.memory_id);
   const payload = list(valid, "promotion_payloads").find((item) => item.document_id === finalState.document_id);
   const evidence = list(valid, "answer_evidence").find((item) => item.answer_id === answerEvidence.answer_id);
 
-  if (!source || !snapshot || !observation || !memory || !payload || !evidence) {
+  if (!source || !snapshot || !observation || !interpretation || !memory || !payload || !evidence) {
     fail("valid case does not contain the complete M1 chain");
     return;
   }
@@ -145,16 +196,36 @@ function verifyExpectedOutputs(fixture, assertions) {
   requireEqual(finalState.chain, assertions.required_chain, "final-state chain mismatch");
   requireEqual(source.active_snapshot_id, finalState.snapshot_id, "source active snapshot mismatch");
   requireEqual(observation.snapshot_id, finalState.snapshot_id, "observation snapshot mismatch");
-  requireIncludesAll(memory.derives_from ?? [], [finalState.observation_id], "memory derives_from missing observation");
+  requireIncludesAll(
+    interpretation.evidence_refs ?? [],
+    [finalState.observation_id],
+    "interpretation evidence missing observation"
+  );
+  requireEqual(interpretation.use_pattern, assertions.required_use_pattern, "interpretation use_pattern mismatch");
+  requireIncludesAll(
+    memory.derives_from ?? [],
+    [finalState.interpretation_id],
+    "memory derives_from missing interpretation"
+  );
+
+  const interpretsRelation = list(valid, "relations").find(
+    (relation) =>
+      relation.relation_type === "interprets_observation" &&
+      relation.from === finalState.interpretation_id &&
+      relation.to === finalState.observation_id
+  );
+  if (!interpretsRelation) {
+    fail("missing interprets_observation relation from interpretation to observation");
+  }
 
   const derivesRelation = list(valid, "relations").find(
     (relation) =>
       relation.relation_type === "derives_from" &&
       relation.from === finalState.memory_id &&
-      relation.to === finalState.observation_id
+      relation.to === finalState.interpretation_id
   );
   if (!derivesRelation) {
-    fail("missing derives_from relation from memory to observation");
+    fail("missing derives_from relation from memory to interpretation");
   }
 
   requireEqual(payload.document_id, promotionPayload.document_id, "promotion document_id mismatch");
@@ -165,6 +236,11 @@ function verifyExpectedOutputs(fixture, assertions) {
     payload.metadata?.observation_id,
     promotionPayload.metadata.observation_id,
     "promotion metadata observation_id mismatch"
+  );
+  requireEqual(
+    payload.metadata?.interpretation_id,
+    promotionPayload.metadata.interpretation_id,
+    "promotion metadata interpretation_id mismatch"
   );
   requireEqual(payload.metadata?.memory_id, promotionPayload.metadata.memory_id, "promotion metadata memory_id mismatch");
 
@@ -183,6 +259,29 @@ function verifyExpectedOutputs(fixture, assertions) {
     [assertions.required_active_snapshot_id],
     "answer evidence missing active snapshot"
   );
+
+  for (const interpretationId of assertions.required_equivalent_interpretation_ids ?? []) {
+    const equivalent = list(fixture, "equivalent_valid_interpretations").find(
+      (item) => item.interpretation_id === interpretationId
+    );
+    if (!equivalent) {
+      fail(`missing equivalent interpretation: ${interpretationId}`);
+      continue;
+    }
+    const equivalentErrors = validateM1({ interpretation_candidates: [equivalent] });
+    if (equivalentErrors.length > 0) {
+      fail(`equivalent interpretation ${interpretationId} failed: ${equivalentErrors.join(",")}`);
+    }
+    requireIncludesAll(
+      equivalent.evidence_refs ?? [],
+      [finalState.observation_id],
+      "equivalent interpretation evidence missing observation"
+    );
+    requireEqual(equivalent.use_pattern, assertions.required_use_pattern, "equivalent interpretation use_pattern mismatch");
+    if (equivalent.claim === interpretation.claim) {
+      fail(`equivalent interpretation ${interpretationId} must use different wording`);
+    }
+  }
 }
 
 const fixture = readJson("input/fixture.json");

@@ -1,23 +1,46 @@
 {
   "case_id": "m1-hindsight-promotion-recall",
-  "required_test_ids": ["T2.1", "T2.2", "T2.3", "T2.4", "T2.5", "T2.6"],
+  "required_test_ids": [
+    "T2.1",
+    "T2.2",
+    "T2.3",
+    "T2.4",
+    "T2.5",
+    "T2.6",
+    "T2.7",
+    "T2.8",
+    "T2.9",
+    "T2.10",
+    "T2.11",
+    "T2.12"
+  ],
   "expected_errors": {
     "T2.1": "source_without_snapshot",
     "T2.2": "observation_without_snapshot_id",
     "T2.3": "memory_without_derives_from",
     "T2.4": "incomplete_promotion_payload",
     "T2.5": "answer_missing_active_snapshot",
-    "T2.6": "do_not_use_promoted"
+    "T2.6": "do_not_use_promoted",
+    "T2.7": "interpretation_without_evidence",
+    "T2.8": "interpretation_without_confidence",
+    "T2.9": "interpretation_without_uncertainty",
+    "T2.10": "interpretation_unknown_use_pattern",
+    "T2.11": "interpretation_not_reviewed_for_active_memory",
+    "T2.12": "promotion_missing_interpretation_provenance"
   },
   "required_chain": [
     "Source",
     "SourceSnapshot",
     "Observation",
+    "InterpretationCandidate",
     "ValidatedMemory",
     "HindsightPromotionPayload",
     "AnswerEvidence"
   ],
   "required_document_id": "doc-acme-trust-score",
+  "required_interpretation_id": "interp-acme-trust-score",
+  "required_equivalent_interpretation_ids": ["interp-acme-trust-score-alt"],
+  "required_use_pattern": "decision_support",
   "required_active_snapshot_id": "snap-acme-api-doc-2026-05-20",
   "forbidden_document_ids": ["doc-acme-risk-score-legacy"],
   "required_tags": [

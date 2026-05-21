@@ -13,6 +13,7 @@ This vault is a governed memory system, not a chat transcript dump.
 7. Use Hindsight only through the governed promotion and filtered recall contract.
 8. Treat mutable external references as pointers; use snapshots as evidence.
 9. Treat memory as living: check freshness, review state, and status before active use.
+10. Treat interpretation as LLM-first but gated: `InterpretationCandidate` must cite evidence, confidence, uncertainty, assumptions, alternatives when relevant, a known use pattern, and review state.
 
 ## Memory Rules
 
@@ -21,6 +22,7 @@ This vault is a governed memory system, not a chat transcript dump.
 - Record external source provenance before compiling facts from PDF, email, cloud, or local-file inputs.
 - Record the connector and authorized scope for every external source captured through Gmail, local folders, APIs, MCP tools, or plugins.
 - Keep hypotheses separate from confirmed facts.
+- Keep source observations separate from LLM interpretations; promote only interpretations that pass governance gates.
 - Put ambiguities in `50_review/`.
 - Publish only minimal, redacted signals to specialized agents.
 - Never expose private details when a shared constraint is enough.
@@ -32,6 +34,7 @@ This vault is a governed memory system, not a chat transcript dump.
 - Do not answer as if stale, changed, historical, or `needs_review` memory is current active truth.
 - Do not expose secrets, credentials, restricted fields, or cross-workspace memory without explicit policy.
 - Do not invent a bespoke workflow for every request; map business work to `75_governance/use_patterns.md` unless a real repeated need proves a new pattern is needed.
+- Do not require one exact natural-language interpretation when multiple source-backed interpretations satisfy the same governance contract.
 
 ## Hindsight Rules
 

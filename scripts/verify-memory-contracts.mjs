@@ -25,6 +25,7 @@ function validateContracts(input) {
   const errors = new Set();
 
   checkSnapshotIdentity(input, errors);
+  checkInterpretationCandidates(input, errors);
   checkMemoryCandidates(input, errors);
   checkValidatedMemories(input, errors);
   checkPromotionPayloads(input, errors);
@@ -38,6 +39,16 @@ function validateContracts(input) {
 function list(input, key) {
   return Array.isArray(input?.[key]) ? input[key] : [];
 }
+
+const knownUsePatterns = new Set([
+  "external_draft",
+  "internal_draft",
+  "decision_support",
+  "interaction_brief",
+  "strategic_analysis",
+  "audit_and_proof",
+  "external_system_update"
+]);
 
 function checkSnapshotIdentity(input, errors) {
   const seen = new Map();
@@ -65,11 +76,45 @@ function checkMemoryCandidates(input, errors) {
   }
 }
 
+function checkInterpretationCandidates(input, errors) {
+  for (const interpretation of list(input, "interpretation_candidates")) {
+    const proposedFrom = Array.isArray(interpretation.proposed_from) ? interpretation.proposed_from : [];
+    const evidenceRefs = Array.isArray(interpretation.evidence_refs) ? interpretation.evidence_refs : [];
+    if (proposedFrom.length === 0 && evidenceRefs.length === 0) {
+      errors.add("interpretation_without_evidence");
+    }
+    if (!interpretation.confidence) {
+      errors.add("interpretation_without_confidence");
+    }
+    if (typeof interpretation.uncertainty !== "string") {
+      errors.add("interpretation_without_uncertainty");
+    }
+    if (!knownUsePatterns.has(interpretation.use_pattern)) {
+      errors.add("interpretation_unknown_use_pattern");
+    }
+  }
+}
+
 function checkValidatedMemories(input, errors) {
+  const interpretationsById = new Map(
+    list(input, "interpretation_candidates")
+      .map((interpretation) => [interpretation.interpretation_id, interpretation])
+      .filter(([interpretationId]) => Boolean(interpretationId))
+  );
+
   for (const memory of list(input, "validated_memories")) {
     const derivedFrom = Array.isArray(memory.derived_from) ? memory.derived_from : [];
     if (memory.status === "active" && !memory.snapshot_id && derivedFrom.length === 0) {
       errors.add("missing_snapshot_proof");
+    }
+    if (
+      memory.status === "active" &&
+      derivedFrom.some((id) => {
+        const interpretation = interpretationsById.get(id);
+        return interpretation && interpretation.review_status !== "approved";
+      })
+    ) {
+      errors.add("interpretation_not_reviewed_for_active_memory");
     }
   }
 }
@@ -85,6 +130,14 @@ function checkPromotionPayloads(input, errors) {
   for (const memory of list(input, "validated_memories")) {
     if (memory.status === "do_not_use" && activePayloadDocumentIds.has(memory.document_id)) {
       errors.add("do_not_use_not_promotable");
+    }
+  }
+
+  if (list(input, "interpretation_candidates").length > 0) {
+    for (const payload of list(input, "promotion_payloads")) {
+      if (payload.status === "active" && !payload.metadata?.interpretation_id) {
+        errors.add("promotion_missing_interpretation_provenance");
+      }
     }
   }
 }

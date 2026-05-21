@@ -1,0 +1,385 @@
+version: 2
+goal:
+  slug: audit-llm-first-supermemory-migration
+  title: Audit LLM-First SuperMemory Migration
+  status: done
+  created_at: "2026-05-21"
+  updated_at: "2026-05-21"
+  original_request: "Use GoalBuddy goal-prep to prepare an audit/proposal board for making SuperMemory less over-programmatic and more LLM-first, accounting for all existing work and memory, not only M1."
+  interpreted_outcome: "Produce a repository-grounded migration plan that shifts SuperMemory toward LLM-first interpretation while preserving deterministic governance invariants and the already-developed T1/M1/global verification work."
+  input_shape: audit
+  audience: "SuperMemory implementers and Arnaud"
+  authority: approved
+  proof_type: artifact
+  completion_proof: "A final audit receipt points to a precise migration plan covering files to modify later, order of migration, risks, tests to preserve or add, and confirms no unauthorized product-code/script/fixture/test edits occurred."
+  goal_oracle: "A precise migration plan exists that a later implementation goal can execute without rediscovering the architecture, and it explicitly accounts for T1, M1, global verification wiring, governance docs, eval fixtures, GoalBuddy boards, and recent memory-backed decisions."
+  intake:
+    completion_proof: "Plan of migration, not implementation: exact future file areas, preserved invariants, LLM-first contract proposal, verification strategy, migration order, risks, and exclusions."
+  oracle:
+    signal: "Repository-grounded migration plan exists and final audit confirms full_outcome_complete: true."
+    cadence: "after Scout evidence, after Judge decision, after optional docs Worker, and at final audit"
+    final_proof: "Final Judge receipt maps audit evidence and any documentation changes to the owner outcome and confirms no unauthorized artifact classes were edited."
+  likely_misfire: "Producing a philosophical LLM-first essay or parallel architecture instead of a migration plan grounded in all existing SuperMemory development and memory-backed decisions."
+  non_goals:
+    - "No implementation script changes."
+    - "No fixture or expected-output changes."
+    - "No test changes."
+    - "No runtime, product, connector, engine, or Hindsight adapter changes."
+    - "No replacement of T1 or M1 with a parallel architecture."
+    - "No broad rewrite of the vault."
+  constraints:
+    - "Read repository and project-memory evidence before proposing changes."
+    - "Account for all existing development, not only M1."
+    - "Preserve deterministic checks for hard invariants: provenance, status, access, freshness, do_not_use, confirmation, and evidence."
+    - "Make interpretation and unknown-case handling LLM-first where appropriate."
+    - "Documentation edits are allowed only when they clarify the audit findings or migration plan."
+  existing_plan_facts:
+    - "The user selected Audit then proposition."
+    - "Success proof is a precise migration plan."
+    - "Docs edits are allowed; scripts, fixtures, tests, and product logic are out of scope."
+    - "A fresh GoalBuddy board was requested."
+goal_policy:
+  mode: docs
+  requires_tdd: false
+  requires_impact_assessment: true
+  requires_shipping: false
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+rules:
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  one_active_task: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  planning_is_not_completion: true
+  preserve_and_validate_existing_plan: true
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+visual_board:
+  selected: local
+  local:
+    status: blocked
+    url: "http://goalbuddy.localhost:41737/audit-llm-first-supermemory-migration/"
+    command: "npx goalbuddy board docs/goals/audit-llm-first-supermemory-migration"
+    blocker: "npx goalbuddy board failed because the local board hub references a missing cached GoalBuddy 0.3.6 asset: skills/goalbuddy/extend/local-goal-board/assets/goalbuddy-mark.png"
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+active_task: null
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: high
+    objective: "Inventory the complete existing SuperMemory work and memory-backed decisions relevant to a LLM-first migration."
+    inputs:
+      - "README.md"
+      - "docs/"
+      - "docs/goals/"
+      - "identity-vault/70_agent_contracts/"
+      - "identity-vault/75_governance/"
+      - "identity-vault/90_evals/"
+      - "scripts/"
+      - "tests/"
+      - "git status --short"
+      - "Project brief and memory facts from the active conversation context"
+    constraints:
+      - "Read-only."
+      - "Do not edit files."
+      - "Do not inspect external sources or connectors."
+      - "Treat uncommitted work as existing work to preserve unless evidence proves otherwise."
+      - "Prefer file-path evidence and memory-backed decisions over generic architecture opinions."
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "Inventory of already-developed artifacts: T1, M1, global verification, governance docs, eval fixtures, GoalBuddy boards, and relevant logs."
+      - "Chronology of relevant memory-backed decisions."
+      - "Classification: invariants to preserve, too-deterministic areas to soften, already-LLM-first areas to strengthen."
+      - "Initial module_map of docs, fixtures, scripts, tests, and governance surfaces involved."
+      - "Risks and blind spots for migration."
+    receipt:
+      result: done
+      note: "notes/T001-existing-work-inventory.md"
+      summary: "Inventory complete. T1 and M1 are shipped on main; the current dirty worktree has already begun an LLM-first migration by adding InterpretationCandidate to governance docs, M1 fixtures, and the M1 verifier. T1 and M1 verifiers pass, but global specs are red because the enterprise target still asserts the old Observation -> MemoryCandidate lifecycle text."
+      evidence:
+        - "git log: 619991f, 8410b92, 165f24f, 5c63ade"
+        - "identity-vault/75_governance/interpretation_contract.md"
+        - "identity-vault/75_governance/sequential_relational_model.md"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+        - "scripts/verify-enterprise-living-memory-target.mjs"
+      commands:
+        - cmd: "node scripts/verify-memory-contracts.mjs"
+          status: pass
+        - cmd: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: fail
+          detail: "enterprise target still expects old exact lifecycle substring"
+        - cmd: "git diff --check"
+          status: pass
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Decide the LLM-first migration shape from Scout evidence and approve the smallest useful documentation work package."
+    inputs:
+      - "T001 receipt"
+      - "Goal oracle"
+      - "Non-goals and constraints"
+    constraints:
+      - "Read-only."
+      - "Do not implement."
+      - "Reject proposals that replace T1/M1 instead of migrating them."
+      - "Reject proposals that remove deterministic governance gates for hard invariants."
+      - "Reject documentation work that would require script, fixture, expected-output, or test edits in this tranche."
+    expected_output:
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "design_concept for LLM-first interpretation plus deterministic governance gates"
+      - "ubiquitous_language for InterpretationCandidate, Observation, MemoryCandidate, ValidatedMemory, GovernanceGate, and AnswerEvidence"
+      - "feedback_policy for accepting multiple valid interpretations while preserving exact hard-invariant failures"
+      - "test_strategy for future property-based or multi-valid-output verification"
+      - "module_map of future file areas to modify"
+      - "interface_contract for the proposed interpretation layer"
+      - "architecture_review"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+      - "Exact docs Worker objective, allowed_files, verify, and stop_if if documentation edits are approved"
+    receipt:
+      result: done
+      decision: approved
+      design_concept: "SuperMemory should be LLM-first at the interpretation boundary and deterministic at the governance boundary. The LLM proposes InterpretationCandidate objects from source-backed Observations; deterministic gates accept, route to review, or reject based on evidence, confidence, uncertainty, use pattern, access, freshness, status, and promotion safety."
+      ubiquitous_language:
+        - "Observation: source-backed statement extracted from a SourceSnapshot."
+        - "InterpretationCandidate: adaptive LLM/memory-agent proposed meaning with evidence_refs, confidence, uncertainty, assumptions, alternatives, use_pattern, and review_status."
+        - "MemoryCandidate: governed memory proposal derived from an interpretation and ready for type/freshness/conflict validation."
+        - "ValidatedMemory: memory item that passed hard gates and can be active, historical, or forbidden."
+        - "GovernanceGate: deterministic property checks for hard invariants; not a world-understanding engine."
+        - "AnswerEvidence: cited proof chain from memory to snapshots and answer state."
+      feedback_policy: "Future verifiers should keep exact named errors for hard invariant failures, but accept multiple source-backed interpretation claims when they satisfy the interpretation contract. Ambiguous or low-confidence interpretations should route to review rather than force one exact expected answer."
+      test_strategy:
+        - "Preserve existing T1 and M1 verifier commands as regression gates."
+        - "First repair global specs by aligning enterprise target expectations with InterpretationCandidate."
+        - "Then extend T1 memory contracts with interpretation-specific hard invariants: evidence refs, confidence, uncertainty, known use pattern, and safe review_status."
+        - "Keep M1's T2.7 as the first executable interpretation gate, then add negative cases for missing uncertainty, missing confidence, unknown use_pattern, and unsafe review_status."
+        - "Add at least one future fixture where two interpretation phrasings are accepted if both satisfy the same evidence/use-pattern contract."
+      module_map:
+        preserve:
+          - "scripts/verify-memory-contracts.mjs"
+          - "identity-vault/90_evals/cases/memory-contracts/**"
+          - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/**"
+          - "scripts/verify-supermemory-specs.mjs"
+        migrate_next:
+          - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+          - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+          - "scripts/verify-enterprise-living-memory-target.mjs"
+          - "docs/golden-case-tdd-matrix.md"
+          - "docs/golden-case-implementation-roadmap.md"
+          - "docs/prd-memoire-agentique-v2.md"
+          - "README.md"
+        documentation_artifact:
+          - "docs/llm-first-migration-plan.md"
+      interface_contract:
+        proposed_flow: "Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate -> ValidatedMemory -> Relation -> HindsightDocument / Retrieval -> Answer -> Feedback / Change"
+        interpretation_candidate_required_fields:
+          - "interpretation_id"
+          - "proposed_from"
+          - "claim"
+          - "confidence"
+          - "uncertainty"
+          - "assumptions"
+          - "alternative_interpretations"
+          - "use_pattern"
+          - "review_status"
+          - "evidence_refs"
+        hard_rejections:
+          - "missing evidence refs or proposed_from"
+          - "missing confidence"
+          - "missing uncertainty"
+          - "unknown use_pattern"
+          - "active promotion from needs_review or rejected interpretation"
+          - "promotion missing interpretation provenance"
+        flexible_fields:
+          - "claim wording"
+          - "alternative interpretation wording"
+          - "assumption wording, when evidence/use-pattern/review constraints remain satisfied"
+      architecture_review: "Approved for documentation-only migration planning. The current user changes are a valid partial migration, not a parallel architecture. The next implementation tranche should first restore global specs, then generalize interpretation gates into T1, then update roadmap/PRD docs."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none; future policy effects are limited to existing access/freshness gates"
+        api_contract: "none; local fixture/verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "none"
+        observability: "local PASS/FAIL verifier output and GoalBuddy receipts"
+        docs: "write one migration plan doc plus GoalBuddy receipts only"
+      docs_worker:
+        objective: "Write docs/llm-first-migration-plan.md as the precise migration plan, grounded in T001 evidence and this Judge decision."
+        allowed_files:
+          - "docs/llm-first-migration-plan.md"
+          - "docs/goals/audit-llm-first-supermemory-migration/**"
+        verify:
+          - "git diff --check"
+          - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/audit-llm-first-supermemory-migration/state.yaml"
+        stop_if:
+          - "Need to edit scripts, tests, fixtures, expected outputs, compiled memory notes, runtime code, or non-doc governance files."
+          - "Cannot account for existing T1, M1, global verification, enterprise target, and current dirty interpretation changes."
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Write the approved documentation-only migration plan for the LLM-first SuperMemory evolution."
+    impact_assessment_ref: T002
+    inputs:
+      - "T001 Scout receipt"
+      - "T002 Judge decision"
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+    allowed_files:
+      - "docs/goals/audit-llm-first-supermemory-migration/**"
+      - "docs/*llm*"
+      - "docs/*migration*"
+      - "docs/*architecture*"
+    constraints:
+      - "Write only allowed_files."
+      - "Documentation only."
+      - "Do not edit scripts, tests, fixtures, expected outputs, compiled memory notes, or runtime/product logic."
+      - "Do not weaken existing T1/M1/global verification requirements."
+      - "The migration plan must account for all existing development discovered by T001."
+    expected_output:
+      - "A precise migration plan document or note."
+      - "Files to modify later."
+      - "Order of migration."
+      - "Risks and mitigations."
+      - "Tests/verifiers to preserve, add, or eventually relax."
+      - "Explicit no-touch list for future implementation."
+      - "design_delta explaining what changed from the current architecture."
+    verify:
+      - "git diff --check"
+      - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/audit-llm-first-supermemory-migration/state.yaml"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need to edit scripts, tests, fixtures, expected outputs, compiled memory notes, or runtime/product logic."
+      - "Scout evidence is insufficient to account for all existing development."
+      - "The plan cannot distinguish hard invariants from LLM-first interpretation responsibilities."
+    receipt:
+      result: done
+      summary: "Wrote the documentation-only migration plan grounded in T001 evidence and T002 architecture decision."
+      changed_files:
+        - "docs/llm-first-migration-plan.md"
+      design_delta: "The migration plan shifts the architecture from direct Observation -> MemoryCandidate/ValidatedMemory fixture thinking to Observation -> InterpretationCandidate -> MemoryCandidate/ValidatedMemory, while preserving deterministic hard-invariant gates for provenance, access, freshness, status, do_not_use, and answer evidence."
+      key_points:
+        - "Restore global specs by aligning the enterprise target with InterpretationCandidate."
+        - "Generalize T1 with interpretation invariants before further M1 hardening."
+        - "Keep M1 as the first executable LLM-first vertical slice."
+        - "Relax exact wording only after hard property checks exist."
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/audit-llm-first-supermemory-migration/state.yaml"
+          status: pass
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "Completed a documentation-only audit and migration plan. The plan keeps deterministic gates for governance invariants while moving source/request interpretation to InterpretationCandidate, and it explicitly migrates the already-developed T1, M1, global specs, enterprise target, roadmap, and PRD surfaces."
+      workflow_safeguards:
+        design_concept: "LLM-first interpretation plus deterministic governance gates."
+        ubiquitous_language: "Defined and used Observation, InterpretationCandidate, MemoryCandidate, ValidatedMemory, GovernanceGate, and AnswerEvidence."
+        feedback_policy: "Exact named errors stay for hard invariants; equivalent source-backed interpretations can be accepted after property checks exist."
+        test_strategy: "Preserve T1/M1, restore global specs, add interpretation invariants, then add flexible-positive interpretation tests."
+        module_map: "Captured in T001 note and docs/llm-first-migration-plan.md."
+        interface_contract: "Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate -> ValidatedMemory -> Relation -> HindsightDocument / Retrieval -> Answer -> Feedback / Change."
+        architecture_review: "Approved documentation-only migration plan; no product/script/fixture/test implementation changes were made by this goal."
+      evidence_mapping:
+        original_request: "Audit/propose an LLM-first migration while accounting for all existing development and memory, not only M1."
+        outcome: "docs/llm-first-migration-plan.md provides exact future file areas, migration order, preserved tests, tests to add, risks, and no-touch list."
+        not_m1_only: "Plan covers T1, M1, global specs, enterprise target, roadmap, PRD, README, AGENTS, Hindsight contract, and future adapter behavior."
+      unauthorized_change_check:
+        result: pass
+        goal_changed_files:
+          - "docs/llm-first-migration-plan.md"
+          - "docs/goals/audit-llm-first-supermemory-migration/goal.md"
+          - "docs/goals/audit-llm-first-supermemory-migration/state.yaml"
+          - "docs/goals/audit-llm-first-supermemory-migration/notes/T001-existing-work-inventory.md"
+        preexisting_dirty_files_left_untouched:
+          - "identity-vault/75_governance/living_memory.md"
+          - "identity-vault/75_governance/sequential_relational_model.md"
+          - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/assertions.json"
+          - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/final-state.json"
+          - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/promotion-payload.json"
+          - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+          - "identity-vault/memory_map.md"
+          - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          - "identity-vault/75_governance/interpretation_contract.md"
+      commands:
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/audit-llm-first-supermemory-migration/state.yaml"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/check-goal-state.mjs docs/goals/audit-llm-first-supermemory-migration/state.yaml"
+          status: pass_before_final_receipt
+      missing_evidence: []
+      next_task_if_not_complete: null

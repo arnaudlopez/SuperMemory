@@ -31,8 +31,10 @@ Chaque tranche doit donc converger vers trois artefacts :
 ```text
 1. Une fixture d'entree invalide qui echoue pour une raison nommee.
 2. Une fixture d'entree valide qui passe.
-3. Un script de verification deterministe qui imprime PASS ou FAIL.
+3. Un script de verification deterministe qui imprime PASS ou FAIL pour les proprietes de gouvernance.
 ```
+
+Les scripts deterministes verifient les gates durs : preuve, provenance, fraicheur, statut, acces, `do_not_use`, confirmation, evidence de reponse, et invariants d'interpretation. Ils ne doivent pas exiger une seule formulation naturelle quand plusieurs interpretations sourcees satisfont le meme contrat.
 
 Format standard recommande pour les fixtures JSON :
 
@@ -43,6 +45,7 @@ Format standard recommande pour les fixtures JSON :
     "sources": [],
     "snapshots": [],
     "observations": [],
+    "interpretation_candidates": [],
     "memory_candidates": [],
     "validated_memories": [],
     "relations": [],
@@ -247,11 +250,17 @@ Tests rouges :
 | T2.4 | Payload de promotion attendu | ValidatedMemory active Acme | Payload contient `document_id`, tags, metadata | Handoff Hindsight incomplet |
 | T2.5 | Reponse attendue cite snapshot | Question Acme | Reponse contient `snapshot_id` actif | Reponse non auditable |
 | T2.6 | Source interdite exclue | Fixture contient un item `do_not_use` | Aucun payload actif | Contamination recall |
+| T2.7 | Interpretation sourcee obligatoire | Interpretation sans evidence | Rejet `interpretation_without_evidence` | Interpretation magique |
+| T2.8 | Confidence obligatoire | Interpretation sans `confidence` | Rejet `interpretation_without_confidence` | Surete non declaree |
+| T2.9 | Incertitude obligatoire | Interpretation sans `uncertainty` | Rejet `interpretation_without_uncertainty` | Ambiguite cachee |
+| T2.10 | Pattern connu obligatoire | Interpretation avec workflow bespoke | Rejet `interpretation_unknown_use_pattern` | Workflow sauvage |
+| T2.11 | Revue avant memoire active | Memoire active derivee d'une interpretation `needs_review` | Rejet `interpretation_not_reviewed_for_active_memory` | Promotion prematuree |
+| T2.12 | Provenance d'interpretation promue | Payload sans `interpretation_id` | Rejet `promotion_missing_interpretation_provenance` | Audit incomplet |
 
 Critere de passage :
 
 ```text
-Le cas M1 prouve Source -> Snapshot -> Observation -> ValidatedMemory -> Promotion -> AnswerEvidence.
+Le cas M1 prouve Source -> Snapshot -> Observation -> InterpretationCandidate -> ValidatedMemory -> Promotion -> AnswerEvidence.
 ```
 
 ## Tranche 3 - Adaptateur Hindsight local minimal

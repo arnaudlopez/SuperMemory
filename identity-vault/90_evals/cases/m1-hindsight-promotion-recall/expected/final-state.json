@@ -2,6 +2,7 @@
   "source_id": "src-acme-api-doc",
   "snapshot_id": "snap-acme-api-doc-2026-05-20",
   "observation_id": "obs-acme-trust-score",
+  "interpretation_id": "interp-acme-trust-score",
   "memory_id": "mem-acme-trust-score",
   "document_id": "doc-acme-trust-score",
   "status": "active",
@@ -12,6 +13,7 @@
     "Source",
     "SourceSnapshot",
     "Observation",
+    "InterpretationCandidate",
     "ValidatedMemory",
     "HindsightPromotionPayload",
     "AnswerEvidence"

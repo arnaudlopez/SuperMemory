@@ -9,7 +9,7 @@ This contract is the default implementation of the broader engine-port policy in
 SuperMemory decides:
 
 - which sources may become memory;
-- which facts are compiled, sensitive, private, historical, or forbidden;
+- which observations and interpretations are compiled, sensitive, private, historical, or forbidden;
 - which connector scope allowed a capture;
 - which agents may recall which memory;
 - when a source must be revoked, corrected, or deleted from active memory.
@@ -33,6 +33,8 @@ Retrieval supports_answer Answer
 
 The full object and relation contract lives in `75_governance/sequential_relational_model.md`.
 
+If promoted memory depends on LLM interpretation, the interpretation must already be governed in the vault. Hindsight receives validated memory, not raw unchecked LLM conclusions.
+
 ## Promotion Gate
 
 An item may be promoted only when:
@@ -44,6 +46,7 @@ An item may be promoted only when:
 - entity type and schema status are known;
 - connector id and connector scope are recorded when applicable;
 - source snapshot and freshness are known when the item depends on a mutable source;
+- interpretation id, confidence, uncertainty, assumptions, alternatives when relevant, use pattern, and review state are known when the item depends on an `InterpretationCandidate`;
 - workspace, data owner, access policy, and allowed consumers are known when the item is enterprise memory;
 - secrets and restricted fields are redacted or excluded;
 - blocking ambiguities are resolved or explicitly queued;
@@ -75,6 +78,10 @@ metadata:
   source_path: <vault source path>
   snapshot_id: <snapshot id if source is external or mutable>
   source_version: <explicit version, connector version, or snapshot capture timestamp>
+  interpretation_id: <interpretation id if memory depends on InterpretationCandidate>
+  interpretation_confidence: <high|medium|low if applicable>
+  interpretation_uncertainty: <known uncertainty or none if applicable>
+  use_pattern: <governing use pattern if applicable>
   freshness: <fresh|stale|changed|unavailable|needs_review>
   derived_from: [<snapshot ids if compiled note>]
   compiled_path: <compiled path if any>
@@ -121,3 +128,7 @@ The vault keeps the proof, revocation reason, and audit trail.
 ## Logs
 
 Every promotion, replacement, or deletion is recorded in `80_logs/hindsight_promotions.jsonl`.
+
+## Adapter Rule
+
+Before any real Hindsight runtime integration, the adapter must consume only governed `ValidatedMemory` or approved raw audit payloads. It must not auto-retain raw LLM conclusions as stable memory. Adapter traces should preserve whether answer evidence came from direct observation, interpretation, or compiled memory.

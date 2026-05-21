@@ -34,6 +34,10 @@ The project separates governance from retrieval:
   - Compiled notes declare `derived_from` snapshot ids.
   - Changed sources mark derived notes stale or `needs_review`.
 
+- **LLM-first interpretation contract**
+  - LLMs and memory agents may adapt source-backed observations to unfamiliar requests.
+  - Deterministic verifiers check evidence, confidence, uncertainty, use pattern, review state, and governance gates instead of hard-coding one exact interpretation.
+
 - **Hindsight integration contract**
   - Promoted memory carries stable `document_id`, tags, provenance metadata, freshness, source paths, and access policy.
 
@@ -60,6 +64,8 @@ The project separates governance from retrieval:
 sources
   -> capture gate
   -> immutable snapshots
+  -> source-backed observations
+  -> LLM-first interpretation candidates
   -> source registry
   -> compiled memory
   -> review queues
@@ -95,6 +101,12 @@ identity-vault/
 Memory can become stale, conflicted, unavailable, historical, or forbidden. Agents must adapt their answers instead of pretending every retrieved fact is current.
 
 See [`identity-vault/75_governance/living_memory.md`](identity-vault/75_governance/living_memory.md).
+
+### LLM-First Interpretation
+
+SuperMemory is LLM-first for meaning and deterministic for governance. An `InterpretationCandidate` may phrase the meaning of source-backed observations flexibly, but it must declare evidence, confidence, uncertainty, assumptions, alternatives, a known use pattern, and review state before it can advance to governed memory.
+
+See [`identity-vault/75_governance/interpretation_contract.md`](identity-vault/75_governance/interpretation_contract.md).
 
 ### Mutable Sources
 

@@ -1,0 +1,548 @@
+version: 2
+goal:
+  slug: implement-llm-first-interpretation-contract-migration
+  title: Implement LLM-First Interpretation Contract Migration
+  status: active
+  created_at: "2026-05-21"
+  updated_at: "2026-05-21"
+  original_request: "goal-prep OK, maintenant passe à l'implémentation du plan prends ton temps"
+  interpreted_outcome: "Implement the LLM-first migration plan so SuperMemory consistently models InterpretationCandidate while preserving T1/M1, deterministic governance gates, and global verification."
+  input_shape: existing_plan
+  audience: "SuperMemory implementers and Arnaud"
+  authority: approved
+  proof_type: test
+  completion_proof: "Enterprise target, T1 contracts, M1 fixture, global SuperMemory specs, and diff check pass; docs/roadmap are aligned; changes are committed and pushed or shipping blocker is recorded."
+  goal_oracle: "The migration oracle passes: enterprise target, T1, M1, global specs, and diff check."
+  intake:
+    completion_proof: "Final audit maps all changed files and verification output back to docs/llm-first-migration-plan.md."
+  oracle:
+    signal: "node scripts/verify-supermemory-specs.mjs passes after the migration, with T1 and M1 direct verifiers also green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "Final Judge receipt says full_outcome_complete: true with verification and shipping proof."
+  likely_misfire: "Only making the current global spec failure green, or only editing docs, without generalizing interpretation invariants into T1 and preserving M1 as the first executable LLM-first slice."
+  non_goals:
+    - "No Hindsight runtime integration."
+    - "No Graphiti, Memoria, or engine-port runtime."
+    - "No connector, database, service, API, or UI work."
+    - "No raw inbox source edits."
+    - "No broad vault rewrite."
+  constraints:
+    - "Preserve existing uncommitted InterpretationCandidate work unless a task proves a safer compatible adjustment."
+    - "Keep exact named errors for hard governance invariant failures."
+    - "Relax exact natural-language interpretation wording only after property checks exist."
+    - "Do not weaken provenance, status, freshness, access, do_not_use, confirmation, or answer evidence checks."
+    - "Use TDD for new interpretation invariant checks."
+  existing_plan_facts:
+    - "docs/llm-first-migration-plan.md defines the target contract and migration order."
+    - "Current plan order: restore global specs, generalize T1, harden M1, align roadmap/PRD/docs."
+    - "Current dirty worktree already includes interpretation_contract.md and M1 InterpretationCandidate changes."
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+rules:
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  one_active_task: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  planning_is_not_completion: true
+  preserve_and_validate_existing_plan: true
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+visual_board:
+  selected: local
+  local:
+    status: blocked
+    url: "http://goalbuddy.localhost:41737/implement-llm-first-interpretation-contract-migration/"
+    command: "npx goalbuddy board docs/goals/implement-llm-first-interpretation-contract-migration"
+    blocker: "Previous attempt to start GoalBuddy board failed because the local board hub referenced a missing cached GoalBuddy 0.3.6 asset."
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+active_task: T998
+tasks:
+  - id: T001
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Validate and operationalize the LLM-first migration plan before implementation writes."
+    inputs:
+      - "docs/llm-first-migration-plan.md"
+      - "docs/goals/audit-llm-first-supermemory-migration/notes/T001-existing-work-inventory.md"
+      - "Current git status"
+      - "Current verification output"
+    constraints:
+      - "Read-only."
+      - "Preserve current uncommitted interpretation work as in-scope unless evidence proves otherwise."
+      - "Do not approve Hindsight runtime, Graphiti, Memoria, connector, DB, service, API, or UI work."
+      - "Do not approve weakening exact hard-invariant errors."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "design_concept"
+      - "ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+      - "Confirm or refine Worker order, allowed_files, verify, and stop_if"
+    receipt:
+      result: done
+      decision: approved
+      design_concept: "LLM-first interpretation with deterministic governance gates: Observations remain source-backed, InterpretationCandidate carries adaptive LLM meaning with uncertainty and use pattern, and deterministic validators gate advancement to memory, promotion, recall, and answers."
+      ubiquitous_language:
+        - "Observation: source-backed statement extracted from a SourceSnapshot."
+        - "InterpretationCandidate: LLM/memory-agent proposed meaning with evidence_refs, confidence, uncertainty, assumptions, alternatives, use_pattern, and review_status."
+        - "MemoryCandidate: governed memory proposal derived from source-backed interpretation."
+        - "ValidatedMemory: memory that passed proof, access, freshness, sensitivity, status, and conflict gates."
+        - "GovernanceGate: deterministic property checks for hard invariants, not world understanding."
+        - "AnswerEvidence: proof chain from used memory to cited snapshots and answer_state."
+      feedback_policy: "Keep exact named errors for hard invariant failures. Accept flexible natural-language interpretation only after evidence/confidence/uncertainty/use-pattern/review checks exist."
+      test_strategy: "First restore enterprise target/global specs, then add red T1 interpretation fixtures, implement T1 validator support, harden M1, align docs, and finally run the full oracle before shipping."
+      module_map:
+        enterprise_target:
+          - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+          - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+          - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+          - "scripts/verify-enterprise-living-memory-target.mjs"
+        t1_contracts:
+          - "scripts/verify-memory-contracts.mjs"
+          - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+          - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+          - "tests/memory-contracts.test.mjs"
+        m1_fixture:
+          - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/**"
+          - "tests/m1-hindsight-promotion-recall.test.mjs"
+        docs:
+          - "docs/golden-case-tdd-matrix.md"
+          - "docs/golden-case-implementation-roadmap.md"
+          - "docs/prd-memoire-agentique-v2.md"
+          - "README.md"
+          - "identity-vault/AGENTS.md"
+          - "identity-vault/75_governance/hindsight_contract.md"
+      interface_contract:
+        lifecycle: "Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate -> ValidatedMemory -> Relation -> HindsightDocument / Retrieval -> Answer -> Feedback / Change"
+        required_interpretation_fields:
+          - "interpretation_id"
+          - "proposed_from"
+          - "claim"
+          - "confidence"
+          - "uncertainty"
+          - "assumptions"
+          - "alternative_interpretations"
+          - "use_pattern"
+          - "review_status"
+          - "evidence_refs"
+      architecture_review: "Approved. Execute the existing plan in order. Current uncommitted InterpretationCandidate work is in-scope and should be preserved."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "none; local fixture/verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "git commit/push only"
+        observability: "local verifier PASS/FAIL output and GoalBuddy receipts"
+        docs: "roadmap, PRD, README, and governance wording updates"
+      verification_snapshot:
+        enterprise_target: "fail: old lifecycle substring expected"
+        memory_contracts: pass
+        m1_fixture: pass
+        global_specs: "fail because enterprise target fails"
+      worker_order:
+        - "T002 restore enterprise target/global specs"
+        - "T003 add red T1 interpretation cases"
+        - "T004 implement T1 interpretation validator"
+        - "T005 harden M1"
+        - "T006 align docs"
+        - "T998 ship"
+  - id: T002
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: implementation
+    reasoning_hint: medium
+    objective: "Restore global specs through test-only enterprise target fixture alignment with the InterpretationCandidate lifecycle."
+    impact_assessment_ref: T001
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "docs/llm-first-migration-plan.md section 1"
+    allowed_files:
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+      - "scripts/verify-enterprise-living-memory-target.mjs"
+      - "docs/goals/implement-llm-first-interpretation-contract-migration/state.yaml"
+    constraints:
+      - "Write only allowed_files."
+      - "Do not remove existing enterprise concepts or relation expectations."
+      - "Keep SourceSnapshot, MemoryCandidate, ValidatedMemory, supports_answer, opens_review, access, freshness, secrets, legal hold, and engine-port constraints."
+    expected_output:
+      - "Enterprise target expects InterpretationCandidate and interprets_observation."
+      - "Global specs are no longer red for the old lifecycle substring."
+      - "design_delta"
+    verify:
+      - "node scripts/verify-enterprise-living-memory-target.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need to weaken enterprise target coverage."
+      - "Verification fails twice after reasonable local repair."
+    receipt:
+      result: done
+      summary: "Aligned the enterprise target with the InterpretationCandidate lifecycle and restored global SuperMemory specs."
+      changed_files:
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/final-state.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/target-structure.md"
+      design_delta: "Enterprise target now expects Source -> SourceSnapshot -> Observation -> InterpretationCandidate -> MemoryCandidate and includes the interprets_observation relation verb plus interpretation governance file coverage."
+      commands:
+        - cmd: "node scripts/verify-enterprise-living-memory-target.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: red_test
+    reasoning_hint: medium
+    objective: "Add red T1 interpretation invariant fixtures before implementing the validator logic."
+    impact_assessment_ref: T001
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "docs/llm-first-migration-plan.md section 2"
+    allowed_files:
+      - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+      - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+      - "tests/memory-contracts.test.mjs"
+      - "docs/goals/implement-llm-first-interpretation-contract-migration/state.yaml"
+    constraints:
+      - "Write only allowed_files."
+      - "Create red evidence first."
+      - "Do not implement validator logic in this task."
+      - "Preserve all existing T1 invalid cases and exact errors."
+    expected_output:
+      - "Red invalid cases for missing evidence, missing confidence, missing uncertainty, unknown use_pattern, unsafe review_status, and missing interpretation provenance."
+      - "Command output showing expected red failure before validator implementation."
+    verify:
+      - "node scripts/verify-memory-contracts.mjs"
+      - "node --test tests/memory-contracts.test.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Cannot produce meaningful red failure."
+      - "Need to weaken an existing T1 assertion."
+    receipt:
+      result: done
+      summary: "Added red T1 interpretation invariant fixtures T1.9-T1.14 without changing validator logic."
+      changed_files:
+        - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+        - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+      red_test_evidence:
+        - "T1.9 expected interpretation_without_evidence, got no_error"
+        - "T1.10 expected interpretation_without_confidence, got no_error"
+        - "T1.11 expected interpretation_without_uncertainty, got no_error"
+        - "T1.12 expected interpretation_unknown_use_pattern, got no_error"
+        - "T1.13 expected interpretation_not_reviewed_for_active_memory, got no_error"
+        - "T1.14 expected promotion_missing_interpretation_provenance, got no_error"
+      commands:
+        - cmd: "node scripts/verify-memory-contracts.mjs"
+          status: expected_fail
+        - cmd: "node --test tests/memory-contracts.test.mjs"
+          status: expected_fail
+        - cmd: "git diff --check"
+          status: pass
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: implementation
+    reasoning_hint: medium
+    objective: "Implement T1 interpretation invariant validation and restore all T1/global verification."
+    impact_assessment_ref: T001
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "T003 red-test receipt"
+    allowed_files:
+      - "scripts/verify-memory-contracts.mjs"
+      - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+      - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+      - "tests/memory-contracts.test.mjs"
+      - "docs/goals/implement-llm-first-interpretation-contract-migration/state.yaml"
+    constraints:
+      - "Write only allowed_files."
+      - "Keep validator deterministic and local."
+      - "Do not turn T1 into an LLM evaluator."
+      - "Keep exact named errors for hard invariant failures."
+    expected_output:
+      - "T1 validates InterpretationCandidate hard invariants."
+      - "All old T1 checks remain covered."
+      - "design_delta"
+    verify:
+      - "node scripts/verify-memory-contracts.mjs"
+      - "node --test tests/memory-contracts.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need to weaken existing hard-invariant errors."
+      - "Verification fails twice after reasonable local repair."
+    receipt:
+      result: done
+      summary: "Implemented deterministic T1 validation for InterpretationCandidate hard invariants while preserving all original T1 checks."
+      changed_files:
+        - "scripts/verify-memory-contracts.mjs"
+        - "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json"
+        - "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+      design_delta: "T1 now validates interpretation evidence, confidence, uncertainty, known use pattern, approved review state for active memory, and interpretation provenance in active promotion payloads."
+      commands:
+        - cmd: "node scripts/verify-memory-contracts.mjs"
+          status: pass
+        - cmd: "node --test tests/memory-contracts.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: implementation
+    reasoning_hint: medium
+    objective: "Harden M1 as the first LLM-first executable slice with additional interpretation cases and flexible-positive coverage where feasible."
+    impact_assessment_ref: T001
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "T004 receipt"
+      - "docs/llm-first-migration-plan.md section 3"
+    allowed_files:
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/assertions.json"
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/final-state.json"
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/promotion-payload.json"
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/answer-evidence.json"
+      - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      - "tests/m1-hindsight-promotion-recall.test.mjs"
+      - "docs/goals/implement-llm-first-interpretation-contract-migration/state.yaml"
+    constraints:
+      - "Write only allowed_files."
+      - "Preserve current M1 interpretation additions."
+      - "Do not weaken source/snapshot/do_not_use/promotion/answer evidence checks."
+      - "Only relax natural-language wording after property checks exist."
+    expected_output:
+      - "M1 covers missing confidence, missing uncertainty, unknown use pattern, unsafe review status, and promotion interpretation provenance."
+      - "At least one positive fixture or verifier path demonstrates equivalent interpretation wording can be accepted when hard properties match, if feasible in this fixture format."
+      - "design_delta"
+    verify:
+      - "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      - "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need to weaken existing M1 hard-invariant checks."
+      - "Flexible-positive coverage is not expressible without a larger fixture redesign; record why and continue with hard-invariant cases."
+      - "Verification fails twice after reasonable local repair."
+    receipt:
+      result: done
+      summary: "Hardened M1 as the first executable LLM-first slice with additional interpretation invariant checks and flexible-positive coverage."
+      changed_files:
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/assertions.json"
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      design_delta: "M1 now rejects missing confidence, missing uncertainty, unknown use_pattern, unsafe review status, and missing interpretation provenance, while accepting an equivalent differently worded interpretation that satisfies the same hard properties."
+      commands:
+        - cmd: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          status: pass
+        - cmd: "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+  - id: T006
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: implementation
+    reasoning_hint: medium
+    objective: "Documentation-only align roadmap, PRD, README, and agent contracts with the InterpretationCandidate migration."
+    impact_assessment_ref: T001
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "T005 receipt"
+      - "docs/llm-first-migration-plan.md section 4"
+    allowed_files:
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "README.md"
+      - "identity-vault/AGENTS.md"
+      - "identity-vault/75_governance/hindsight_contract.md"
+      - "docs/llm-first-migration-plan.md"
+      - "docs/goals/implement-llm-first-interpretation-contract-migration/state.yaml"
+    constraints:
+      - "Write only allowed_files."
+      - "Do not edit compiled memory notes or raw sources."
+      - "Do not imply Hindsight owns interpretation governance."
+      - "Do not reintroduce old direct Observation -> MemoryCandidate language where InterpretationCandidate is required."
+    expected_output:
+      - "Docs include InterpretationCandidate in relevant lifecycle diagrams."
+      - "Roadmap/TDD wording distinguishes deterministic hard gates from LLM-first interpretation."
+      - "Future adapter rule is documented."
+      - "design_delta"
+    verify:
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need to change scripts/fixtures/tests."
+      - "Docs conflict with existing governance invariants."
+    receipt:
+      result: done
+      summary: "Aligned roadmap, PRD, README, and Hindsight/agent contracts with the InterpretationCandidate migration."
+      changed_files:
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "README.md"
+        - "identity-vault/AGENTS.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "docs/llm-first-migration-plan.md"
+      design_delta: "Docs now describe InterpretationCandidate in relevant lifecycle diagrams, distinguish deterministic property gates from LLM-first interpretation, and state that a future Hindsight adapter must consume governed interpretation output rather than raw unchecked LLM conclusions."
+      commands:
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: medium
+    objective: "Ship verified LLM-first migration work to GitHub before completion."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-enterprise-living-memory-target.mjs."
+      - "Run node scripts/verify-memory-contracts.mjs."
+      - "Run node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/implement-llm-first-interpretation-contract-migration/state.yaml."
+      - "Verify this is a git repository with GitHub remote."
+      - "Commit goal-related changes with a clear message."
+      - "Push the current branch to origin."
+      - "Leave unrelated dirty files untouched; if any dirty file is not part of this migration, list it explicitly."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "Or shipping_blocker: no_git_repository | no_github_remote | credentials_or_network"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

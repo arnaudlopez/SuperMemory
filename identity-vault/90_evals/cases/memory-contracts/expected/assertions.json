@@ -9,7 +9,13 @@
     "T1.5",
     "T1.6",
     "T1.7",
-    "T1.8"
+    "T1.8",
+    "T1.9",
+    "T1.10",
+    "T1.11",
+    "T1.12",
+    "T1.13",
+    "T1.14"
   ],
   "expected_errors": {
     "T1.1": "missing_snapshot_proof",
@@ -19,7 +25,13 @@
     "T1.5": "do_not_use_not_promotable",
     "T1.6": "unsafe_recall_policy",
     "T1.7": "missing_answer_evidence",
-    "T1.8": "invalid_relation_endpoints"
+    "T1.8": "invalid_relation_endpoints",
+    "T1.9": "interpretation_without_evidence",
+    "T1.10": "interpretation_without_confidence",
+    "T1.11": "interpretation_without_uncertainty",
+    "T1.12": "interpretation_unknown_use_pattern",
+    "T1.13": "interpretation_not_reviewed_for_active_memory",
+    "T1.14": "promotion_missing_interpretation_provenance"
   },
   "valid_case_must_pass": true,
   "non_goals": [

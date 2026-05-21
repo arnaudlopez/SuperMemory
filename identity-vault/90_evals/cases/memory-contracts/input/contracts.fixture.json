@@ -39,10 +39,24 @@
         "restricted_fields": []
       }
     ],
+    "interpretation_candidates": [
+      {
+        "interpretation_id": "interp-acme-api-field",
+        "proposed_from": ["obs-acme-api-field"],
+        "claim": "The current Acme API field can be used in product decision support.",
+        "confidence": "high",
+        "uncertainty": "none",
+        "assumptions": ["The captured API snapshot is the controlling source for this field."],
+        "alternative_interpretations": [],
+        "use_pattern": "decision_support",
+        "review_status": "approved",
+        "evidence_refs": ["obs-acme-api-field", "snap-acme-api-2026-05-20"]
+      }
+    ],
     "memory_candidates": [
       {
         "candidate_id": "cand-acme-api-field",
-        "proposed_from": "obs-acme-api-field",
+        "proposed_from": "interp-acme-api-field",
         "entity_type": "fact",
         "schema_status": "stable",
         "freshness": "fresh",
@@ -70,6 +84,12 @@
     ],
     "relations": [
       {
+        "relation_id": "rel-interprets-observation",
+        "relation_type": "interprets_observation",
+        "from": "interp-acme-api-field",
+        "to": "obs-acme-api-field"
+      },
+      {
         "relation_id": "rel-supports-answer",
         "relation_type": "supports_answer",
         "from": "mem-acme-api-field",
@@ -87,7 +107,10 @@
           "access_policy:professional-default",
           "status:active",
           "entity_type:fact"
-        ]
+        ],
+        "metadata": {
+          "interpretation_id": "interp-acme-api-field"
+        }
       }
     ],
     "recall_policies": [
@@ -251,6 +274,136 @@
         ]
       },
       "expected_error": "invalid_relation_endpoints"
+    },
+    {
+      "id": "T1.9",
+      "description": "InterpretationCandidate without evidence is rejected.",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-no-evidence",
+            "proposed_from": [],
+            "claim": "Use the Acme field.",
+            "confidence": "high",
+            "uncertainty": "none",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": []
+          }
+        ]
+      },
+      "expected_error": "interpretation_without_evidence"
+    },
+    {
+      "id": "T1.10",
+      "description": "InterpretationCandidate without confidence is rejected.",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-no-confidence",
+            "proposed_from": ["obs-acme-api-field"],
+            "claim": "Use the Acme field.",
+            "uncertainty": "none",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-api-field"]
+          }
+        ]
+      },
+      "expected_error": "interpretation_without_confidence"
+    },
+    {
+      "id": "T1.11",
+      "description": "InterpretationCandidate without uncertainty is rejected.",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-no-uncertainty",
+            "proposed_from": ["obs-acme-api-field"],
+            "claim": "Use the Acme field.",
+            "confidence": "high",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-api-field"]
+          }
+        ]
+      },
+      "expected_error": "interpretation_without_uncertainty"
+    },
+    {
+      "id": "T1.12",
+      "description": "InterpretationCandidate with unknown use_pattern is rejected.",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-unknown-pattern",
+            "proposed_from": ["obs-acme-api-field"],
+            "claim": "Use the Acme field.",
+            "confidence": "high",
+            "uncertainty": "none",
+            "use_pattern": "bespoke_enterprise_workflow",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-api-field"]
+          }
+        ]
+      },
+      "expected_error": "interpretation_unknown_use_pattern"
+    },
+    {
+      "id": "T1.13",
+      "description": "Active memory cannot derive from an interpretation that still needs review.",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-needs-review",
+            "proposed_from": ["obs-acme-api-field"],
+            "claim": "Use the Acme field.",
+            "confidence": "medium",
+            "uncertainty": "Support notes may still mention a legacy field.",
+            "use_pattern": "decision_support",
+            "review_status": "needs_review",
+            "evidence_refs": ["obs-acme-api-field"]
+          }
+        ],
+        "validated_memories": [
+          {
+            "memory_id": "mem-from-unreviewed-interpretation",
+            "document_id": "doc-from-unreviewed-interpretation",
+            "derived_from": ["interp-needs-review"],
+            "status": "active",
+            "freshness": "fresh",
+            "workspace_id": "ws-acme",
+            "access_policy": "professional-default"
+          }
+        ]
+      },
+      "expected_error": "interpretation_not_reviewed_for_active_memory"
+    },
+    {
+      "id": "T1.14",
+      "description": "Promotion payload for interpreted memory must preserve interpretation provenance.",
+      "input": {
+        "interpretation_candidates": [
+          {
+            "interpretation_id": "interp-acme-api-field",
+            "proposed_from": ["obs-acme-api-field"],
+            "claim": "Use the Acme field.",
+            "confidence": "high",
+            "uncertainty": "none",
+            "use_pattern": "decision_support",
+            "review_status": "approved",
+            "evidence_refs": ["obs-acme-api-field"]
+          }
+        ],
+        "promotion_payloads": [
+          {
+            "document_id": "doc-acme-api-field",
+            "status": "active",
+            "metadata": {}
+          }
+        ]
+      },
+      "expected_error": "promotion_missing_interpretation_provenance"
     }
   ]
 }

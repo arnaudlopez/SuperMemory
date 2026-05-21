@@ -65,6 +65,7 @@ identity-vault/
     entity_type_registry.md
     forgetting_policy.md
     hindsight_contract.md
+    interpretation_contract.md
     living_memory.md
     memory_engine_ports.md
     source_freshness.md
@@ -117,6 +118,7 @@ Every implementation must be able to explain promoted memory and answers with th
 has_snapshot
 supersedes_snapshot
 contains_observation
+interprets_observation
 proposes_memory
 validates_memory
 cites_snapshot
