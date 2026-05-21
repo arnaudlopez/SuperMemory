@@ -897,8 +897,18 @@ Ce contrat verifie les proprietes du `AnswerEvidence`, pas une formulation uniqu
 - chaque memoire utilisee doit etre reliee a la reponse par `supports_answer` ;
 - `stale` ne peut pas pretendre etre `current` et doit citer la derniere snapshot connue ou demander revue ;
 - `changed_needs_review` interdit la guidance operationnelle avant revue ;
+- `conflicting` exige les deux memoires en conflit, une evidence de conflit, et aucun gagnant silencieux ;
 - `restricted` exige un resume autorise et `withheld_fields` ;
+- `unavailable` exige une formulation last-known ou une demande de refresh, jamais une certitude `current` ;
 - `forbidden` garde les memoires `do_not_use` hors de `used_memory_ids`.
+
+Contrat executable T6 :
+
+```bash
+node scripts/verify-conflict-unavailable-arbitration.mjs
+```
+
+Ce contrat verifie que les conflits source/API-support sont preserves par `conflicts_with`, que l'arbitrage cite une regle explicite, et que l'indisponibilite reste non verifiee.
 
 ## 16. Evals V2
 

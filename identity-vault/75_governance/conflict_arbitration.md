@@ -8,6 +8,14 @@ If sources create incompatible facts, preserve both sources, record the conflict
 
 Conflicting memory should be marked `needs_review` or `conflicting` until resolved.
 
+## Source Conflict Contract
+
+- Both sides of a source conflict must remain addressable and linked with `conflicts_with`.
+- Without an explicit source reliability rule, the answer state is `conflicting` and no single memory is selected as the winner.
+- With an explicit rule, the answer may prefer one source for guidance, but it must cite the rule and the conflict.
+- Unresolved conflicts create a `conflict_queue` item for human or later agent review.
+- Connector unavailability is not conflict resolution; it produces last-known or unverified wording only.
+
 ## Example
 
 - Calendar blocks 2026-05-27 morning.
@@ -22,3 +30,7 @@ Result: escalate to review before sending or scheduling.
 - Support note says the old `risk_score` field is still available.
 
 Result: product memory must show the conflict, prefer API documentation for integration guidance, and queue support clarification before external commitments.
+
+## Executable Contract
+
+The local T6 verifier lives at `scripts/verify-conflict-unavailable-arbitration.mjs`.

@@ -16,6 +16,8 @@
 
 An inference cannot have the same authority as an explicit user correction.
 
+Reliability order is not an automatic winner picker. It can arbitrate a conflict only when the rule is explicit for the source pair, domain, and intended use. The answer evidence must expose the rule id and the conflict it is resolving.
+
 ## Current Scenario
 
 - Acme timing concern: meeting_note, high confidence.
@@ -52,3 +54,5 @@ external_ref
 ```
 
 If the external content changes, preserve the old snapshot, create a new snapshot, and mark derived notes according to `75_governance/source_freshness.md`.
+
+If the external source cannot be checked, mark the check `unavailable` and keep any answer last-known or unverified.

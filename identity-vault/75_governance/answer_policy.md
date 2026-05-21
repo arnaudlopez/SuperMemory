@@ -18,15 +18,19 @@ Agents must adapt answers to the health of the memory they use.
 - Each used memory must connect to the answer evidence through a `supports_answer` relation.
 - Stale answers must disclose the latest known snapshot and avoid current certainty.
 - Changed-but-unreviewed answers must route to review before operational guidance.
-- Conflicting answers must show the conflict and avoid choosing silently.
+- Conflicting answers must show the conflict, preserve both sides, and avoid choosing silently.
+- Explicit arbitration must cite the reliability rule and the conflict evidence.
 - Restricted answers may provide only the allowed summary and must list `withheld_fields`.
-- Unavailable sources require a "last known" answer or a refresh request.
+- Unavailable sources require a "last known" answer or a refresh request, not `current` certainty.
 - Forbidden memory must not be used for active answers.
 
 ## Executable Contract
 
 The local T4 verifier lives at `scripts/verify-governed-answer-evidence.mjs`.
 It checks hard evidence properties and answer states, not exact natural-language wording.
+
+The local T6 verifier lives at `scripts/verify-conflict-unavailable-arbitration.mjs`.
+It checks conflict preservation, explicit arbitration, unavailable handling, and conflict queue creation.
 
 ## Drafting Rule
 

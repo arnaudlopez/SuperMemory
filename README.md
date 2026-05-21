@@ -142,6 +142,12 @@ Mutable external references are pointers, not proof. The local T5 contract verif
 
 See [`identity-vault/90_evals/cases/source-change-t0-t1`](identity-vault/90_evals/cases/source-change-t0-t1).
 
+### Conflict And Unavailable Arbitration
+
+When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.
+
+See [`identity-vault/90_evals/cases/conflict-unavailable-arbitration`](identity-vault/90_evals/cases/conflict-unavailable-arbitration).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -168,6 +174,7 @@ node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-hindsight-adapter-minimal.mjs
 node scripts/verify-governed-answer-evidence.mjs
 node scripts/verify-source-change-t0-t1.mjs
+node scripts/verify-conflict-unavailable-arbitration.mjs
 ```
 
 Expected output:

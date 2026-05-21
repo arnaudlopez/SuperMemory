@@ -1,0 +1,244 @@
+{
+  "case_id": "conflict-unavailable-arbitration",
+  "valid": {
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-api-trust-score",
+        "document_id": "doc-acme-api-field",
+        "claim": "Acme Project Y uses trust_score for customer scoring.",
+        "source_kind": "api_doc",
+        "reliability": "captured_external_document",
+        "status": "active",
+        "freshness": "fresh",
+        "snapshot_id": "snap-acme-api-doc-2026-05-21"
+      },
+      {
+        "memory_id": "mem-acme-support-risk-score",
+        "document_id": "doc-acme-support-field",
+        "claim": "Support notes still mention risk_score for Acme Project Y customer scoring.",
+        "source_kind": "support_note",
+        "reliability": "direct_note",
+        "status": "active",
+        "freshness": "fresh",
+        "snapshot_id": "snap-acme-support-note-2026-05-21"
+      },
+      {
+        "memory_id": "mem-acme-contract-last-known",
+        "document_id": "doc-acme-contract",
+        "claim": "Acme contract renewal target was last known from the 2026-05-01 snapshot.",
+        "source_kind": "crm_contract",
+        "reliability": "captured_external_document",
+        "status": "active",
+        "freshness": "unavailable",
+        "snapshot_id": "snap-acme-contract-2026-05-01"
+      }
+    ],
+    "relations": [
+      {
+        "relation_id": "rel-api-conflicts-support",
+        "relation_type": "conflicts_with",
+        "from": "mem-acme-api-trust-score",
+        "to": "mem-acme-support-risk-score",
+        "reason": "field_name_disagreement"
+      },
+      {
+        "relation_id": "rel-support-conflicts-api",
+        "relation_type": "conflicts_with",
+        "from": "mem-acme-support-risk-score",
+        "to": "mem-acme-api-trust-score",
+        "reason": "field_name_disagreement"
+      }
+    ],
+    "source_reliability_rules": [
+      {
+        "rule_id": "rule-api-doc-over-support-for-integration-fields",
+        "scope": "integration_field_name",
+        "winner_reliability": "captured_external_document",
+        "loser_reliability": "direct_note",
+        "requires_conflict_citation": true
+      }
+    ],
+    "answer_evidence": [
+      {
+        "answer_id": "ans-acme-field-conflict-no-rule",
+        "answer_state": "conflicting",
+        "question": "Which Acme Project Y scoring field should be used without an arbitration rule?",
+        "used_memory_ids": ["mem-acme-api-trust-score", "mem-acme-support-risk-score"],
+        "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-21", "snap-acme-support-note-2026-05-21"],
+        "conflict_memory_ids": ["mem-acme-api-trust-score", "mem-acme-support-risk-score"],
+        "selected_memory_id": null,
+        "policy_outcome": "show_conflict"
+      },
+      {
+        "answer_id": "ans-acme-field-api-wins",
+        "answer_state": "current",
+        "question": "Which Acme Project Y scoring field should integration guidance use?",
+        "used_memory_ids": ["mem-acme-api-trust-score", "mem-acme-support-risk-score"],
+        "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-21", "snap-acme-support-note-2026-05-21"],
+        "conflict_memory_ids": ["mem-acme-api-trust-score", "mem-acme-support-risk-score"],
+        "selected_memory_id": "mem-acme-api-trust-score",
+        "arbitration_rule_id": "rule-api-doc-over-support-for-integration-fields",
+        "policy_outcome": "explicit_arbitration"
+      },
+      {
+        "answer_id": "ans-acme-contract-unavailable",
+        "answer_state": "unavailable",
+        "question": "Can we verify the Acme contract milestone now?",
+        "used_memory_ids": ["mem-acme-contract-last-known"],
+        "cited_snapshot_ids": ["snap-acme-contract-2026-05-01"],
+        "last_known_snapshot_ids": ["snap-acme-contract-2026-05-01"],
+        "policy_outcome": "last_known_unverified"
+      }
+    ],
+    "review_items": [
+      {
+        "review_id": "review-acme-field-conflict",
+        "queue": "conflict_queue",
+        "status": "open",
+        "conflict_memory_ids": ["mem-acme-api-trust-score", "mem-acme-support-risk-score"],
+        "reason": "support note conflicts with API documentation"
+      }
+    ],
+    "source_checks": [
+      {
+        "check_id": "check-acme-contract-down",
+        "source_id": "src-acme-contract",
+        "result": "unavailable",
+        "freshness_after_check": "unavailable",
+        "created_snapshot_id": null
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T6.1",
+      "description": "Conflicting facts must keep conflicts_with relation.",
+      "expected_error": "missing_conflicts_with_relation",
+      "input": {
+        "validated_memories": [
+          {"memory_id": "mem-api", "claim": "trust_score", "snapshot_id": "snap-api", "status": "active"},
+          {"memory_id": "mem-support", "claim": "risk_score", "snapshot_id": "snap-support", "status": "active"}
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-conflict",
+            "answer_state": "conflicting",
+            "used_memory_ids": ["mem-api", "mem-support"],
+            "conflict_memory_ids": ["mem-api", "mem-support"],
+            "cited_snapshot_ids": ["snap-api", "snap-support"]
+          }
+        ],
+        "relations": []
+      }
+    },
+    {
+      "id": "T6.2",
+      "description": "Without explicit reliability rule, answer must not silently choose a winner.",
+      "expected_error": "silent_arbitration_without_rule",
+      "input": {
+        "validated_memories": [
+          {"memory_id": "mem-api", "claim": "trust_score", "snapshot_id": "snap-api", "status": "active"},
+          {"memory_id": "mem-support", "claim": "risk_score", "snapshot_id": "snap-support", "status": "active"}
+        ],
+        "relations": [
+          {"relation_type": "conflicts_with", "from": "mem-api", "to": "mem-support"},
+          {"relation_type": "conflicts_with", "from": "mem-support", "to": "mem-api"}
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-silent-choice",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-api", "mem-support"],
+            "conflict_memory_ids": ["mem-api", "mem-support"],
+            "selected_memory_id": "mem-api",
+            "cited_snapshot_ids": ["snap-api", "snap-support"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T6.3",
+      "description": "Explicit arbitration must cite the rule and conflict.",
+      "expected_error": "arbitration_missing_rule_or_conflict",
+      "input": {
+        "validated_memories": [
+          {"memory_id": "mem-api", "claim": "trust_score", "snapshot_id": "snap-api", "status": "active"},
+          {"memory_id": "mem-support", "claim": "risk_score", "snapshot_id": "snap-support", "status": "active"}
+        ],
+        "relations": [
+          {"relation_type": "conflicts_with", "from": "mem-api", "to": "mem-support"},
+          {"relation_type": "conflicts_with", "from": "mem-support", "to": "mem-api"}
+        ],
+        "source_reliability_rules": [
+          {"rule_id": "rule-api-doc-over-support-for-integration-fields", "requires_conflict_citation": true}
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-rule-missing-conflict",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-api"],
+            "selected_memory_id": "mem-api",
+            "arbitration_rule_id": "rule-api-doc-over-support-for-integration-fields",
+            "cited_snapshot_ids": ["snap-api"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T6.4",
+      "description": "Unavailable source must not be answered as current.",
+      "expected_error": "unavailable_answer_claims_current",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-contract",
+            "snapshot_id": "snap-contract",
+            "status": "active",
+            "freshness": "unavailable"
+          }
+        ],
+        "source_checks": [
+          {
+            "check_id": "check-contract-down",
+            "result": "unavailable",
+            "freshness_after_check": "unavailable"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-contract-current",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-contract"],
+            "cited_snapshot_ids": ["snap-contract"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T6.5",
+      "description": "Unresolved conflict must create conflict_queue item.",
+      "expected_error": "missing_conflict_queue_item",
+      "input": {
+        "validated_memories": [
+          {"memory_id": "mem-api", "snapshot_id": "snap-api", "status": "active"},
+          {"memory_id": "mem-support", "snapshot_id": "snap-support", "status": "active"}
+        ],
+        "relations": [
+          {"relation_type": "conflicts_with", "from": "mem-api", "to": "mem-support"},
+          {"relation_type": "conflicts_with", "from": "mem-support", "to": "mem-api"}
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-conflict-open",
+            "answer_state": "conflicting",
+            "used_memory_ids": ["mem-api", "mem-support"],
+            "conflict_memory_ids": ["mem-api", "mem-support"],
+            "cited_snapshot_ids": ["snap-api", "snap-support"],
+            "selected_memory_id": null
+          }
+        ],
+        "review_items": []
+      }
+    }
+  ]
+}

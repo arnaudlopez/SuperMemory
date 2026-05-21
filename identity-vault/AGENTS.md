@@ -69,6 +69,9 @@ This vault is a governed memory system, not a chat transcript dump.
 - If a mutable source changes, mark derived notes `stale` or `needs_review` before active recall.
 - A new snapshot for changed content must preserve the previous snapshot through `previous_snapshot_id` or an equivalent `supersedes_snapshot` relation.
 - If a source check is unavailable, use last-known wording only; do not mark the source or derived memory `fresh`.
+- If sources conflict, keep both facts, add `conflicts_with`, and answer `conflicting` unless an explicit reliability rule applies.
+- If a reliability rule applies, cite both the rule and the conflict before preferring one source.
+- Unresolved conflicts must create or preserve a `conflict_queue` item.
 
 ## Type Rules
 

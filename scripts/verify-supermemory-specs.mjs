@@ -8,6 +8,7 @@ const commands = [
   ["node", ["scripts/verify-hindsight-adapter-minimal.mjs"]],
   ["node", ["scripts/verify-governed-answer-evidence.mjs"]],
   ["node", ["scripts/verify-source-change-t0-t1.mjs"]],
+  ["node", ["scripts/verify-conflict-unavailable-arbitration.mjs"]],
   ["node", ["scripts/verify-identity-vault-tdd.mjs"]],
   ["node", ["scripts/verify-enterprise-living-memory-target.mjs"]]
 ];

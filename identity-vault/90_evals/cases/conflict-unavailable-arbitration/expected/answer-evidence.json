@@ -1,0 +1,23 @@
+{
+  "answers": [
+    {
+      "answer_id": "ans-acme-field-conflict-no-rule",
+      "answer_state": "conflicting",
+      "selected_memory_id": null,
+      "policy_outcome": "show_conflict"
+    },
+    {
+      "answer_id": "ans-acme-field-api-wins",
+      "answer_state": "current",
+      "selected_memory_id": "mem-acme-api-trust-score",
+      "arbitration_rule_id": "rule-api-doc-over-support-for-integration-fields",
+      "policy_outcome": "explicit_arbitration"
+    },
+    {
+      "answer_id": "ans-acme-contract-unavailable",
+      "answer_state": "unavailable",
+      "last_known_snapshot_ids": ["snap-acme-contract-2026-05-01"],
+      "policy_outcome": "last_known_unverified"
+    }
+  ]
+}

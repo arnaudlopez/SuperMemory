@@ -1,0 +1,17 @@
+{
+  "case_id": "conflict-unavailable-arbitration",
+  "required_test_ids": ["T6.1", "T6.2", "T6.3", "T6.4", "T6.5"],
+  "expected_errors": {
+    "T6.1": "missing_conflicts_with_relation",
+    "T6.2": "silent_arbitration_without_rule",
+    "T6.3": "arbitration_missing_rule_or_conflict",
+    "T6.4": "unavailable_answer_claims_current",
+    "T6.5": "missing_conflict_queue_item"
+  },
+  "required_conflict_memory_ids": ["mem-acme-api-trust-score", "mem-acme-support-risk-score"],
+  "required_conflicting_answer_id": "ans-acme-field-conflict-no-rule",
+  "required_arbitrated_answer_id": "ans-acme-field-api-wins",
+  "required_unavailable_answer_id": "ans-acme-contract-unavailable",
+  "required_rule_id": "rule-api-doc-over-support-for-integration-fields",
+  "required_review_id": "review-acme-field-conflict"
+}

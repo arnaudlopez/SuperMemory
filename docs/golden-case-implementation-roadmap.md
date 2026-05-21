@@ -240,6 +240,14 @@ prefere la doc API pour la guidance technique si la regle le permet,
 et traite l'indisponibilite comme "non verifie", jamais comme "inchange".
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-conflict-unavailable-arbitration.mjs
+```
+
+Le contrat T6 reste local et deterministe : il exige `conflicts_with`, interdit le choix silencieux sans regle explicite, cite la regle et le conflit quand l'arbitrage est permis, et route les conflits non resolus vers `conflict_queue`.
+
 ## Tranche 7 - Types metier adaptatifs
 
 Objectif :

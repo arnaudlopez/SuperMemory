@@ -385,6 +385,8 @@ Critere de passage :
 Les conflits et indisponibilites changent l'etat de reponse au lieu d'etre caches.
 ```
 
+Le fixture executable attendu vit dans `identity-vault/90_evals/cases/conflict-unavailable-arbitration`. Il prouve que l'arbitrage par source reliability est autorise seulement si la regle est explicite et visible dans l'evidence.
+
 ## Tranche 7 - Types metier adaptatifs
 
 Commande cible :
