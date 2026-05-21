@@ -1,0 +1,15 @@
+{
+  "source_id": "src-acme-prd",
+  "t0_snapshot_id": "snap-acme-prd-2026-05-18",
+  "t1_snapshot_id": "snap-acme-prd-2026-05-21",
+  "t1_previous_snapshot_id": "snap-acme-prd-2026-05-18",
+  "t0_memory_id": "mem-acme-prd-t0",
+  "t0_memory_status": "needs_review",
+  "t1_memory_id": "mem-acme-prd-t1",
+  "t1_memory_status": "active",
+  "document_id": "doc-acme-prd",
+  "promotion_snapshot_id": "snap-acme-prd-2026-05-21",
+  "review_id": "review-acme-prd-source-change",
+  "unavailable_source_id": "src-acme-contract",
+  "unavailable_freshness": "unavailable"
+}

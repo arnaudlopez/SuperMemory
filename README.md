@@ -136,6 +136,12 @@ Final answers are governed by evidence, not by fluent recall. A `current` answer
 
 See [`identity-vault/90_evals/cases/governed-answer-evidence`](identity-vault/90_evals/cases/governed-answer-evidence).
 
+### Mutable Source Change Contract
+
+Mutable external references are pointers, not proof. The local T5 contract verifies that changed content creates a new immutable snapshot with `previous_snapshot_id`, keeps the old snapshot readable, routes derived memory through `needs_review`, re-promotes the reviewed memory with the same stable `document_id`, and treats unavailable checks as unknown rather than fresh.
+
+See [`identity-vault/90_evals/cases/source-change-t0-t1`](identity-vault/90_evals/cases/source-change-t0-t1).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -161,6 +167,7 @@ node scripts/verify-identity-vault-tdd.mjs
 node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-hindsight-adapter-minimal.mjs
 node scripts/verify-governed-answer-evidence.mjs
+node scripts/verify-source-change-t0-t1.mjs
 ```
 
 Expected output:
@@ -247,7 +254,8 @@ Implemented:
 - verification scripts;
 - Hindsight promotion contract and logs as local fixtures;
 - minimal local Hindsight adapter contract verifier;
-- governed answer evidence contract verifier.
+- governed answer evidence contract verifier;
+- mutable source t0/t1 contract verifier.
 
 Not yet implemented:
 
@@ -262,9 +270,10 @@ Not yet implemented:
 
 1. Keep hardening the local Hindsight adapter contract against governed fixtures.
 2. Keep hardening governed answer evidence against living-memory states.
-3. Prototype real Hindsight only after the local adapter and answer contracts remain green.
-4. Implement vault-to-Hindsight promotion script.
-5. Implement source snapshot refresh for mutable sources.
+3. Keep hardening mutable source-change handling before connector/runtime work.
+4. Prototype real Hindsight only after the local adapter, answer, and freshness contracts remain green.
+5. Implement vault-to-Hindsight promotion script.
+6. Implement source snapshot refresh for mutable sources.
 6. Expand toward the enterprise living-memory target.
 7. Add optional source-capture tools only when needed.
 8. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.

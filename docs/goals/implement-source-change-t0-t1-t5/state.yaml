@@ -1,0 +1,340 @@
+version: 2
+
+goal:
+  title: "T5 Source Change t0/t1"
+  slug: "implement-source-change-t0-t1-t5"
+  kind: specific
+  tranche: "Implement an executable mutable source t0/t1 contract before real connector or promotion-script work."
+  status: active
+  oracle:
+    signal: "A T5 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves source-change lifecycle while T0/T1/T2/T3/T4 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T5 verifier pass, global specs pass, git diff --check pass, GoalBuddy final quality check pass, commit SHA, pushed branch, and final audit with full_outcome_complete: true."
+  intake:
+    original_request: "ok va y"
+    interpreted_outcome: "Implement the recommended T5 mutable source t0/t1 tranche."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T5 fixture/verifier proves source t0/t1 behavior, global specs pass, and the work is committed and pushed."
+    likely_misfire: "Building runtime connector/promotion behavior before proving snapshot lineage, review propagation, and unavailable-source semantics."
+    blind_spots_considered:
+      - "Unavailable source checks must not refresh memory."
+      - "Changed source memory must become needs_review before confident recall."
+      - "Reviewed re-promotion must keep a stable document_id."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T5.1-T5.6."
+      - "docs/golden-case-implementation-roadmap.md says source changes create t1 snapshots and review derived memory."
+      - "identity-vault/75_governance/source_freshness.md defines change handling and answering rules."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-source-change-t0-t1-t5/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-source-change-t0-t1-t5"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map existing source freshness surfaces and T5 insertion point."
+    receipt:
+      result: done
+      summary: "Found T5 target in roadmap/matrix and existing source_freshness policy. T5 should add a new source-change fixture/verifier and global wiring."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines command node scripts/verify-source-change-t0-t1.mjs and T5.1-T5.6."
+        - "docs/golden-case-implementation-roadmap.md says mutable source t1 creates a new snapshot, marks derived memory needs_review, and re-promotes with same document_id after review."
+        - "identity-vault/75_governance/source_freshness.md says mutable sources are pointers, snapshots are proof, and unavailable does not prove unchanged."
+        - "identity-vault/AGENTS.md says mutable sources need snapshot_id/content_hash/freshness/derived_from before promotion."
+      module_map:
+        new_case: "identity-vault/90_evals/cases/source-change-t0-t1"
+        new_verifier: "scripts/verify-source-change-t0-t1.mjs"
+        new_test: "tests/source-change-t0-t1.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "MutableSource"
+        - "SourceSnapshot"
+        - "previous_snapshot_id"
+        - "content_hash"
+        - "ValidatedMemory"
+        - "needs_review"
+        - "HindsightPromotionPayload"
+        - "document_id"
+        - "unavailable"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; connector/runtime behavior deferred"
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "source change and promotion trace assertions"
+        docs: "update source freshness/roadmap/matrix/readme after green behavior"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T5 architecture and select Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T5 contract, not a connector. The contract should prove mutable-source invariants before real promotion sync."
+      design_concept: "A mutable source pointer is not proof. When content changes, SuperMemory preserves t0, creates t1 with previous_snapshot_id, marks dependent active memory needs_review, and only after review re-promotes the updated memory with the same document_id."
+      interface_contract:
+        detect_change: "same source_id/external_ref with different content_hash creates a new SourceSnapshot with previous_snapshot_id."
+        preserve_history: "snapshot t0 remains readable and immutable after t1."
+        impact_memory: "memory derived from t0 becomes needs_review or stale before active recall."
+        review_recompile: "reviewed memory derives_from t1 and records review_status approved."
+        re_promote: "promotion after review keeps the same stable document_id with updated snapshot metadata."
+        unavailable: "unavailable source check records unavailable and does not create fresh evidence."
+      test_strategy:
+        red: "Add fixture/global wiring before verifier implementation so global specs fail on missing verifier."
+        green: "Implement verifier for T5.1-T5.6 and wire Node test/global specs."
+      feedback_policy: "Check deterministic lifecycle properties, not exact prose."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      allowed_files:
+        - "identity-vault/90_evals/cases/source-change-t0-t1/input/fixture.json"
+        - "identity-vault/90_evals/cases/source-change-t0-t1/expected/assertions.json"
+        - "identity-vault/90_evals/cases/source-change-t0-t1/expected/final-state.json"
+        - "identity-vault/90_evals/cases/source-change-t0-t1/actual/README.md"
+        - "scripts/verify-source-change-t0-t1.mjs"
+        - "tests/source-change-t0-t1.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-source-change-t0-t1.mjs"
+        - "node --test tests/source-change-t0-t1.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T5 source-change t0/t1 fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 receipt"
+      - "T002 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/source-change-t0-t1/input/fixture.json"
+      - "identity-vault/90_evals/cases/source-change-t0-t1/expected/assertions.json"
+      - "identity-vault/90_evals/cases/source-change-t0-t1/expected/final-state.json"
+      - "identity-vault/90_evals/cases/source-change-t0-t1/actual/README.md"
+      - "scripts/verify-source-change-t0-t1.mjs"
+      - "tests/source-change-t0-t1.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-source-change-t0-t1.mjs"
+      - "node --test tests/source-change-t0-t1.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Cannot produce a meaningful red failure before implementation."
+      - "Implementation would weaken T0/T1/T2/T3/T4 or global specs."
+      - "Behavior becomes a connector/runtime implementation instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented the T5 mutable source t0/t1 contract with fixture, verifier, targeted Node test, and global spec wiring."
+      changed_files:
+        - "identity-vault/90_evals/cases/source-change-t0-t1/input/fixture.json"
+        - "identity-vault/90_evals/cases/source-change-t0-t1/expected/assertions.json"
+        - "identity-vault/90_evals/cases/source-change-t0-t1/expected/final-state.json"
+        - "identity-vault/90_evals/cases/source-change-t0-t1/actual/README.md"
+        - "scripts/verify-source-change-t0-t1.mjs"
+        - "tests/source-change-t0-t1.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      red_evidence:
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          outcome: "expected_fail"
+          summary: "Failed after global wiring because scripts/verify-source-change-t0-t1.mjs did not exist yet."
+      commands:
+        - cmd: "node scripts/verify-source-change-t0-t1.mjs"
+          status: pass
+        - cmd: "node --test tests/source-change-t0-t1.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      design_delta: "T5 now proves mutable source lifecycle: changed source pointers create t1 snapshots with previous_snapshot_id, preserve t0 snapshots, mark t0-derived memory needs_review/changed before confident recall, require reviewed t1-derived memory, preserve stable document_id on re-promotion, and prevent unavailable source checks from creating fresh evidence."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Align docs with implemented T5 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/source_freshness.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, source freshness policy, and agent manual with implemented T5 source-change behavior."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/source_freshness.md"
+        - "identity-vault/AGENTS.md"
+      commands:
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node --test tests/source-change-t0-t1.test.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      design_delta: "Docs now describe T5 as a deterministic mutable-source contract: changed pointers create t1 snapshots linked to t0, t0 remains auditable, t0-derived memory is quarantined as needs_review/changed, reviewed t1 memory re-promotes with the same document_id, and unavailable checks never prove freshness."
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: default
+    objective: "Ship verified T5 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-source-change-t0-t1-t5/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt: null
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

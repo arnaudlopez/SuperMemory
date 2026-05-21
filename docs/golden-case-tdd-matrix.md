@@ -358,7 +358,7 @@ Tests rouges :
 Critere de passage :
 
 ```text
-Le changement d'une source mutable propage l'impact avant tout recall confiant.
+Le changement d'une source mutable propage l'impact avant tout recall confiant, et l'indisponibilite ne prouve jamais la fraicheur.
 ```
 
 ## Tranche 6 - Conflit, indisponibilite et arbitrage

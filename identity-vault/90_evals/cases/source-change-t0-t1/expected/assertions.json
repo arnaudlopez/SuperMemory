@@ -1,0 +1,20 @@
+{
+  "case_id": "source-change-t0-t1",
+  "required_test_ids": ["T5.1", "T5.2", "T5.3", "T5.4", "T5.5", "T5.6"],
+  "expected_errors": {
+    "T5.1": "changed_source_missing_new_snapshot",
+    "T5.2": "previous_snapshot_missing",
+    "T5.3": "changed_source_memory_not_reviewed",
+    "T5.4": "reviewed_memory_not_derived_from_t1",
+    "T5.5": "repromotion_document_id_changed",
+    "T5.6": "unavailable_source_marked_fresh"
+  },
+  "required_source_id": "src-acme-prd",
+  "required_t0_snapshot_id": "snap-acme-prd-2026-05-18",
+  "required_t1_snapshot_id": "snap-acme-prd-2026-05-21",
+  "required_document_id": "doc-acme-prd",
+  "required_t0_memory_id": "mem-acme-prd-t0",
+  "required_t1_memory_id": "mem-acme-prd-t1",
+  "required_review_id": "review-acme-prd-source-change",
+  "required_unavailable_source_id": "src-acme-contract"
+}

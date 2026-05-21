@@ -34,6 +34,7 @@ external source checked
   -> compare hash or connector version
   -> same content: update last_checked_at
   -> changed content: create new snapshot
+  -> link t1 to t0 with previous_snapshot_id
   -> mark impacted compiled notes stale or needs_review
   -> re-promote active Hindsight document after review
 ```
@@ -59,3 +60,8 @@ If a snapshot changes, every derived note with `staleness_policy: needs_review_o
 If active memory depends on a stale or changed source, the agent must say which snapshot it is using and avoid pretending the answer is current.
 
 If a source is `unavailable`, the system may use last-known snapshot wording, but it must not treat the unavailable check as proof that the source is unchanged.
+
+## Executable Contract
+
+The local T5 verifier lives at `scripts/verify-source-change-t0-t1.mjs`.
+It checks hard lifecycle properties: t1 snapshot lineage, t0 preservation, `needs_review` propagation, reviewed t1 derivation, stable `document_id` re-promotion, and unavailable-source handling.

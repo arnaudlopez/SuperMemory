@@ -1008,6 +1008,14 @@ Pass conditions :
 - Respecter `snapshot_registry.md` et propager `freshness`.
 - Ajouter `retain_mission`, `observations_mission`, `observation_scopes` et `entity_labels` si M1 prouve la valeur du prototype.
 
+Contrat executable T5 avant connecteurs reels :
+
+```bash
+node scripts/verify-source-change-t0-t1.mjs
+```
+
+Ce contrat verifie qu'une source mutable changee cree une snapshot t1 reliee a t0, conserve t0, met les memoires derivees en `needs_review`, recompile contre t1 apres revue, re-promeut avec le meme `document_id`, et ne transforme jamais une source `unavailable` en preuve `fresh`.
+
 ### M3 - Evals
 
 - Adapter les golden questions.

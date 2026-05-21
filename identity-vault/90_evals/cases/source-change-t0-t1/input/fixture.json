@@ -1,0 +1,316 @@
+{
+  "case_id": "source-change-t0-t1",
+  "valid": {
+    "sources": [
+      {
+        "source_id": "src-acme-prd",
+        "external_ref": "https://docs.example.test/acme/project-y-prd",
+        "source_kind": "mutable_doc",
+        "status": "changed",
+        "active_snapshot_id": "snap-acme-prd-2026-05-21",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "freshness": "changed",
+        "last_checked_at": "2026-05-21T10:00:00Z"
+      },
+      {
+        "source_id": "src-acme-contract",
+        "external_ref": "crm://contracts/acme-2026",
+        "source_kind": "crm_contract",
+        "status": "unavailable",
+        "active_snapshot_id": "snap-acme-contract-2026-05-01",
+        "freshness": "unavailable",
+        "last_checked_at": "2026-05-21T10:05:00Z",
+        "unavailable_reason": "connector_timeout"
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "source_id": "src-acme-prd",
+        "content_hash": "sha256:acme-prd-t0",
+        "captured_at": "2026-05-18T09:00:00Z",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-21",
+        "source_id": "src-acme-prd",
+        "content_hash": "sha256:acme-prd-t1",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "captured_at": "2026-05-21T10:00:00Z",
+        "immutable": true,
+        "change_status": "changed"
+      },
+      {
+        "snapshot_id": "snap-acme-contract-2026-05-01",
+        "source_id": "src-acme-contract",
+        "content_hash": "sha256:acme-contract-t0",
+        "captured_at": "2026-05-01T12:00:00Z",
+        "immutable": true
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-prd-t0",
+        "document_id": "doc-acme-prd",
+        "status": "needs_review",
+        "freshness": "changed",
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "derived_from": ["snap-acme-prd-2026-05-18"],
+        "staleness_policy": "needs_review_on_source_change",
+        "review_reason": "source_snapshot_changed"
+      },
+      {
+        "memory_id": "mem-acme-prd-t1",
+        "document_id": "doc-acme-prd",
+        "status": "active",
+        "freshness": "fresh",
+        "snapshot_id": "snap-acme-prd-2026-05-21",
+        "derived_from": ["snap-acme-prd-2026-05-21"],
+        "review_status": "approved",
+        "supersedes_memory_id": "mem-acme-prd-t0"
+      },
+      {
+        "memory_id": "mem-acme-contract-last-known",
+        "document_id": "doc-acme-contract",
+        "status": "active",
+        "freshness": "unavailable",
+        "snapshot_id": "snap-acme-contract-2026-05-01",
+        "derived_from": ["snap-acme-contract-2026-05-01"],
+        "answer_policy": "last_known_only"
+      }
+    ],
+    "promotion_payloads": [
+      {
+        "document_id": "doc-acme-prd",
+        "memory_id": "mem-acme-prd-t1",
+        "status": "active",
+        "text": "Acme Project Y PRD was reviewed against the 2026-05-21 snapshot.",
+        "tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "source:src-acme-prd",
+          "snapshot:snap-acme-prd-2026-05-21"
+        ],
+        "metadata": {
+          "source_id": "src-acme-prd",
+          "snapshot_id": "snap-acme-prd-2026-05-21",
+          "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+          "memory_id": "mem-acme-prd-t1",
+          "replaces_memory_id": "mem-acme-prd-t0",
+          "freshness": "fresh"
+        }
+      }
+    ],
+    "review_items": [
+      {
+        "review_id": "review-acme-prd-source-change",
+        "queue": "staleness_queue",
+        "source_id": "src-acme-prd",
+        "old_snapshot_id": "snap-acme-prd-2026-05-18",
+        "new_snapshot_id": "snap-acme-prd-2026-05-21",
+        "affected_memory_ids": ["mem-acme-prd-t0"],
+        "status": "resolved"
+      }
+    ],
+    "source_checks": [
+      {
+        "check_id": "check-acme-contract-timeout",
+        "source_id": "src-acme-contract",
+        "checked_at": "2026-05-21T10:05:00Z",
+        "result": "unavailable",
+        "freshness_after_check": "unavailable",
+        "created_snapshot_id": null
+      }
+    ],
+    "relations": [
+      {
+        "relation_id": "rel-prd-t1-supersedes-t0",
+        "relation_type": "supersedes_snapshot",
+        "from": "snap-acme-prd-2026-05-21",
+        "to": "snap-acme-prd-2026-05-18"
+      },
+      {
+        "relation_id": "rel-mem-t0-opens-review",
+        "relation_type": "opens_review",
+        "from": "mem-acme-prd-t0",
+        "to": "review-acme-prd-source-change"
+      },
+      {
+        "relation_id": "rel-mem-t1-supersedes-t0",
+        "relation_type": "supersedes_memory",
+        "from": "mem-acme-prd-t1",
+        "to": "mem-acme-prd-t0"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T5.1",
+      "description": "A changed mutable source must create a t1 snapshot with previous_snapshot_id.",
+      "expected_error": "changed_source_missing_new_snapshot",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-prd",
+            "status": "changed",
+            "active_snapshot_id": "snap-acme-prd-2026-05-21",
+            "previous_snapshot_id": "snap-acme-prd-2026-05-18"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap-acme-prd-2026-05-18",
+            "source_id": "src-acme-prd",
+            "content_hash": "sha256:acme-prd-t0",
+            "immutable": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "T5.2",
+      "description": "Old t0 snapshot must remain readable after t1 exists.",
+      "expected_error": "previous_snapshot_missing",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-prd",
+            "status": "changed",
+            "active_snapshot_id": "snap-acme-prd-2026-05-21",
+            "previous_snapshot_id": "snap-acme-prd-2026-05-18"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap-acme-prd-2026-05-21",
+            "source_id": "src-acme-prd",
+            "content_hash": "sha256:acme-prd-t1",
+            "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+            "immutable": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "T5.3",
+      "description": "Memory derived from t0 must become needs_review or stale before active recall.",
+      "expected_error": "changed_source_memory_not_reviewed",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-prd",
+            "status": "changed",
+            "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+            "active_snapshot_id": "snap-acme-prd-2026-05-21"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap-acme-prd-2026-05-18",
+            "source_id": "src-acme-prd",
+            "content_hash": "sha256:acme-prd-t0",
+            "immutable": true
+          },
+          {
+            "snapshot_id": "snap-acme-prd-2026-05-21",
+            "source_id": "src-acme-prd",
+            "content_hash": "sha256:acme-prd-t1",
+            "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+            "immutable": true
+          }
+        ],
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-prd-t0",
+            "document_id": "doc-acme-prd",
+            "status": "active",
+            "freshness": "fresh",
+            "snapshot_id": "snap-acme-prd-2026-05-18",
+            "derived_from": ["snap-acme-prd-2026-05-18"],
+            "staleness_policy": "needs_review_on_source_change"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T5.4",
+      "description": "Reviewed memory must derive from t1 after recompile.",
+      "expected_error": "reviewed_memory_not_derived_from_t1",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-prd-t1",
+            "document_id": "doc-acme-prd",
+            "status": "active",
+            "freshness": "fresh",
+            "snapshot_id": "snap-acme-prd-2026-05-21",
+            "derived_from": ["snap-acme-prd-2026-05-18"],
+            "review_status": "approved"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap-acme-prd-2026-05-21",
+            "previous_snapshot_id": "snap-acme-prd-2026-05-18"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T5.5",
+      "description": "Re-promotion after review must keep stable document_id.",
+      "expected_error": "repromotion_document_id_changed",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-prd-t0",
+            "document_id": "doc-acme-prd",
+            "status": "needs_review"
+          },
+          {
+            "memory_id": "mem-acme-prd-t1",
+            "document_id": "doc-acme-prd-v2",
+            "status": "active",
+            "supersedes_memory_id": "mem-acme-prd-t0"
+          }
+        ],
+        "promotion_payloads": [
+          {
+            "document_id": "doc-acme-prd-v2",
+            "memory_id": "mem-acme-prd-t1",
+            "status": "active",
+            "metadata": {
+              "snapshot_id": "snap-acme-prd-2026-05-21",
+              "replaces_memory_id": "mem-acme-prd-t0"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "T5.6",
+      "description": "Unavailable source check must not create fresh evidence.",
+      "expected_error": "unavailable_source_marked_fresh",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-contract",
+            "status": "unavailable",
+            "freshness": "fresh",
+            "active_snapshot_id": "snap-acme-contract-2026-05-01"
+          }
+        ],
+        "source_checks": [
+          {
+            "check_id": "check-acme-contract-timeout",
+            "source_id": "src-acme-contract",
+            "result": "unavailable",
+            "freshness_after_check": "fresh",
+            "created_snapshot_id": "snap-acme-contract-2026-05-21"
+          }
+        ]
+      }
+    }
+  ]
+}

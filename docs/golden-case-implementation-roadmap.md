@@ -205,8 +205,10 @@ Scenario :
 - meme URL ou meme record externe ;
 - snapshot t0 ;
 - snapshot t1 avec hash different ;
+- relation `previous_snapshot_id` / `supersedes_snapshot` ;
 - ancienne memoire derivee marquee `stale` ou `needs_review` ;
 - re-promotion apres revue avec le meme `document_id`.
+- source indisponible traitee comme `unavailable`, jamais comme preuve de fraicheur.
 
 Oracle :
 
@@ -214,6 +216,7 @@ Oracle :
 Quand une source change, une nouvelle snapshot est creee,
 la memoire derivee devient needs_review,
 puis la version revue est re-promue avec le meme document_id.
+Quand une source est indisponible, aucun nouveau snapshot frais n'est invente.
 ```
 
 ## Tranche 6 - Conflit, indisponibilite et arbitrage
