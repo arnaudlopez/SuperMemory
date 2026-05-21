@@ -5,7 +5,7 @@ goal:
   slug: "implement-hindsight-adapter-minimal-t3"
   kind: specific
   tranche: "Implement a minimal governed Hindsight adapter contract that consumes only validated promotion payloads, upserts by stable document_id, recalls fail-closed, and preserves source-backed answer evidence."
-  status: active
+  status: done
   oracle:
     signal: "A T3 executable verifier is wired into node scripts/verify-supermemory-specs.mjs and proves governed promotion/upsert/recall behavior while all T0/T1/T2 specs remain green."
     cadence: "after each Worker package and at final audit"
@@ -89,7 +89,7 @@ visual_board:
     url: "http://goalbuddy.localhost:41737/implement-hindsight-adapter-minimal-t3/"
     command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-adapter-minimal-t3"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -306,8 +306,8 @@ tasks:
         - "tests/hindsight-adapter-minimal.test.mjs"
         - "scripts/verify-supermemory-specs.mjs"
       red_evidence:
-        - cmd: "node scripts/verify-supermemory-specs.mjs"
-          status: "expected_fail"
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          outcome: "expected_fail"
           summary: "Failed because scripts/verify-hindsight-adapter-minimal.mjs was not yet implemented after global oracle wiring."
       commands:
         - cmd: "node scripts/verify-hindsight-adapter-minimal.mjs"
@@ -381,7 +381,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     reasoning_hint: default
     objective: "Ship verified T3 work to GitHub before the goal can be marked done."
     constraints:
@@ -401,12 +401,49 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "Or shipping_blocker: no_git_repository | no_github_remote"
-    receipt: null
+    receipt:
+      result: done
+      commit_sha: "c2d5e6e"
+      remote_branch: "main"
+      push_result: "pushed to origin/main"
+      committed_files:
+        - "README.md"
+        - "docs/goals/implement-hindsight-adapter-minimal-t3/goal.md"
+        - "docs/goals/implement-hindsight-adapter-minimal-t3/state.yaml"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/actual/README.md"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/adapter-state.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/assertions.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json"
+        - "identity-vault/AGENTS.md"
+        - "scripts/verify-hindsight-adapter-minimal.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/hindsight-adapter-minimal.test.mjs"
+      unrelated_dirty_files_left_untouched: []
+      commands:
+        - cmd: "git status --short"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        - cmd: "node --test tests/hindsight-adapter-minimal.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/implement-hindsight-adapter-minimal-t3/state.yaml"
+          status: pass
+      notes:
+        - "The --final quality check is recorded in T999 after final board state is written."
 
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether T3 satisfies the original outcome for this tranche."
     inputs:
@@ -431,11 +468,45 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "T3 is now implemented as a minimal local Hindsight adapter contract. It proves governed promotion payloads retain/upsert by stable document_id, do_not_use deletes/excludes active documents, recall policies fail closed without scoped tags, raw LLM conclusions and unpromoted vault items are not retained, recall misses have traces, and answer evidence links recalled documents back to source snapshots and adapter traces."
+      workflow_safeguards:
+        design_concept: "present in T002 and proven by T003/T004"
+        ubiquitous_language: "present in T001"
+        feedback_policy: "present in T002"
+        test_strategy: "red -> green recorded in T002/T003"
+        module_map: "present in T001/T002"
+        interface_contract: "present in T002/T003"
+        architecture_review: "approved in T002"
+        design_delta: "present in T003/T004/T999"
+      completion_mapping:
+        original_outcome: "Start and execute the next goal after green T0/T1/T2."
+        oracle: "scripts/verify-supermemory-specs.mjs includes and passes scripts/verify-hindsight-adapter-minimal.mjs."
+        t0_t1_t2_preserved: "global specs still pass memory contracts, M1 promotion/recall, identity vault TDD, and enterprise target."
+        t3_behavior: "identity-vault/90_evals/cases/hindsight-adapter-minimal plus scripts/verify-hindsight-adapter-minimal.mjs."
+        shipping: "c2d5e6e pushed to origin/main."
+      commands:
+        - cmd: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        - cmd: "node --test tests/hindsight-adapter-minimal.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      missing_evidence: []
+      next_task_if_not_complete: null
 
 checks:
-  dirty_fingerprint: unknown
+  dirty_fingerprint: "clean after c2d5e6e push, then board finalization pending"
   last_verification:
-    result: unknown
-    task: null
-    commands: []
+    result: pass
+    task: T999
+    commands:
+      - "node scripts/verify-hindsight-adapter-minimal.mjs"
+      - "node --test tests/hindsight-adapter-minimal.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
