@@ -1,0 +1,15 @@
+{
+  "required_test_ids": ["T7.1", "T7.2", "T7.3", "T7.4", "T7.5"],
+  "expected_errors": {
+    "T7.1": "marketing_strategy_active_at_t0",
+    "T7.2": "type_proposal_without_source",
+    "T7.3": "candidate_type_not_promotable",
+    "T7.4": "experimental_recall_missing_schema_filter",
+    "T7.5": "stable_promotion_missing_evidence"
+  },
+  "required_type": "marketing_strategy",
+  "required_source_id": "src-acme-strategy-brief-2026-05-21",
+  "required_proposal_id": "type-proposal-marketing-strategy",
+  "required_recall_request_id": "recall-acme-marketing-strategy-experimental",
+  "required_rejected_stable_request_id": "stable-marketing-strategy-without-eval-rejected"
+}

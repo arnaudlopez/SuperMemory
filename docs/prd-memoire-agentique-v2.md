@@ -391,6 +391,14 @@ Regle produit :
 
 > On n'ajoute pas un type parce qu'il pourrait servir. On l'ajoute quand un cas reel doit etre suivi, retrouve ou gouverne dans le temps.
 
+Contrat executable T7 :
+
+```bash
+node scripts/verify-adaptive-business-types.mjs
+```
+
+Ce contrat verifie que `marketing_strategy` n'est pas actif a t0, qu'une source t1 cree seulement une proposition gouvernee, qu'un type `candidate` n'est pas promouvable, qu'un type `experimental` exige un recall borne par `schema_status:experimental`, et qu'un passage `stable` sans preuve source/eval est rejete.
+
 ## 10. Contrat de promotion vers Hindsight
 
 Un item ne peut etre envoye a Hindsight que si :

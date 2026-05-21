@@ -1,0 +1,18 @@
+{
+  "answers": [
+    {
+      "answer_id": "ans-marketing-strategy-t0",
+      "answer_state": "not_active",
+      "selected_type": null,
+      "policy_outcome": "not_active_until_source_backed"
+    },
+    {
+      "answer_id": "ans-marketing-strategy-t1",
+      "answer_state": "experimental",
+      "used_source_ids": ["src-acme-strategy-brief-2026-05-21"],
+      "used_type_proposal_ids": ["type-proposal-marketing-strategy"],
+      "recall_request_id": "recall-acme-marketing-strategy-experimental",
+      "policy_outcome": "bounded_experimental_use"
+    }
+  ]
+}

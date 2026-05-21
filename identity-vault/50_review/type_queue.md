@@ -12,6 +12,7 @@ None.
 Type: marketing_strategy
 Status: candidate
 Trigger source:
+Trigger snapshot:
 Why existing types are insufficient:
 Minimal fields:
 Default sensitivity:
@@ -26,3 +27,5 @@ Decision:
 Do not add a type because it might be useful later.
 
 Add it when a real source or workflow needs the concept to be tracked, retrieved, or governed over time.
+
+A proposal without `Trigger source` remains invalid for activation.

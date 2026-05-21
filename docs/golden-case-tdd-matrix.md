@@ -411,6 +411,8 @@ Critere de passage :
 Les types naissent a la demande et restent gouvernes par leur statut.
 ```
 
+Le fixture executable attendu vit dans `identity-vault/90_evals/cases/adaptive-business-types`. Il encode le cycle `candidate -> experimental -> stable` comme une preuve de gouvernance, pas comme une ontologie prechargee.
+
 ## Tranche 8 - Acces entreprise, secrets et legal hold
 
 Commande cible :

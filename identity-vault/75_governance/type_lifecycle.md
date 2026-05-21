@@ -51,8 +51,15 @@ An experimental type may be promoted to stable only after it has:
 - a recall question in `90_evals/` or a review item in `50_review/`;
 - no unresolved permission or sensitivity conflict.
 
+Experimental recall must include both `entity_type:<type>` and `schema_status:experimental` filters. Without those filters, the type is too broad for active recall.
+
 ## Rejection Rule
 
 Do not create a type because it might be useful later.
 
 Create it only when a real case must be tracked, retrieved, or governed over time.
+
+## Executable Contract
+
+The local T7 verifier lives at `scripts/verify-adaptive-business-types.mjs`.
+It checks the source-backed proposal, candidate block, bounded experimental recall, and stable promotion gate.

@@ -80,6 +80,9 @@ This vault is a governed memory system, not a chat transcript dump.
 - Type lifecycle: `75_governance/type_lifecycle.md`.
 - Type proposals: `50_review/type_queue.md`.
 - Candidate types are not active memory types until reviewed.
+- Do not treat candidate examples in the registry as active types at t0.
+- Experimental type recall must include both `entity_type:<type>` and `schema_status:experimental`.
+- Do not promote a type to stable without source-backed and eval or review evidence.
 
 ## TDD Rule
 

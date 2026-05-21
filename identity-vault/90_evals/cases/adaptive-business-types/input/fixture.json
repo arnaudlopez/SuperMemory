@@ -1,0 +1,195 @@
+{
+  "case_id": "adaptive-business-types",
+  "valid": {
+    "type_registry_t0": [
+      {"type": "source", "status": "stable", "active": true},
+      {"type": "entity", "status": "stable", "active": true},
+      {"type": "fact", "status": "stable", "active": true},
+      {"type": "signal", "status": "stable", "active": true},
+      {"type": "action", "status": "stable", "active": true},
+      {"type": "policy", "status": "stable", "active": true},
+      {"type": "review", "status": "stable", "active": true},
+      {"type": "promotion", "status": "stable", "active": true},
+      {"type": "client", "status": "stable", "active": true},
+      {"type": "project", "status": "stable", "active": true},
+      {"type": "marketing_strategy", "status": "candidate", "active": false, "example_only": true}
+    ],
+    "captured_sources": [
+      {
+        "source_id": "src-acme-strategy-brief-2026-05-21",
+        "snapshot_id": "snap-acme-strategy-brief-2026-05-21",
+        "source_type": "captured_external_document",
+        "title": "Acme Project Y positioning strategy brief",
+        "introduced_concepts": ["marketing_strategy"]
+      }
+    ],
+    "type_queue": [
+      {
+        "proposal_id": "type-proposal-marketing-strategy",
+        "type": "marketing_strategy",
+        "status": "candidate",
+        "trigger_source_id": "src-acme-strategy-brief-2026-05-21",
+        "trigger_snapshot_id": "snap-acme-strategy-brief-2026-05-21",
+        "why_existing_types_are_insufficient": "The strategy needs to be tracked and recalled across future campaign and positioning work, not only as a generic fact.",
+        "minimal_fields": ["audience", "positioning", "channel", "confidence"],
+        "default_sensitivity": "medium",
+        "allowed_consumers": ["memory", "project_manager", "crm"],
+        "hindsight_tags": ["entity_type:marketing_strategy", "schema_status:experimental"],
+        "review_question": "Can marketing_strategy be used as a bounded experimental type for Acme strategy recall?"
+      }
+    ],
+    "type_registry_t1": [
+      {
+        "type": "marketing_strategy",
+        "status": "experimental",
+        "active": true,
+        "source_ids": ["src-acme-strategy-brief-2026-05-21"],
+        "minimal_fields": ["audience", "positioning", "channel", "confidence"],
+        "allowed_source_types": ["captured_external_document", "direct_note"],
+        "default_visibility": "professional",
+        "default_sensitivity": "medium",
+        "allowed_consumers": ["memory", "project_manager", "crm"],
+        "hindsight_tags": ["entity_type:marketing_strategy", "schema_status:experimental"],
+        "eval_ids": ["eval-marketing-strategy-recall"]
+      }
+    ],
+    "promotion_checks": [
+      {
+        "check_id": "candidate-marketing-strategy-not-promoted",
+        "entity_type": "marketing_strategy",
+        "schema_status": "candidate",
+        "requested_status": "active",
+        "decision": "rejected",
+        "reason": "candidate_type_not_promotable"
+      },
+      {
+        "check_id": "experimental-marketing-strategy-bounded",
+        "entity_type": "marketing_strategy",
+        "schema_status": "experimental",
+        "requested_status": "active",
+        "decision": "approved",
+        "hindsight_tags": ["entity_type:marketing_strategy", "schema_status:experimental"]
+      }
+    ],
+    "recall_requests": [
+      {
+        "request_id": "recall-acme-marketing-strategy-experimental",
+        "entity_type": "marketing_strategy",
+        "schema_status": "experimental",
+        "filters": ["workspace:ws-acme", "entity_type:marketing_strategy", "schema_status:experimental"],
+        "expected_result_ids": ["mem-acme-marketing-strategy-exp"]
+      }
+    ],
+    "stable_transition_requests": [
+      {
+        "request_id": "stable-marketing-strategy-without-eval-rejected",
+        "entity_type": "marketing_strategy",
+        "from_status": "experimental",
+        "to_status": "stable",
+        "source_ids": ["src-acme-strategy-brief-2026-05-21"],
+        "eval_ids": [],
+        "decision": "rejected",
+        "reason": "stable_requires_eval_and_source"
+      }
+    ],
+    "answer_evidence": [
+      {
+        "answer_id": "ans-marketing-strategy-t0",
+        "answer_state": "not_active",
+        "question": "Should marketing_strategy exist as an active type at t0?",
+        "used_registry_snapshot": "type_registry_t0",
+        "selected_type": null,
+        "policy_outcome": "not_active_until_source_backed"
+      },
+      {
+        "answer_id": "ans-marketing-strategy-t1",
+        "answer_state": "experimental",
+        "question": "Can Acme marketing_strategy be recalled after the t1 source?",
+        "used_source_ids": ["src-acme-strategy-brief-2026-05-21"],
+        "used_type_proposal_ids": ["type-proposal-marketing-strategy"],
+        "recall_request_id": "recall-acme-marketing-strategy-experimental",
+        "policy_outcome": "bounded_experimental_use"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T7.1",
+      "description": "marketing_strategy must not be active at t0.",
+      "expected_error": "marketing_strategy_active_at_t0",
+      "input": {
+        "type_registry_t0": [
+          {"type": "marketing_strategy", "status": "stable", "active": true}
+        ]
+      }
+    },
+    {
+      "id": "T7.2",
+      "description": "A type proposal must be backed by a real captured source.",
+      "expected_error": "type_proposal_without_source",
+      "input": {
+        "type_registry_t0": [
+          {"type": "marketing_strategy", "status": "candidate", "active": false}
+        ],
+        "captured_sources": [],
+        "type_queue": [
+          {
+            "proposal_id": "type-proposal-marketing-strategy",
+            "type": "marketing_strategy",
+            "status": "candidate",
+            "minimal_fields": ["audience"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T7.3",
+      "description": "Candidate type cannot be promoted as active memory.",
+      "expected_error": "candidate_type_not_promotable",
+      "input": {
+        "promotion_checks": [
+          {
+            "check_id": "candidate-promoted",
+            "entity_type": "marketing_strategy",
+            "schema_status": "candidate",
+            "requested_status": "active",
+            "decision": "approved"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T7.4",
+      "description": "Experimental recall must be bounded with schema_status:experimental.",
+      "expected_error": "experimental_recall_missing_schema_filter",
+      "input": {
+        "recall_requests": [
+          {
+            "request_id": "recall-unbounded",
+            "entity_type": "marketing_strategy",
+            "schema_status": "experimental",
+            "filters": ["workspace:ws-acme", "entity_type:marketing_strategy"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T7.5",
+      "description": "Stable promotion requires source and eval evidence.",
+      "expected_error": "stable_promotion_missing_evidence",
+      "input": {
+        "stable_transition_requests": [
+          {
+            "request_id": "stable-without-eval-approved",
+            "entity_type": "marketing_strategy",
+            "from_status": "experimental",
+            "to_status": "stable",
+            "source_ids": ["src-acme-strategy-brief-2026-05-21"],
+            "eval_ids": [],
+            "decision": "approved"
+          }
+        ]
+      }
+    }
+  ]
+}

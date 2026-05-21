@@ -32,7 +32,7 @@ These concepts exist in every SuperMemory deployment:
 
 No enterprise-specific extension type is active by default.
 
-Examples that may be proposed later:
+Examples that may be proposed later. These rows are not active business types until a real source or workflow creates a reviewed proposal:
 
 | Type | Status | Trigger Required |
 | --- | --- | --- |
@@ -53,3 +53,8 @@ schema_status:<experimental|stable>
 ```
 
 Candidate types are not promoted as active Hindsight memory.
+
+## Executable Contract
+
+The local T7 verifier lives at `scripts/verify-adaptive-business-types.mjs`.
+It checks that adaptive business types are source-backed, lifecycle-gated, and recall-bounded.

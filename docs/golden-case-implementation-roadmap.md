@@ -270,6 +270,14 @@ Il existe a t1 uniquement parce qu'une source reelle le justifie.
 Il est experimental et ne peut pas etre traite comme stable.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-adaptive-business-types.mjs
+```
+
+Le contrat T7 reste local et deterministe : il prouve l'absence active a t0, la proposition source-backed a t1, le blocage des types `candidate`, le recall borne des types `experimental`, et le rejet d'un passage `stable` sans preuve source/eval.
+
 ## Tranche 8 - Acces entreprise, secrets et legal hold
 
 Objectif :

@@ -148,6 +148,12 @@ When sources disagree, SuperMemory preserves both facts instead of normalizing t
 
 See [`identity-vault/90_evals/cases/conflict-unavailable-arbitration`](identity-vault/90_evals/cases/conflict-unavailable-arbitration).
 
+### Adaptive Business Types
+
+Business types emerge from real evidence, not speculation. The local T7 contract verifies that `marketing_strategy` is not active at t0, a t1 source can only create a `type_queue` proposal, `candidate` types cannot be promoted active, `experimental` recall is bounded by `schema_status:experimental`, and `stable` requires source plus eval evidence.
+
+See [`identity-vault/90_evals/cases/adaptive-business-types`](identity-vault/90_evals/cases/adaptive-business-types).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -175,6 +181,7 @@ node scripts/verify-hindsight-adapter-minimal.mjs
 node scripts/verify-governed-answer-evidence.mjs
 node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
+node scripts/verify-adaptive-business-types.mjs
 ```
 
 Expected output:

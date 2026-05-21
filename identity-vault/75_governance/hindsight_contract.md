@@ -51,6 +51,7 @@ An item may be promoted only when:
 - secrets and restricted fields are redacted or excluded;
 - blocking ambiguities are resolved or explicitly queued;
 - status is not `do_not_use`.
+- schema status is not `candidate`.
 
 Default promotion favors compiled notes. Raw sources are promoted only for exact-text retrieval, missing compiled notes, or audit fixtures.
 
