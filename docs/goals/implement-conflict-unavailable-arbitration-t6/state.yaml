@@ -1,0 +1,428 @@
+version: 2
+
+goal:
+  title: "T6 Conflict Unavailable Arbitration"
+  slug: "implement-conflict-unavailable-arbitration-t6"
+  kind: specific
+  tranche: "Implement an executable contract proving conflict preservation, explicit arbitration, unavailable handling, and review queue creation."
+  status: done
+  oracle:
+    signal: "A T6 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves conflict/unavailable arbitration while T0-T5 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T6 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit_sha 8629d32, pushed branch origin/main, and final audit full_outcome_complete true."
+  intake:
+    original_request: "enchaine"
+    interpreted_outcome: "Continue with T6 conflict, unavailable, and arbitration tranche."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T6 fixture/verifier proves conflict/unavailable arbitration, global specs pass, and the work is committed and pushed."
+    likely_misfire: "Letting source reliability become silent auto-selection or treating unavailable connector checks as unchanged."
+    blind_spots_considered:
+      - "Conflicts must preserve both facts."
+      - "Explicit reliability rule can guide but must still cite conflict."
+      - "Unavailable sources need last-known/refresh behavior."
+      - "Unresolved conflicts need review queue evidence."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T6.1-T6.5."
+      - "identity-vault/75_governance/conflict_arbitration.md requires conflict preservation and explicit ordering."
+      - "identity-vault/75_governance/source_reliability.md defines reliability ordering."
+      - "identity-vault/75_governance/answer_policy.md defines conflicting and unavailable answer states."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-conflict-unavailable-arbitration-t6/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-conflict-unavailable-arbitration-t6"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T6 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T6 target found in roadmap/matrix. Existing conflict_arbitration, source_reliability, and answer_policy docs provide the contract."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-conflict-unavailable-arbitration.mjs and T6.1-T6.5."
+        - "identity-vault/75_governance/conflict_arbitration.md requires preserving both facts and avoiding silent promotion."
+        - "identity-vault/75_governance/source_reliability.md defines source ordering and mutable-source caution."
+        - "identity-vault/75_governance/answer_policy.md defines conflicting and unavailable answer states."
+      module_map:
+        new_case: "identity-vault/90_evals/cases/conflict-unavailable-arbitration"
+        new_verifier: "scripts/verify-conflict-unavailable-arbitration.mjs"
+        new_test: "tests/conflict-unavailable-arbitration.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "conflicts_with"
+        - "conflicting"
+        - "source_reliability_rule"
+        - "last_known"
+        - "unavailable"
+        - "conflict_queue"
+        - "AnswerEvidence"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "answer evidence and review queue assertions"
+        docs: "update arbitration/reliability/answer docs after green behavior"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T6 architecture and select Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T6 contract, not a source connector or LLM arbiter."
+      design_concept: "When sources disagree, SuperMemory preserves both facts, records conflicts_with, returns a conflicting answer unless an explicit reliability rule applies, and opens review for unresolved cases. Unavailable sources produce last-known/unverified answers only."
+      interface_contract:
+        conflict_preservation: "Both conflicting memory items and snapshots remain present with conflicts_with relation."
+        no_silent_choice: "No reliability rule means answer_state conflicting and no selected_memory_id."
+        explicit_arbitration: "A rule may select guidance but answer must cite conflict and rule id."
+        unavailable: "Unavailable source answer uses unavailable or last_known state, not current."
+        review_queue: "Unresolved conflict creates conflict_queue review item."
+      test_strategy:
+        red: "Add fixture/global wiring before verifier implementation so global specs fail on missing verifier."
+        green: "Implement verifier for T6.1-T6.5 and wire Node test/global specs."
+      feedback_policy: "Check deterministic contract properties, not exact answer wording."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      allowed_files:
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/input/fixture.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/assertions.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/actual/README.md"
+        - "scripts/verify-conflict-unavailable-arbitration.mjs"
+        - "tests/conflict-unavailable-arbitration.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-conflict-unavailable-arbitration.mjs"
+        - "node --test tests/conflict-unavailable-arbitration.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T6 conflict/unavailable arbitration fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 receipt"
+      - "T002 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/input/fixture.json"
+      - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/assertions.json"
+      - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/actual/README.md"
+      - "scripts/verify-conflict-unavailable-arbitration.mjs"
+      - "tests/conflict-unavailable-arbitration.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-conflict-unavailable-arbitration.mjs"
+      - "node --test tests/conflict-unavailable-arbitration.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Cannot produce a meaningful red failure before implementation."
+      - "Implementation would weaken T0-T5 or global specs."
+      - "Behavior becomes a connector/runtime implementation or LLM arbiter instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented the T6 deterministic local contract for conflict preservation, explicit arbitration, unavailable handling, review queue creation, and global spec wiring."
+      changed_files:
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/input/fixture.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/assertions.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/actual/README.md"
+        - "scripts/verify-conflict-unavailable-arbitration.mjs"
+        - "tests/conflict-unavailable-arbitration.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      commands:
+        - command: "node scripts/verify-conflict-unavailable-arbitration.mjs"
+          status: pass
+        - command: "node --test tests/conflict-unavailable-arbitration.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      red_test_evidence:
+        - "expected_fail: node scripts/verify-supermemory-specs.mjs failed while scripts/verify-conflict-unavailable-arbitration.mjs was intentionally missing."
+      green_test_evidence:
+        - "green_test status: pass; node scripts/verify-conflict-unavailable-arbitration.mjs"
+        - "green_test status: pass; node --test tests/conflict-unavailable-arbitration.test.mjs"
+        - "green_test status: pass; node scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-conflict-unavailable-arbitration.mjs: PASS"
+        - "node --test tests/conflict-unavailable-arbitration.test.mjs: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "git diff --check: PASS"
+      contract_coverage:
+        - "T6.1 bidirectional conflicts_with relation preserves both disagreeing facts."
+        - "T6.2 no explicit rule leaves the answer conflicting with no silent selected winner."
+        - "T6.3 explicit API-over-support rule can select guidance while citing the rule and conflict."
+        - "T6.4 unavailable source answers are last-known/unavailable, never current."
+        - "T6.5 unresolved conflict creates a conflict_queue item."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T6 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/conflict_arbitration.md"
+      - "identity-vault/75_governance/source_reliability.md"
+      - "identity-vault/75_governance/answer_policy.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, governance docs, and agent guidance with the implemented T6 behavior."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/conflict_arbitration.md"
+        - "identity-vault/75_governance/source_reliability.md"
+        - "identity-vault/75_governance/answer_policy.md"
+        - "identity-vault/AGENTS.md"
+      commands:
+        - command: "node scripts/verify-conflict-unavailable-arbitration.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      design_delta:
+        before: "T6 was planned in roadmap/matrix and partially described in governance docs."
+        after: "T6 is now documented as an executable local contract: preserve both facts, require explicit arbitration evidence, treat unavailable as last-known/unverified, and queue unresolved conflicts."
+      verify:
+        - "node scripts/verify-conflict-unavailable-arbitration.mjs: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "git diff --check: PASS"
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: default
+    objective: "Ship verified T6 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-conflict-unavailable-arbitration-t6/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      commit_sha: "8629d32"
+      remote_branch: "origin/main"
+      push_result: "successful push to origin main"
+      committed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/answer_policy.md"
+        - "identity-vault/75_governance/conflict_arbitration.md"
+        - "identity-vault/75_governance/source_reliability.md"
+        - "identity-vault/AGENTS.md"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/actual/README.md"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/expected/assertions.json"
+        - "identity-vault/90_evals/cases/conflict-unavailable-arbitration/input/fixture.json"
+        - "scripts/verify-conflict-unavailable-arbitration.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/conflict-unavailable-arbitration.test.mjs"
+      unrelated_dirty_files_left_untouched: "none observed"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert commit 8629d32 if needed"
+        observability: "answer evidence and conflict_queue assertions"
+        docs: "README, roadmap, TDD matrix, PRD, governance, and agent guidance updated"
+      verify:
+        - "git status --short: only GoalBuddy board files dirty after implementation commit"
+        - "git diff --check: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/implement-conflict-unavailable-arbitration-t6/state.yaml: PASS"
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta:
+        before: "T6 existed as roadmap/matrix intent and governance prose."
+        after: "T6 is executable, documented, globally verified, committed, and pushed."
+      workflow_safeguards:
+        design_concept: "present in T002 and implemented by T003/T004"
+        ubiquitous_language: "present in T001 and used in fixtures/docs"
+        feedback_policy: "present in T002"
+        test_strategy: "red missing-verifier proof plus green targeted/global specs"
+        module_map: "present in T001"
+        interface_contract: "present in T002 and encoded in verifier"
+        architecture_review: "present in T002"
+        design_delta: "present in T004 and T999 receipts"
+      final_verification:
+        - "node scripts/verify-conflict-unavailable-arbitration.mjs: PASS"
+        - "node --test tests/conflict-unavailable-arbitration.test.mjs: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "git diff --check: PASS"
+        - "goalbuddy-quality-check progress: PASS"
+      shipping:
+        commit_sha: "8629d32"
+        remote_branch: "origin/main"
+        push_result: "successful push to origin main"
+      residual_risk: "T6 remains a deterministic local contract, not a live connector or production runtime arbiter."
+      next_task: "T7 adaptive business types, unless a review pass is requested first."
