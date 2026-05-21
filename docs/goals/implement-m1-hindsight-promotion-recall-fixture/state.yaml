@@ -1,0 +1,400 @@
+version: 2
+goal:
+  slug: implement-m1-hindsight-promotion-recall-fixture
+  title: Implement M1 Hindsight Promotion Recall Fixture
+  status: active
+  created_at: "2026-05-20"
+  updated_at: "2026-05-21"
+  original_request: "goal-prep for the next tranche after T1"
+  interpreted_outcome: "Prepare an executable GoalBuddy board for Tranche 2: an M1 Acme governed fixture proving Source -> Snapshot -> Observation -> ValidatedMemory -> PromotionPayload -> AnswerEvidence without Hindsight runtime integration."
+  input_shape: existing_plan
+  audience: "SuperMemory implementers"
+  authority: requested
+  proof_type: test
+  completion_proof: "M1 fixture verifier, node test wrapper, global SuperMemory specs, and diff check pass; changes are committed and pushed."
+  goal_oracle: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs proves the M1 vertical chain and rejection cases."
+  intake:
+    completion_proof: "Final audit maps M1 fixture assertions to passing verification commands and shipping proof."
+  oracle:
+    signal: "M1 fixture verifier plus global SuperMemory specs pass."
+    final_proof: "Final Judge receipt says full_outcome_complete: true with M1 coverage, verification output, and commit/push proof."
+  likely_misfire: "Integrating Hindsight runtime or building a service instead of proving the M1 fixture contract."
+  non_goals:
+    - "No Hindsight runtime integration."
+    - "No service, API, database, connector, or UI."
+    - "No enterprise Golden Case implementation beyond this M1 fixture."
+    - "No Graphiti or Memoria activation."
+  constraints:
+    - "Use TDD: red fixture/verifier before green implementation."
+    - "Keep verifier deterministic and local."
+    - "Preserve T1 memory-contract verifier."
+    - "Do not weaken existing verification scripts."
+  existing_plan_facts:
+    - "Tranche 2 is defined as Fixture M1 Acme gouvernee."
+    - "Expected path: identity-vault/90_evals/cases/m1-hindsight-promotion-recall/."
+    - "Expected verifier: scripts/verify-m1-hindsight-promotion-recall-fixture.mjs."
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+rules:
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  one_active_task: true
+  goal_pressure_requires_oracle: true
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+active_task: T998
+tasks:
+  - id: T001
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Validate and operationalize the M1 fixture implementation package before writes."
+    inputs:
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "T1 memory-contract verifier from previous goal"
+      - "M1 fixture target from charter"
+    constraints:
+      - "Read-only."
+      - "Do not inspect or execute implementation during goal-prep; validate during /goal execution."
+      - "Do not approve Hindsight runtime, DB, API, service, connector, or UI work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "design_concept"
+      - "ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+      - "Exact red-test Worker objective, allowed_files, verify, stop_if"
+      - "Exact green Worker objective, allowed_files, verify, stop_if"
+    receipt:
+      result: done
+      decision: approved
+      design_concept: "M1 is a deterministic vertical contract fixture proving Source -> SourceSnapshot -> Observation -> ValidatedMemory -> HindsightPromotionPayload -> AnswerEvidence before any Hindsight runtime integration."
+      ubiquitous_language:
+        - "Use Source, SourceSnapshot, Observation, ValidatedMemory, Relation, HindsightPromotionPayload, and AnswerEvidence for this tranche."
+        - "Use exact T2 error names: source_without_snapshot, observation_without_snapshot_id, memory_without_derives_from, incomplete_promotion_payload, answer_missing_active_snapshot, do_not_use_promoted."
+      feedback_policy: "Each invalid case must fail with exactly one named expected error; the valid case must pass without removing invalid assertions."
+      test_strategy: "Create M1 JSON/Markdown fixture files, a node --test wrapper, and a deterministic verifier. Capture red evidence from the verifier skeleton, then implement the smallest validator and wire it into the global specs."
+      module_map:
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json: valid M1 graph plus T2.1-T2.6 invalid cases."
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/*.json: expected final state, promotion payload, answer evidence, and assertions."
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs: deterministic M1 verifier."
+        - "tests/m1-hindsight-promotion-recall.test.mjs: Node test wrapper."
+        - "scripts/verify-supermemory-specs.mjs: project-level regression suite."
+      interface_contract:
+        required_chain:
+          - "Source"
+          - "SourceSnapshot"
+          - "Observation"
+          - "ValidatedMemory"
+          - "HindsightPromotionPayload"
+          - "AnswerEvidence"
+        required_t2_errors:
+          T2.1: "source_without_snapshot"
+          T2.2: "observation_without_snapshot_id"
+          T2.3: "memory_without_derives_from"
+          T2.4: "incomplete_promotion_payload"
+          T2.5: "answer_missing_active_snapshot"
+          T2.6: "do_not_use_promoted"
+      architecture_review: "Approved. This tranche stays at fixture/verifier level and does not install, run, or wrap Hindsight."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "none; local fixture contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "none"
+        observability: "local verifier PASS/FAIL output only"
+        docs: "adds M1 goal/fixture documentation artifacts only"
+      red_worker:
+        objective: "Create M1 fixture, assertions, verifier skeleton, and node test wrapper so commands fail red because validation rules are not implemented yet."
+      green_worker:
+        objective: "Implement the minimal deterministic M1 verifier and wire it into scripts/verify-supermemory-specs.mjs."
+  - id: T002
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: red_test
+    objective: "Create the M1 fixture, assertions, verifier skeleton, and test wrapper in red state."
+    impact_assessment_ref: T001
+    allowed_files:
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/**"
+      - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      - "tests/m1-hindsight-promotion-recall.test.mjs"
+      - "docs/goals/implement-m1-hindsight-promotion-recall-fixture/state.yaml"
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+    constraints:
+      - "Write only allowed_files."
+      - "Create red evidence first."
+      - "The verifier must be deterministic and local."
+      - "No Hindsight runtime integration."
+    expected_output:
+      - "Red fixture and verifier skeleton."
+      - "Named expected errors for M1 invalid cases."
+      - "Command output showing intended red failure."
+    verify:
+      - "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+      - "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need Hindsight runtime, DB, API, service, UI, env/secret, external service, background job, deploy, or rollback work."
+    receipt:
+      result: done
+      summary: "Created the M1 fixture, expected artifacts, verifier skeleton, and node test wrapper. The skeleton produced expected_fail red evidence for T2.1-T2.6 before implementation."
+      changed_files:
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/source.md"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/snapshot.md"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/assertions.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/final-state.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/promotion-payload.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/actual/README.md"
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+        - "tests/m1-hindsight-promotion-recall.test.mjs"
+      red_test_evidence:
+        - "expected_fail: T2.1 expected source_without_snapshot, got no_error"
+        - "expected_fail: T2.2 expected observation_without_snapshot_id, got no_error"
+        - "expected_fail: T2.3 expected memory_without_derives_from, got no_error"
+        - "expected_fail: T2.4 expected incomplete_promotion_payload, got no_error"
+        - "expected_fail: T2.5 expected answer_missing_active_snapshot, got no_error"
+        - "expected_fail: T2.6 expected do_not_use_promoted, got no_error"
+      commands:
+        - cmd: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          status: pass
+        - cmd: "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      impact_assessment_ref: T001
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    worker_kind: implementation
+    objective: "Implement the minimal M1 fixture verifier so all M1 assertions pass and wire it into the global specs."
+    impact_assessment_ref: T001
+    allowed_files:
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/**"
+      - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      - "tests/m1-hindsight-promotion-recall.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+      - "docs/goals/implement-m1-hindsight-promotion-recall-fixture/state.yaml"
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 Judge receipt"
+      - "T002 red-test receipt"
+    constraints:
+      - "Write only allowed_files."
+      - "Keep implementation to fixture validation."
+      - "Do not weaken invalid fixtures or skip assertions."
+      - "No Hindsight runtime integration."
+    expected_output:
+      - "M1 invalid cases covered."
+      - "M1 valid final state, promotion payload, and answer evidence accepted."
+      - "Global specs include the M1 verifier."
+      - "design_delta"
+    verify:
+      - "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+      - "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need Hindsight runtime, DB, API, service, UI, env/secret, external service, background job, deploy, or rollback work."
+      - "Verification fails twice after reasonable local repair."
+    receipt:
+      result: done
+      summary: "Implemented the minimal M1 verifier, kept the work fixture-only, and wired the verifier into the project-level specs."
+      changed_files:
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      design_delta: "M1 now has an executable local oracle for governed promotion/recall handoff before runtime Hindsight integration."
+      green_test_evidence:
+        - "PASS m1-hindsight-promotion-recall: M1 promotion recall fixture is valid"
+        - "PASS supermemory specs"
+      commands:
+        - cmd: "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      impact_assessment_ref: T001
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review M1 implementation for TDD integrity, scope control, and usefulness toward the Golden Case."
+    inputs:
+      - "T002 receipt"
+      - "T003 receipt"
+      - "Current diff"
+      - "Verification outputs"
+    constraints:
+      - "Read-only."
+      - "Reject if red evidence is missing, verifier is permissive, or scope creeps into runtime integration."
+    expected_output:
+      - "approved | changes_required"
+      - "M1 coverage result"
+      - "Whether another Worker package is needed"
+      - "Remaining blind spots"
+    receipt:
+      result: done
+      decision: approved
+      M1_coverage_result:
+        T2.1: "source_without_snapshot covered"
+        T2.2: "observation_without_snapshot_id covered"
+        T2.3: "memory_without_derives_from covered"
+        T2.4: "incomplete_promotion_payload covered"
+        T2.5: "answer_missing_active_snapshot covered"
+        T2.6: "do_not_use_promoted covered"
+      scope_control: "No Hindsight runtime, service, API, DB, connector, or UI was added."
+      tdd_integrity: "Red evidence was captured from the verifier skeleton before the green validator implementation."
+      remaining_blind_spots:
+        - "Runtime Hindsight metadata preservation and filtering remain for a later tranche."
+        - "Mutable source t0/t1 change behavior remains for a later tranche."
+      whether_another_worker_package_is_needed: "no"
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: blocked
+    worker_kind: implementation
+    objective: "Apply bounded corrections required by T004."
+    impact_assessment_ref: null
+    allowed_files: []
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 review"
+    constraints:
+      - "Only activate if T004 requires changes."
+      - "Edit only files explicitly authorized after T004."
+      - "No Hindsight runtime, DB, API, service, connector, or UI work."
+    expected_output:
+      - "Corrections applied."
+      - "Verification results."
+    verify: []
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "No changes are required by T004."
+      - "Need files outside allowed_files."
+      - "Need Hindsight runtime, DB, API, service, UI, env/secret, external service, background job, deploy, or rollback work."
+    receipt:
+      result: blocked
+      reason: "No corrections required by T004; bounded correction task intentionally not activated."
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Ship verified M1 fixture changes to GitHub before final completion."
+    inputs:
+      - "Final diff"
+      - "Verification results"
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+      - "If no GitHub remote exists, mark this task blocked with shipping_blocker: no_github_remote."
+      - "If credentials, network or permissions block push, mark this task blocked and do not mark the goal done."
+    expected_output:
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Final audit: prove whether the M1 fixture implementation goal is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion if M1 assertion coverage is incomplete."
+      - "Reject completion unless T998 has commit SHA and successful push result, or explicit shipping blocker."
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "M1 coverage map"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

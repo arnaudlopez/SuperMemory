@@ -1,0 +1,7 @@
+{
+  "answer_id": "ans-acme-trust-score",
+  "answer_state": "current",
+  "used_memory_ids": ["mem-acme-trust-score"],
+  "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-20"],
+  "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+}

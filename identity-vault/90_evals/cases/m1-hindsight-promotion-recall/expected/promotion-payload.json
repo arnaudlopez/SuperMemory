@@ -1,0 +1,20 @@
+{
+  "document_id": "doc-acme-trust-score",
+  "memory_id": "mem-acme-trust-score",
+  "status": "active",
+  "tags": [
+    "workspace:ws-acme",
+    "access_policy:professional-default",
+    "status:active",
+    "source:src-acme-api-doc",
+    "snapshot:snap-acme-api-doc-2026-05-20"
+  ],
+  "metadata": {
+    "source_id": "src-acme-api-doc",
+    "snapshot_id": "snap-acme-api-doc-2026-05-20",
+    "observation_id": "obs-acme-trust-score",
+    "memory_id": "mem-acme-trust-score",
+    "freshness": "fresh",
+    "sensitivity": "medium"
+  }
+}

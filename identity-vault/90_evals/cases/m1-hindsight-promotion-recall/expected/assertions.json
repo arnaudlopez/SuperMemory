@@ -1,0 +1,30 @@
+{
+  "case_id": "m1-hindsight-promotion-recall",
+  "required_test_ids": ["T2.1", "T2.2", "T2.3", "T2.4", "T2.5", "T2.6"],
+  "expected_errors": {
+    "T2.1": "source_without_snapshot",
+    "T2.2": "observation_without_snapshot_id",
+    "T2.3": "memory_without_derives_from",
+    "T2.4": "incomplete_promotion_payload",
+    "T2.5": "answer_missing_active_snapshot",
+    "T2.6": "do_not_use_promoted"
+  },
+  "required_chain": [
+    "Source",
+    "SourceSnapshot",
+    "Observation",
+    "ValidatedMemory",
+    "HindsightPromotionPayload",
+    "AnswerEvidence"
+  ],
+  "required_document_id": "doc-acme-trust-score",
+  "required_active_snapshot_id": "snap-acme-api-doc-2026-05-20",
+  "forbidden_document_ids": ["doc-acme-risk-score-legacy"],
+  "required_tags": [
+    "workspace:ws-acme",
+    "access_policy:professional-default",
+    "status:active",
+    "source:src-acme-api-doc",
+    "snapshot:snap-acme-api-doc-2026-05-20"
+  ]
+}

@@ -1,0 +1,225 @@
+{
+  "case_id": "m1-hindsight-promotion-recall",
+  "valid": {
+    "sources": [
+      {
+        "source_id": "src-acme-api-doc",
+        "source_kind": "api_doc",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "sensitivity": "medium",
+        "status": "active",
+        "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-api-doc-2026-05-20",
+        "source_id": "src-acme-api-doc",
+        "content_hash": "sha256:acme-api-doc-2026-05-20-trust-score",
+        "captured_at": "2026-05-20T09:00:00Z",
+        "change_status": "initial_capture",
+        "immutable": true
+      }
+    ],
+    "observations": [
+      {
+        "observation_id": "obs-acme-trust-score",
+        "source_id": "src-acme-api-doc",
+        "snapshot_id": "snap-acme-api-doc-2026-05-20",
+        "text": "Acme Project Y exposes the customer trust_score field in the active API documentation.",
+        "confidence": "high"
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-trust-score",
+        "document_id": "doc-acme-trust-score",
+        "status": "active",
+        "freshness": "fresh",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "schema_status": "stable",
+        "entity_type": "api_fact",
+        "snapshot_id": "snap-acme-api-doc-2026-05-20",
+        "derives_from": ["obs-acme-trust-score"]
+      },
+      {
+        "memory_id": "mem-acme-risk-score-legacy",
+        "document_id": "doc-acme-risk-score-legacy",
+        "status": "do_not_use",
+        "freshness": "stale",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "schema_status": "stable",
+        "entity_type": "api_fact",
+        "snapshot_id": "snap-acme-api-doc-2026-05-20",
+        "derives_from": ["obs-acme-trust-score"]
+      }
+    ],
+    "relations": [
+      {
+        "relation_id": "rel-obs-to-mem-acme-trust-score",
+        "relation_type": "derives_from",
+        "from": "mem-acme-trust-score",
+        "to": "obs-acme-trust-score"
+      },
+      {
+        "relation_id": "rel-mem-to-answer-acme-trust-score",
+        "relation_type": "supports_answer",
+        "from": "mem-acme-trust-score",
+        "to": "ans-acme-trust-score"
+      }
+    ],
+    "promotion_payloads": [
+      {
+        "document_id": "doc-acme-trust-score",
+        "memory_id": "mem-acme-trust-score",
+        "status": "active",
+        "text": "Acme Project Y uses trust_score as the active customer scoring field.",
+        "tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "source:src-acme-api-doc",
+          "snapshot:snap-acme-api-doc-2026-05-20"
+        ],
+        "metadata": {
+          "source_id": "src-acme-api-doc",
+          "snapshot_id": "snap-acme-api-doc-2026-05-20",
+          "observation_id": "obs-acme-trust-score",
+          "memory_id": "mem-acme-trust-score",
+          "freshness": "fresh",
+          "sensitivity": "medium"
+        }
+      }
+    ],
+    "answer_evidence": [
+      {
+        "answer_id": "ans-acme-trust-score",
+        "question": "Which Acme Project Y field should a client email mention for customer scoring?",
+        "answer": "Mention trust_score, citing the active Acme API documentation snapshot.",
+        "answer_state": "current",
+        "used_memory_ids": ["mem-acme-trust-score"],
+        "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-20"],
+        "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T2.1",
+      "description": "Source Acme without snapshot is rejected.",
+      "expected_error": "source_without_snapshot",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-api-doc",
+            "status": "active",
+            "active_snapshot_id": "snap-missing"
+          }
+        ],
+        "snapshots": []
+      }
+    },
+    {
+      "id": "T2.2",
+      "description": "Observation without snapshot_id is rejected.",
+      "expected_error": "observation_without_snapshot_id",
+      "input": {
+        "observations": [
+          {
+            "observation_id": "obs-acme-trust-score",
+            "source_id": "src-acme-api-doc",
+            "text": "trust_score exists"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.3",
+      "description": "Derived memory without derives_from is rejected.",
+      "expected_error": "memory_without_derives_from",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-trust-score",
+            "document_id": "doc-acme-trust-score",
+            "status": "active",
+            "snapshot_id": "snap-acme-api-doc-2026-05-20"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.4",
+      "description": "Promotion payload without document_id, tags, or provenance metadata is rejected.",
+      "expected_error": "incomplete_promotion_payload",
+      "input": {
+        "promotion_payloads": [
+          {
+            "memory_id": "mem-acme-trust-score",
+            "status": "active",
+            "text": "trust_score exists",
+            "tags": [],
+            "metadata": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.5",
+      "description": "Answer evidence that does not cite the active snapshot is rejected.",
+      "expected_error": "answer_missing_active_snapshot",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-api-doc",
+            "status": "active",
+            "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap-acme-api-doc-2026-05-20",
+            "source_id": "src-acme-api-doc",
+            "content_hash": "sha256:acme-api-doc-2026-05-20-trust-score"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-acme-trust-score",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-acme-trust-score"],
+            "cited_snapshot_ids": ["snap-older"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T2.6",
+      "description": "A do_not_use memory is absent from active promotion payloads.",
+      "expected_error": "do_not_use_promoted",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-risk-score-legacy",
+            "document_id": "doc-acme-risk-score-legacy",
+            "status": "do_not_use"
+          }
+        ],
+        "promotion_payloads": [
+          {
+            "document_id": "doc-acme-risk-score-legacy",
+            "memory_id": "mem-acme-risk-score-legacy",
+            "status": "active",
+            "tags": ["status:active"],
+            "metadata": {
+              "snapshot_id": "snap-acme-api-doc-2026-05-20"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
