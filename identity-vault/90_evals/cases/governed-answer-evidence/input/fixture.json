@@ -1,0 +1,386 @@
+{
+  "case_id": "governed-answer-evidence",
+  "valid": {
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-trust-score-current",
+        "document_id": "doc-acme-trust-score",
+        "status": "active",
+        "freshness": "fresh",
+        "snapshot_id": "snap-acme-api-doc-2026-05-21",
+        "access_policy": "professional-default",
+        "sensitivity": "medium"
+      },
+      {
+        "memory_id": "mem-acme-contract-stale",
+        "document_id": "doc-acme-contract-renewal",
+        "status": "active",
+        "freshness": "stale",
+        "snapshot_id": "snap-acme-contract-2026-05-01",
+        "access_policy": "professional-default",
+        "sensitivity": "medium"
+      },
+      {
+        "memory_id": "mem-acme-prd-changed",
+        "document_id": "doc-acme-prd",
+        "status": "needs_review",
+        "freshness": "changed",
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "access_policy": "professional-default",
+        "sensitivity": "medium"
+      },
+      {
+        "memory_id": "mem-acme-pricing-restricted",
+        "document_id": "doc-acme-pricing",
+        "status": "active",
+        "freshness": "fresh",
+        "snapshot_id": "snap-acme-pricing-2026-05-20",
+        "access_policy": "finance-only",
+        "sensitivity": "restricted",
+        "restricted_fields": ["discount_floor", "margin"]
+      },
+      {
+        "memory_id": "mem-acme-risk-score-legacy",
+        "document_id": "doc-acme-risk-score-legacy",
+        "status": "do_not_use",
+        "freshness": "stale",
+        "snapshot_id": "snap-acme-api-doc-2026-05-19",
+        "access_policy": "professional-default",
+        "sensitivity": "medium"
+      }
+    ],
+    "adapter_traces": [
+      {
+        "trace_id": "trace-recall-acme-email-agent",
+        "policy_id": "recall-acme-email-agent",
+        "document_ids": ["doc-acme-trust-score"]
+      },
+      {
+        "trace_id": "trace-recall-acme-contract",
+        "policy_id": "recall-acme-contract",
+        "document_ids": ["doc-acme-contract-renewal"]
+      },
+      {
+        "trace_id": "trace-recall-acme-pricing",
+        "policy_id": "recall-acme-pricing",
+        "document_ids": ["doc-acme-pricing"]
+      }
+    ],
+    "answer_evidence": [
+      {
+        "answer_id": "ans-acme-trust-score-current",
+        "answer_state": "current",
+        "question": "Which Acme Project Y field should the email agent mention?",
+        "used_memory_ids": ["mem-acme-trust-score-current"],
+        "used_document_ids": ["doc-acme-trust-score"],
+        "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-21"],
+        "adapter_trace_ids": ["trace-recall-acme-email-agent"],
+        "policy_outcome": "answer",
+        "recall_backed": true
+      },
+      {
+        "answer_id": "ans-acme-contract-stale",
+        "answer_state": "stale",
+        "question": "What is the Acme renewal milestone?",
+        "used_memory_ids": ["mem-acme-contract-stale"],
+        "used_document_ids": ["doc-acme-contract-renewal"],
+        "cited_snapshot_ids": ["snap-acme-contract-2026-05-01"],
+        "adapter_trace_ids": ["trace-recall-acme-contract"],
+        "last_known_snapshot_ids": ["snap-acme-contract-2026-05-01"],
+        "policy_outcome": "last_known_with_review"
+      },
+      {
+        "answer_id": "ans-acme-prd-review",
+        "answer_state": "changed_needs_review",
+        "question": "Can the agent send operational guidance from the Acme PRD?",
+        "used_memory_ids": ["mem-acme-prd-changed"],
+        "used_document_ids": ["doc-acme-prd"],
+        "cited_snapshot_ids": ["snap-acme-prd-2026-05-18"],
+        "review_required": true,
+        "operational_guidance_allowed": false,
+        "policy_outcome": "route_to_review"
+      },
+      {
+        "answer_id": "ans-acme-pricing-restricted",
+        "answer_state": "restricted",
+        "question": "What pricing details can be shared?",
+        "used_memory_ids": ["mem-acme-pricing-restricted"],
+        "used_document_ids": ["doc-acme-pricing"],
+        "cited_snapshot_ids": ["snap-acme-pricing-2026-05-20"],
+        "adapter_trace_ids": ["trace-recall-acme-pricing"],
+        "allowed_summary": "Pricing detail exists, but restricted fields are withheld.",
+        "withheld_fields": ["discount_floor", "margin"],
+        "policy_outcome": "restricted_summary"
+      },
+      {
+        "answer_id": "ans-acme-risk-score-forbidden",
+        "answer_state": "forbidden",
+        "question": "Can the agent mention risk_score?",
+        "used_memory_ids": [],
+        "used_document_ids": [],
+        "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-19"],
+        "forbidden_memory_ids": ["mem-acme-risk-score-legacy"],
+        "policy_outcome": "refusal"
+      }
+    ],
+    "relations": [
+      {
+        "relation_id": "rel-mem-current-supports-answer-current",
+        "relation_type": "supports_answer",
+        "from": "mem-acme-trust-score-current",
+        "to": "ans-acme-trust-score-current"
+      },
+      {
+        "relation_id": "rel-mem-stale-supports-answer-stale",
+        "relation_type": "supports_answer",
+        "from": "mem-acme-contract-stale",
+        "to": "ans-acme-contract-stale"
+      },
+      {
+        "relation_id": "rel-mem-changed-supports-answer-review",
+        "relation_type": "supports_answer",
+        "from": "mem-acme-prd-changed",
+        "to": "ans-acme-prd-review"
+      },
+      {
+        "relation_id": "rel-mem-restricted-supports-answer-restricted",
+        "relation_type": "supports_answer",
+        "from": "mem-acme-pricing-restricted",
+        "to": "ans-acme-pricing-restricted"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T4.1",
+      "description": "Current answers must cite a snapshot and used memory.",
+      "expected_error": "current_answer_missing_evidence",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-acme-trust-score-current",
+            "document_id": "doc-acme-trust-score",
+            "status": "active",
+            "freshness": "fresh",
+            "snapshot_id": "snap-acme-api-doc-2026-05-21"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-current-missing-snapshot",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-acme-trust-score-current"],
+            "used_document_ids": ["doc-acme-trust-score"],
+            "adapter_trace_ids": ["trace-recall-acme-email-agent"],
+            "recall_backed": true
+          }
+        ],
+        "relations": [
+          {
+            "relation_type": "supports_answer",
+            "from": "mem-acme-trust-score-current",
+            "to": "ans-current-missing-snapshot"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T4.2",
+      "description": "Stale memory cannot produce a current answer.",
+      "expected_error": "stale_answer_claims_current",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-stale",
+            "document_id": "doc-stale",
+            "status": "active",
+            "freshness": "stale",
+            "snapshot_id": "snap-stale"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-stale-current",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-stale"],
+            "used_document_ids": ["doc-stale"],
+            "cited_snapshot_ids": ["snap-stale"],
+            "adapter_trace_ids": ["trace-stale"],
+            "recall_backed": true
+          }
+        ],
+        "relations": [
+          {
+            "relation_type": "supports_answer",
+            "from": "mem-stale",
+            "to": "ans-stale-current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T4.3",
+      "description": "Changed or needs_review memory cannot provide operational guidance.",
+      "expected_error": "changed_memory_used_for_guidance",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-changed",
+            "document_id": "doc-changed",
+            "status": "needs_review",
+            "freshness": "changed",
+            "snapshot_id": "snap-changed"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-changed-guidance",
+            "answer_state": "changed_needs_review",
+            "used_memory_ids": ["mem-changed"],
+            "used_document_ids": ["doc-changed"],
+            "cited_snapshot_ids": ["snap-changed"],
+            "review_required": true,
+            "operational_guidance_allowed": true
+          }
+        ],
+        "relations": [
+          {
+            "relation_type": "supports_answer",
+            "from": "mem-changed",
+            "to": "ans-changed-guidance"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T4.4",
+      "description": "Restricted answers must expose withheld fields.",
+      "expected_error": "restricted_answer_missing_withheld_fields",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-restricted",
+            "document_id": "doc-restricted",
+            "status": "active",
+            "freshness": "fresh",
+            "snapshot_id": "snap-restricted",
+            "sensitivity": "restricted",
+            "restricted_fields": ["discount_floor"]
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-restricted-leaky",
+            "answer_state": "restricted",
+            "used_memory_ids": ["mem-restricted"],
+            "used_document_ids": ["doc-restricted"],
+            "cited_snapshot_ids": ["snap-restricted"],
+            "allowed_summary": "Pricing detail exists."
+          }
+        ],
+        "relations": [
+          {
+            "relation_type": "supports_answer",
+            "from": "mem-restricted",
+            "to": "ans-restricted-leaky"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T4.5",
+      "description": "Forbidden memory cannot be used by active answer evidence.",
+      "expected_error": "forbidden_memory_used",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-forbidden",
+            "document_id": "doc-forbidden",
+            "status": "do_not_use",
+            "freshness": "stale",
+            "snapshot_id": "snap-forbidden"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-forbidden-used",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-forbidden"],
+            "used_document_ids": ["doc-forbidden"],
+            "cited_snapshot_ids": ["snap-forbidden"],
+            "adapter_trace_ids": ["trace-forbidden"],
+            "recall_backed": true
+          }
+        ],
+        "relations": [
+          {
+            "relation_type": "supports_answer",
+            "from": "mem-forbidden",
+            "to": "ans-forbidden-used"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T4.6",
+      "description": "Every used memory must link to answer evidence through supports_answer.",
+      "expected_error": "missing_supports_answer_relation",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-current",
+            "document_id": "doc-current",
+            "status": "active",
+            "freshness": "fresh",
+            "snapshot_id": "snap-current"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-no-relation",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-current"],
+            "used_document_ids": ["doc-current"],
+            "cited_snapshot_ids": ["snap-current"],
+            "adapter_trace_ids": ["trace-current"],
+            "recall_backed": true
+          }
+        ],
+        "relations": []
+      }
+    },
+    {
+      "id": "T4.7",
+      "description": "Recall-backed answers must cite adapter trace ids.",
+      "expected_error": "answer_missing_adapter_trace",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-current",
+            "document_id": "doc-current",
+            "status": "active",
+            "freshness": "fresh",
+            "snapshot_id": "snap-current"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-no-trace",
+            "answer_state": "current",
+            "used_memory_ids": ["mem-current"],
+            "used_document_ids": ["doc-current"],
+            "cited_snapshot_ids": ["snap-current"],
+            "recall_backed": true
+          }
+        ],
+        "relations": [
+          {
+            "relation_type": "supports_answer",
+            "from": "mem-current",
+            "to": "ans-no-trace"
+          }
+        ]
+      }
+    }
+  ]
+}

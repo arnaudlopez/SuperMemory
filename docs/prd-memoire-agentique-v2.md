@@ -885,6 +885,21 @@ Regles :
 - `unavailable` : indiquer que la source n'a pas pu etre verifiee.
 - `forbidden` : ne pas utiliser la memoire pour reponse active.
 
+Contrat executable T4 :
+
+```bash
+node scripts/verify-governed-answer-evidence.mjs
+```
+
+Ce contrat verifie les proprietes du `AnswerEvidence`, pas une formulation unique :
+
+- `current` exige `used_memory_ids`, `used_document_ids`, `cited_snapshot_ids`, et `adapter_trace_ids` si la reponse vient du recall ;
+- chaque memoire utilisee doit etre reliee a la reponse par `supports_answer` ;
+- `stale` ne peut pas pretendre etre `current` et doit citer la derniere snapshot connue ou demander revue ;
+- `changed_needs_review` interdit la guidance operationnelle avant revue ;
+- `restricted` exige un resume autorise et `withheld_fields` ;
+- `forbidden` garde les memoires `do_not_use` hors de `used_memory_ids`.
+
 ## 16. Evals V2
 
 Les evals doivent couvrir le couple SuperMemory + Hindsight.

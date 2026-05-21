@@ -328,11 +328,12 @@ Tests rouges :
 | T4.4 | Reponse restricted | Memoire restricted | Resume autorise + withheld_fields | Fuite de donnees |
 | T4.5 | Reponse forbidden | Memoire `do_not_use` | Aucun usage actif | Source interdite |
 | T4.6 | Evidence chain complete | Answer sans `supports_answer` | Rejet | Reponse non reliee |
+| T4.7 | Trace recall obligatoire | Reponse issue du recall sans `adapter_trace_ids` | Rejet `answer_missing_adapter_trace` | Reponse non debuggable |
 
 Critere de passage :
 
 ```text
-Une reponse ne peut pas etre "current" sans chaine relationnelle et snapshot cite.
+Une reponse ne peut pas etre "current" sans chaine relationnelle, snapshot cite et trace adapter si elle vient du recall.
 ```
 
 ## Tranche 5 - Cycle source mutable t0/t1

@@ -1,0 +1,39 @@
+{
+  "answers": [
+    {
+      "answer_id": "ans-acme-trust-score-current",
+      "answer_state": "current",
+      "used_memory_ids": ["mem-acme-trust-score-current"],
+      "used_document_ids": ["doc-acme-trust-score"],
+      "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-21"],
+      "adapter_trace_ids": ["trace-recall-acme-email-agent"],
+      "policy_outcome": "answer"
+    },
+    {
+      "answer_id": "ans-acme-contract-stale",
+      "answer_state": "stale",
+      "last_known_snapshot_ids": ["snap-acme-contract-2026-05-01"],
+      "policy_outcome": "last_known_with_review"
+    },
+    {
+      "answer_id": "ans-acme-prd-review",
+      "answer_state": "changed_needs_review",
+      "review_required": true,
+      "operational_guidance_allowed": false,
+      "policy_outcome": "route_to_review"
+    },
+    {
+      "answer_id": "ans-acme-pricing-restricted",
+      "answer_state": "restricted",
+      "withheld_fields": ["discount_floor", "margin"],
+      "policy_outcome": "restricted_summary"
+    },
+    {
+      "answer_id": "ans-acme-risk-score-forbidden",
+      "answer_state": "forbidden",
+      "used_memory_ids": [],
+      "forbidden_memory_ids": ["mem-acme-risk-score-legacy"],
+      "policy_outcome": "refusal"
+    }
+  ]
+}

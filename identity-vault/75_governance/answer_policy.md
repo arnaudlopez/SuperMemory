@@ -14,13 +14,19 @@ Agents must adapt answers to the health of the memory they use.
 
 ## Rules
 
-- Current answers should cite source or snapshot evidence.
+- Current answers must cite used memory, document ids, source or snapshot evidence, and adapter traces when recall-backed.
+- Each used memory must connect to the answer evidence through a `supports_answer` relation.
 - Stale answers must disclose the latest known snapshot and avoid current certainty.
 - Changed-but-unreviewed answers must route to review before operational guidance.
 - Conflicting answers must show the conflict and avoid choosing silently.
-- Restricted answers may provide only the allowed summary.
+- Restricted answers may provide only the allowed summary and must list `withheld_fields`.
 - Unavailable sources require a "last known" answer or a refresh request.
 - Forbidden memory must not be used for active answers.
+
+## Executable Contract
+
+The local T4 verifier lives at `scripts/verify-governed-answer-evidence.mjs`.
+It checks hard evidence properties and answer states, not exact natural-language wording.
 
 ## Drafting Rule
 

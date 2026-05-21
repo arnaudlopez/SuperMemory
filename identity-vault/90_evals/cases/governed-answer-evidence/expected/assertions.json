@@ -1,0 +1,23 @@
+{
+  "case_id": "governed-answer-evidence",
+  "required_test_ids": ["T4.1", "T4.2", "T4.3", "T4.4", "T4.5", "T4.6", "T4.7"],
+  "expected_errors": {
+    "T4.1": "current_answer_missing_evidence",
+    "T4.2": "stale_answer_claims_current",
+    "T4.3": "changed_memory_used_for_guidance",
+    "T4.4": "restricted_answer_missing_withheld_fields",
+    "T4.5": "forbidden_memory_used",
+    "T4.6": "missing_supports_answer_relation",
+    "T4.7": "answer_missing_adapter_trace"
+  },
+  "required_answer_ids": [
+    "ans-acme-trust-score-current",
+    "ans-acme-contract-stale",
+    "ans-acme-prd-review",
+    "ans-acme-pricing-restricted",
+    "ans-acme-risk-score-forbidden"
+  ],
+  "required_current_answer_id": "ans-acme-trust-score-current",
+  "required_forbidden_answer_id": "ans-acme-risk-score-forbidden",
+  "required_restricted_answer_id": "ans-acme-pricing-restricted"
+}

@@ -130,6 +130,12 @@ The current adapter proof is local and contractual. It verifies the SuperMemory 
 
 See [`identity-vault/90_evals/cases/hindsight-adapter-minimal`](identity-vault/90_evals/cases/hindsight-adapter-minimal).
 
+### Governed Answer Evidence
+
+Final answers are governed by evidence, not by fluent recall. A `current` answer must cite used memory, document ids, source snapshots, adapter traces when recall-backed, and `supports_answer` relations. Stale, changed, restricted, and forbidden memory must degrade to the matching answer state instead of pretending to be current truth.
+
+See [`identity-vault/90_evals/cases/governed-answer-evidence`](identity-vault/90_evals/cases/governed-answer-evidence).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -154,6 +160,7 @@ Run individual checks:
 node scripts/verify-identity-vault-tdd.mjs
 node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-hindsight-adapter-minimal.mjs
+node scripts/verify-governed-answer-evidence.mjs
 ```
 
 Expected output:
@@ -239,7 +246,8 @@ Implemented:
 - enterprise target fixture;
 - verification scripts;
 - Hindsight promotion contract and logs as local fixtures;
-- minimal local Hindsight adapter contract verifier.
+- minimal local Hindsight adapter contract verifier;
+- governed answer evidence contract verifier.
 
 Not yet implemented:
 
@@ -253,9 +261,9 @@ Not yet implemented:
 ## Roadmap
 
 1. Keep hardening the local Hindsight adapter contract against governed fixtures.
-2. Prototype real Hindsight only after the local adapter contract remains green.
-3. Implement vault-to-Hindsight promotion script.
-4. Add evals for filters, freshness, and `do_not_use`.
+2. Keep hardening governed answer evidence against living-memory states.
+3. Prototype real Hindsight only after the local adapter and answer contracts remain green.
+4. Implement vault-to-Hindsight promotion script.
 5. Implement source snapshot refresh for mutable sources.
 6. Expand toward the enterprise living-memory target.
 7. Add optional source-capture tools only when needed.

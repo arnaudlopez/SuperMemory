@@ -32,6 +32,9 @@ This vault is a governed memory system, not a chat transcript dump.
 - Do not invent new business entity types directly in compiled notes. Propose them in `50_review/type_queue.md` unless they already exist in `75_governance/entity_type_registry.md`.
 - For mutable sources, record `snapshot_id`, `content_hash`, `freshness`, and `derived_from` before promotion.
 - Do not answer as if stale, changed, historical, or `needs_review` memory is current active truth.
+- Do not mark an answer `current` unless `AnswerEvidence` cites used memory, document ids, snapshots, adapter traces when recall-backed, and `supports_answer` relations.
+- For restricted memory, provide only an allowed summary and list withheld fields.
+- For `do_not_use` memory, refuse active use and keep the forbidden memory out of `used_memory_ids`.
 - Do not expose secrets, credentials, restricted fields, or cross-workspace memory without explicit policy.
 - Do not invent a bespoke workflow for every request; map business work to `75_governance/use_patterns.md` unless a real repeated need proves a new pattern is needed.
 - Do not require one exact natural-language interpretation when multiple source-backed interpretations satisfy the same governance contract.

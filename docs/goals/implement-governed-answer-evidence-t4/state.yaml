@@ -1,0 +1,339 @@
+version: 2
+
+goal:
+  title: "T4 Governed Answer Evidence"
+  slug: "implement-governed-answer-evidence-t4"
+  kind: specific
+  tranche: "Implement an executable contract proving governed answer evidence and safe answer degradation states."
+  status: active
+  oracle:
+    signal: "A T4 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves governed answer evidence while T0/T1/T2/T3 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T4 verifier pass, global specs pass, git diff --check pass, GoalBuddy final quality check pass, commit SHA, pushed branch, and final audit with full_outcome_complete: true."
+  intake:
+    original_request: "/goal Follow docs/goals/implement-governed-answer-evidence-t4/goal.md."
+    interpreted_outcome: "Implement T4 governed answer evidence after T3."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future answer-producing agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T4 fixture/verifier proves governed answer evidence behavior, global specs pass, and the work is committed and pushed."
+    likely_misfire: "Treating recall success as answer correctness without proving answer state, citations, adapter traces, and supports_answer relations."
+    blind_spots_considered:
+      - "T1 has minimal AnswerEvidence checks, but not answer-state policy."
+      - "T3 proves adapter traces, but not final answer degradation/refusal behavior."
+      - "The verifier must stay deterministic and avoid exact wording lock-in."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T4.1-T4.6."
+      - "identity-vault/75_governance/answer_policy.md defines answer states."
+      - "T3 adapter verifier already proves trace-backed recall."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-governed-answer-evidence-t4/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-governed-answer-evidence-t4"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map existing answer evidence surfaces and T4 insertion point."
+    receipt:
+      result: done
+      summary: "Found T4 target in matrix/roadmap and existing answer policy. T1 covers minimal AnswerEvidence; T3 covers adapter traces. T4 should add a new governed-answer fixture/verifier and global wiring."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines command node scripts/verify-governed-answer-evidence.mjs and T4.1-T4.6."
+        - "docs/golden-case-implementation-roadmap.md says T4 builds AnswerEvidence, cites source_id/snapshot_id/document_id, exposes answer_state, and degrades unsafe answers."
+        - "identity-vault/75_governance/answer_policy.md defines current, stale, changed_needs_review, conflicting, restricted, unavailable, forbidden."
+        - "scripts/verify-memory-contracts.mjs only checks minimal current AnswerEvidence and supports_answer endpoint type."
+        - "scripts/verify-hindsight-adapter-minimal.mjs proves adapter traces but not answer-state policy."
+      module_map:
+        new_case: "identity-vault/90_evals/cases/governed-answer-evidence"
+        new_verifier: "scripts/verify-governed-answer-evidence.mjs"
+        new_test: "tests/governed-answer-evidence.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "AnswerEvidence"
+        - "AnswerState"
+        - "supports_answer"
+        - "ValidatedMemory"
+        - "SourceSnapshot"
+        - "AdapterTrace"
+        - "withheld_fields"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "no runtime auth; verify restricted/withheld_fields contract only"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "answer evidence and adapter trace assertions"
+        docs: "update answer policy/roadmap/matrix/readme after green behavior"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T4 architecture and select Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T4 contract, not an LLM answer evaluator. The contract should check properties and policy states, not exact prose."
+      design_concept: "A final answer is governed only when its answer_state matches the health/access of the memory it uses and its evidence chain connects memory, snapshots, document ids, adapter traces, and supports_answer relations."
+      interface_contract:
+        current: "fresh active allowed memory requires used_memory_ids, used_document_ids, cited_snapshot_ids, adapter_trace_ids, and supports_answer."
+        stale: "stale memory cannot be current; it must disclose last known snapshot or require review."
+        changed_needs_review: "changed or needs_review memory cannot provide operational guidance."
+        restricted: "restricted memory can only return allowed summary plus withheld_fields."
+        forbidden: "do_not_use memory cannot appear in used_memory_ids or supports_answer."
+        evidence_chain: "supports_answer relation must connect a used ValidatedMemory to the AnswerEvidence answer_id."
+      test_strategy:
+        red: "Add fixture/global wiring before verifier implementation so global specs fail on missing verifier."
+        green: "Implement verifier for T4.1-T4.7 and wire Node test/global specs."
+      feedback_policy: "Do not require exact natural-language answer text; require answer_state, citations, relation chain, withheld_fields, and refusal/review flags."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      allowed_files:
+        - "identity-vault/90_evals/cases/governed-answer-evidence/input/fixture.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/expected/assertions.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/actual/README.md"
+        - "scripts/verify-governed-answer-evidence.mjs"
+        - "tests/governed-answer-evidence.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-governed-answer-evidence.mjs"
+        - "node --test tests/governed-answer-evidence.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T4 governed answer evidence fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 receipt"
+      - "T002 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/governed-answer-evidence/input/fixture.json"
+      - "identity-vault/90_evals/cases/governed-answer-evidence/expected/assertions.json"
+      - "identity-vault/90_evals/cases/governed-answer-evidence/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/governed-answer-evidence/actual/README.md"
+      - "scripts/verify-governed-answer-evidence.mjs"
+      - "tests/governed-answer-evidence.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-governed-answer-evidence.mjs"
+      - "node --test tests/governed-answer-evidence.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Cannot produce a meaningful red failure before implementation."
+      - "Implementation would weaken T0/T1/T2/T3 or global specs."
+      - "Behavior becomes an LLM text evaluator instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented the T4 governed answer evidence contract with fixture, verifier, targeted Node test, and global spec wiring."
+      changed_files:
+        - "identity-vault/90_evals/cases/governed-answer-evidence/input/fixture.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/expected/assertions.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/actual/README.md"
+        - "scripts/verify-governed-answer-evidence.mjs"
+        - "tests/governed-answer-evidence.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      red_evidence:
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          outcome: "expected_fail"
+          summary: "Failed after global wiring because scripts/verify-governed-answer-evidence.mjs did not exist yet."
+      commands:
+        - cmd: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        - cmd: "node --test tests/governed-answer-evidence.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      design_delta: "T4 now proves governed answer evidence: current answers require memory/document/snapshot/adapter-trace evidence and supports_answer; stale answers cannot claim current certainty; changed or needs_review memory routes to review without operational guidance; restricted answers expose withheld_fields; do_not_use memory is refused; recall-backed answers require adapter traces."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Align docs with implemented T4 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/answer_policy.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, answer policy, and agent manual with implemented T4 governed answer evidence behavior."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/answer_policy.md"
+        - "identity-vault/AGENTS.md"
+      commands:
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node --test tests/governed-answer-evidence.test.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      design_delta: "Docs now describe T4 as a deterministic governed-answer evidence contract: current answers require memory/document/snapshot/trace evidence and supports_answer relations, while stale, changed, restricted, and forbidden memory degrade or refuse according to answer_policy."
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: default
+    objective: "Ship verified T4 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-governed-answer-evidence-t4/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt: null
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

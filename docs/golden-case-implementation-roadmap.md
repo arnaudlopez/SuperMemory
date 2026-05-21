@@ -180,14 +180,18 @@ Comportements :
 
 - construire `AnswerEvidence` ;
 - citer `source_id`, `snapshot_id`, `document_id` ;
+- citer `adapter_trace_ids` quand la reponse depend d'un recall ;
+- relier chaque memoire utilisee par `supports_answer` ;
 - exposer `answer_state`;
-- refuser ou degrader la reponse si la memoire est stale, restricted, unavailable, conflicting ou forbidden.
+- refuser ou degrader la reponse si la memoire est stale, changed, needs_review, restricted, unavailable, conflicting ou forbidden.
 
 Oracle :
 
 ```text
 Une question retourne une reponse actuelle avec snapshot cite.
 La meme question avec memoire stale retourne "derniere snapshot connue" ou demande revue.
+Une reponse recall-backed sans trace adapter est rejetee.
+Une memoire do_not_use n'apparait jamais comme preuve utilisee.
 ```
 
 ## Tranche 5 - Cycle source mutable t0/t1
