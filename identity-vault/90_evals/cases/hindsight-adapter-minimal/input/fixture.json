@@ -1,0 +1,261 @@
+{
+  "case_id": "hindsight-adapter-minimal",
+  "valid": {
+    "promotion_payloads": [
+      {
+        "document_id": "doc-acme-trust-score",
+        "memory_id": "mem-acme-trust-score-v1",
+        "status": "active",
+        "text": "Acme Project Y uses trust_score as the active customer scoring field.",
+        "tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "source:src-acme-api-doc",
+          "snapshot:snap-acme-api-doc-2026-05-20",
+          "entity_type:api_fact",
+          "schema_status:stable",
+          "consumer:email_agent"
+        ],
+        "metadata": {
+          "source_id": "src-acme-api-doc",
+          "snapshot_id": "snap-acme-api-doc-2026-05-20",
+          "observation_id": "obs-acme-trust-score",
+          "interpretation_id": "interp-acme-trust-score",
+          "memory_id": "mem-acme-trust-score-v1",
+          "freshness": "fresh",
+          "workspace_id": "ws-acme",
+          "access_policy": "professional-default"
+        }
+      },
+      {
+        "document_id": "doc-acme-trust-score",
+        "memory_id": "mem-acme-trust-score-v2",
+        "status": "active",
+        "text": "Acme Project Y client communication should mention trust_score as the current customer scoring field.",
+        "tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "source:src-acme-api-doc",
+          "snapshot:snap-acme-api-doc-2026-05-21",
+          "entity_type:api_fact",
+          "schema_status:stable",
+          "consumer:email_agent"
+        ],
+        "metadata": {
+          "source_id": "src-acme-api-doc",
+          "snapshot_id": "snap-acme-api-doc-2026-05-21",
+          "observation_id": "obs-acme-trust-score-current",
+          "interpretation_id": "interp-acme-trust-score-current",
+          "memory_id": "mem-acme-trust-score-v2",
+          "freshness": "fresh",
+          "workspace_id": "ws-acme",
+          "access_policy": "professional-default"
+        }
+      },
+      {
+        "document_id": "doc-acme-risk-score-legacy",
+        "memory_id": "mem-acme-risk-score-legacy",
+        "status": "do_not_use",
+        "text": "Legacy risk_score wording must not be recalled for active Acme Project Y communication.",
+        "tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:do_not_use",
+          "source:src-acme-api-doc",
+          "snapshot:snap-acme-api-doc-2026-05-19",
+          "entity_type:api_fact",
+          "schema_status:stable",
+          "consumer:email_agent"
+        ],
+        "metadata": {
+          "source_id": "src-acme-api-doc",
+          "snapshot_id": "snap-acme-api-doc-2026-05-19",
+          "observation_id": "obs-acme-risk-score-legacy",
+          "interpretation_id": "interp-acme-risk-score-legacy",
+          "memory_id": "mem-acme-risk-score-legacy",
+          "freshness": "stale",
+          "workspace_id": "ws-acme",
+          "access_policy": "professional-default",
+          "revocation_reason": "superseded_by_trust_score"
+        }
+      }
+    ],
+    "vault_items": [
+      {
+        "document_id": "doc-unpromoted-raw-llm-note",
+        "memory_id": "mem-unpromoted-raw-llm-note",
+        "status": "candidate",
+        "text": "Raw unchecked LLM note that must not be retained by adapter auto-scan.",
+        "tags": ["workspace:ws-acme", "status:candidate"]
+      }
+    ],
+    "recall_policies": [
+      {
+        "policy_id": "recall-acme-email-agent",
+        "query": "Which Acme Project Y field should the email agent mention?",
+        "fail_closed": true,
+        "required_tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "consumer:email_agent"
+        ]
+      },
+      {
+        "policy_id": "recall-acme-support-agent-miss",
+        "query": "Which Acme Project Y field should the support agent mention?",
+        "fail_closed": true,
+        "required_tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "consumer:support_agent"
+        ]
+      }
+    ],
+    "answer_evidence": [
+      {
+        "answer_id": "ans-acme-trust-score-t3",
+        "policy_id": "recall-acme-email-agent",
+        "answer_state": "current",
+        "used_memory_ids": ["mem-acme-trust-score-v2"],
+        "used_document_ids": ["doc-acme-trust-score"],
+        "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-21"],
+        "adapter_trace_ids": ["trace-recall-acme-email-agent"]
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T3.2",
+      "description": "Recall without fail-closed workspace/access/status filters is rejected.",
+      "expected_error": "unsafe_adapter_recall_policy",
+      "input": {
+        "recall_policies": [
+          {
+            "policy_id": "recall-broad",
+            "query": "What do we know about Acme?",
+            "fail_closed": false,
+            "required_tags": ["workspace:ws-acme"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T3.3",
+      "description": "Promotion without source, snapshot, observation, interpretation, or memory provenance is rejected.",
+      "expected_error": "adapter_promotion_missing_provenance",
+      "input": {
+        "promotion_payloads": [
+          {
+            "document_id": "doc-acme-trust-score",
+            "memory_id": "mem-acme-trust-score",
+            "status": "active",
+            "text": "trust_score exists",
+            "tags": ["workspace:ws-acme", "access_policy:professional-default", "status:active"],
+            "metadata": {
+              "source_id": "src-acme-api-doc"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "T3.4",
+      "description": "A do_not_use adapter document cannot appear in active recall.",
+      "expected_error": "do_not_use_recalled",
+      "input": {
+        "adapter_documents": [
+          {
+            "document_id": "doc-acme-risk-score-legacy",
+            "memory_id": "mem-acme-risk-score-legacy",
+            "status": "do_not_use",
+            "text": "Use risk_score.",
+            "tags": [
+              "workspace:ws-acme",
+              "access_policy:professional-default",
+              "status:active",
+              "consumer:email_agent"
+            ],
+            "metadata": {
+              "snapshot_id": "snap-acme-api-doc-2026-05-19",
+              "interpretation_id": "interp-acme-risk-score-legacy"
+            }
+          }
+        ],
+        "recall_results": [
+          {
+            "policy_id": "recall-acme-email-agent",
+            "document_ids": ["doc-acme-risk-score-legacy"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T3.5",
+      "description": "The adapter cannot auto-retain vault items that were not explicitly promoted.",
+      "expected_error": "global_auto_retain_detected",
+      "input": {
+        "promotion_payloads": [],
+        "vault_items": [
+          {
+            "document_id": "doc-unpromoted-raw-llm-note",
+            "memory_id": "mem-unpromoted-raw-llm-note",
+            "status": "candidate",
+            "text": "Raw unchecked LLM note."
+          }
+        ],
+        "adapter_documents": [
+          {
+            "document_id": "doc-unpromoted-raw-llm-note",
+            "memory_id": "mem-unpromoted-raw-llm-note",
+            "status": "active",
+            "text": "Raw unchecked LLM note.",
+            "tags": ["workspace:ws-acme", "status:active"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T3.6",
+      "description": "A recall miss must keep a useful adapter trace.",
+      "expected_error": "missing_recall_trace",
+      "input": {
+        "recall_policies": [
+          {
+            "policy_id": "recall-acme-support-agent-miss",
+            "query": "Which Acme Project Y field should the support agent mention?",
+            "fail_closed": true,
+            "required_tags": [
+              "workspace:ws-acme",
+              "access_policy:professional-default",
+              "status:active",
+              "consumer:support_agent"
+            ]
+          }
+        ],
+        "adapter_documents": [],
+        "recall_traces": []
+      }
+    },
+    {
+      "id": "T3.7",
+      "description": "Raw LLM conclusions cannot be retained as governed active adapter documents.",
+      "expected_error": "raw_llm_conclusion_retained",
+      "input": {
+        "adapter_documents": [
+          {
+            "document_id": "doc-raw-llm-conclusion",
+            "memory_id": "mem-raw-llm-conclusion",
+            "status": "active",
+            "source_kind": "raw_llm_conclusion",
+            "text": "The customer probably prefers risk_score.",
+            "tags": ["workspace:ws-acme", "access_policy:professional-default", "status:active"]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "case_id": "hindsight-adapter-minimal",
+  "required_test_ids": ["T3.2", "T3.3", "T3.4", "T3.5", "T3.6", "T3.7"],
+  "expected_errors": {
+    "T3.2": "unsafe_adapter_recall_policy",
+    "T3.3": "adapter_promotion_missing_provenance",
+    "T3.4": "do_not_use_recalled",
+    "T3.5": "global_auto_retain_detected",
+    "T3.6": "missing_recall_trace",
+    "T3.7": "raw_llm_conclusion_retained"
+  },
+  "required_document_id": "doc-acme-trust-score",
+  "required_memory_id": "mem-acme-trust-score-v2",
+  "forbidden_document_ids": ["doc-acme-risk-score-legacy", "doc-unpromoted-raw-llm-note"],
+  "required_recall_policy_id": "recall-acme-email-agent",
+  "required_miss_policy_id": "recall-acme-support-agent-miss",
+  "required_trace_ids": ["trace-retain-doc-acme-trust-score", "trace-delete-doc-acme-risk-score-legacy", "trace-recall-acme-email-agent", "trace-recall-acme-support-agent-miss"],
+  "required_tags": [
+    "workspace:ws-acme",
+    "access_policy:professional-default",
+    "status:active",
+    "consumer:email_agent"
+  ],
+  "required_metadata": {
+    "source_id": "src-acme-api-doc",
+    "snapshot_id": "snap-acme-api-doc-2026-05-21",
+    "observation_id": "obs-acme-trust-score-current",
+    "interpretation_id": "interp-acme-trust-score-current",
+    "memory_id": "mem-acme-trust-score-v2"
+  }
+}

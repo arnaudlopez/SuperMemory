@@ -1,0 +1,441 @@
+version: 2
+
+goal:
+  title: "T3 Minimal Hindsight Adapter"
+  slug: "implement-hindsight-adapter-minimal-t3"
+  kind: specific
+  tranche: "Implement a minimal governed Hindsight adapter contract that consumes only validated promotion payloads, upserts by stable document_id, recalls fail-closed, and preserves source-backed answer evidence."
+  status: active
+  oracle:
+    signal: "A T3 executable verifier is wired into node scripts/verify-supermemory-specs.mjs and proves governed promotion/upsert/recall behavior while all T0/T1/T2 specs remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T3 verifier pass, global specs pass, git diff --check pass, GoalBuddy final quality check pass, commit SHA, pushed branch, and final audit with full_outcome_complete: true."
+  intake:
+    original_request: "OK, entame le prochain goal"
+    interpreted_outcome: "Start the next implementation goal after green T0/T1/T2: T3 minimal governed Hindsight adapter."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T3 fixture/verifier proves the minimal adapter contract end to end, global SuperMemory specs pass, and the work is committed and pushed."
+    likely_misfire: "Building a real Hindsight runtime integration or broad ingestion pipeline before proving the narrow governed adapter boundary, or letting raw LLM conclusions bypass the vault."
+    blind_spots_considered:
+      - "T2/M1 proves the governed promotion/recall fixture, not a runtime adapter."
+      - "Real Hindsight runtime availability may be absent or unnecessary for the first T3 slice."
+      - "Adapter tests must preserve LLM-first interpretation flexibility while keeping hard governance deterministic."
+      - "The adapter must not become a second source of truth."
+    existing_plan_facts:
+      - "T0/T1/T2 are implemented and green."
+      - "InterpretationCandidate is the LLM-first boundary before MemoryCandidate/ValidatedMemory."
+      - "ValidatedMemory and promotion payloads already carry provenance expectations including interpretation_id."
+      - "T3 should begin with a minimal fake/local adapter contract unless evidence proves real Hindsight integration is safe."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-hindsight-adapter-minimal-t3/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-adapter-minimal-t3"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map the existing T0/T1/T2 verification surfaces and identify the safest T3 adapter insertion point."
+    inputs:
+      - "README.md"
+      - "docs/llm-first-migration-plan.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "identity-vault/75_governance"
+      - "identity-vault/90_evals/cases/memory-contracts"
+      - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall"
+      - "scripts"
+      - "tests"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation files."
+      - "Prefer concrete file-path evidence over generic advice."
+      - "Do not assume a real Hindsight runtime exists; report evidence either way."
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "Repo evidence for T0/T1/T2 current verification surfaces."
+      - "Candidate T3 fixture/script/test file paths."
+      - "Recommended minimal adapter boundary."
+      - "Risks around real runtime integration versus fake/local contract."
+      - "module_map: current modules, future adapter boundary, and files likely in scope."
+      - "ubiquitous_language: HindsightAdapter, HindsightDocument, PromotionPayload, ValidatedMemory, RecallPolicy, AnswerEvidence, InterpretationCandidate."
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs."
+    receipt:
+      result: done
+      summary: "Mapped T0/T1/T2 verification and found the safest T3 insertion point: a new fake/local adapter eval case plus verifier wired into the global specs."
+      evidence:
+        - "scripts/verify-supermemory-specs.mjs runs memory contracts, M1 promotion/recall, identity vault TDD, enterprise target, and JSONL checks."
+        - "scripts/verify-memory-contracts.mjs enforces T1 provenance, do_not_use, fail-closed recall policy, answer evidence, and interpretation invariants."
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs validates Source -> Snapshot -> Observation -> InterpretationCandidate -> ValidatedMemory -> HindsightPromotionPayload -> AnswerEvidence."
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json contains active and do_not_use Acme memories plus the governed promotion payload shape."
+        - "identity-vault/75_governance/hindsight_contract.md says Hindsight is adopted memory engine, vault remains source of truth, adapter consumes governed memory only."
+        - "docs/golden-case-tdd-matrix.md already defines T3.1-T3.6 for upsert, fail-closed tags, provenance metadata, do_not_use exclusion, no global auto-retain, and recall failure traces."
+      recommended_boundary: "Implement a contract-level local adapter fixture/verifier, not a real Hindsight runtime: validate retain/upsert/delete/recall behavior over governed promotion payloads and recall policies."
+      candidate_files:
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/assertions.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/adapter-state.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/answer-evidence.json"
+        - "scripts/verify-hindsight-adapter-minimal.mjs"
+        - "tests/hindsight-adapter-minimal.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      module_map:
+        current_modules:
+          - "T1 contracts: identity-vault/90_evals/cases/memory-contracts plus scripts/verify-memory-contracts.mjs."
+          - "T2/M1 vertical fixture: identity-vault/90_evals/cases/m1-hindsight-promotion-recall plus scripts/verify-m1-hindsight-promotion-recall-fixture.mjs."
+          - "Global oracle: scripts/verify-supermemory-specs.mjs."
+          - "Governance docs: identity-vault/75_governance/hindsight_contract.md and memory_engine_ports.md."
+        t3_boundary: "New HindsightAdapter contract fixture and verifier living beside existing eval cases; no production runtime, DB, service, or credential dependency."
+        shallow_module_risks:
+          - "Copying M1 checks into a second verifier without modeling adapter state would miss the upsert/recall boundary."
+          - "Using natural-language-only docs would not prove fail-closed behavior."
+          - "Introducing real runtime code now would make credentials and external availability the proof instead of contract behavior."
+      ubiquitous_language:
+        - "HindsightAdapter: minimal port that retains/upserts/deletes governed HindsightDocument records and recalls through scoped policy."
+        - "HindsightDocument: adapter-side indexed document derived from a governed promotion payload, never source of truth."
+        - "PromotionPayload: vault-governed active memory handoff with document_id, tags, and provenance metadata."
+        - "ValidatedMemory: governed vault memory that may be active, historical_only, or do_not_use."
+        - "RecallPolicy: fail-closed filter contract requiring workspace/access/status/tags."
+        - "AnswerEvidence: source-backed record tying recall results to used memory and cited snapshots."
+        - "InterpretationCandidate: LLM-first meaning proposal that must already be approved before active memory promotion."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "no runtime permissions; verify access_policy/workspace tags only"
+        api_contract: "local adapter contract only; no public API"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; real Hindsight runtime deferred"
+        deploy_rollback: "not applicable beyond reverting fixture/script/test changes"
+        observability: "adapter trace assertions for recall miss/delete/upsert behavior"
+        docs: "docs should be updated after behavior is green"
+
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve the T3 architecture and select the largest safe implementation slice."
+    inputs:
+      - "T001 receipt"
+      - "Goal oracle"
+    constraints:
+      - "Do not implement."
+      - "Reject any plan that makes Hindsight a source of truth."
+      - "Reject raw LLM conclusions entering adapter recall."
+      - "Prefer fake/local adapter contract first unless real runtime evidence is compelling and verifiable."
+      - "Pick the largest safe useful Worker slice with clear allowed_files, verify commands, and stop conditions."
+    expected_output:
+      - "Decision: approved | blocked | needs_more_evidence"
+      - "architecture_review"
+      - "design_concept"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "impact_assessment_ref"
+      - "Exact Worker objective"
+      - "allowed_files"
+      - "verify"
+      - "stop_if"
+      - "Blocked or deferred tasks"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. T3 should implement a fake/local HindsightAdapter contract first. Hindsight remains an adapter/index; the vault remains source of truth. The Worker must prove adapter state behavior, not only payload shape."
+      design_concept: "SuperMemory promotes governed ValidatedMemory payloads into a minimal adapter index. The adapter upserts by stable document_id, deletes/excludes forbidden documents, recalls only through fail-closed scoped filters, and returns traces/answer evidence that point back to vault provenance."
+      interface_contract:
+        retain: "accept only active governed promotion payloads with document_id, restrictive tags, and metadata.source_id/snapshot_id/observation_id/interpretation_id/memory_id"
+        upsert: "same document_id replaces adapter-side content instead of creating duplicates"
+        delete_or_exclude: "do_not_use or revoked memory removes the adapter document or prevents active recall"
+        recall: "requires fail_closed policy with workspace, access_policy, and status:active filters"
+        evidence: "recall-derived answers must cite used_memory_ids, cited_snapshot_ids, document_id, and adapter trace ids"
+      module_map:
+        allowed_new_case: "identity-vault/90_evals/cases/hindsight-adapter-minimal"
+        allowed_verifier: "scripts/verify-hindsight-adapter-minimal.mjs"
+        allowed_test: "tests/hindsight-adapter-minimal.test.mjs"
+        allowed_global_wiring: "scripts/verify-supermemory-specs.mjs"
+        deferred_docs: "T004 updates README/roadmap/PRD/governance after executable behavior is green."
+      test_strategy:
+        red: "First add T3 fixture/assertions and global verifier wiring so node scripts/verify-supermemory-specs.mjs fails because scripts/verify-hindsight-adapter-minimal.mjs is missing or incomplete."
+        green: "Implement verifier logic for T3.1-T3.6 and prove T0/T1/T2/global specs pass."
+        regression: "Add a Node test wrapper matching existing tests."
+      feedback_policy: "Use deterministic checks only for hard adapter invariants; do not test exact LLM wording beyond required metadata/provenance/use-pattern boundaries."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      worker_objective: "Implement T3 minimal fake/local adapter fixture, verifier, Node test, and global spec wiring."
+      allowed_files:
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/assertions.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/adapter-state.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/actual/README.md"
+        - "scripts/verify-hindsight-adapter-minimal.mjs"
+        - "tests/hindsight-adapter-minimal.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-hindsight-adapter-minimal.mjs"
+        - "node --test tests/hindsight-adapter-minimal.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      stop_if:
+        - "Need real Hindsight credentials, runtime, network service, env secrets, production access, DB migration, or destructive operation."
+        - "Need files outside allowed_files before T003 is complete."
+        - "Cannot produce a meaningful red failure before implementation."
+        - "Implementation would weaken T0/T1/T2 or global specs."
+        - "Verification fails twice for the same unexplained reason."
+      blocked_or_deferred_tasks:
+        - "Real Hindsight runtime integration remains deferred until the local adapter contract is green."
+        - "Docs alignment remains T004."
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement the approved T3 minimal adapter contract with TDD fixtures/verifier and global spec wiring."
+    inputs:
+      - "ubiquitous_language"
+      - "T002 Judge decision"
+      - "architecture_review"
+      - "design_concept"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "Completed impact_assessment receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json"
+      - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/assertions.json"
+      - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/adapter-state.json"
+      - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/hindsight-adapter-minimal/actual/README.md"
+      - "scripts/verify-hindsight-adapter-minimal.mjs"
+      - "tests/hindsight-adapter-minimal.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-hindsight-adapter-minimal.mjs"
+      - "node --test tests/hindsight-adapter-minimal.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Need real Hindsight credentials, network service, external runtime, production access, env secrets, DB migration, or destructive operation."
+      - "Cannot produce a meaningful red test before green implementation."
+      - "Implementation would weaken T0/T1/T2 or global specs."
+      - "Behavior is ambiguous around vault source-of-truth, do_not_use exclusion, recall scope, or answer evidence."
+      - "Verification fails twice for the same unexplained reason."
+    receipt:
+      result: done
+      summary: "Implemented the T3 fake/local Hindsight adapter contract with fixture, verifier, Node test, and global spec wiring."
+      changed_files:
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/assertions.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/adapter-state.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/actual/README.md"
+        - "scripts/verify-hindsight-adapter-minimal.mjs"
+        - "tests/hindsight-adapter-minimal.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      red_evidence:
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: "expected_fail"
+          summary: "Failed because scripts/verify-hindsight-adapter-minimal.mjs was not yet implemented after global oracle wiring."
+      commands:
+        - cmd: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        - cmd: "node --test tests/hindsight-adapter-minimal.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      design_delta: "T3 now proves a contract-level HindsightAdapter boundary: governed active payloads are retained/upserted by document_id, do_not_use payloads delete/exclude documents, recall is fail-closed by required tags, unpromoted raw vault items are not auto-retained, recall misses carry traces, raw LLM conclusions are rejected, and answer evidence cites adapter trace plus source snapshots."
+      interface_contract:
+        retain: "active promotion payloads require document_id, scoped tags, source/snapshot/observation/interpretation/memory provenance, and text"
+        upsert: "repeated active promotions with the same document_id leave one active adapter document with the latest governed memory_id/content"
+        delete_or_exclude: "do_not_use payloads remove the adapter document and forbid active recall"
+        recall: "only fail_closed policies with workspace, access_policy, status:active, and consumer tags return documents"
+        trace: "retain/delete/recall produce deterministic trace ids; recall misses include diagnostics"
+      notes:
+        - "No real Hindsight credentials, network service, DB migration, or external runtime were introduced."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Align docs and roadmap language with the implemented T3 adapter boundary after behavior is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+      - "Implemented T3 contract"
+    impact_assessment_ref: null
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/hindsight_contract.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter the implemented behavior instead of documenting it."
+      - "Docs would claim a real Hindsight runtime exists when only a fake/local contract has been implemented."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, Hindsight contract, and agent manual with the implemented T3 fake/local adapter contract."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "identity-vault/AGENTS.md"
+      commands:
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node --test tests/hindsight-adapter-minimal.test.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      design_delta: "Docs now state that T3 is a fake/local executable adapter contract, not a live Hindsight API integration. They describe upsert by stable document_id, fail-closed recall, do_not_use deletion/exclusion, no global auto-retain, trace-backed answer evidence, and raw LLM conclusion rejection."
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: default
+    objective: "Ship verified T3 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run the goal's required verification commands, including node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-hindsight-adapter-minimal-t3/state.yaml."
+      - "Verify this is a git repository with an active GitHub remote."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+      - "If no GitHub remote exists, mark this task blocked with exact missing setup; do not count a local-only commit as shipped."
+      - "If commit or push is blocked by credentials, network, permissions, or approval, mark this task blocked and do not mark the goal done."
+    expected_output:
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+    receipt: null
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether T3 satisfies the original outcome for this tranche."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "T998 shipping receipt"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if any required Worker task is still queued or active."
+      - "Reject completion if T3 does not prove governed adapter behavior with executable verification."
+      - "Reject completion if T0/T1/T2/global specs are not green."
+      - "Reject completion if Hindsight is treated as source of truth."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
+
+checks:
+  dirty_fingerprint: unknown
+  last_verification:
+    result: unknown
+    task: null
+    commands: []

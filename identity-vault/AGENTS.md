@@ -44,6 +44,7 @@ This vault is a governed memory system, not a chat transcript dump.
 - Specialized recall must be filtered by visibility, sensitivity, domain, status, and consumer.
 - A recall request that cannot define safe filters must fail closed or return to the memory agent for routing.
 - Recall based on stale or changed sources must disclose the snapshot used or route through refresh/review.
+- Adapter traces must preserve retain/delete/recall evidence so answer evidence can point back to governed vault provenance.
 
 ## Engine Port Rules
 

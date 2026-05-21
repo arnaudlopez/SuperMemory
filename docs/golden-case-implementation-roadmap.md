@@ -136,20 +136,23 @@ La fixture prouve qu'une memoire gouvernee peut passer de snapshot a interpretat
 
 Objectif :
 
-Prouver le vrai passage SuperMemory -> Hindsight avec le plus petit adaptateur utile.
+Prouver le passage SuperMemory -> Hindsight au niveau contrat avec le plus petit adaptateur utile, sans dependre encore d'un runtime Hindsight reel.
 
 Fonctions minimales :
 
 - `retain` ou upsert avec `document_id` stable ;
-- `recall` avec tags restrictifs ;
+- `recall` fail-closed avec tags restrictifs ;
 - suppression ou exclusion forte de `do_not_use` ;
-- metadata de provenance.
+- metadata de provenance ;
+- traces utiles sur retain, delete et recall.
 
 Livrables :
 
-- adaptateur Hindsight minimal ;
+- adaptateur Hindsight minimal fake/local ;
 - payload de promotion ;
-- test actif vs `do_not_use`.
+- test actif vs `do_not_use` ;
+- test anti auto-retain global ;
+- evidence de reponse liee au recall trace.
 
 Oracle :
 
@@ -157,12 +160,15 @@ Oracle :
 Un item actif est rappelable avec metadata.
 Un item do_not_use est absent du recall actif.
 Le recall echoue ferme si les filtres minimaux sont absents.
+Un meme document_id upserte une seule entree active.
+Un item non explicitement promu n'est jamais retenu automatiquement.
 ```
 
 Point de vigilance :
 
 - ne pas activer auto-retain global ;
 - ne pas scanner tout le vault.
+- ne pas presenter le fake/local contract comme une integration runtime Hindsight.
 
 ## Tranche 4 - Reponse gouvernee avec evidence
 

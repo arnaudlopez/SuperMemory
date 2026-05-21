@@ -1,0 +1,9 @@
+{
+  "answer_id": "ans-acme-trust-score-t3",
+  "policy_id": "recall-acme-email-agent",
+  "answer_state": "current",
+  "used_memory_ids": ["mem-acme-trust-score-v2"],
+  "used_document_ids": ["doc-acme-trust-score"],
+  "cited_snapshot_ids": ["snap-acme-api-doc-2026-05-21"],
+  "adapter_trace_ids": ["trace-recall-acme-email-agent"]
+}

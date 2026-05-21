@@ -1,0 +1,31 @@
+{
+  "documents": [
+    {
+      "document_id": "doc-acme-trust-score",
+      "memory_id": "mem-acme-trust-score-v2",
+      "status": "active",
+      "text": "Acme Project Y client communication should mention trust_score as the current customer scoring field.",
+      "metadata": {
+        "source_id": "src-acme-api-doc",
+        "snapshot_id": "snap-acme-api-doc-2026-05-21",
+        "observation_id": "obs-acme-trust-score-current",
+        "interpretation_id": "interp-acme-trust-score-current",
+        "memory_id": "mem-acme-trust-score-v2"
+      }
+    }
+  ],
+  "deleted_document_ids": ["doc-acme-risk-score-legacy"],
+  "recall_results": [
+    {
+      "policy_id": "recall-acme-email-agent",
+      "document_ids": ["doc-acme-trust-score"],
+      "trace_id": "trace-recall-acme-email-agent"
+    },
+    {
+      "policy_id": "recall-acme-support-agent-miss",
+      "document_ids": [],
+      "trace_id": "trace-recall-acme-support-agent-miss",
+      "diagnostic": "no documents matched all required tags"
+    }
+  ]
+}

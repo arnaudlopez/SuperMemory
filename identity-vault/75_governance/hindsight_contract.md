@@ -132,3 +132,5 @@ Every promotion, replacement, or deletion is recorded in `80_logs/hindsight_prom
 ## Adapter Rule
 
 Before any real Hindsight runtime integration, the adapter must consume only governed `ValidatedMemory` or approved raw audit payloads. It must not auto-retain raw LLM conclusions as stable memory. Adapter traces should preserve whether answer evidence came from direct observation, interpretation, or compiled memory.
+
+The minimal local adapter contract is executable in `scripts/verify-hindsight-adapter-minimal.mjs`. It proves upsert by stable `document_id`, fail-closed recall filters, hard exclusion of `do_not_use`, no global auto-retain, useful recall-miss traces, and rejection of raw LLM conclusions before a real Hindsight runtime is introduced.

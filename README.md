@@ -124,6 +124,12 @@ Hindsight is the default engine. Other tools are optional ports, not default dep
 
 See [`identity-vault/75_governance/memory_engine_ports.md`](identity-vault/75_governance/memory_engine_ports.md).
 
+### Minimal Hindsight Adapter Contract
+
+The current adapter proof is local and contractual. It verifies the SuperMemory -> Hindsight boundary before any real runtime integration: governed promotion payloads upsert by stable `document_id`, `do_not_use` deletes or excludes active recall, recall fails closed without scoped tags, raw LLM conclusions are not retained, and recall traces keep answer evidence auditable.
+
+See [`identity-vault/90_evals/cases/hindsight-adapter-minimal`](identity-vault/90_evals/cases/hindsight-adapter-minimal).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -147,6 +153,7 @@ Run individual checks:
 ```bash
 node scripts/verify-identity-vault-tdd.mjs
 node scripts/verify-enterprise-living-memory-target.mjs
+node scripts/verify-hindsight-adapter-minimal.mjs
 ```
 
 Expected output:
@@ -231,7 +238,8 @@ Implemented:
 - Acme executable fixture;
 - enterprise target fixture;
 - verification scripts;
-- Hindsight promotion contract and logs as local fixtures.
+- Hindsight promotion contract and logs as local fixtures;
+- minimal local Hindsight adapter contract verifier.
 
 Not yet implemented:
 
@@ -244,13 +252,14 @@ Not yet implemented:
 
 ## Roadmap
 
-1. Prototype Hindsight locally with the Acme fixture.
-2. Implement vault-to-Hindsight promotion script.
-3. Add evals for filters, freshness, and `do_not_use`.
-4. Implement source snapshot refresh for mutable sources.
-5. Expand toward the enterprise living-memory target.
-6. Add optional source-capture tools only when needed.
-7. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.
+1. Keep hardening the local Hindsight adapter contract against governed fixtures.
+2. Prototype real Hindsight only after the local adapter contract remains green.
+3. Implement vault-to-Hindsight promotion script.
+4. Add evals for filters, freshness, and `do_not_use`.
+5. Implement source snapshot refresh for mutable sources.
+6. Expand toward the enterprise living-memory target.
+7. Add optional source-capture tools only when needed.
+8. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.
 
 ## Design Principles
 

@@ -933,6 +933,27 @@ promptfoo peut devenir le runner de ces tests si les commandes Node actuelles de
 - Utiliser `trace` seulement pour les echecs d'eval.
 - Ajouter snapshot metadata sur les sources externes Acme.
 
+### M1.5 - Contrat adaptateur local
+
+Avant l'integration runtime Hindsight reelle, SuperMemory maintient un contrat fake/local executable.
+
+Ce contrat prouve :
+
+- upsert par `document_id` stable ;
+- retain limite aux payloads explicitement promus ;
+- suppression ou exclusion forte de `do_not_use` ;
+- recall fail-closed par workspace, access policy, statut actif et consumer ;
+- traces utiles sur retain, delete, recall et recall miss ;
+- refus des conclusions LLM brutes comme documents actifs.
+
+Commande d'acceptance :
+
+```bash
+node scripts/verify-hindsight-adapter-minimal.mjs
+```
+
+Ce contrat ne remplace pas une integration Hindsight reelle. Il definit le comportement que l'integration devra preserver.
+
 Contrat d'acceptance M1 :
 
 ```text

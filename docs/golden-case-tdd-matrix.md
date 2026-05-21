@@ -286,6 +286,12 @@ Par defaut, commencer avec un fake adapter contractuel si Hindsight local n'est 
 puis ajouter un mode reel separe.
 ```
 
+Decision implementee :
+
+```text
+T3 commence avec un fake adapter contractuel. Le runtime Hindsight reel reste separe.
+```
+
 Tests rouges :
 
 | ID | Test | Entree | Attendu | Risque couvert |
@@ -296,11 +302,12 @@ Tests rouges :
 | T3.4 | `do_not_use` supprime ou exclu | Promotion puis revocation `do_not_use` | Recall actif ne retourne rien | Memoire interdite |
 | T3.5 | Pas d'auto-retain global | Input vault entier | Seuls items explicitement promus sont envoyes | Aspiration globale |
 | T3.6 | Trace utile sur echec recall | Query sans resultat | Trace ou diagnostic conserve | Debug impossible |
+| T3.7 | Conclusions LLM brutes interdites | Document adapter `raw_llm_conclusion` actif | Rejet `raw_llm_conclusion_retained` | Bypass du vault |
 
 Critere de passage :
 
 ```text
-L'adaptateur peut retenir, rappeler et exclure sans violer les gates SuperMemory.
+Le fake/local adapter peut retenir, upserter, rappeler, tracer et exclure sans violer les gates SuperMemory.
 ```
 
 ## Tranche 4 - Reponse gouvernee avec evidence
