@@ -5,7 +5,7 @@ goal:
   slug: "implement-governed-answer-evidence-t4"
   kind: specific
   tranche: "Implement an executable contract proving governed answer evidence and safe answer degradation states."
-  status: active
+  status: done
   oracle:
     signal: "A T4 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves governed answer evidence while T0/T1/T2/T3 remain green."
     cadence: "after each Worker package and at final audit"
@@ -87,7 +87,7 @@ visual_board:
     url: "http://goalbuddy.localhost:41737/implement-governed-answer-evidence-t4/"
     command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-governed-answer-evidence-t4"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -287,7 +287,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     reasoning_hint: default
     objective: "Ship verified T4 work to GitHub before the goal can be marked done."
     constraints:
@@ -305,12 +305,46 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
-    receipt: null
+    receipt:
+      result: done
+      commit_sha: "113dc45"
+      remote_branch: "main"
+      push_result: "pushed to origin/main"
+      committed_files:
+        - "README.md"
+        - "docs/goals/implement-governed-answer-evidence-t4/goal.md"
+        - "docs/goals/implement-governed-answer-evidence-t4/state.yaml"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/answer_policy.md"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/actual/README.md"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/expected/assertions.json"
+        - "identity-vault/90_evals/cases/governed-answer-evidence/input/fixture.json"
+        - "identity-vault/AGENTS.md"
+        - "scripts/verify-governed-answer-evidence.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/governed-answer-evidence.test.mjs"
+      unrelated_dirty_files_left_untouched: []
+      commands:
+        - cmd: "git status --short"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        - cmd: "node --test tests/governed-answer-evidence.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/implement-governed-answer-evidence-t4/state.yaml"
+          status: pass
 
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -336,4 +370,45 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "T4 is now implemented as a deterministic governed answer evidence contract. It proves that current answers require used memory ids, document ids, cited snapshots, adapter traces when recall-backed, and supports_answer relations. It also proves stale, changed_needs_review, restricted, and forbidden memory degrade or refuse according to answer_policy instead of posing as current truth."
+      workflow_safeguards:
+        design_concept: "present in T002 and proven by T003/T004"
+        ubiquitous_language: "present in T001"
+        feedback_policy: "present in T002"
+        test_strategy: "red -> green recorded in T002/T003"
+        module_map: "present in T001/T002"
+        interface_contract: "present in T002"
+        architecture_review: "approved in T002"
+        design_delta: "present in T003/T004/T999"
+      completion_mapping:
+        original_outcome: "Execute /goal Follow docs/goals/implement-governed-answer-evidence-t4/goal.md."
+        oracle: "scripts/verify-supermemory-specs.mjs includes and passes scripts/verify-governed-answer-evidence.mjs."
+        previous_tranches_preserved: "global specs still pass memory contracts, M1 promotion/recall, T3 adapter, identity vault TDD, and enterprise target."
+        t4_behavior: "identity-vault/90_evals/cases/governed-answer-evidence plus scripts/verify-governed-answer-evidence.mjs."
+        shipping: "113dc45 pushed to origin/main."
+      commands:
+        - cmd: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        - cmd: "node --test tests/governed-answer-evidence.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      missing_evidence: []
+      next_task_if_not_complete: null
+
+checks:
+  dirty_fingerprint: "clean after 113dc45 push, then board finalization pending"
+  last_verification:
+    result: pass
+    task: T999
+    commands:
+      - "node scripts/verify-governed-answer-evidence.mjs"
+      - "node --test tests/governed-answer-evidence.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
