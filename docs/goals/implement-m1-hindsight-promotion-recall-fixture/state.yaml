@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: implement-m1-hindsight-promotion-recall-fixture
   title: Implement M1 Hindsight Promotion Recall Fixture
-  status: active
+  status: done
   created_at: "2026-05-20"
   updated_at: "2026-05-21"
   original_request: "goal-prep for the next tranche after T1"
@@ -65,7 +65,7 @@ workflow_safeguards:
   requires_interface_contract: true
   requires_architecture_review: true
   requires_design_delta: true
-active_task: T998
+active_task: null
 tasks:
   - id: T001
     type: judge
@@ -346,7 +346,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Ship verified M1 fixture changes to GitHub before final completion."
     inputs:
       - "Final diff"
@@ -367,11 +367,41 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "Or shipping_blocker: no_git_repository | no_github_remote"
-    receipt: null
+    receipt:
+      result: done
+      commit_sha: "165f24f046fc030766f04ba67067fcfc36554e1d"
+      remote_branch: "origin/main"
+      push_result: "success: pushed main to origin, 8410b92..165f24f"
+      committed_files:
+        - "docs/goals/implement-m1-hindsight-promotion-recall-fixture/goal.md"
+        - "docs/goals/implement-m1-hindsight-promotion-recall-fixture/state.yaml"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/actual/README.md"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/assertions.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/final-state.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/expected/promotion-payload.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/fixture.json"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/snapshot.md"
+        - "identity-vault/90_evals/cases/m1-hindsight-promotion-recall/input/source.md"
+        - "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/m1-hindsight-promotion-recall.test.mjs"
+      unrelated_dirty_files_left_untouched: []
+      commands:
+        - cmd: "git status --short"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git push origin main"
+          status: pass
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Final audit: prove whether the M1 fixture implementation goal is complete."
     inputs:
@@ -397,4 +427,36 @@ tasks:
       - "M1 coverage map"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      workflow_safeguards:
+        design_concept: "present in T001"
+        ubiquitous_language: "present in T001"
+        feedback_policy: "present in T001"
+        test_strategy: "present in T001"
+        module_map: "present in T001"
+        interface_contract: "present in T001"
+        architecture_review: "present in T001"
+        design_delta: "present in T003"
+      M1_coverage_map:
+        source_without_snapshot: "T2.1 invalid case rejects an active source whose active_snapshot_id has no SourceSnapshot."
+        observation_without_snapshot_id: "T2.2 invalid case rejects an observation without snapshot_id."
+        memory_without_derives_from: "T2.3 invalid case rejects active ValidatedMemory without derives_from."
+        incomplete_promotion_payload: "T2.4 invalid case rejects active payload missing document_id/tags/provenance metadata."
+        answer_missing_active_snapshot: "T2.5 invalid case rejects current answer evidence that cites an older snapshot."
+        do_not_use_promoted: "T2.6 invalid case rejects active promotion for a do_not_use memory."
+        valid_chain: "Valid fixture proves Source -> SourceSnapshot -> Observation -> ValidatedMemory -> HindsightPromotionPayload -> AnswerEvidence."
+      verification:
+        - cmd: "node --test tests/m1-hindsight-promotion-recall.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      shipping_proof: "T998 commit_sha 165f24f046fc030766f04ba67067fcfc36554e1d pushed to origin/main successfully."
+      missing_evidence: []
+      next_task_if_not_complete: null
