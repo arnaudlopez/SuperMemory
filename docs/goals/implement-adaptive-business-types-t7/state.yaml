@@ -1,0 +1,429 @@
+version: 2
+
+goal:
+  title: "T7 Adaptive Business Types"
+  slug: "implement-adaptive-business-types-t7"
+  kind: specific
+  tranche: "Implement an executable contract proving that new business types appear only when source-backed and remain governed by lifecycle status."
+  status: done
+  oracle:
+    signal: "A T7 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves adaptive business types while T0-T6 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T7 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit_sha d164e99, pushed branch origin/main, and final audit full_outcome_complete true."
+  intake:
+    original_request: "okgo"
+    interpreted_outcome: "Continue with T7 adaptive business types."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T7 fixture/verifier proves adaptive type lifecycle behavior, global specs pass, and the work is committed and pushed."
+    likely_misfire: "Preloading marketing_strategy as active or stable, or allowing candidate types into active promotion."
+    blind_spots_considered:
+      - "marketing_strategy must not be active at t0."
+      - "A real t1 source must justify the type proposal."
+      - "candidate types are not promotable as active memory."
+      - "experimental types require bounded recall filters."
+      - "stable promotion requires eval/source evidence."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T7.1-T7.5."
+      - "docs/golden-case-implementation-roadmap.md defines the adaptive type oracle."
+      - "identity-vault/75_governance/entity_type_registry.md lists marketing_strategy only as a candidate example."
+      - "identity-vault/75_governance/type_lifecycle.md defines candidate -> experimental -> stable | deprecated."
+      - "identity-vault/50_review/type_queue.md owns proposed types before activation."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-adaptive-business-types-t7/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-adaptive-business-types-t7"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T7 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T7 target found in roadmap/matrix. Existing type registry, type lifecycle, type queue, and PRD define the adaptive type contract."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-adaptive-business-types.mjs and T7.1-T7.5."
+        - "docs/golden-case-implementation-roadmap.md requires marketing_strategy absent at t0, source-backed at t1, experimental, and not stable."
+        - "identity-vault/75_governance/entity_type_registry.md lists marketing_strategy only under candidate/experimental examples, not active stable business types."
+        - "identity-vault/75_governance/type_lifecycle.md blocks candidate promotion and requires source/eval evidence for stable."
+        - "identity-vault/50_review/type_queue.md owns proposed type evidence."
+      module_map:
+        new_case: "identity-vault/90_evals/cases/adaptive-business-types"
+        new_verifier: "scripts/verify-adaptive-business-types.mjs"
+        new_test: "tests/adaptive-business-types.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "entity_type_registry"
+        - "type_queue"
+        - "candidate"
+        - "experimental"
+        - "stable"
+        - "schema_status:experimental"
+        - "marketing_strategy"
+        - "source-backed"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "fixture assertions for lifecycle and recall filter evidence"
+        docs: "update adaptive type governance docs after green behavior"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T7 architecture and select Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T7 contract, not a production ontology service or live Hindsight integration."
+      design_concept: "SuperMemory begins with a stable kernel and grows business types only when real sources or workflows require them. New types pass through candidate and experimental gates before any stable use."
+      interface_contract:
+        absent_at_t0: "marketing_strategy is not active at t0."
+        source_backed_candidate: "A t1 source can propose marketing_strategy only through type_queue evidence."
+        candidate_block: "candidate schema_status cannot be actively promoted."
+        experimental_bound: "experimental recall must include schema_status:experimental and entity_type filter evidence."
+        stable_gate: "stable promotion requires source/eval or review evidence and rejects arbitrary promotion."
+      test_strategy:
+        red: "Add fixture/global wiring before verifier implementation so global specs fail on missing verifier."
+        green: "Implement verifier for T7.1-T7.5 and wire Node test/global specs."
+      feedback_policy: "Check lifecycle evidence and filter tags, not exact prose."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      allowed_files:
+        - "identity-vault/90_evals/cases/adaptive-business-types/input/fixture.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/expected/assertions.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/actual/README.md"
+        - "scripts/verify-adaptive-business-types.mjs"
+        - "tests/adaptive-business-types.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-adaptive-business-types.mjs"
+        - "node --test tests/adaptive-business-types.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T7 adaptive business type fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 receipt"
+      - "T002 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/adaptive-business-types/input/fixture.json"
+      - "identity-vault/90_evals/cases/adaptive-business-types/expected/assertions.json"
+      - "identity-vault/90_evals/cases/adaptive-business-types/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/adaptive-business-types/actual/README.md"
+      - "scripts/verify-adaptive-business-types.mjs"
+      - "tests/adaptive-business-types.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-adaptive-business-types.mjs"
+      - "node --test tests/adaptive-business-types.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Cannot produce a meaningful red failure before implementation."
+      - "Implementation would weaken T0-T6 or global specs."
+      - "Behavior becomes a production ontology service or live Hindsight integration instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented the T7 deterministic local contract for adaptive business type lifecycle, candidate blocking, bounded experimental recall, and stable promotion gating."
+      changed_files:
+        - "identity-vault/90_evals/cases/adaptive-business-types/input/fixture.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/expected/assertions.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/actual/README.md"
+        - "scripts/verify-adaptive-business-types.mjs"
+        - "tests/adaptive-business-types.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      commands:
+        - command: "node scripts/verify-adaptive-business-types.mjs"
+          status: pass
+        - command: "node --test tests/adaptive-business-types.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      red_test_evidence:
+        - "expected_fail: node scripts/verify-supermemory-specs.mjs failed while scripts/verify-adaptive-business-types.mjs was intentionally missing."
+      green_test_evidence:
+        - "green_test status: pass; node scripts/verify-adaptive-business-types.mjs"
+        - "green_test status: pass; node --test tests/adaptive-business-types.test.mjs"
+        - "green_test status: pass; node scripts/verify-supermemory-specs.mjs"
+      contract_coverage:
+        - "T7.1 marketing_strategy is inactive at t0."
+        - "T7.2 t1 proposal requires a captured source and definition evidence."
+        - "T7.3 candidate schema_status cannot be promoted active."
+        - "T7.4 experimental recall requires entity_type and schema_status filters."
+        - "T7.5 stable transition without source/eval evidence is rejected."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T7 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/entity_type_registry.md"
+      - "identity-vault/75_governance/type_lifecycle.md"
+      - "identity-vault/50_review/type_queue.md"
+      - "identity-vault/75_governance/hindsight_contract.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-adaptive-business-types.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, type governance docs, Hindsight promotion gate, and agent guidance with the implemented T7 behavior."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/entity_type_registry.md"
+        - "identity-vault/75_governance/type_lifecycle.md"
+        - "identity-vault/50_review/type_queue.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "identity-vault/AGENTS.md"
+      commands:
+        - command: "node scripts/verify-adaptive-business-types.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      design_delta:
+        before: "T7 was planned in roadmap/matrix and described as adaptive ontology governance."
+        after: "T7 is now documented as an executable local contract: absent at t0, source-backed proposal at t1, candidate block, bounded experimental recall, and stable gate."
+      verify:
+        - "node scripts/verify-adaptive-business-types.mjs: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "git diff --check: PASS"
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: default
+    objective: "Ship verified T7 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-adaptive-business-types-t7/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      commit_sha: "d164e99"
+      remote_branch: "origin/main"
+      push_result: "successful push to origin main"
+      committed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/50_review/type_queue.md"
+        - "identity-vault/75_governance/entity_type_registry.md"
+        - "identity-vault/75_governance/hindsight_contract.md"
+        - "identity-vault/75_governance/type_lifecycle.md"
+        - "identity-vault/AGENTS.md"
+        - "identity-vault/90_evals/cases/adaptive-business-types/actual/README.md"
+        - "identity-vault/90_evals/cases/adaptive-business-types/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/expected/assertions.json"
+        - "identity-vault/90_evals/cases/adaptive-business-types/input/fixture.json"
+        - "scripts/verify-adaptive-business-types.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/adaptive-business-types.test.mjs"
+      unrelated_dirty_files_left_untouched: "none observed"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert commit d164e99 if needed"
+        observability: "fixture assertions for lifecycle, promotion checks, recall filters, and stable transition gate"
+        docs: "README, roadmap, TDD matrix, PRD, governance, Hindsight contract, and agent guidance updated"
+      verify:
+        - "git status --short: only GoalBuddy board files dirty after implementation commit"
+        - "git diff --check: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "goalbuddy-quality-check progress: PASS"
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta:
+        before: "T7 existed as roadmap/matrix intent and governance prose for adaptive type lifecycle."
+        after: "T7 is executable, documented, globally verified, committed, and pushed."
+      workflow_safeguards:
+        design_concept: "present in T002 and implemented by T003/T004"
+        ubiquitous_language: "present in T001 and used in fixtures/docs"
+        feedback_policy: "present in T002"
+        test_strategy: "red missing-verifier proof plus green targeted/global specs"
+        module_map: "present in T001"
+        interface_contract: "present in T002 and encoded in verifier"
+        architecture_review: "present in T002"
+        design_delta: "present in T004 and T999 receipts"
+      final_verification:
+        - "node scripts/verify-adaptive-business-types.mjs: PASS"
+        - "node --test tests/adaptive-business-types.test.mjs: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "git diff --check: PASS"
+        - "goalbuddy-quality-check progress: PASS"
+      shipping:
+        commit_sha: "d164e99"
+        remote_branch: "origin/main"
+        push_result: "successful push to origin main"
+      residual_risk: "T7 remains a deterministic local contract, not a production ontology service or live Hindsight runtime."
+      next_task: "T8 enterprise access, secrets, and legal hold, unless a review pass is requested first."
