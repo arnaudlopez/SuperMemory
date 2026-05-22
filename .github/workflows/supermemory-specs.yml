@@ -16,5 +16,11 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Run SuperMemory regression suite
+      - name: Verify CI regression suite
         run: node scripts/verify-ci-regression-suite.mjs
+
+      - name: Verify SuperMemory specs
+        run: node scripts/verify-supermemory-specs.mjs
+
+      - name: Check whitespace
+        run: git diff --check

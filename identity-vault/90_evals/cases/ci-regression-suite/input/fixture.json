@@ -1,6 +1,7 @@
 {
   "case_id": "ci-regression-suite",
   "critical_commands": [
+    "node scripts/verify-ci-regression-suite.mjs",
     "node scripts/verify-supermemory-specs.mjs",
     "git diff --check"
   ],
@@ -8,7 +9,9 @@
     "file": ".github/workflows/supermemory-specs.yml",
     "required_events": ["push", "pull_request"],
     "required_commands": [
-      "node scripts/verify-ci-regression-suite.mjs"
+      "node scripts/verify-ci-regression-suite.mjs",
+      "node scripts/verify-supermemory-specs.mjs",
+      "git diff --check"
     ]
   },
   "regression_coverage": [

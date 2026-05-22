@@ -1,6 +1,7 @@
 {
   "case_id": "ci-regression-suite",
   "required_commands": [
+    "node scripts/verify-ci-regression-suite.mjs",
     "node scripts/verify-supermemory-specs.mjs",
     "git diff --check"
   ],
@@ -12,6 +13,10 @@
     "missing_relation_chain"
   ],
   "required_workflow_file": ".github/workflows/supermemory-specs.yml",
-  "required_workflow_command": "node scripts/verify-ci-regression-suite.mjs",
+  "required_workflow_commands": [
+    "node scripts/verify-ci-regression-suite.mjs",
+    "node scripts/verify-supermemory-specs.mjs",
+    "git diff --check"
+  ],
   "promptfoo_status": "optional"
 }

@@ -49,7 +49,9 @@ function verifyWorkflow(fixture, assertions) {
   }
   mustContain(workflow.file, "push:");
   mustContain(workflow.file, "pull_request:");
-  mustContain(workflow.file, assertions.required_workflow_command);
+  for (const command of assertions.required_workflow_commands ?? [assertions.required_workflow_command]) {
+    if (command) mustContain(workflow.file, command);
+  }
 }
 
 function verifyInvalidCaseCoverage(assertions) {
