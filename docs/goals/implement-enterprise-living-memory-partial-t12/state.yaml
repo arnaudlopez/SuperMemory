@@ -1,0 +1,413 @@
+version: 2
+
+goal:
+  title: "T12 Enterprise Living Memory Partial"
+  slug: "implement-enterprise-living-memory-partial-t12"
+  kind: specific
+  tranche: "Implement a partial executable Orion enterprise Golden Case for source/snapshot/change/recall/answer."
+  status: done
+  oracle:
+    signal: "A T12 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves the partial enterprise source/snapshot/change/recall/answer core while T0-T11 remain green and non-covered Golden Case areas remain pending."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T12 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch origin/main, and final audit full_outcome_complete true."
+  intake:
+    original_request: "enchaine"
+    interpreted_outcome: "Continue with T12 enterprise living-memory partial Golden Case."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future enterprise-memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T12 fixture/verifier proves the partial Orion source/snapshot/change/recall/answer core and keeps the full-only areas pending."
+    likely_misfire: "Pretending the full Golden Case is complete or implementing runtime services instead of a bounded executable partial fixture."
+    blind_spots_considered:
+      - "The partial fixture must stay separate from enterprise-living-memory-complete."
+      - "Unimplemented dimensions must be explicit pending statuses, not absent."
+      - "Hindsight re-promotion must reuse stable document_id."
+      - "do_not_use pricing must be excluded from active recall and answers."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T12.1-T12.6."
+      - "docs/golden-case-implementation-roadmap.md defines the minimum T12 scope."
+      - "enterprise-living-memory-complete remains the maximal spec_only target."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-enterprise-living-memory-partial-t12"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T12 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T12 target found in roadmap/matrix. Existing enterprise target, source-change, Hindsight, and answer-evidence contracts define a bounded partial executable fixture."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-enterprise-living-memory-partial.mjs and T12.1-T12.6."
+        - "docs/golden-case-implementation-roadmap.md scopes T12 to API t0/t1, contract t0/t1, PRD stale/review, Hindsight re-promotion, pricing do_not_use, and core source-backed answers."
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete remains the full spec_only target."
+      module_map:
+        target_case: "identity-vault/90_evals/cases/enterprise-living-memory-partial"
+        complete_target: "identity-vault/90_evals/cases/enterprise-living-memory-complete"
+        new_verifier: "scripts/verify-enterprise-living-memory-partial.mjs"
+        new_test: "tests/enterprise-living-memory-partial.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "Orion"
+        - "SourceSnapshot"
+        - "risk_score"
+        - "trust_score"
+        - "historical_only"
+        - "needs_review"
+        - "reviewed"
+        - "document_id"
+        - "do_not_use"
+        - "active_recall"
+        - "pending"
+        - "source-backed answer"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local fixture/verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no runtime Hindsight/API integration"
+        deploy_rollback: "revert T12 fixture/script/test/docs changes"
+        observability: "fixture assertions plus deterministic verifier"
+        docs: "README, roadmap, TDD matrix, PRD, eval runs, and Golden Questions may be updated"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T12 architecture and selected Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement one deterministic local partial Golden Case fixture, not runtime services and not the full T13 target."
+      design_concept: "The partial Orion case proves the living-memory spine end-to-end: mutable source snapshots change, derived memory is reviewed and re-promoted, forbidden memory is excluded, and core answers cite active evidence while future full-case areas stay pending."
+      interface_contract:
+        T12_1: "API t0 risk_score becomes historical_only; API t1 trust_score is active and cited."
+        T12_2: "Contract t0 30-day retention becomes historical_only; contract t1 90-day retention is active and includes retention/legal metadata."
+        T12_3: "PRD derived from t0 snapshots becomes needs_review, then reviewed active t1 PRD exists."
+        T12_4: "Hindsight re-promotion for reviewed PRD reuses the same stable document_id."
+        T12_5: "Pricing do_not_use is excluded from active recall and core answers."
+        T12_6: "Core questions are source-backed with answer evidence and pending full-case dimensions are explicit."
+      test_strategy:
+        red: "Wire node scripts/verify-enterprise-living-memory-partial.mjs into global specs before the verifier exists, proving missing T12 oracle fails."
+        green: "Add fixture, answer evidence, assertions, verifier, Node test, and docs for valid and invalid partial enterprise behavior."
+      feedback_policy: "Check lifecycle states, identifiers, evidence refs, and pending markers; do not require exact natural-language answer prose."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T12 partial enterprise fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/enterprise-living-memory-partial/input/fixture.json"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-partial/expected/assertions.json"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-partial/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/enterprise-living-memory-partial/actual/README.md"
+      - "scripts/verify-enterprise-living-memory-partial.mjs"
+      - "tests/enterprise-living-memory-partial.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-enterprise-living-memory-partial.mjs"
+      - "node --test tests/enterprise-living-memory-partial.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Implementation would weaken T0-T11 or global specs."
+      - "Behavior becomes full T13 Golden Case completion instead of partial T12."
+    receipt:
+      result: done
+      summary: "Implemented T12 partial Orion enterprise fixture, deterministic verifier, Node test, and global spec wiring."
+      changed_files:
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/input/fixture.json"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/expected/assertions.json"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/actual/README.md"
+        - "scripts/verify-enterprise-living-memory-partial.mjs"
+        - "tests/enterprise-living-memory-partial.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      red_test_evidence:
+        - "node --test tests/enterprise-living-memory-partial.test.mjs failed on MODULE_NOT_FOUND for scripts/verify-enterprise-living-memory-partial.mjs."
+        - "node scripts/verify-supermemory-specs.mjs passed T0-T11 then failed on missing scripts/verify-enterprise-living-memory-partial.mjs."
+      expected_fail:
+        - "node --test tests/enterprise-living-memory-partial.test.mjs failed on MODULE_NOT_FOUND for scripts/verify-enterprise-living-memory-partial.mjs."
+        - "node scripts/verify-supermemory-specs.mjs passed T0-T11 then failed on missing scripts/verify-enterprise-living-memory-partial.mjs."
+      green_test_evidence:
+        - "node scripts/verify-enterprise-living-memory-partial.mjs PASS"
+        - "node --test tests/enterprise-living-memory-partial.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      green_test:
+        - "node scripts/verify-enterprise-living-memory-partial.mjs PASS"
+        - "node --test tests/enterprise-living-memory-partial.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      commands:
+        - command: "node scripts/verify-enterprise-living-memory-partial.mjs"
+          status: pass
+        - command: "node --test tests/enterprise-living-memory-partial.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      contract_coverage:
+        - "T12.1 API t0 risk_score historical_only and t1 trust_score active."
+        - "T12.2 Contract t0 30-day retention historical_only and t1 90-day retention active with legal metadata."
+        - "T12.3 PRD t0 needs_review then reviewed active t1 PRD."
+        - "T12.4 Hindsight re-promotion reuses doc-orion-prd-checkout-integration."
+        - "T12.5 do_not_use pricing excluded from active recall and answers."
+        - "T12.6 core answers are source-backed with snapshot/evidence refs."
+        - "T12.7 full-case dimensions remain explicit pending items."
+      design_delta: "Added the first executable Orion enterprise Golden Case slice while keeping the complete target separate for T13."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T12 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/90_evals/eval_runs.md"
+      - "identity-vault/90_evals/golden_questions.md"
+    verify:
+      - "node scripts/verify-enterprise-living-memory-partial.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need to alter behavior instead of documenting it."
+      - "Need files outside allowed_files before T004 is complete."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, eval run log, and Golden Questions with the implemented T12 partial contract."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/90_evals/eval_runs.md"
+        - "identity-vault/90_evals/golden_questions.md"
+      design_delta:
+        before: "T12 was planned as a partial Golden Case but not executable."
+        after: "T12 is documented as an executable partial Golden Case and T13 remains the full target."
+      commands:
+        - command: "node scripts/verify-enterprise-living-memory-partial.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      impact_assessment_ref: "T001 receipt impact_assessment"
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    objective: "Ship verified T12 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run GoalBuddy final quality check."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Committed and pushed the verified T12 implementation to origin/main."
+      commit_sha: "bc1c58b"
+      remote_branch: "origin/main"
+      push_result: "successful push to origin main"
+      committed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/actual/README.md"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/expected/assertions.json"
+        - "identity-vault/90_evals/cases/enterprise-living-memory-partial/input/fixture.json"
+        - "identity-vault/90_evals/eval_runs.md"
+        - "identity-vault/90_evals/golden_questions.md"
+        - "scripts/verify-enterprise-living-memory-partial.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/enterprise-living-memory-partial.test.mjs"
+      unrelated_dirty_files_left_untouched:
+        - "docs/goals/implement-enterprise-living-memory-partial-t12/"
+      commands:
+        - command: "git status --short"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git push origin main"
+          status: pass
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local fixture/verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no runtime Hindsight/API integration"
+        deploy_rollback: "revert commit bc1c58b"
+        observability: "fixture assertions plus deterministic verifier"
+        docs: "README, roadmap, TDD matrix, PRD, eval runs, Golden Questions, and fixture README updated"
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, and shipping proof are present."
+      design_delta: "T12 is now executable as a partial Orion Golden Case: core source/snapshot/change/recall/answer behavior is verified and full-case dimensions remain pending for T13."
+      oracle_evidence:
+        - "node scripts/verify-enterprise-living-memory-partial.mjs PASS"
+        - "node --test tests/enterprise-living-memory-partial.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+        - "commit bc1c58b pushed to origin/main"
+      complete: complete
+      missing_evidence: []
+      next_task_if_not_complete: null
