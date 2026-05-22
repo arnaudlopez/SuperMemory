@@ -1,0 +1,401 @@
+version: 2
+
+goal:
+  title: "T11 Engine Port Evals"
+  slug: "implement-engine-port-evals-t11"
+  kind: specific
+  tranche: "Implement an executable contract proving that Graphiti and Memoria remain governed optional ports."
+  status: complete
+  oracle:
+    signal: "A T11 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves engine ports remain governed optional ports while T0-T10 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T11 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch origin/main, and final audit full_outcome_complete true."
+  intake:
+    original_request: "ok go"
+    interpreted_outcome: "Continue with T11 engine port evals."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory-engine integrations"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T11 fixture/verifier proves governed not_activated, candidate_port, and rejected_port decisions; global specs pass; and the work is committed and pushed."
+    likely_misfire: "Installing or designing runtime Graphiti/Memoria integrations instead of proving activation governance."
+    blind_spots_considered:
+      - "Graphiti must remain not_activated while Hindsight passes current temporal evals."
+      - "Memoria must remain not_activated while vault snapshots/logs cover rollback and audit."
+      - "A red temporal eval should create a candidate port, not immediate activation."
+      - "A port cannot own permissions, revocation, freshness, or agent contracts."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T11.1-T11.4."
+      - "docs/golden-case-implementation-roadmap.md requires engine_port_evals.jsonl and not_activated Graphiti/Memoria decisions."
+      - "identity-vault/75_governance/memory_engine_ports.md owns the engine-port policy."
+      - "identity-vault/90_evals/cases/enterprise-living-memory-complete already expects engine_port_evals.jsonl references."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-engine-port-evals-t11"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T11 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T11 target found in roadmap/matrix. Existing engine-port governance, Golden Case expectations, and global verifier wiring define a bounded local contract."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-engine-port-evals.mjs and T11.1-T11.4."
+        - "docs/golden-case-implementation-roadmap.md requires engine_port_evals.jsonl and not_activated Graphiti/Memoria decisions."
+        - "identity-vault/75_governance/memory_engine_ports.md defines Graphiti as Temporal Graph Port and Memoria as Memory Versioning Port."
+        - "identity-vault/90_evals/cases/enterprise-living-memory-complete/expected/assertions.json expects engine_port_evals.jsonl and not_activated statuses."
+      module_map:
+        policy: "identity-vault/75_governance/memory_engine_ports.md"
+        target_case: "identity-vault/90_evals/cases/engine-port-evals"
+        target_log: "identity-vault/80_logs/engine_port_evals.jsonl"
+        new_verifier: "scripts/verify-engine-port-evals.mjs"
+        new_test: "tests/engine-port-evals.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "engine_port_eval"
+        - "Graphiti"
+        - "Memoria"
+        - "not_activated"
+        - "candidate_port"
+        - "rejected_port"
+        - "eval red"
+        - "operational burden"
+        - "stable SuperMemory contract"
+        - "governance ownership"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no Graphiti or Memoria runtime installation"
+        deploy_rollback: "revert T11 fixture/script/test/docs changes"
+        observability: "engine_port_evals JSONL-shaped records plus deterministic verifier"
+        docs: "README, roadmap, TDD matrix, PRD, governance, and agent guidance may be updated"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T11 architecture and selected Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T11 contract and evidence log, not runtime Graphiti/Memoria integration or dependency installation."
+      design_concept: "SuperMemory keeps LLM-first living-memory governance while engine integrations remain optional ports. Passing native evals produce explicit not_activated records; failing evals create candidate_port evidence; governance ownership violations produce rejected_port."
+      interface_contract:
+        T11_1: "Graphiti decision is not_activated when Hindsight temporal eval result is pass."
+        T11_2: "Memoria decision is not_activated when vault snapshots/logs satisfy rollback and audit."
+        T11_3: "A red temporal eval creates candidate_port with candidate, failing eval id, justification, and preserved SuperMemory contract."
+        T11_4: "A port requiring ownership of permissions, source freshness, revocation, or agent contracts is rejected."
+      test_strategy:
+        red: "Wire node scripts/verify-engine-port-evals.mjs into global specs before the verifier exists, proving the missing T11 oracle fails."
+        green: "Add fixture, JSONL log, verifier, Node test, and docs for valid and invalid engine-port decisions."
+      feedback_policy: "Check activation governance shape and evidence, not exact prose wording."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T11 engine-port eval fixture, JSONL log, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/engine-port-evals/input/fixture.json"
+      - "identity-vault/90_evals/cases/engine-port-evals/expected/assertions.json"
+      - "identity-vault/90_evals/cases/engine-port-evals/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/engine-port-evals/actual/README.md"
+      - "identity-vault/80_logs/engine_port_evals.jsonl"
+      - "scripts/verify-engine-port-evals.mjs"
+      - "tests/engine-port-evals.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-engine-port-evals.mjs"
+      - "node --test tests/engine-port-evals.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Implementation would weaken T0-T10 or global specs."
+      - "Behavior becomes runtime engine integration instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented T11 deterministic engine-port eval fixture, JSONL evidence log, verifier, Node test, and global spec wiring."
+      changed_files:
+        - identity-vault/90_evals/cases/engine-port-evals/input/fixture.json
+        - identity-vault/90_evals/cases/engine-port-evals/expected/assertions.json
+        - identity-vault/90_evals/cases/engine-port-evals/expected/answer-evidence.json
+        - identity-vault/90_evals/cases/engine-port-evals/actual/README.md
+        - identity-vault/80_logs/engine_port_evals.jsonl
+        - scripts/verify-engine-port-evals.mjs
+        - tests/engine-port-evals.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+      expected_fail:
+        - "node --test tests/engine-port-evals.test.mjs failed because scripts/verify-engine-port-evals.mjs was missing."
+        - "node scripts/verify-supermemory-specs.mjs passed T0-T10 then failed on missing scripts/verify-engine-port-evals.mjs."
+      green_test:
+        - "node scripts/verify-engine-port-evals.mjs PASS"
+        - "node --test tests/engine-port-evals.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      commands:
+        - "node scripts/verify-engine-port-evals.mjs"
+        - "node --test tests/engine-port-evals.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      contract_coverage:
+        - "T11.1 Graphiti not_activated when Hindsight temporal eval passes."
+        - "T11.2 Memoria not_activated when vault snapshots/logs cover rollback and audit."
+        - "T11.3 red temporal eval creates candidate_port with justification."
+        - "T11.4 governance-owning port is rejected."
+        - "T11.5 missing eval evidence is rejected."
+      design_delta: "Added executable proof that engine ports remain governed optional ports and are activated only by red eval evidence or proven operational pain."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T11 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "docs/README.md"
+      - "identity-vault/75_governance/memory_engine_ports.md"
+      - "identity-vault/AGENTS.md"
+      - "identity-vault/90_evals/eval_runs.md"
+    verify:
+      - "node scripts/verify-engine-port-evals.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, PRD, docs README, and eval run log with the implemented T11 engine-port eval contract."
+      changed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/prd-memoire-agentique-v2.md
+        - docs/README.md
+        - identity-vault/90_evals/eval_runs.md
+      design_delta:
+        before: "T11 was described as a future policy/oracle in roadmap and PRD."
+        after: "T11 is documented as an executable local contract with verify-engine-port-evals.mjs and engine_port_evals.jsonl evidence."
+      green_test:
+        - "node scripts/verify-engine-port-evals.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      commands:
+        - "node scripts/verify-engine-port-evals.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: default
+    objective: "Ship verified T11 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-engine-port-evals-t11/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Committed and pushed the verified T11 implementation to origin/main."
+      commit_sha: f7e8d463dace236eec18624d2ffebfff2043fe2a
+      remote_branch: origin/main
+      push_result: "success; local main and origin/main both resolve to f7e8d463dace236eec18624d2ffebfff2043fe2a"
+      committed_files:
+        - README.md
+        - docs/README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/golden-case-tdd-matrix.md
+        - docs/prd-memoire-agentique-v2.md
+        - identity-vault/75_governance/memory_engine_ports.md
+        - identity-vault/80_logs/engine_port_evals.jsonl
+        - identity-vault/90_evals/cases/engine-port-evals/actual/README.md
+        - identity-vault/90_evals/cases/engine-port-evals/expected/answer-evidence.json
+        - identity-vault/90_evals/cases/engine-port-evals/expected/assertions.json
+        - identity-vault/90_evals/cases/engine-port-evals/input/fixture.json
+        - identity-vault/90_evals/eval_runs.md
+        - identity-vault/AGENTS.md
+        - scripts/verify-engine-port-evals.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - tests/engine-port-evals.test.mjs
+      unrelated_dirty_files_left_untouched:
+        - docs/goals/implement-engine-port-evals-t11/
+      verification:
+        - "git status --short --branch checked before commit"
+        - "git diff --check PASS"
+        - "node scripts/verify-engine-port-evals.mjs PASS"
+        - "node --test tests/engine-port-evals.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "follow-up hardening commit fe1de6e9a953fc13db288988f095fca4dce10ff6 added T11.6, JSONL log existence checks, and stricter activation trigger validation"
+        - "docs alignment commit f7e8d463dace236eec18624d2ffebfff2043fe2a pushed README, roadmap, matrix, PRD, memory_engine_ports, AGENTS, and eval_runs updates"
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: "local fixture/verifier contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: "none; no Graphiti or Memoria runtime installation"
+        deploy_rollback: "revert commits 49a7774168beaa86db3d96992d6acc9a585b95d4, fe1de6e9a953fc13db288988f095fca4dce10ff6, and f7e8d463dace236eec18624d2ffebfff2043fe2a"
+        observability: "engine_port_evals JSONL log plus deterministic verifier assertions"
+        docs: "README, docs README, roadmap, PRD, eval runs, and fixture README updated"
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: complete
+      full_outcome_complete: true
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, and shipping proof are present."
+      design_delta: "T11 is now executable: Graphiti and Memoria remain optional governed ports, candidate_port requires red eval evidence, and governance-owning ports are rejected."
+      oracle_evidence:
+        - "node scripts/verify-engine-port-evals.mjs PASS"
+        - "node --test tests/engine-port-evals.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+        - "commits 49a7774168beaa86db3d96992d6acc9a585b95d4, fe1de6e9a953fc13db288988f095fca4dce10ff6, and f7e8d463dace236eec18624d2ffebfff2043fe2a pushed to origin/main"
+      complete: complete
+      missing_evidence:
+        []
+      next_task_if_not_complete: null
