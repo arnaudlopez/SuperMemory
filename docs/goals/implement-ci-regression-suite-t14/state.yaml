@@ -1,0 +1,406 @@
+version: 2
+
+goal:
+  title: "T14 CI Regression Suite"
+  slug: "implement-ci-regression-suite-t14"
+  kind: specific
+  tranche: "Make Golden Case invariants automatic regressions in CI."
+  status: complete
+  oracle:
+    signal: "A T14 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves CI runs critical checks while provenance, permission, do_not_use, relation-chain, and promptfoo-optionality regressions are caught."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T14 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch origin/main, and final audit full_outcome_complete true."
+  intake:
+    original_request: "enchaine"
+    interpreted_outcome: "Continue with T14 regression/CI automation."
+    input_shape: specific
+    audience: "SuperMemory maintainers"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T14 verifier and CI workflow prove critical regressions fail locally and in GitHub Actions while promptfoo remains optional."
+    likely_misfire: "Adding a CI workflow that only runs happy-path specs without proving the regression invariants or making promptfoo accidentally mandatory."
+    blind_spots_considered:
+      - "CI must run the meta-regression verifier, the global spec runner, and whitespace checks."
+      - "Regression checks must prove broken provenance, permission filters, do_not_use recall, and relation chains fail."
+      - "promptfoo can be documented as optional but must not become a required dependency or CI gate."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-ci-regression-suite-t14"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T14 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T14 target found in roadmap/matrix. Existing global spec runner and T13 complete fixture provide the regression substrate."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-ci-regression-suite.mjs and T14.1-T14.5."
+        - "scripts/verify-supermemory-specs.mjs already runs T0-T13 critical checks."
+        - "enterprise-living-memory-complete actual fixture contains provenance, scoped recall, do_not_use, and relation-chain evidence to mutate."
+      module_map:
+        workflow: ".github/workflows/supermemory-specs.yml"
+        new_case: "identity-vault/90_evals/cases/ci-regression-suite"
+        new_verifier: "scripts/verify-ci-regression-suite.mjs"
+        new_test: "tests/ci-regression-suite.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "CI regression suite"
+        - "critical command"
+        - "provenance"
+        - "permission filter"
+        - "do_not_use"
+        - "relation_chain"
+        - "promptfoo_optional"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier and GitHub Actions workflow only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; GitHub Actions config only"
+        deploy_rollback: "revert T14 workflow/script/test/docs changes"
+        observability: "CI workflow plus deterministic regression verifier"
+        docs: "README, roadmap, matrix, PRD, eval runs may be updated"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T14 architecture and selected Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a local CI/meta-regression contract plus GitHub Actions workflow, not promptfoo dependency or external services."
+      design_concept: "T14 makes the mature Golden Case self-protecting: CI runs the critical Node scripts and the T14 verifier proves named invariant regressions would fail."
+      interface_contract:
+        T14_1: "CI workflow runs verify-ci-regression-suite, verify-supermemory-specs, and git diff --check on push and pull_request."
+        T14_2: "Missing snapshot provenance mutation fails."
+        T14_3: "Recall without fail-closed permission filters fails."
+        T14_4: "do_not_use memory in active recall fails."
+        T14_5: "promptfoo remains optional and absent from required CI/package dependency gates."
+      test_strategy:
+        red: "Wire node scripts/verify-ci-regression-suite.mjs into global specs before the verifier exists, proving missing T14 oracle fails."
+        green: "Add workflow, fixture/assertions, verifier, Node test, and docs."
+      feedback_policy: "Check commands and invariant names; avoid requiring external CI execution during local verification."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T14 workflow, regression fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - ".github/workflows/supermemory-specs.yml"
+      - "identity-vault/90_evals/cases/ci-regression-suite/input/fixture.json"
+      - "identity-vault/90_evals/cases/ci-regression-suite/expected/assertions.json"
+      - "identity-vault/90_evals/cases/ci-regression-suite/actual/README.md"
+      - "scripts/verify-ci-regression-suite.mjs"
+      - "tests/ci-regression-suite.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-ci-regression-suite.mjs"
+      - "node --test tests/ci-regression-suite.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need package dependency, external service, database, migration, or hosted CI execution beyond workflow config."
+      - "Implementation would weaken T0-T13 or global specs."
+    receipt:
+      result: done
+      summary: "Implemented the T14 CI regression suite, GitHub Actions workflow, regression fixture, Node test, and global spec wiring."
+      changed_files:
+        - .github/workflows/supermemory-specs.yml
+        - identity-vault/90_evals/cases/ci-regression-suite/input/fixture.json
+        - identity-vault/90_evals/cases/ci-regression-suite/expected/assertions.json
+        - identity-vault/90_evals/cases/ci-regression-suite/actual/README.md
+        - scripts/verify-ci-regression-suite.mjs
+        - tests/ci-regression-suite.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+      expected_fail:
+        - "node --test tests/ci-regression-suite.test.mjs failed on MODULE_NOT_FOUND for scripts/verify-ci-regression-suite.mjs."
+        - "node scripts/verify-supermemory-specs.mjs passed T0-T13 then failed on missing scripts/verify-ci-regression-suite.mjs."
+      green_test:
+        - "node scripts/verify-ci-regression-suite.mjs PASS"
+        - "node --test tests/ci-regression-suite.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      commands:
+        -
+          command: "node scripts/verify-ci-regression-suite.mjs"
+          status: pass
+        -
+          command: "node --test tests/ci-regression-suite.test.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+      contract_coverage:
+        - "T14.1 GitHub Actions workflow invokes node scripts/verify-ci-regression-suite.mjs on push and pull_request."
+        - "T14.2 provenance/source-backed regression coverage is checked through complete Golden Case invalid cases."
+        - "T14.3 permission/fail-closed regression coverage is checked through agent scope invalid cases."
+        - "T14.4 do_not_use active recall is checked by T14 local mutation and secret regression is checked through complete Golden Case invalid cases."
+        - "T14.5 promptfoo remains optional and is not a required dependency or CI command."
+      design_delta: "SuperMemory now has a CI-facing regression suite that orchestrates the existing Node oracles, avoids recursive self-invocation with SUPERMEMORY_SKIP_CI_REGRESSION_SUITE, and adds a GitHub Actions workflow without introducing promptfoo as a dependency."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T14 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/90_evals/eval_runs.md"
+    verify:
+      - "node scripts/verify-ci-regression-suite.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, and eval runs with the implemented T14 CI regression suite."
+      changed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/golden-case-tdd-matrix.md
+        - docs/prd-memoire-agentique-v2.md
+        - identity-vault/90_evals/eval_runs.md
+      design_delta:
+        before: "T14 was a planned regression/CI tranche and promptfoo was an open CI question."
+        after: "T14 is documented as an executable Node-first CI regression suite with GitHub Actions, while promptfoo remains optional reporting."
+      commands:
+        -
+          command: "node scripts/verify-ci-regression-suite.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+      green_test:
+        - "node scripts/verify-ci-regression-suite.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    objective: "Ship verified T14 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run GoalBuddy final quality check."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Committed and pushed the verified T14 CI regression suite to origin/main."
+      commit_sha: 0969a87
+      remote_branch: origin/main
+      push_result: "successful push to origin main"
+      committed_files:
+        - .github/workflows/supermemory-specs.yml
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/golden-case-tdd-matrix.md
+        - docs/prd-memoire-agentique-v2.md
+        - identity-vault/90_evals/cases/ci-regression-suite/actual/README.md
+        - identity-vault/90_evals/cases/ci-regression-suite/expected/assertions.json
+        - identity-vault/90_evals/cases/ci-regression-suite/input/fixture.json
+        - identity-vault/90_evals/eval_runs.md
+        - scripts/verify-ci-regression-suite.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - tests/ci-regression-suite.test.mjs
+      unrelated_dirty_files_left_untouched:
+        - docs/goals/implement-ci-regression-suite-t14/
+      commands:
+        -
+          command: "git status --short"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+        -
+          command: "node scripts/verify-ci-regression-suite.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs docs/goals/implement-ci-regression-suite-t14/state.yaml"
+          status: pass
+        -
+          command: "git push origin main"
+          status: pass
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: "local CI/verifier command contract only"
+        ui_routes: none
+        background_jobs: "GitHub Actions workflow only; no runtime jobs"
+        external_services: "GitHub Actions on push/PR; local verification remains source of truth"
+        deploy_rollback: "revert commit 0969a87"
+        observability: "CI logs plus deterministic verifier errors"
+        docs: "README, roadmap, TDD matrix, PRD, and eval runs updated"
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      complete: complete
+      full_outcome_complete: true
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, TDD evidence, and shipping proof are present."
+      design_delta: "T14 changed SuperMemory from manually running local oracles to having a Node-first CI regression suite and GitHub Actions workflow. The suite runs the global specs, whitespace check, workflow inspection, and regression coverage checks for provenance, permission, do_not_use, secrets, relation chains, and promptfoo optionality."
+      oracle_evidence:
+        - "node scripts/verify-ci-regression-suite.mjs PASS"
+        - "node --test tests/ci-regression-suite.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+        - ".github/workflows/supermemory-specs.yml invokes node scripts/verify-ci-regression-suite.mjs on push and pull_request"
+        - "commit 0969a87 pushed to origin/main"
+      missing_evidence:
+        []
+      next_task_if_not_complete: null
+      remaining_risks:
+        - "GitHub Actions execution itself will be visible after GitHub schedules the pushed workflow; local verification and workflow file inspection pass now."
+        - "promptfoo remains intentionally optional and can become a later reporting tranche if needed."
+      audit: "All required Worker and PM tasks are done. The original oracle is satisfied because CI-facing local regression is implemented, critical regressions are checked, global specs remain green, and shipping proof exists."
