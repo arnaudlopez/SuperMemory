@@ -5,11 +5,11 @@ goal:
   slug: "implement-review-queues-actions-t9"
   kind: specific
   tranche: "Implement an executable contract proving that staleness, conflicts, type proposals, permission ambiguity, and external sends open review or confirmation queues."
-  status: complete
+  status: done
   oracle:
     signal: "A T9 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves review queues/actions while T0-T8 remain green."
     cadence: "after each Worker package and at final audit"
-    final_proof: "T9 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch, and final audit full_outcome_complete true."
+    final_proof: "T9 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit_sha e78c38236086f9e7df0474a596553a22a7277dde, pushed branch origin/main, and final audit full_outcome_complete true."
   intake:
     original_request: "go"
     interpreted_outcome: "Continue with T9 review queues and external actions."
@@ -400,7 +400,8 @@ tasks:
       - "missing evidence"
       - "next task if not complete"
     receipt:
-      result: complete
+      result: done
+      decision: complete
       full_outcome_complete: true
       workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, and shipping proof are present in receipts."
       design_delta: "T9 is now an executable contract: unsafe ambiguity is converted into explicit review or confirmation queues, and external email send remains unexecuted until confirmation."
