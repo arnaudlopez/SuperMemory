@@ -5,7 +5,7 @@ goal:
   slug: "implement-enterprise-living-memory-complete-t13"
   kind: specific
   tranche: "Implement the complete executable Orion enterprise Golden Case."
-  status: complete
+  status: done
   oracle:
     signal: "A T13 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves the full Orion enterprise Golden Case while T0-T12 remain green."
     cadence: "after each Worker package and at final audit"
@@ -84,8 +84,8 @@ agents:
 visual_board:
   selected: local
   local:
-    status: not_started
-    url: null
+    status: generated
+    url: "http://goalbuddy.localhost:41737/implement-enterprise-living-memory-complete-t13/"
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-enterprise-living-memory-complete-t13"
 
 active_task: null
