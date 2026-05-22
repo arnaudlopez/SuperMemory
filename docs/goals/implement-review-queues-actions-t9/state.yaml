@@ -1,0 +1,417 @@
+version: 2
+
+goal:
+  title: "T9 Review Queues And External Actions"
+  slug: "implement-review-queues-actions-t9"
+  kind: specific
+  tranche: "Implement an executable contract proving that staleness, conflicts, type proposals, permission ambiguity, and external sends open review or confirmation queues."
+  status: complete
+  oracle:
+    signal: "A T9 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves review queues/actions while T0-T8 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T9 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch, and final audit full_outcome_complete true."
+  intake:
+    original_request: "go"
+    interpreted_outcome: "Continue with T9 review queues and external actions."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T9 fixture/verifier proves critical ambiguity opens review/confirmation queues, global specs pass, and the work is committed and pushed."
+    likely_misfire: "Letting changed/conflicting/restricted/type/action ambiguity produce a confident answer or external send without a queue item."
+    blind_spots_considered:
+      - "Stale or changed derived memory must open staleness_queue with owner/blocker."
+      - "Unresolved source conflict must open conflict_queue."
+      - "New type proposals must open type_queue."
+      - "Restricted-field ambiguity must open permission_queue."
+      - "External email send must open action_confirmation_queue and remain unexecuted."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T9.1-T9.5."
+      - "docs/golden-case-implementation-roadmap.md defines T9 queues and oracle."
+      - "identity-vault/75_governance/answer_policy.md states external actions require confirmation."
+      - "identity-vault/75_governance/conflict_arbitration.md requires review before incompatible external action."
+      - "identity-vault/75_governance/use_patterns.md defines external draft and external system update confirmation needs."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-review-queues-actions-t9/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-review-queues-actions-t9"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T9 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T9 target found in roadmap/matrix. Existing answer policy, conflict arbitration, use patterns, and review queue conventions define the confirmation/review contract."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-review-queues-actions.mjs and T9.1-T9.5."
+        - "docs/golden-case-implementation-roadmap.md lists staleness_queue, conflict_queue, type_queue, permission_queue, and action_confirmation_queue."
+        - "identity-vault/75_governance/answer_policy.md requires confirmation for external send, publish, schedule, or commit actions."
+        - "identity-vault/75_governance/use_patterns.md maps external drafts and external system updates to confirmation requirements."
+      module_map:
+        new_case: "identity-vault/90_evals/cases/review-queues-actions"
+        new_verifier: "scripts/verify-review-queues-actions.mjs"
+        new_test: "tests/review-queues-actions.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "staleness_queue"
+        - "conflict_queue"
+        - "type_queue"
+        - "permission_queue"
+        - "action_confirmation_queue"
+        - "needs_review"
+        - "needs_confirmation"
+        - "owner"
+        - "blocker"
+        - "external_action"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "fixture assertions for review/confirmation queues"
+        docs: "update review/action docs after green behavior"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T9 architecture and select Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T9 contract, not queue infrastructure or external action execution."
+      design_concept: "When memory health, permissions, type creation, or action authority is ambiguous, SuperMemory creates explicit review or confirmation work. Drafting is allowed; external execution is blocked until confirmation."
+      interface_contract:
+        staleness_queue: "Changed/stale derived memory opens staleness_queue with owner and blocker."
+        conflict_queue: "Unresolved source disagreement opens conflict_queue."
+        type_queue: "New business type proposal opens type_queue."
+        permission_queue: "Restricted-field request without clear permission opens permission_queue."
+        action_confirmation_queue: "External email send opens action_confirmation_queue and is not executed."
+      test_strategy:
+        red: "Add fixture/global wiring before verifier implementation so global specs fail on missing verifier."
+        green: "Implement verifier for T9.1-T9.5 and wire Node test/global specs."
+      feedback_policy: "Check queue shape and blocking decisions, not exact wording."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      allowed_files:
+        - "identity-vault/90_evals/cases/review-queues-actions/input/fixture.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/expected/assertions.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/actual/README.md"
+        - "scripts/verify-review-queues-actions.mjs"
+        - "tests/review-queues-actions.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-review-queues-actions.mjs"
+        - "node --test tests/review-queues-actions.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T9 review queue/action confirmation fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 receipt"
+      - "T002 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/review-queues-actions/input/fixture.json"
+      - "identity-vault/90_evals/cases/review-queues-actions/expected/assertions.json"
+      - "identity-vault/90_evals/cases/review-queues-actions/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/review-queues-actions/actual/README.md"
+      - "scripts/verify-review-queues-actions.mjs"
+      - "tests/review-queues-actions.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-review-queues-actions.mjs"
+      - "node --test tests/review-queues-actions.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Cannot produce a meaningful red failure before implementation."
+      - "Implementation would weaken T0-T8 or global specs."
+      - "Behavior becomes queue infrastructure or external action execution instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented the T9 deterministic local contract for review queues and external action confirmation."
+      changed_files:
+        - "identity-vault/90_evals/cases/review-queues-actions/input/fixture.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/expected/assertions.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/actual/README.md"
+        - "scripts/verify-review-queues-actions.mjs"
+        - "tests/review-queues-actions.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      commands:
+        - command: "node scripts/verify-review-queues-actions.mjs"
+          status: pass
+        - command: "node --test tests/review-queues-actions.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      red_test_evidence:
+        - "expected_fail: node scripts/verify-supermemory-specs.mjs failed while scripts/verify-review-queues-actions.mjs was intentionally missing."
+      green_test_evidence:
+        - "green_test status: pass; node scripts/verify-review-queues-actions.mjs"
+        - "green_test status: pass; node --test tests/review-queues-actions.test.mjs"
+        - "green_test status: pass; node scripts/verify-supermemory-specs.mjs"
+      contract_coverage:
+        - "T9.1 changed/stale memory opens staleness_queue with owner/blocker."
+        - "T9.2 unresolved conflict opens conflict_queue."
+        - "T9.3 candidate type proposal opens type_queue."
+        - "T9.4 restricted-field ambiguity opens permission_queue."
+        - "T9.5 email send opens action_confirmation_queue and remains unexecuted without confirmation."
+
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T9 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/answer_policy.md"
+      - "identity-vault/75_governance/conflict_arbitration.md"
+      - "identity-vault/75_governance/use_patterns.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-review-queues-actions.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned README, roadmap, TDD matrix, PRD, answer policy, use patterns, and agent guidance with the implemented T9 behavior."
+      changed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/answer_policy.md"
+        - "identity-vault/75_governance/use_patterns.md"
+        - "identity-vault/AGENTS.md"
+      commands:
+        - command: "node scripts/verify-review-queues-actions.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+      design_delta:
+        before: "T9 was planned in roadmap/matrix and partially reflected in action confirmation prose."
+        after: "T9 is now documented as an executable local contract: critical ambiguity opens review/confirmation queues and external send remains blocked until confirmation."
+      verify:
+        - "node scripts/verify-review-queues-actions.mjs: PASS"
+        - "node scripts/verify-supermemory-specs.mjs: PASS"
+        - "git diff --check: PASS"
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: default
+    objective: "Ship verified T9 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-review-queues-actions-t9/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Shipped the verified T9 implementation to origin/main."
+      commit_sha: "e78c38236086f9e7df0474a596553a22a7277dde"
+      remote_branch: "origin/main"
+      push_result: "success; local main and origin/main both resolve to e78c38236086f9e7df0474a596553a22a7277dde"
+      committed_files:
+        - "README.md"
+        - "docs/golden-case-implementation-roadmap.md"
+        - "docs/golden-case-tdd-matrix.md"
+        - "docs/prd-memoire-agentique-v2.md"
+        - "identity-vault/75_governance/answer_policy.md"
+        - "identity-vault/75_governance/use_patterns.md"
+        - "identity-vault/90_evals/cases/review-queues-actions/actual/README.md"
+        - "identity-vault/90_evals/cases/review-queues-actions/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/expected/assertions.json"
+        - "identity-vault/90_evals/cases/review-queues-actions/input/fixture.json"
+        - "identity-vault/AGENTS.md"
+        - "scripts/verify-review-queues-actions.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/review-queues-actions.test.mjs"
+      unrelated_dirty_files_left_untouched:
+        - "docs/goals/implement-review-queues-actions-t9/acceptance-contract.md"
+        - "docs/goals/implement-review-queues-actions-t9/brief.md"
+        - "docs/goals/implement-review-queues-actions-t9/goal.md"
+        - "docs/goals/implement-review-queues-actions-t9/state.yaml"
+      verification:
+        - "git status --short --branch showed main tracking origin/main with only goal-board files untracked."
+        - "git diff --check PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "goalbuddy-quality-check --final initially failed only because shipping proof fields were missing; this receipt supplies commit_sha, remote_branch, and push_result."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none executed; confirmation queue fixture proves external send remains blocked"
+        deploy_rollback: "revert commit e78c38236086f9e7df0474a596553a22a7277dde"
+        observability: "deterministic fixture assertions and global spec runner"
+        docs: "README, roadmap, TDD matrix, PRD, answer policy, use patterns, and AGENTS updated in shipped commit"
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: complete
+      full_outcome_complete: true
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, and shipping proof are present in receipts."
+      design_delta: "T9 is now an executable contract: unsafe ambiguity is converted into explicit review or confirmation queues, and external email send remains unexecuted until confirmation."
+      oracle_evidence:
+        - "node scripts/verify-review-queues-actions.mjs PASS"
+        - "node --test tests/review-queues-actions.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+        - "goalbuddy-quality-check --final PASS"
+        - "commit e78c38236086f9e7df0474a596553a22a7277dde pushed to origin/main"
+      complete: complete
+      missing_evidence:
+        []
+      next_task_if_not_complete: null
