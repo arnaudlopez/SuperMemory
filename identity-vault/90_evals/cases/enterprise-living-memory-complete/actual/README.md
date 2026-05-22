@@ -1,13 +1,13 @@
 # Actual State - Enterprise Living Memory Complete
 
-This case is a target fixture, not an implemented acceptance case yet.
+This case now has an executable T13 fixture in `actual/fixture.json`.
 
-It should stay `spec_only` until a dedicated implementation tranche creates the final-shaped vault files listed in `expected/target-structure.md`.
+The expected files remain the documented full target. The actual fixture proves the full Orion Golden Case as structured local evidence without adding runtime services.
 
 Use:
 
 ```bash
-node scripts/verify-enterprise-living-memory-target.mjs
+node scripts/verify-enterprise-living-memory-complete.mjs
 ```
 
-to verify that the target fixture itself is complete.
+to verify all Golden Questions, relation chains, agent scopes, review queues, secret redaction, engine-port decisions, and use-pattern routing.

@@ -581,6 +581,8 @@ Critere de passage :
 SuperMemory est enterprise-ready pour le scenario Orion.
 ```
 
+Le contrat executable T13 vit dans `identity-vault/90_evals/cases/enterprise-living-memory-complete/actual/fixture.json`. Il complete le target documentaire `expected/` sans ajouter de runtime externe.
+
 ## Tranche 14 - Regression, CI et promptfoo optionnel
 
 Commande cible :

@@ -453,9 +453,12 @@ Questions obligatoires :
 Oracle final :
 
 ```bash
+node scripts/verify-enterprise-living-memory-complete.mjs
 node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-supermemory-specs.mjs
 ```
+
+Le contrat T13 execute le scenario Orion complet dans `enterprise-living-memory-complete/actual/fixture.json` : toutes les questions finales sont sourcees, chaque reponse expose une chaine `supports_answer`, les agents respectent leur scope, les queues de revue existent, les secrets sont redacts, Graphiti/Memoria restent `not_activated`, et les demandes passent par les use patterns connus.
 
 ## Tranche 14 - Regression, CI et promptfoo optionnel
 

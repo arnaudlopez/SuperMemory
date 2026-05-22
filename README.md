@@ -210,6 +210,8 @@ node scripts/verify-enterprise-access-secrets-retention.mjs
 node scripts/verify-review-queues-actions.mjs
 node scripts/verify-agent-use-patterns.mjs
 node scripts/verify-engine-port-evals.mjs
+node scripts/verify-enterprise-living-memory-partial.mjs
+node scripts/verify-enterprise-living-memory-complete.mjs
 ```
 
 Expected output:
@@ -259,7 +261,7 @@ See [`identity-vault/90_evals/cases/enterprise-living-memory-partial/`](identity
 
 ### `enterprise-living-memory-complete`
 
-The maximal V2 target fixture. It is currently `spec_only` and defines what enterprise readiness should eventually prove:
+The complete executable Orion enterprise Golden Case. Its expected files still define the target, and `actual/fixture.json` proves the full behavior locally:
 
 - mutable API docs;
 - overwritten contract records;
@@ -271,7 +273,15 @@ The maximal V2 target fixture. It is currently `spec_only` and defines what ente
 - legal hold and retention;
 - adaptive business types;
 - Hindsight promotion;
-- optional Graphiti/Memoria engine-port evaluation.
+- optional Graphiti/Memoria engine-port evaluation;
+- all Golden Questions with source-backed relation chains;
+- agent-scope, review-queue, secret-redaction, and use-pattern checks.
+
+Run:
+
+```bash
+node scripts/verify-enterprise-living-memory-complete.mjs
+```
 
 See [`identity-vault/90_evals/cases/enterprise-living-memory-complete/`](identity-vault/90_evals/cases/enterprise-living-memory-complete/).
 
@@ -316,6 +326,7 @@ Implemented:
 - Hindsight promotion contract and logs as local fixtures;
 - executable T11 engine-port eval contract for Graphiti/Memoria activation decisions;
 - executable T12 partial enterprise living-memory contract;
+- executable T13 complete enterprise Golden Case contract;
 - minimal local Hindsight adapter contract verifier;
 - governed answer evidence contract verifier;
 - mutable source t0/t1 contract verifier.

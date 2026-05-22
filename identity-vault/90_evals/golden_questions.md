@@ -180,6 +180,14 @@ Expected verifier:
 
 - `scripts/verify-enterprise-living-memory-partial.mjs`
 
+## Q-ENTERPRISE-COMPLETE-001
+
+Question: Which verifier proves the complete Orion enterprise Golden Case?
+
+Expected answer:
+
+- `scripts/verify-enterprise-living-memory-complete.mjs` verifies `enterprise-living-memory-complete/actual/fixture.json`, including all final questions, relation chains, scoped agents, review queues, secret redaction, engine-port decisions, and use-pattern routing.
+
 ## Q-ANSWER-001
 
 Question: Can an agent answer with current certainty when memory is stale, conflicting, unavailable, restricted, or forbidden?

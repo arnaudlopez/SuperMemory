@@ -1,0 +1,80 @@
+{
+  "case_id": "enterprise-living-memory-complete",
+  "required_test_ids": ["T13.1", "T13.2", "T13.3", "T13.4", "T13.5", "T13.6", "T13.7", "T13.8"],
+  "expected_errors": {
+    "T13.1": "missing_golden_question",
+    "T13.2": "unsourced_answer",
+    "T13.3": "missing_relation_chain",
+    "T13.4": "agent_scope_violation",
+    "T13.5": "missing_review_queue",
+    "T13.6": "secret_leak",
+    "T13.7": "engine_port_overactivation",
+    "T13.8": "bespoke_workflow"
+  },
+  "required_question_ids": [
+    "current-api-field",
+    "current-retention-snapshot",
+    "prd-currentness",
+    "obsolete-pricing-sheet",
+    "marketing-strategy-type",
+    "marketing-contract-access",
+    "secret-exposure",
+    "contract-connector-unavailable",
+    "support-vs-api-source",
+    "workspace-access-policy",
+    "legal-hold-retention",
+    "engine-port-decision",
+    "t0-t1-changes",
+    "hindsight-document-id",
+    "email-confirmation",
+    "task-use-pattern",
+    "current-enough-relation-chain"
+  ],
+  "required_queue_names": [
+    "staleness_queue",
+    "conflict_queue",
+    "type_queue",
+    "permission_queue",
+    "action_confirmation_queue",
+    "connector_unavailable_queue",
+    "secret_incident_queue"
+  ],
+  "required_agents": ["email_agent", "marketing_agent", "product_agent", "memory_agent", "security_policy"],
+  "required_use_patterns": [
+    "external_draft",
+    "strategic_analysis",
+    "internal_draft",
+    "decision_support",
+    "audit_and_proof",
+    "external_system_update"
+  ],
+  "required_engine_ports": {
+    "Graphiti": "not_activated",
+    "Memoria": "not_activated"
+  },
+  "stable_prd_document_id": "doc-orion-prd-checkout-integration",
+  "required_relation_verbs": [
+    "has_snapshot",
+    "supersedes_snapshot",
+    "contains_observation",
+    "interprets_observation",
+    "proposes_memory",
+    "validates_memory",
+    "cites_snapshot",
+    "derives_from",
+    "concerns_entity",
+    "supersedes_memory",
+    "conflicts_with",
+    "restricts_access",
+    "promotes_to",
+    "recalled_by",
+    "supports_answer",
+    "creates_feedback",
+    "opens_review"
+  ],
+  "forbidden_active_memory_ids": ["mem-orion-pricing-obsolete", "redacted-secret-api-sample"],
+  "required_current_snapshot_ids": [
+    "snap-orion-api-t1-2026-05-27",
+    "snap-orion-contract-t1-2026-05-27"
+  ]
+}

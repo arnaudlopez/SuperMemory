@@ -29,14 +29,37 @@ Scope:
 
 Purpose:
 
-- Define the most complete V2 target before implementation.
+- Define the most complete V2 target and executable T13 fixture.
 - Cover mutable enterprise sources, snapshots, freshness, derived PRDs, adaptive type creation, filtered agents, Hindsight promotion, and optional engine ports.
-- Keep the target separate from the passing Acme fixture until a dedicated implementation tranche starts.
+- Keep `expected/` as the target oracle and `actual/fixture.json` as the executable proof.
 
 Verification:
 
 ```bash
 node scripts/verify-enterprise-living-memory-target.mjs
+node scripts/verify-enterprise-living-memory-complete.mjs
+```
+
+## Eval Run - 2026-05-22 - Enterprise Living Memory Complete
+
+Scope:
+
+- `90_evals/cases/enterprise-living-memory-complete/actual/fixture.json`
+
+Expected:
+
+- All final Orion Golden Questions are source-backed.
+- Each answer carries snapshot/evidence refs and a `supports_answer` relation chain.
+- Email, marketing, product, and memory agents respect scoped filters and refusals.
+- Staleness, conflict, type, permission, and action-confirmation queues exist.
+- Secrets are redacted and absent from recall/drafts.
+- Graphiti and Memoria remain `not_activated`.
+- Requests map to known use patterns, not bespoke workflows.
+
+Verification:
+
+```bash
+node scripts/verify-enterprise-living-memory-complete.mjs
 ```
 
 ## Eval Run - 2026-05-22 - Enterprise Living Memory Partial

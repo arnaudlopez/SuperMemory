@@ -1,0 +1,43 @@
+{
+  "case_id": "enterprise-living-memory-complete",
+  "answers": [
+    {
+      "question_id": "current-api-field",
+      "required_text": "trust_score",
+      "required_snapshot_ids": ["snap-orion-api-t1-2026-05-27"],
+      "forbidden_text": ["risk_score is current"]
+    },
+    {
+      "question_id": "current-retention-snapshot",
+      "required_text": "90-day",
+      "required_snapshot_ids": ["snap-orion-contract-t1-2026-05-27"]
+    },
+    {
+      "question_id": "obsolete-pricing-sheet",
+      "answer_state": "forbidden",
+      "required_text": "do_not_use"
+    },
+    {
+      "question_id": "marketing-contract-access",
+      "answer_state": "restricted",
+      "required_text": "allowed summary"
+    },
+    {
+      "question_id": "secret-exposure",
+      "answer_state": "forbidden",
+      "required_text": "No agent may expose"
+    },
+    {
+      "question_id": "engine-port-decision",
+      "required_text": "Graphiti and Memoria should not be activated"
+    },
+    {
+      "question_id": "hindsight-document-id",
+      "required_text": "doc-orion-prd-checkout-integration"
+    },
+    {
+      "question_id": "current-enough-relation-chain",
+      "required_relation_chain": ["has_snapshot", "supersedes_snapshot", "validates_memory", "recalled_by", "supports_answer"]
+    }
+  ]
+}
