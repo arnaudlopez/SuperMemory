@@ -43,6 +43,10 @@ function hasValue(value) {
   return typeof value === "string" ? value.trim().length > 0 : Boolean(value);
 }
 
+function hasAll(values, requiredValues) {
+  return Array.isArray(values) && requiredValues.every((value) => values.includes(value));
+}
+
 function validateEnginePortEvals(input) {
   const errors = new Set();
 
@@ -62,20 +66,34 @@ function validateEnginePortEvals(input) {
     if (
       evalRecord.candidate === "Graphiti" &&
       evalRecord.port_type === "temporal_graph_port" &&
-      evalRecord.eval_result === "pass" &&
-      evalRecord.status !== "not_activated"
+      evalRecord.eval_result === "pass"
     ) {
-      errors.add("unjustified_graphiti_activation");
+      if (evalRecord.status !== "not_activated" || evalRecord.default_engine !== "Hindsight") {
+        errors.add("unjustified_graphiti_activation");
+      }
       continue;
     }
 
     if (
       evalRecord.candidate === "Memoria" &&
       evalRecord.port_type === "memory_versioning_port" &&
-      evalRecord.eval_result === "pass" &&
-      evalRecord.status !== "not_activated"
+      evalRecord.eval_result === "pass"
     ) {
-      errors.add("unjustified_memoria_activation");
+      if (
+        evalRecord.status !== "not_activated" ||
+        !hasAll(evalRecord.covered_by, ["snapshot_registry", "source_changes.jsonl", "hindsight_promotions.jsonl"])
+      ) {
+        errors.add("unjustified_memoria_activation");
+      }
+      continue;
+    }
+
+    if (
+      evalRecord.status === "activated" &&
+      evalRecord.eval_result !== "fail" &&
+      evalRecord.operational_burden_proven !== true
+    ) {
+      errors.add("port_activation_without_trigger");
       continue;
     }
 
@@ -93,6 +111,13 @@ function verifyExpectedOutputs(fixture, assertions) {
   const expected = readJson("expected/answer-evidence.json");
   const valid = fixture.valid;
   const fixtureRecords = mapBy(list(valid, "engine_port_evals"), "eval_id");
+  if (assertions.required_log_file && path.join(root, assertions.required_log_file) !== logPath) {
+    fail(`required_log_file mismatch: ${assertions.required_log_file}`);
+  }
+  if (!fs.existsSync(logPath)) {
+    fail(`missing required JSONL log: ${path.relative(root, logPath)}`);
+    return;
+  }
   const logRecords = mapBy(readJsonl(logPath), "eval_id");
 
   for (const evalId of assertions.required_eval_ids ?? []) {

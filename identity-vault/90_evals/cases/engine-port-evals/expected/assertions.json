@@ -1,11 +1,12 @@
 {
-  "required_test_ids": ["T11.1", "T11.2", "T11.3", "T11.4", "T11.5"],
+  "required_test_ids": ["T11.1", "T11.2", "T11.3", "T11.4", "T11.5", "T11.6"],
   "expected_errors": {
     "T11.1": "unjustified_graphiti_activation",
     "T11.2": "unjustified_memoria_activation",
     "T11.3": "candidate_port_missing_justification",
     "T11.4": "port_owns_governance",
-    "T11.5": "engine_port_eval_missing_evidence"
+    "T11.5": "engine_port_eval_missing_evidence",
+    "T11.6": "port_activation_without_trigger"
   },
   "required_eval_ids": [
     "eval-temporal-hindsight-current",

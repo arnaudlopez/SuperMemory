@@ -150,6 +150,26 @@
           }
         ]
       }
+    },
+    {
+      "id": "T11.6",
+      "description": "A port cannot activate without eval failure or proven operational burden.",
+      "expected_error": "port_activation_without_trigger",
+      "input": {
+        "engine_port_evals": [
+          {
+            "eval_id": "eval-attractive-engine",
+            "port_type": "source_capture_port",
+            "candidate": "AttractiveCaptureEngine",
+            "default_engine": "vault_snapshots",
+            "eval_result": "pass",
+            "status": "activated",
+            "decision_reason": "It looks useful.",
+            "preserves_supermemory_contract": true,
+            "owns_governance": false
+          }
+        ]
+      }
     }
   ]
 }

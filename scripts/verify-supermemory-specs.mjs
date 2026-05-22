@@ -35,7 +35,8 @@ for (const file of [
   "identity-vault/80_logs/source_changes.jsonl",
   "identity-vault/60_signals/actions.jsonl",
   "identity-vault/60_signals/availability.jsonl",
-  "identity-vault/60_signals/relationships.jsonl"
+  "identity-vault/60_signals/relationships.jsonl",
+  "identity-vault/80_logs/engine_port_evals.jsonl"
 ]) {
   if (!fs.existsSync(file)) {
     fail(`missing jsonl file: ${file}`);
