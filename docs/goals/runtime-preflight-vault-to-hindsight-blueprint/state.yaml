@@ -1,0 +1,265 @@
+version: 2
+
+goal:
+  title: "Runtime Preflight Vault-To-Hindsight Blueprint"
+  slug: "runtime-preflight-vault-to-hindsight-blueprint"
+  kind: specific
+  status: active
+  oracle:
+    signal: "A blueprint document exists for runtime preflight and all current local verification commands pass."
+    cadence: "after blueprint draft and final audit"
+    final_proof: "Blueprint present, adapter/minimal answer/global specs pass, git diff --check pass, GoalBuddy final checks pass, commit SHA and push proof."
+  intake:
+    original_request: "Ok enchaîne"
+    interpreted_outcome: "Create the missing runtime preflight blueprint before implementation."
+    input_shape: specific
+    audience: "SuperMemory maintainers"
+    authority: requested
+    proof_type: artifact
+    completion_proof: "Blueprint ready to seed the next implementation goal without rediscovery."
+    likely_misfire: "Jumping into live Hindsight integration without a dry-run/env/test boundary, or inventing API details not grounded in current contracts."
+    blind_spots_considered:
+      - "Hindsight API details may need official docs during implementation; this blueprint should avoid hard-coding unverified endpoint syntax."
+      - "Dry-run must be first-class before live writes."
+      - "The existing fake/local adapter remains the contract oracle."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+
+goal_policy:
+  mode: docs
+  requires_tdd: false
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/runtime-preflight-vault-to-hindsight-blueprint"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map current contracts and blueprint requirements."
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "module_map"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "contract_inputs"
+      - "runtime_unknowns"
+      - "impact_assessment"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped current Hindsight contract, adapter fixture, verifier, and post-T14 next-goal docs."
+      evidence:
+        - "identity-vault/75_governance/hindsight_contract.md defines promotion gate, payload, recall gate, revocation, and adapter rule."
+        - "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json provides valid payloads, do_not_use, recall policies, and invalid cases."
+        - "scripts/verify-hindsight-adapter-minimal.mjs is the current local contract oracle."
+        - "docs/llm-first-migration-plan.md and docs/release-readiness-consolidation-audit.md both recommend runtime preflight as next implementation work."
+      module_map:
+        blueprint: "docs/runtime-preflight-vault-to-hindsight-blueprint.md"
+        governance_contract: "identity-vault/75_governance/hindsight_contract.md"
+        adapter_fixture: "identity-vault/90_evals/cases/hindsight-adapter-minimal/input/fixture.json"
+        adapter_oracle: "scripts/verify-hindsight-adapter-minimal.mjs"
+        answer_oracle: "scripts/verify-governed-answer-evidence.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "dry-run"
+        - "live mode"
+        - "promotion payload"
+        - "transport adapter"
+        - "fail-closed recall"
+        - "adapter trace"
+      design_concept: "The runtime preflight should first prove a safe CLI boundary around governed payload validation and dry-run operation planning before any live Hindsight write."
+      contract_inputs:
+        - "stable document_id"
+        - "source/snapshot/observation/interpretation/memory provenance"
+        - "workspace/access/status/consumer recall tags"
+        - "do_not_use delete or exclude"
+        - "adapter traces for answer evidence"
+      runtime_unknowns:
+        - "Official Hindsight API endpoint syntax and auth shape must be checked during implementation."
+        - "Live rate limits, retry semantics, and delete/upsert semantics should not be guessed from local fixtures."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none; blueprint names env vars but creates no env file"
+        auth_permissions: "none"
+        api_contract: "future CLI contract only; no runtime code in this goal"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert blueprint and board commit"
+        observability: "future CLI JSON output and adapter traces described"
+        docs: "adds runtime preflight blueprint"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve blueprint shape and implementation boundaries."
+    expected_output:
+      - "decision"
+      - "architecture_review"
+      - "interface_contract"
+      - "feedback_policy"
+      - "test_strategy"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. The blueprint must be implementation-ready while avoiding unverified Hindsight API details, live credentials, dependencies, or runtime code."
+      design_concept: "A runtime preflight is a safety boundary: validate governed payloads, plan operations in dry-run, guard live mode, then add a mockable transport only after official API details are verified."
+      interface_contract:
+        cli: "node scripts/hindsight-promote.mjs --input <fixture> --dry-run"
+        env_live_only:
+          - "HINDSIGHT_API_KEY"
+          - "HINDSIGHT_BANK_ID"
+        dry_run: "default, no credentials, no network writes"
+        live: "explicit --live plus env, never required in CI"
+      feedback_policy: "Name unknown live API details as implementation-time checks rather than inventing endpoint syntax."
+      test_strategy:
+        - "node scripts/verify-hindsight-adapter-minimal.mjs"
+        - "node scripts/verify-governed-answer-evidence.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Write the runtime preflight blueprint."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "docs/runtime-preflight-vault-to-hindsight-blueprint.md"
+    verify:
+      - "node scripts/verify-hindsight-adapter-minimal.mjs"
+      - "node scripts/verify-governed-answer-evidence.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need live Hindsight credentials, official endpoint syntax, dependency install, env file, runtime implementation, connector, migration, or source refresh."
+      - "Need to change verifiers, tests, fixtures, or runtime code."
+    receipt:
+      result: done
+      summary: "Wrote docs/runtime-preflight-vault-to-hindsight-blueprint.md with purpose, current contract inputs, runtime unknowns, CLI/env contract, implementation slices, tests, no-touch boundaries, and next-goal acceptance criteria."
+      changed_files:
+        - "docs/runtime-preflight-vault-to-hindsight-blueprint.md"
+      design_delta: "The runtime path now has an executable-ready blueprint instead of only a high-level next-goal note."
+      commands:
+        -
+          command: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+  - id: T998
+    type: pm
+    assignee: PM
+    status: queued
+    objective: "Ship the blueprint and board."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
