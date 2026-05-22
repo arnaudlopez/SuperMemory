@@ -491,6 +491,8 @@ Critere de passage :
 Les agents utilisent peu de patterns robustes au lieu de workflows preprogrammes.
 ```
 
+Le contrat executable T10 vit dans `identity-vault/90_evals/cases/agent-use-patterns/`. Il verifie le routage vers les patterns existants et rejette les workflows bespoke.
+
 ## Tranche 11 - Evals de ports moteurs
 
 Commande cible :

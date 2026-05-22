@@ -359,6 +359,14 @@ Chaque demande entreprise du Golden Case se rattache a un use pattern existant.
 Aucun workflow bespoke n'est cree pour un seul cas.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-agent-use-patterns.mjs
+```
+
+Le contrat T10 reste local et deterministe : il prouve que les agents choisissent un pattern connu avec evidence, filtres, snapshots et gates de revue/confirmation, au lieu de creer un workflow bespoke par demande.
+
 ## Tranche 11 - Evals de ports moteurs
 
 Objectif :

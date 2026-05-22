@@ -962,6 +962,14 @@ node scripts/verify-review-queues-actions.mjs
 
 Ce contrat verifie que les ambiguites critiques ouvrent `staleness_queue`, `conflict_queue`, `type_queue`, `permission_queue` ou `action_confirmation_queue`, et qu'une action externe reste non executee sans confirmation explicite.
 
+Contrat executable T10 :
+
+```bash
+node scripts/verify-agent-use-patterns.mjs
+```
+
+Ce contrat verifie que les demandes agentiques se rattachent a quelques patterns robustes (`external_draft`, `internal_draft`, `decision_support`, `strategic_analysis`, `audit_and_proof`, `external_system_update`) et rejette les workflows bespoke.
+
 ## 17. Milestones
 
 ### M0 - Documentation V2

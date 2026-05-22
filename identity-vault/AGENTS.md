@@ -38,6 +38,7 @@ This vault is a governed memory system, not a chat transcript dump.
 - Do not expose secrets, credentials, restricted fields, or cross-workspace memory without explicit policy.
 - For enterprise memory, require `workspace_id`, `data_owner`, `access_policy`, and `allowed_consumers` before promotion or recall.
 - Do not invent a bespoke workflow for every request; map business work to `75_governance/use_patterns.md` unless a real repeated need proves a new pattern is needed.
+- Agent task routing must use a known use pattern and cite the evidence, filters, snapshots, review gate, or confirmation gate that makes the pattern safe.
 - Do not require one exact natural-language interpretation when multiple source-backed interpretations satisfy the same governance contract.
 
 ## Hindsight Rules

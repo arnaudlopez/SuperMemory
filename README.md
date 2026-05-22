@@ -166,6 +166,12 @@ Critical ambiguity becomes explicit review work. The local T9 contract verifies 
 
 See [`identity-vault/90_evals/cases/review-queues-actions`](identity-vault/90_evals/cases/review-queues-actions).
 
+### Agent Use Patterns
+
+Agents stay flexible without inventing one-off workflows. The local T10 contract verifies that enterprise requests map to `external_draft`, `internal_draft`, `decision_support`, `strategic_analysis`, `audit_and_proof`, or `external_system_update`, with required evidence, filters, review gates, snapshots, experimental type status, and action confirmation.
+
+See [`identity-vault/90_evals/cases/agent-use-patterns`](identity-vault/90_evals/cases/agent-use-patterns).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -196,6 +202,7 @@ node scripts/verify-conflict-unavailable-arbitration.mjs
 node scripts/verify-adaptive-business-types.mjs
 node scripts/verify-enterprise-access-secrets-retention.mjs
 node scripts/verify-review-queues-actions.mjs
+node scripts/verify-agent-use-patterns.mjs
 ```
 
 Expected output:

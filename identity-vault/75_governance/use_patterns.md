@@ -40,6 +40,11 @@ Do not create a detailed workflow for every possible business request.
 
 Create or refine a pattern only when repeated real usage shows the existing patterns are too vague.
 
+## Executable Contract
+
+The local T10 verifier lives at `scripts/verify-agent-use-patterns.mjs`.
+It checks that enterprise requests map to known reusable patterns with evidence, filters, snapshots, review gates, and confirmation gates where required.
+
 ## Pattern Test
 
 Every new workflow should answer:
