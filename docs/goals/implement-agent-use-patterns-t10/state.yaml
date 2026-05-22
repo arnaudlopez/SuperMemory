@@ -1,0 +1,575 @@
+version: 2
+goal:
+  slug: "t10-agent-use-patterns"
+  title: "T10 Agent Use Patterns"
+  status: complete
+  created_at: "2026-05-22"
+  updated_at: "2026-05-22"
+  kind: specific
+  original_request: "# T10 Agent Use Patterns\n\n## Intent\n\nImplement Tranche 10 from the SuperMemory Golden Case roadmap and TDD matrix.\n\nGoal: prove that enterprise agent requests map to a small set of reusable use patterns instead of bespoke one-off workflows.\n\nRequired patterns:\n\n- external_draft\n- internal_draft\n- decision_support\n- strategic_analysis\n- audit_and_proof\n- external_system_update\n\n- No runtime agent orchestration.\n- No MCP/API implementation.\n- No UI work.\n- No queue infrastructure beyond fixture/proof references.\n- No new Hindsight adapter behavior.\n- No DB/schema migration.\n- No real email, calendar, CRM, or external-system action.\n- No exhaustive workflow catalog.\n\nAcceptance evidence:\n\n- A new fixture under identity-vault/90_evals/cases/agent-use-patterns contains valid assignments for all six patterns.\n- The fixture contains invalid cases proving missing/unknown/bespoke patterns are rejected.\n- The verifier checks reusable pattern names, required evidence refs, required filters, review/confirmation gates, and source/snapshot citations.\n- A Node test runs the verifier.\n- scripts/verify-supermemory-specs.mjs includes the verifier so T0-T10 are checked together.\n- Documentation is aligned only after the verifier is green.\n- Final shipping proof includes commit SHA, pushed branch, and final GoalBuddy check.\n\nTarget command:\n\nnode scripts/verify-agent-use-patterns.mjs\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nA T10 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves all six use patterns while T0-T9 remain green.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- T10.1 launch-readiness email request maps to external_draft with email-safe filters.\n- T10.2 stale PRD refresh maps to internal_draft and requires review.\n- T10.3 API field risk/trust question maps to decision_support and cites snapshots.\n- T10.4 marketing strategy request maps to strategic_analysis and cites experimental type status.\n- T10.5 \"what changed?\" audit maps to audit_and_proof and includes relation chain plus snapshots.\n- T10.6 email send maps to external_system_update and requires confirmation.\n- Constraints:\n- Do not implement runtime agents.\n- Do not create bespoke workflows per enterprise case.\n- Do not execute external sends or mutate external systems.\n- Keep Hindsight and existing T0-T9 contracts green.\n- Prefer deterministic local fixture/verifier/test proof.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/implement-agent-use-patterns-t10/brief.md --mode implementation --oracle \"A T10 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves all six use patterns while T0-T9 remain green.\" --out docs/goals/t10-agent-use-patterns\n```\n\n## Source Notes\n\nCompiled from: /tmp/supermemory-t10-notes.md\n\n> # T10 - Agent Use Patterns\n> \n> ## Intent\n> \n> Implement Tranche 10 from the SuperMemory Golden Case roadmap and TDD matrix.\n> \n> Goal: prove that enterprise agent requests map to a small set of reusable use patterns instead of bespoke one-off workflows.\n> \n> Required patterns:\n> \n> - external_draft\n> - internal_draft\n> - decision_support\n> - strategic_analysis\n> - audit_and_proof\n> - external_system_update\n> \n> ## Acceptance\n> \n> - T10.1 launch-readiness email request maps to external_draft with email-safe filters.\n> - T10.2 stale PRD refresh maps to internal_draft and requires review.\n> - T10.3 API field risk/trust question maps to decision_support and cites snapshots.\n> - T10.4 marketing strategy request maps to strategic_analysis and cites experimental type status.\n> - T10.5 \"what changed?\" audit maps to audit_and_proof and includes relation chain plus snapshots.\n> - T10.6 email send maps to external_system_update and requires confirmation.\n> \n> Constraints:\n> \n> - Do not implement runtime agents.\n> - Do not create bespoke workflows per enterprise case.\n> - Do not execute external sends or mutate external systems.\n> - Keep Hindsight and existing T0-T9 contracts green.\n> - Prefer deterministic local fixture/verifier/test proof.\n> \n> ## Non-Goals\n> \n> - No runtime agent orchestration.\n> - No MCP/API implementation.\n> - No UI work.\n> - No queue infrastructure beyond fixture/proof references.\n> - No new Hindsight adapter behavior.\n> - No DB/schema migration.\n> - No real email, calendar, CRM, or external-system action.\n> - No exhaustive workflow catalog.\n> \n> Acceptance evidence:\n> \n> - A new fixture under identity-vault/90_evals/cases/agent-use-patterns contains valid assignments for all six patterns.\n> - The fixture contains invalid cases proving missing/unknown/bespoke patterns are rejected.\n> - The verifier checks reusable pattern names, required evidence refs, required filters, review/confirmation gates, and source/snapshot citations.\n> - A Node test runs the verifier.\n> - scripts/verify-supermemory-specs.mjs includes the verifier so T0-T10 are checked together.\n> - Documentation is aligned only after the verifier is green.\n> - Final shipping proof includes commit SHA, pushed branch, and final GoalBuddy check.\n> \n> Target command:\n> \n> node scripts/verify-agent-use-patterns.mjs\n> \n> ## Oracle\n> \n> A T10 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves all six use patterns while T0-T9 remain green."
+  interpreted_outcome: "Run the prepared LLM-first workflow for T10 Agent Use Patterns."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "A T10 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves all six use patterns while T0-T9 remain green."
+  oracle:
+    signal: "A T10 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves all six use patterns while T0-T9 remain green."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: null
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped T10 use-pattern contract and insertion points before implementation."
+      design_concept: "Enterprise work should route through a small vocabulary of reusable use patterns. T10 proves the routing contract without runtime agents, external sends, or bespoke workflow creation."
+      ubiquitous_language:
+        - use_pattern
+        - external_draft
+        - internal_draft
+        - decision_support
+        - strategic_analysis
+        - audit_and_proof
+        - external_system_update
+        - "known pattern"
+        - "bespoke workflow"
+        - evidence_refs
+        - filters
+        - "review gate"
+        - "confirmation gate"
+      module_map:
+        pattern_policy: identity-vault/75_governance/use_patterns.md
+        agent_rules: identity-vault/AGENTS.md
+        prd_section: "docs/prd-memoire-agentique-v2.md section 13"
+        target_fixture: identity-vault/90_evals/cases/agent-use-patterns
+        target_verifier: scripts/verify-agent-use-patterns.mjs
+        target_test: tests/agent-use-patterns.test.mjs
+        global_oracle: scripts/verify-supermemory-specs.mjs
+      interface_contract:
+        T10.1: "launch-readiness email maps to external_draft with email-safe consumer/filter constraints and no send execution"
+        T10.2: "stale PRD refresh maps to internal_draft and requires staleness/review evidence"
+        T10.3: "risk/trust API field question maps to decision_support and cites snapshots"
+        T10.4: "marketing strategy request maps to strategic_analysis and cites experimental type status"
+        T10.5: "what changed audit maps to audit_and_proof and includes relation chain plus snapshots"
+        T10.6: "email send maps to external_system_update and requires action confirmation"
+      test_strategy:
+        red: "wire scripts/verify-agent-use-patterns.mjs into global specs and add Node test before implementation so missing verifier fails"
+        green: "add deterministic fixture/verifier/test covering six valid assignments and invalid unknown/bespoke/missing-gate cases"
+      feedback_policy: "Run targeted verifier and Node test after each Worker slice; run global specs and git diff check before shipping. No browser check needed."
+      acceptance_contract_updates:
+        - "Verifier proves all six patterns."
+        - "Invalid bespoke/unknown pattern is rejected."
+        - "External_system_update requires confirmation and no execution."
+        - "Docs align only after green verifier."
+      dirty_worktree_risk_map:
+        current_status: "clean except new T10 board files"
+        stale_active_board: "docs/goals/source-lifecycle-and-conflict/state.yaml remains unrelated and untouched"
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: "local fixture/verifier contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: "none; external actions remain fixture-only and unexecuted"
+        deploy_rollback: "revert T10 fixture/script/test/docs commits"
+        observability: "deterministic verifier assertions plus global spec runner"
+        docs: "use_patterns, AGENTS, PRD, roadmap/matrix may need alignment after green"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      approved_design_concept: "T10 should prove reusable agent use-pattern routing, not implement agents or a workflow catalog."
+      approved_ubiquitous_language:
+        - external_draft
+        - internal_draft
+        - decision_support
+        - strategic_analysis
+        - audit_and_proof
+        - external_system_update
+        - "bespoke workflow"
+        - "review gate"
+        - "confirmation gate"
+      architecture_review: "Approved deterministic local contract. Use a fixture and verifier mirroring prior tranche style. Keep runtime agents, MCP/API, external systems, DB, and Hindsight adapter behavior out of scope."
+      interface_contract:
+        valid_patterns: "All six T10 patterns must be assigned to representative enterprise requests."
+        evidence: "Each assignment must carry evidence refs and request-specific safety gates."
+        rejects: "Unknown or bespoke patterns, missing evidence, missing filters, missing review gate, and missing confirmation gate must fail."
+      test_strategy:
+        T003: "Create red test/global wiring for missing verify-agent-use-patterns.mjs."
+        T004: "Implement fixture/verifier/test until targeted and global specs pass."
+      feedback_policy: "Run T10 verifier/test first, then global specs and git diff check. Docs alignment only after green behavior."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      task_updates:
+        T003:
+          allowed_files:
+            - scripts/verify-supermemory-specs.mjs
+            - tests/agent-use-patterns.test.mjs
+          verify:
+            - "node --test tests/agent-use-patterns.test.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "The selected contract is ambiguous."
+            - "No meaningful failing test can be written."
+            - "Tests require production implementation changes before the red stage."
+            - "The red test does not fail on the missing T10 verifier."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Unrelated dirty files would need to be modified."
+          impact_assessment_ref: "T001 receipt impact_assessment"
+        T004:
+          allowed_files:
+            - identity-vault/90_evals/cases/agent-use-patterns/input/fixture.json
+            - identity-vault/90_evals/cases/agent-use-patterns/expected/assertions.json
+            - identity-vault/90_evals/cases/agent-use-patterns/expected/answer-evidence.json
+            - identity-vault/90_evals/cases/agent-use-patterns/actual/README.md
+            - scripts/verify-agent-use-patterns.mjs
+            - tests/agent-use-patterns.test.mjs
+            - scripts/verify-supermemory-specs.mjs
+          verify:
+            - "node scripts/verify-agent-use-patterns.mjs"
+            - "node --test tests/agent-use-patterns.test.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "No meaningful failing test can be written."
+            - "Verifier design starts implementing runtime agents instead of deterministic contract checks."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: "T001 receipt impact_assessment"
+        T005:
+          allowed_files:
+            []
+          verify:
+            - "node scripts/verify-agent-use-patterns.mjs"
+            - "node --test tests/agent-use-patterns.test.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "T004 is not green."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - scripts/verify-supermemory-specs.mjs
+      - tests/agent-use-patterns.test.mjs
+    verify:
+      - "node --test tests/agent-use-patterns.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The selected contract is ambiguous."
+      - "No meaningful failing test can be written."
+      - "Tests require production implementation changes before the red stage."
+      - "The red test does not fail on the missing T10 verifier."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Unrelated dirty files would need to be modified."
+    receipt:
+      result: done
+      summary: "Added red T10 verifier test and global spec wiring before implementation."
+      changed_files:
+        - tests/agent-use-patterns.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+      red_test_evidence:
+        - "node --test tests/agent-use-patterns.test.mjs failed because scripts/verify-agent-use-patterns.mjs is missing."
+        - "node scripts/verify-supermemory-specs.mjs passed T0-T9 then failed on missing scripts/verify-agent-use-patterns.mjs."
+      verification:
+        - "node --test tests/agent-use-patterns.test.mjs FAIL expected"
+        - "node scripts/verify-supermemory-specs.mjs FAIL expected"
+      next_recommendation: "Proceed to T004 implementation of fixture and deterministic verifier."
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - identity-vault/90_evals/cases/agent-use-patterns/input/fixture.json
+      - identity-vault/90_evals/cases/agent-use-patterns/expected/assertions.json
+      - identity-vault/90_evals/cases/agent-use-patterns/expected/answer-evidence.json
+      - identity-vault/90_evals/cases/agent-use-patterns/actual/README.md
+      - scripts/verify-agent-use-patterns.mjs
+      - tests/agent-use-patterns.test.mjs
+      - scripts/verify-supermemory-specs.mjs
+    verify:
+      - "node scripts/verify-agent-use-patterns.mjs"
+      - "node --test tests/agent-use-patterns.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "No meaningful failing test can be written."
+      - "Verifier design starts implementing runtime agents instead of deterministic contract checks."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented deterministic T10 fixture, verifier, Node test, and global spec wiring for agent use patterns."
+      changed_files:
+        - identity-vault/90_evals/cases/agent-use-patterns/input/fixture.json
+        - identity-vault/90_evals/cases/agent-use-patterns/expected/assertions.json
+        - identity-vault/90_evals/cases/agent-use-patterns/expected/answer-evidence.json
+        - identity-vault/90_evals/cases/agent-use-patterns/actual/README.md
+        - scripts/verify-agent-use-patterns.mjs
+        - tests/agent-use-patterns.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+      green_test:
+        - "node scripts/verify-agent-use-patterns.mjs PASS"
+        - "node --test tests/agent-use-patterns.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      commands:
+        - "node scripts/verify-agent-use-patterns.mjs"
+        - "node --test tests/agent-use-patterns.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      contract_coverage:
+        - "T10.1 external_draft with email-safe filters and draft-only state."
+        - "T10.2 internal_draft with staleness review gate."
+        - "T10.3 decision_support with snapshot citations."
+        - "T10.4 strategic_analysis with marketing_strategy experimental schema status."
+        - "T10.5 audit_and_proof with relation chain and snapshots."
+        - "T10.6 external_system_update with action confirmation and not_executed state."
+        - "T10.7 bespoke workflow name rejected."
+      design_delta: "Added executable proof that specialized agent requests use reusable patterns rather than bespoke workflows."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      task_updates:
+        T005:
+          allowed_files:
+            - tests/agent-use-patterns.test.mjs
+          verify:
+            - "node scripts/verify-agent-use-patterns.mjs"
+            - "node --test tests/agent-use-patterns.test.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "T004 is not green."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - tests/agent-use-patterns.test.mjs
+    verify:
+      - "node scripts/verify-agent-use-patterns.mjs"
+      - "node --test tests/agent-use-patterns.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T004 is not green."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran full T10 verification package after implementation."
+      changed_files:
+        []
+      commands:
+        - "node scripts/verify-agent-use-patterns.mjs PASS"
+        - "node --test tests/agent-use-patterns.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+      green verification: "T10 targeted verifier, targeted Node test, global specs, and diff check all passed."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Reviewed T10 architecture, spec fidelity, and test evidence. Shipping approved."
+      design_delta: "T10 moved use patterns from documented policy to executable proof: all six enterprise request classes are verified against reusable patterns and bespoke workflow names are rejected."
+      architecture_review: "Approved. The implementation is a deterministic local contract with fixture/verifier/test only. It does not implement runtime agents, MCP/API, external actions, queue infrastructure, or Hindsight behavior."
+      oracle_coverage:
+        - "external_draft covered by launch-readiness email draft with filters and draft-only state"
+        - "internal_draft covered by stale PRD refresh with staleness review gate"
+        - "decision_support covered by API field decision with snapshots"
+        - "strategic_analysis covered by marketing_strategy experimental schema status"
+        - "audit_and_proof covered by what-changed relation chain and snapshots"
+        - "external_system_update covered by email send confirmation and not_executed state"
+        - "bespoke workflow rejected by invalid case T10.7"
+      remaining_risks:
+        - "This proves the contract shape, not runtime agent routing."
+        - "Future runtime implementation must reuse this verifier instead of inventing per-agent workflows."
+      another_worker_slice_needed: false
+  - id: T998
+    type: pm
+    assignee: PM
+    status: done
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt:
+      result: done
+      summary: "Committed and pushed the verified T10 implementation to origin/main."
+      commit_sha: d94ba9ae09650dd44f98e60784be1a9b2c50c489
+      remote_branch: origin/main
+      push_result: "success; local main and origin/main both resolve to d94ba9ae09650dd44f98e60784be1a9b2c50c489"
+      committed_files:
+        - identity-vault/90_evals/cases/agent-use-patterns/actual/README.md
+        - identity-vault/90_evals/cases/agent-use-patterns/expected/answer-evidence.json
+        - identity-vault/90_evals/cases/agent-use-patterns/expected/assertions.json
+        - identity-vault/90_evals/cases/agent-use-patterns/input/fixture.json
+        - scripts/verify-agent-use-patterns.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - tests/agent-use-patterns.test.mjs
+      unrelated_dirty_files_left_untouched:
+        - docs/goals/implement-agent-use-patterns-t10/
+      verification:
+        - "git status --short --branch checked before commit"
+        - "git diff --check PASS"
+        - "node scripts/verify-agent-use-patterns.mjs PASS"
+        - "node --test tests/agent-use-patterns.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: "local fixture/verifier contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: "none; external system update remains fixture-only and not_executed"
+        deploy_rollback: "revert commit d94ba9ae09650dd44f98e60784be1a9b2c50c489"
+        observability: "deterministic verifier assertions plus global spec runner"
+        docs: "fixture README documents the T10 contract; existing roadmap/matrix/PRD already name the target patterns"
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: complete
+      full_outcome_complete: true
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, and shipping proof are present."
+      design_delta: "T10 is now executable: enterprise agent requests are validated against reusable use patterns, and unknown/bespoke workflow names fail."
+      oracle_evidence:
+        - "node scripts/verify-agent-use-patterns.mjs PASS"
+        - "node --test tests/agent-use-patterns.test.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+        - "commit d94ba9ae09650dd44f98e60784be1a9b2c50c489 pushed to origin/main"
+      complete: complete
+      missing_evidence:
+        []
+      next_task_if_not_complete: null
