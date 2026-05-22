@@ -69,8 +69,24 @@ const liveGuard = runCli(["--input", fixturePath, "--live", "--json"], {
   HINDSIGHT_BASE_URL: "https://example.invalid"
 });
 assert.notEqual(liveGuard.status, 0);
-assert.match(liveGuard.stderr, /live transport is not implemented/);
+assert.match(liveGuard.stderr, /live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport/);
 assert.doesNotMatch(liveGuard.stderr, /sk-test-secret/);
+
+const liveMock = parseJson(runCli(["--input", fixturePath, "--live", "--mock-transport", "--json"], {
+  HINDSIGHT_API_KEY: "sk-test-secret",
+  HINDSIGHT_BANK_ID: "bank-test",
+  HINDSIGHT_BASE_URL: "https://example.invalid"
+}));
+assert.equal(liveMock.mode, "live");
+assert.equal(liveMock.network_writes, false);
+assert.equal(liveMock.credentials_required, true);
+assert.equal(liveMock.bank_id, "bank-test");
+assert.equal(liveMock.transport.mode, "mock");
+assert.equal(liveMock.transport.requests.length, 5);
+assert.equal(liveMock.transport.result.status, "mocked");
+assert.equal(liveMock.transport.result.requests_sent, 5);
+assert.ok(liveMock.transport.requests.some((request) => request.operation === "recall"));
+assert.equal(JSON.stringify(liveMock).includes("sk-test-secret"), false);
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "hindsight-promote-"));
 const invalidPromotionPath = path.join(tmpDir, "invalid-promotion.json");

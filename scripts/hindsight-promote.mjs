@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { buildHindsightRequests, executeHindsightRequests } from "./hindsight-transport.mjs";
 
 const requiredPromotionMetadata = [
   "source_id",
@@ -44,7 +45,8 @@ function parseArgs(argv) {
     bank: null,
     dryRun: false,
     live: false,
-    json: false
+    json: false,
+    mockTransport: false
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -61,6 +63,8 @@ function parseArgs(argv) {
       options.live = true;
     } else if (arg === "--json") {
       options.json = true;
+    } else if (arg === "--mock-transport") {
+      options.mockTransport = true;
     } else {
       throw new Error(`unknown argument: ${arg}`);
     }
@@ -162,6 +166,9 @@ function buildPlan(input, options, env = process.env) {
         operation,
         document_id: payload.document_id,
         memory_id: payload.memory_id,
+        content: payload.text,
+        tags: payload.tags ?? [],
+        metadata: payload.metadata ?? {},
         trace_id: `trace-${operation}-${payload.document_id}`
       });
       continue;
@@ -223,7 +230,8 @@ function buildPlan(input, options, env = process.env) {
     },
     summary,
     operations,
-    traces
+    traces,
+    recall_policies: list(input, "recall_policies").filter(hasRequiredRecallScope)
   };
 }
 
@@ -238,7 +246,18 @@ function printOutput(plan, json) {
   }
 }
 
-function main() {
+function sanitizedTransportRequests(requests) {
+  return requests.map(({ method, path, operation, document_id, policy_id, body }) => ({
+    method,
+    path,
+    operation,
+    document_id,
+    policy_id,
+    body
+  }));
+}
+
+async function main() {
   try {
     const options = parseArgs(process.argv.slice(2));
     const input = normalizeInput(readInput(options.input));
@@ -254,8 +273,52 @@ function main() {
       if (missing.length > 0) {
         throw new Error(`missing required live env: ${missing.join(", ")}`);
       }
-      printOutput(plan, options.json);
-      throw new Error("live transport is not implemented in this preflight slice");
+      const requests = buildHindsightRequests(plan, {
+        baseUrl: process.env.HINDSIGHT_BASE_URL,
+        apiKey: process.env.HINDSIGHT_API_KEY
+      });
+      if (options.mockTransport) {
+        const transport = await executeHindsightRequests(requests, {
+          apiKey: process.env.HINDSIGHT_API_KEY,
+          fetchImpl: async () => ({
+            ok: true,
+            status: 200,
+            json: async () => ({ success: true, mocked: true })
+          })
+        });
+        printOutput(
+          {
+            ...plan,
+            network_writes: false,
+            transport: {
+              mode: "mock",
+              requests: sanitizedTransportRequests(requests),
+              result: transport
+            }
+          },
+          options.json
+        );
+        return;
+      }
+      if (process.env.SUPERMEMORY_ALLOW_LIVE_HINDSIGHT !== "1") {
+        throw new Error("live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport");
+      }
+      const transport = await executeHindsightRequests(requests, {
+        apiKey: process.env.HINDSIGHT_API_KEY
+      });
+      printOutput(
+        {
+          ...plan,
+          network_writes: true,
+          transport: {
+            mode: "live",
+            requests: sanitizedTransportRequests(requests),
+            result: transport
+          }
+        },
+        options.json
+      );
+      return;
     }
 
     printOutput(plan, options.json);
@@ -265,4 +328,4 @@ function main() {
   }
 }
 
-main();
+void main();
