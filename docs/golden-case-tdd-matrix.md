@@ -464,6 +464,8 @@ Critere de passage :
 Toute ambiguite critique devient un item de revue ou de confirmation.
 ```
 
+Le contrat executable T9 vit dans `identity-vault/90_evals/cases/review-queues-actions/`. Il verifie la forme des queues et le blocage d'action externe, pas une formulation exacte de draft.
+
 ## Tranche 10 - Agents specialises et use patterns
 
 Commande cible :

@@ -1,0 +1,305 @@
+{
+  "case_id": "review-queues-actions",
+  "valid": {
+    "sources": [
+      {
+        "source_id": "src-acme-prd",
+        "status": "changed",
+        "freshness": "changed",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "active_snapshot_id": "snap-acme-prd-2026-05-21"
+      },
+      {
+        "source_id": "src-acme-api",
+        "status": "active",
+        "freshness": "fresh",
+        "active_snapshot_id": "snap-acme-api-2026-05-21"
+      },
+      {
+        "source_id": "src-acme-support",
+        "status": "active",
+        "freshness": "fresh",
+        "active_snapshot_id": "snap-acme-support-2026-05-21"
+      },
+      {
+        "source_id": "src-salesforce-contract",
+        "status": "active",
+        "freshness": "fresh",
+        "active_snapshot_id": "snap-salesforce-contract-2026-05-21",
+        "restricted_fields": ["renewal_amount"]
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "source_id": "src-acme-prd",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-21",
+        "source_id": "src-acme-prd",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "immutable": true,
+        "change_status": "changed"
+      },
+      {
+        "snapshot_id": "snap-acme-api-2026-05-21",
+        "source_id": "src-acme-api",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-acme-support-2026-05-21",
+        "source_id": "src-acme-support",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-salesforce-contract-2026-05-21",
+        "source_id": "src-salesforce-contract",
+        "immutable": true
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-prd-launch-risk-t0",
+        "source_id": "src-acme-prd",
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "status": "needs_review",
+        "freshness": "changed"
+      },
+      {
+        "memory_id": "mem-api-trust-score",
+        "source_id": "src-acme-api",
+        "snapshot_id": "snap-acme-api-2026-05-21",
+        "status": "active",
+        "claim": "Acme integration uses trust_score."
+      },
+      {
+        "memory_id": "mem-support-risk-score",
+        "source_id": "src-acme-support",
+        "snapshot_id": "snap-acme-support-2026-05-21",
+        "status": "active",
+        "claim": "Support still refers to risk_score."
+      },
+      {
+        "memory_id": "mem-contract-renewal",
+        "source_id": "src-salesforce-contract",
+        "snapshot_id": "snap-salesforce-contract-2026-05-21",
+        "status": "active",
+        "restricted_fields": ["renewal_amount"],
+        "restricted_values": ["EUR 480000"]
+      }
+    ],
+    "relations": [
+      {
+        "relation_id": "rel-api-conflicts-support",
+        "relation_type": "conflicts_with",
+        "from": "mem-api-trust-score",
+        "to": "mem-support-risk-score"
+      },
+      {
+        "relation_id": "rel-support-conflicts-api",
+        "relation_type": "conflicts_with",
+        "from": "mem-support-risk-score",
+        "to": "mem-api-trust-score"
+      }
+    ],
+    "type_queue": [
+      {
+        "proposal_id": "type-proposal-implementation-risk",
+        "queue": "type_queue",
+        "status": "open",
+        "owner": "product_architect",
+        "blocker": "new business entity type is not yet governed",
+        "proposed_type": "implementation_risk",
+        "trigger_source_id": "src-acme-prd",
+        "required_decision": "approve_candidate_type_or_map_to_existing_type"
+      }
+    ],
+    "review_items": [
+      {
+        "review_id": "review-stale-prd-launch-risk",
+        "queue": "staleness_queue",
+        "status": "open",
+        "owner": "memory_steward",
+        "blocker": "source snapshot changed",
+        "source_id": "src-acme-prd",
+        "old_snapshot_id": "snap-acme-prd-2026-05-18",
+        "new_snapshot_id": "snap-acme-prd-2026-05-21",
+        "affected_memory_ids": ["mem-prd-launch-risk-t0"],
+        "required_decision": "revalidate_or_supersede_memory"
+      },
+      {
+        "review_id": "review-score-field-conflict",
+        "queue": "conflict_queue",
+        "status": "open",
+        "owner": "integration_owner",
+        "blocker": "api documentation and support note disagree",
+        "conflict_memory_ids": ["mem-api-trust-score", "mem-support-risk-score"],
+        "required_decision": "resolve_field_name_or_keep_conflicting_answer"
+      },
+      {
+        "review_id": "review-renewal-amount-permission",
+        "queue": "permission_queue",
+        "status": "open",
+        "owner": "workspace_admin",
+        "blocker": "request asks for restricted renewal_amount without clear approval",
+        "request_id": "req-contract-renewal-amount",
+        "source_id": "src-salesforce-contract",
+        "restricted_fields": ["renewal_amount"],
+        "required_decision": "approve_access_or_keep_field_withheld"
+      },
+      {
+        "review_id": "confirm-launch-readiness-email",
+        "queue": "action_confirmation_queue",
+        "status": "needs_confirmation",
+        "owner": "requesting_user",
+        "blocker": "external email send requires explicit confirmation",
+        "action_id": "action-send-launch-readiness-email",
+        "external_action": "email_send",
+        "required_decision": "confirm_send_or_keep_as_draft"
+      }
+    ],
+    "answer_evidence": [
+      {
+        "answer_id": "ans-conflicting-score-field",
+        "answer_state": "conflicting",
+        "used_memory_ids": ["mem-api-trust-score", "mem-support-risk-score"],
+        "conflict_memory_ids": ["mem-api-trust-score", "mem-support-risk-score"],
+        "selected_memory_id": null,
+        "review_id": "review-score-field-conflict",
+        "policy_outcome": "queued_for_conflict_review"
+      },
+      {
+        "answer_id": "ans-renewal-amount-withheld",
+        "answer_state": "permission_review_required",
+        "request_id": "req-contract-renewal-amount",
+        "used_memory_ids": ["mem-contract-renewal"],
+        "withheld_fields": ["renewal_amount"],
+        "revealed_values": [],
+        "review_id": "review-renewal-amount-permission",
+        "policy_outcome": "queued_for_permission_review"
+      },
+      {
+        "answer_id": "ans-launch-readiness-email-draft",
+        "answer_state": "draft_only",
+        "draft_id": "draft-launch-readiness-email",
+        "action_id": "action-send-launch-readiness-email",
+        "review_id": "confirm-launch-readiness-email",
+        "policy_outcome": "confirmation_required"
+      }
+    ],
+    "external_actions": [
+      {
+        "action_id": "action-send-launch-readiness-email",
+        "action_type": "email_send",
+        "target": "customer-success@example.test",
+        "draft_id": "draft-launch-readiness-email",
+        "execution_state": "not_executed",
+        "confirmation_review_id": "confirm-launch-readiness-email"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T9.1",
+      "description": "Changed source-derived memory must open staleness_queue with owner and blocker.",
+      "expected_error": "missing_staleness_queue_item",
+      "input": {
+        "sources": [
+          {
+            "source_id": "src-acme-prd",
+            "status": "changed",
+            "freshness": "changed",
+            "previous_snapshot_id": "snap-t0",
+            "active_snapshot_id": "snap-t1"
+          }
+        ],
+        "validated_memories": [
+          {
+            "memory_id": "mem-prd",
+            "source_id": "src-acme-prd",
+            "snapshot_id": "snap-t0",
+            "status": "needs_review",
+            "freshness": "changed"
+          }
+        ],
+        "review_items": []
+      }
+    },
+    {
+      "id": "T9.2",
+      "description": "Conflicting answer must open conflict_queue.",
+      "expected_error": "missing_conflict_queue_item",
+      "input": {
+        "relations": [
+          {
+            "relation_type": "conflicts_with",
+            "from": "mem-api",
+            "to": "mem-support"
+          },
+          {
+            "relation_type": "conflicts_with",
+            "from": "mem-support",
+            "to": "mem-api"
+          }
+        ],
+        "answer_evidence": [
+          {
+            "answer_id": "ans-field",
+            "answer_state": "conflicting",
+            "conflict_memory_ids": ["mem-api", "mem-support"],
+            "selected_memory_id": null
+          }
+        ],
+        "review_items": []
+      }
+    },
+    {
+      "id": "T9.3",
+      "description": "New business type must be proposed through type_queue.",
+      "expected_error": "missing_type_queue_item",
+      "input": {
+        "type_queue": [
+          {
+            "proposal_id": "type-proposal",
+            "queue": "type_queue",
+            "proposed_type": "implementation_risk",
+            "status": "open"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T9.4",
+      "description": "Restricted field ambiguity must open permission_queue and withhold the field.",
+      "expected_error": "missing_permission_queue_item",
+      "input": {
+        "answer_evidence": [
+          {
+            "answer_id": "ans-renewal",
+            "answer_state": "permission_review_required",
+            "request_id": "req-renewal",
+            "withheld_fields": [],
+            "revealed_values": ["EUR 480000"]
+          }
+        ],
+        "review_items": []
+      }
+    },
+    {
+      "id": "T9.5",
+      "description": "External email send must open action_confirmation_queue and remain unexecuted.",
+      "expected_error": "missing_action_confirmation_queue_item",
+      "input": {
+        "external_actions": [
+          {
+            "action_id": "action-email",
+            "action_type": "email_send",
+            "execution_state": "executed"
+          }
+        ],
+        "review_items": []
+      }
+    }
+  ]
+}

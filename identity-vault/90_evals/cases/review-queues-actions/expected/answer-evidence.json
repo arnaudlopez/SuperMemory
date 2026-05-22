@@ -1,0 +1,33 @@
+{
+  "answers": [
+    {
+      "answer_id": "ans-conflicting-score-field",
+      "answer_state": "conflicting",
+      "selected_memory_id": null,
+      "review_id": "review-score-field-conflict",
+      "policy_outcome": "queued_for_conflict_review"
+    },
+    {
+      "answer_id": "ans-renewal-amount-withheld",
+      "answer_state": "permission_review_required",
+      "withheld_fields": ["renewal_amount"],
+      "revealed_values": [],
+      "review_id": "review-renewal-amount-permission",
+      "policy_outcome": "queued_for_permission_review"
+    },
+    {
+      "answer_id": "ans-launch-readiness-email-draft",
+      "answer_state": "draft_only",
+      "review_id": "confirm-launch-readiness-email",
+      "policy_outcome": "confirmation_required"
+    }
+  ],
+  "external_actions": [
+    {
+      "action_id": "action-send-launch-readiness-email",
+      "action_type": "email_send",
+      "execution_state": "not_executed",
+      "confirmation_review_id": "confirm-launch-readiness-email"
+    }
+  ]
+}

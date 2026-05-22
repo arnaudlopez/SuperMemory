@@ -954,6 +954,14 @@ node scripts/verify-enterprise-access-secrets-retention.mjs
 
 Ce contrat verifie que la memoire entreprise porte `workspace_id`, `access_policy`, `data_owner` et `allowed_consumers`, que les secrets et champs restreints sont absents des promotions/drafts, et que le legal hold conserve la preuve sans forcer l'usage actif.
 
+Contrat executable T9 :
+
+```bash
+node scripts/verify-review-queues-actions.mjs
+```
+
+Ce contrat verifie que les ambiguites critiques ouvrent `staleness_queue`, `conflict_queue`, `type_queue`, `permission_queue` ou `action_confirmation_queue`, et qu'une action externe reste non executee sans confirmation explicite.
+
 ## 17. Milestones
 
 ### M0 - Documentation V2

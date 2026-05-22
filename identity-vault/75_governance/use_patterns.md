@@ -32,6 +32,8 @@ Concrete use cases should map to one of these patterns instead of becoming hard-
 | Audit and proof | why an answer was given, which snapshot supports a claim | source_id, snapshot_id, derived_from, logs |
 | External system update | CRM update, calendar action, email send, ticket update | explicit confirmation, narrow payload, rollback or correction path |
 
+External sends and system updates must create or reference an `action_confirmation_queue` item before execution.
+
 ## Rule
 
 Do not create a detailed workflow for every possible business request.

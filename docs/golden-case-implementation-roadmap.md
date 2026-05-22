@@ -329,6 +329,14 @@ mais l'envoi cree une demande de confirmation.
 Une memoire changed/conflicting ouvre une revue au lieu de produire une guidance confiante.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-review-queues-actions.mjs
+```
+
+Le contrat T9 reste local et deterministe : il prouve que staleness, conflit, type candidat, permission floue et action externe creent une queue explicite avec owner/blocker au lieu d'une decision silencieuse.
+
 ## Tranche 10 - Agents specialises et use patterns
 
 Objectif :

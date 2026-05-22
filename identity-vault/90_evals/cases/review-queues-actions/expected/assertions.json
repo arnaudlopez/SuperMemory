@@ -1,0 +1,16 @@
+{
+  "required_test_ids": ["T9.1", "T9.2", "T9.3", "T9.4", "T9.5"],
+  "expected_errors": {
+    "T9.1": "missing_staleness_queue_item",
+    "T9.2": "missing_conflict_queue_item",
+    "T9.3": "missing_type_queue_item",
+    "T9.4": "missing_permission_queue_item",
+    "T9.5": "missing_action_confirmation_queue_item"
+  },
+  "required_staleness_review_id": "review-stale-prd-launch-risk",
+  "required_conflict_review_id": "review-score-field-conflict",
+  "required_type_proposal_id": "type-proposal-implementation-risk",
+  "required_permission_review_id": "review-renewal-amount-permission",
+  "required_confirmation_review_id": "confirm-launch-readiness-email",
+  "required_external_action_id": "action-send-launch-readiness-email"
+}

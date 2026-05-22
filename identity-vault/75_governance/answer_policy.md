@@ -32,6 +32,9 @@ It checks hard evidence properties and answer states, not exact natural-language
 The local T6 verifier lives at `scripts/verify-conflict-unavailable-arbitration.mjs`.
 It checks conflict preservation, explicit arbitration, unavailable handling, and conflict queue creation.
 
+The local T9 verifier lives at `scripts/verify-review-queues-actions.mjs`.
+It checks that critical ambiguity opens review or confirmation queues and that external actions remain unexecuted without confirmation.
+
 ## Drafting Rule
 
 Drafts for external use must be based on `current` memory or clearly marked as draft requiring review.

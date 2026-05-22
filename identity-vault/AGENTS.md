@@ -73,6 +73,9 @@ This vault is a governed memory system, not a chat transcript dump.
 - If sources conflict, keep both facts, add `conflicts_with`, and answer `conflicting` unless an explicit reliability rule applies.
 - If a reliability rule applies, cite both the rule and the conflict before preferring one source.
 - Unresolved conflicts must create or preserve a `conflict_queue` item.
+- Changed or stale memory that blocks a confident answer must create or preserve a `staleness_queue` item.
+- Restricted-field ambiguity must create or preserve a `permission_queue` item.
+- External send, publish, schedule, or commit actions must create or preserve an `action_confirmation_queue` item and remain unexecuted until confirmed.
 
 ## Type Rules
 

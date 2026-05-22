@@ -160,6 +160,12 @@ Enterprise memory is deny-by-default. The local T8 contract verifies required `w
 
 See [`identity-vault/90_evals/cases/enterprise-access-secrets-retention`](identity-vault/90_evals/cases/enterprise-access-secrets-retention).
 
+### Review Queues And External Actions
+
+Critical ambiguity becomes explicit review work. The local T9 contract verifies that changed memory opens `staleness_queue`, unresolved conflicts open `conflict_queue`, new type proposals open `type_queue`, unclear restricted access opens `permission_queue`, and external email send stays drafted until `action_confirmation_queue` confirmation.
+
+See [`identity-vault/90_evals/cases/review-queues-actions`](identity-vault/90_evals/cases/review-queues-actions).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
@@ -189,6 +195,7 @@ node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
 node scripts/verify-adaptive-business-types.mjs
 node scripts/verify-enterprise-access-secrets-retention.mjs
+node scripts/verify-review-queues-actions.mjs
 ```
 
 Expected output:
