@@ -5,11 +5,11 @@ goal:
   slug: "implement-enterprise-access-secrets-retention-t8"
   kind: specific
   tranche: "Implement an executable contract proving workspace isolation, access policy metadata, secret redaction, restricted-field withholding, legal hold retention, and data ownership."
-  status: complete
+  status: done
   oracle:
     signal: "A T8 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves enterprise access/secrets/retention while T0-T7 remain green."
     cadence: "after each Worker package and at final audit"
-    final_proof: "T8 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch, and final audit full_outcome_complete true."
+    final_proof: "T8 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit_sha 1b846bf, pushed branch origin/main, and final audit full_outcome_complete true."
   intake:
     original_request: "OK vas-y."
     interpreted_outcome: "Continue with T8 enterprise access, secrets, and legal hold."
