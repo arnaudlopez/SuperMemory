@@ -139,8 +139,86 @@ function normalizeInput(input) {
   return input?.valid && typeof input.valid === "object" ? input.valid : input;
 }
 
+function unique(items) {
+  return [...new Set(items.filter(Boolean))];
+}
+
+function promotionSource(input) {
+  return input?.promotion_source ?? "promotion_payloads";
+}
+
+function validatedMemoryIsPromotable(memory) {
+  return (
+    memory?.status === "active" &&
+    memory?.review_status === "approved" &&
+    memory?.promote_to_hindsight === true
+  );
+}
+
+function validatedMemoryTags(memory) {
+  return unique([
+    ...(Array.isArray(memory.tags) ? memory.tags : []),
+    memory.workspace_id ? `workspace:${memory.workspace_id}` : null,
+    memory.access_policy ? `access_policy:${memory.access_policy}` : null,
+    memory.status ? `status:${memory.status}` : null,
+    memory.entity_type ? `entity_type:${memory.entity_type}` : null,
+    memory.schema_status ? `schema_status:${memory.schema_status}` : null,
+    memory.consumer ? `consumer:${memory.consumer}` : null
+  ]);
+}
+
+function promotionPayloadFromValidatedMemory(memory) {
+  const derivedFrom = Array.isArray(memory.derived_from) ? memory.derived_from : [];
+  return {
+    document_id: memory.document_id,
+    memory_id: memory.memory_id,
+    status: memory.status,
+    text: memory.text ?? memory.content,
+    tags: validatedMemoryTags(memory),
+    metadata: {
+      ...(memory.metadata ?? {}),
+      source_id: memory.source_id ?? memory.metadata?.source_id,
+      snapshot_id: memory.snapshot_id ?? memory.metadata?.snapshot_id,
+      observation_id: memory.observation_id ?? memory.metadata?.observation_id,
+      interpretation_id: memory.interpretation_id ?? memory.metadata?.interpretation_id,
+      memory_id: memory.memory_id,
+      source_version: memory.source_version ?? memory.snapshot_id ?? memory.metadata?.source_version,
+      freshness: memory.freshness ?? memory.metadata?.freshness,
+      derived_from: derivedFrom.length > 0 ? derivedFrom : memory.metadata?.derived_from,
+      workspace_id: memory.workspace_id ?? memory.metadata?.workspace_id,
+      access_policy: memory.access_policy ?? memory.metadata?.access_policy,
+      entity_type: memory.entity_type ?? memory.metadata?.entity_type,
+      schema_status: memory.schema_status ?? memory.metadata?.schema_status
+    }
+  };
+}
+
+function buildEffectiveInput(input) {
+  if (promotionSource(input) !== "validated_memories") return input;
+
+  const generationErrors = [];
+  const memories = list(input, "validated_memories");
+  const eligibleMemories = memories.filter((memory) => memory?.status === "active" && memory?.review_status === "approved");
+  const unflagged = eligibleMemories.filter((memory) => memory.promote_to_hindsight !== true);
+  if (unflagged.length > 0) {
+    generationErrors.push("validated_memory_not_explicitly_promotable");
+  }
+
+  return {
+    ...input,
+    generated_from: "validated_memories",
+    generation_errors: generationErrors,
+    promotion_payloads: memories
+      .filter(validatedMemoryIsPromotable)
+      .map(promotionPayloadFromValidatedMemory)
+  };
+}
+
 function validate(input) {
   const errors = new Set();
+  for (const error of list(input, "generation_errors")) {
+    errors.add(error);
+  }
 
   for (const payload of list(input, "promotion_payloads")) {
     if (payload.status !== "active") continue;
@@ -283,6 +361,7 @@ function buildPlan(input, options, env = process.env) {
     network_writes: false,
     credentials_required: Boolean(options.live),
     bank_id: options.bank ?? env.HINDSIGHT_BANK_ID ?? "supermemory-main",
+    generated_from: input.generated_from,
     env: envStatus(env),
     validation: {
       contract_mode: input.contract_mode ?? "promotion_payloads_v1",
@@ -320,7 +399,7 @@ function sanitizedTransportRequests(requests) {
 async function main() {
   try {
     const options = parseArgs(process.argv.slice(2));
-    const input = normalizeInput(readInput(options.input));
+    const input = buildEffectiveInput(normalizeInput(readInput(options.input)));
     const plan = buildPlan(input, options);
 
     if (plan.validation.errors.length > 0) {

@@ -252,4 +252,91 @@ assert.equal(vaultSyncValid.validation.contract_mode, "vault_sync_v1");
 assert.deepEqual(vaultSyncRequest.body.items[0].metadata.derived_from, ["snap-acme-prd-2026-05-21"]);
 assert.equal(vaultSyncRequest.body.items[0].metadata.source_version, "snap-acme-prd-2026-05-21");
 assert.equal(vaultSyncRequest.body.items[0].metadata.freshness, "fresh");
+
+const generatedFromValidatedPath = path.join(tmpDir, "generated-from-validated.json");
+fs.writeFileSync(
+  generatedFromValidatedPath,
+  JSON.stringify({
+    contract_mode: "vault_sync_v1",
+    promotion_source: "validated_memories",
+    entity_type_registry: [
+      { entity_type: "project", status: "stable" }
+    ],
+    snapshot_registry: [
+      {
+        snapshot_id: "snap-acme-prd-2026-05-22",
+        source_id: "src-acme-prd",
+        freshness: "fresh",
+        immutable: true
+      }
+    ],
+    validated_memories: [
+      {
+        memory_id: "mem-acme-prd-t2",
+        document_id: "doc-acme-prd",
+        status: "active",
+        review_status: "approved",
+        promote_to_hindsight: true,
+        text: "Acme Project Y PRD was approved against the 2026-05-22 snapshot.",
+        workspace_id: "ws-acme",
+        access_policy: "professional-default",
+        consumer: "email_agent",
+        entity_type: "project",
+        schema_status: "stable",
+        source_id: "src-acme-prd",
+        snapshot_id: "snap-acme-prd-2026-05-22",
+        observation_id: "obs-acme-prd-t2",
+        interpretation_id: "interp-acme-prd-t2",
+        freshness: "fresh",
+        derived_from: ["snap-acme-prd-2026-05-22"]
+      }
+    ]
+  })
+);
+const generatedFromValidated = parseJson(runCli(["--input", generatedFromValidatedPath, "--json"]));
+assert.equal(generatedFromValidated.generated_from, "validated_memories");
+assert.equal(generatedFromValidated.summary.retained, 1);
+assert.equal(generatedFromValidated.operations[0].document_id, "doc-acme-prd");
+assert.equal(generatedFromValidated.operations[0].memory_id, "mem-acme-prd-t2");
+assert.equal(generatedFromValidated.operations[0].metadata.source_version, "snap-acme-prd-2026-05-22");
+assert.deepEqual(generatedFromValidated.operations[0].metadata.derived_from, ["snap-acme-prd-2026-05-22"]);
+assert.deepEqual(generatedFromValidated.operations[0].tags, [
+  "workspace:ws-acme",
+  "access_policy:professional-default",
+  "status:active",
+  "entity_type:project",
+  "schema_status:stable",
+  "consumer:email_agent"
+]);
+
+const implicitGenerationPath = path.join(tmpDir, "implicit-generation.json");
+fs.writeFileSync(
+  implicitGenerationPath,
+  JSON.stringify({
+    contract_mode: "vault_sync_v1",
+    promotion_source: "validated_memories",
+    validated_memories: [
+      {
+        memory_id: "mem-acme-prd-unflagged",
+        document_id: "doc-acme-prd-unflagged",
+        status: "active",
+        review_status: "approved",
+        text: "This memory is valid but not explicitly flagged for Hindsight promotion.",
+        workspace_id: "ws-acme",
+        access_policy: "professional-default",
+        entity_type: "project",
+        schema_status: "stable",
+        source_id: "src-acme-prd",
+        snapshot_id: "snap-acme-prd-2026-05-22",
+        observation_id: "obs-acme-prd-unflagged",
+        interpretation_id: "interp-acme-prd-unflagged",
+        freshness: "fresh",
+        derived_from: ["snap-acme-prd-2026-05-22"]
+      }
+    ]
+  })
+);
+const implicitGeneration = runCli(["--input", implicitGenerationPath, "--json"]);
+assert.notEqual(implicitGeneration.status, 0);
+assert.match(implicitGeneration.stderr, /validated_memory_not_explicitly_promotable/);
 fs.rmSync(tmpDir, { recursive: true, force: true });
