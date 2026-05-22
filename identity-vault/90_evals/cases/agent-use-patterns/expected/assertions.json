@@ -1,0 +1,28 @@
+{
+  "required_test_ids": ["T10.1", "T10.2", "T10.3", "T10.4", "T10.5", "T10.6", "T10.7"],
+  "expected_errors": {
+    "T10.1": "missing_pattern_filters",
+    "T10.2": "missing_review_gate",
+    "T10.3": "missing_snapshot_citation",
+    "T10.4": "missing_experimental_type_status",
+    "T10.5": "missing_audit_relation_chain",
+    "T10.6": "missing_action_confirmation",
+    "T10.7": "unknown_use_pattern"
+  },
+  "required_patterns": [
+    "external_draft",
+    "internal_draft",
+    "decision_support",
+    "strategic_analysis",
+    "audit_and_proof",
+    "external_system_update"
+  ],
+  "required_assignment_ids": [
+    "assign-launch-email-draft",
+    "assign-prd-refresh",
+    "assign-api-field-decision",
+    "assign-marketing-strategy",
+    "assign-source-change-audit",
+    "assign-email-send"
+  ]
+}

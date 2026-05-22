@@ -1,0 +1,257 @@
+{
+  "case_id": "agent-use-patterns",
+  "valid": {
+    "use_pattern_assignments": [
+      {
+        "assignment_id": "assign-launch-email-draft",
+        "request_id": "req-launch-readiness-email",
+        "request": "Draft a launch-readiness email for Acme customer success.",
+        "use_pattern": "external_draft",
+        "consumer": "email_agent",
+        "allowed_filters": [
+          "workspace:acme-workspace",
+          "consumer:email_agent",
+          "status:active",
+          "visibility:professional"
+        ],
+        "evidence_refs": ["mem-acme-launch-summary", "mem-acme-risk-summary"],
+        "snapshot_ids": ["snap-acme-prd-2026-05-21"],
+        "output_state": "draft_only",
+        "restricted_fields_withheld": ["renewal_amount"],
+        "external_action_executed": false
+      },
+      {
+        "assignment_id": "assign-prd-refresh",
+        "request_id": "req-prd-refresh",
+        "request": "Refresh the stale Acme PRD from the changed source.",
+        "use_pattern": "internal_draft",
+        "consumer": "memory_agent",
+        "allowed_filters": [
+          "workspace:acme-workspace",
+          "status:needs_review",
+          "freshness:changed"
+        ],
+        "evidence_refs": ["mem-prd-launch-risk-t0"],
+        "snapshot_ids": ["snap-acme-prd-2026-05-18", "snap-acme-prd-2026-05-21"],
+        "review_gate": {
+          "queue": "staleness_queue",
+          "review_id": "review-stale-prd-launch-risk"
+        },
+        "output_state": "internal_draft"
+      },
+      {
+        "assignment_id": "assign-api-field-decision",
+        "request_id": "req-api-field-decision",
+        "request": "Should the integration use risk_score or trust_score?",
+        "use_pattern": "decision_support",
+        "consumer": "product_agent",
+        "allowed_filters": [
+          "workspace:acme-workspace",
+          "consumer:product_agent",
+          "status:active"
+        ],
+        "evidence_refs": ["mem-api-trust-score", "mem-support-risk-score"],
+        "snapshot_ids": ["snap-acme-api-2026-05-21", "snap-acme-support-2026-05-21"],
+        "conflict_memory_ids": ["mem-api-trust-score", "mem-support-risk-score"],
+        "output_state": "source_backed_decision_support"
+      },
+      {
+        "assignment_id": "assign-marketing-strategy",
+        "request_id": "req-marketing-strategy",
+        "request": "Analyze Acme checkout recovery strategy.",
+        "use_pattern": "strategic_analysis",
+        "consumer": "marketing_agent",
+        "allowed_filters": [
+          "workspace:acme-workspace",
+          "consumer:marketing_agent",
+          "entity_type:marketing_strategy",
+          "schema_status:experimental"
+        ],
+        "evidence_refs": ["type-proposal-marketing-strategy", "mem-acme-checkout-recovery"],
+        "snapshot_ids": ["snap-acme-marketing-2026-05-21"],
+        "entity_type": "marketing_strategy",
+        "schema_status": "experimental",
+        "confidence": "medium",
+        "output_state": "strategic_analysis"
+      },
+      {
+        "assignment_id": "assign-source-change-audit",
+        "request_id": "req-what-changed",
+        "request": "What changed between PRD snapshots?",
+        "use_pattern": "audit_and_proof",
+        "consumer": "audit_agent",
+        "allowed_filters": [
+          "workspace:acme-workspace",
+          "consumer:audit_agent",
+          "status:active"
+        ],
+        "evidence_refs": ["rel-prd-t1-supersedes-t0", "rel-mem-t1-supersedes-t0"],
+        "snapshot_ids": ["snap-acme-prd-2026-05-18", "snap-acme-prd-2026-05-21"],
+        "relation_chain": [
+          "snap-acme-prd-2026-05-21 supersedes_snapshot snap-acme-prd-2026-05-18",
+          "mem-acme-prd-t1 supersedes_memory mem-acme-prd-t0",
+          "mem-acme-prd-t1 supports_answer ans-prd-change-audit"
+        ],
+        "output_state": "audit_with_proof"
+      },
+      {
+        "assignment_id": "assign-email-send",
+        "request_id": "req-send-launch-email",
+        "request": "Send the launch-readiness email.",
+        "use_pattern": "external_system_update",
+        "consumer": "email_agent",
+        "allowed_filters": [
+          "workspace:acme-workspace",
+          "consumer:email_agent",
+          "status:active"
+        ],
+        "evidence_refs": ["draft-launch-readiness-email", "confirm-launch-readiness-email"],
+        "snapshot_ids": ["snap-acme-prd-2026-05-21"],
+        "confirmation_gate": {
+          "queue": "action_confirmation_queue",
+          "review_id": "confirm-launch-readiness-email"
+        },
+        "external_action": {
+          "action_id": "action-send-launch-readiness-email",
+          "action_type": "email_send",
+          "execution_state": "not_executed"
+        },
+        "output_state": "confirmation_required"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T10.1",
+      "description": "External draft must include narrow email-safe filters and remain draft-only.",
+      "expected_error": "missing_pattern_filters",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-external-draft",
+            "use_pattern": "external_draft",
+            "consumer": "email_agent",
+            "allowed_filters": ["workspace:acme-workspace"],
+            "evidence_refs": ["mem-acme"],
+            "snapshot_ids": ["snap-acme"],
+            "output_state": "draft_only",
+            "external_action_executed": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10.2",
+      "description": "Internal draft from stale PRD requires a review gate.",
+      "expected_error": "missing_review_gate",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-internal-draft",
+            "use_pattern": "internal_draft",
+            "consumer": "memory_agent",
+            "allowed_filters": ["workspace:acme-workspace", "freshness:changed"],
+            "evidence_refs": ["mem-prd"],
+            "snapshot_ids": ["snap-t0", "snap-t1"],
+            "output_state": "internal_draft"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10.3",
+      "description": "Decision support must cite snapshots.",
+      "expected_error": "missing_snapshot_citation",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-decision-support",
+            "use_pattern": "decision_support",
+            "consumer": "product_agent",
+            "allowed_filters": ["workspace:acme-workspace", "consumer:product_agent"],
+            "evidence_refs": ["mem-api", "mem-support"],
+            "snapshot_ids": [],
+            "output_state": "source_backed_decision_support"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10.4",
+      "description": "Strategic analysis using a new business type must cite experimental schema status.",
+      "expected_error": "missing_experimental_type_status",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-strategy",
+            "use_pattern": "strategic_analysis",
+            "consumer": "marketing_agent",
+            "allowed_filters": ["workspace:acme-workspace", "consumer:marketing_agent"],
+            "evidence_refs": ["mem-strategy"],
+            "snapshot_ids": ["snap-strategy"],
+            "entity_type": "marketing_strategy",
+            "schema_status": "stable",
+            "confidence": "medium"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10.5",
+      "description": "Audit and proof must include relation chain plus snapshots.",
+      "expected_error": "missing_audit_relation_chain",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-audit",
+            "use_pattern": "audit_and_proof",
+            "consumer": "audit_agent",
+            "allowed_filters": ["workspace:acme-workspace", "consumer:audit_agent"],
+            "evidence_refs": ["rel-prd"],
+            "snapshot_ids": ["snap-t1"],
+            "relation_chain": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10.6",
+      "description": "External system update must require confirmation and remain unexecuted.",
+      "expected_error": "missing_action_confirmation",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-send",
+            "use_pattern": "external_system_update",
+            "consumer": "email_agent",
+            "allowed_filters": ["workspace:acme-workspace", "consumer:email_agent"],
+            "evidence_refs": ["draft-email"],
+            "snapshot_ids": ["snap-acme"],
+            "external_action": {
+              "action_id": "action-email",
+              "action_type": "email_send",
+              "execution_state": "executed"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "T10.7",
+      "description": "Bespoke workflow names are rejected.",
+      "expected_error": "unknown_use_pattern",
+      "input": {
+        "use_pattern_assignments": [
+          {
+            "assignment_id": "bad-bespoke",
+            "use_pattern": "custom_launch_email_workflow",
+            "consumer": "email_agent",
+            "allowed_filters": ["workspace:acme-workspace", "consumer:email_agent"],
+            "evidence_refs": ["mem-acme"],
+            "snapshot_ids": ["snap-acme"]
+          }
+        ]
+      }
+    }
+  ]
+}

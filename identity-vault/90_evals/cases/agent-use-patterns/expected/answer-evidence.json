@@ -1,0 +1,38 @@
+{
+  "assignments": [
+    {
+      "assignment_id": "assign-launch-email-draft",
+      "use_pattern": "external_draft",
+      "output_state": "draft_only",
+      "external_action_executed": false
+    },
+    {
+      "assignment_id": "assign-prd-refresh",
+      "use_pattern": "internal_draft",
+      "review_queue": "staleness_queue",
+      "output_state": "internal_draft"
+    },
+    {
+      "assignment_id": "assign-api-field-decision",
+      "use_pattern": "decision_support",
+      "output_state": "source_backed_decision_support"
+    },
+    {
+      "assignment_id": "assign-marketing-strategy",
+      "use_pattern": "strategic_analysis",
+      "entity_type": "marketing_strategy",
+      "schema_status": "experimental"
+    },
+    {
+      "assignment_id": "assign-source-change-audit",
+      "use_pattern": "audit_and_proof",
+      "output_state": "audit_with_proof"
+    },
+    {
+      "assignment_id": "assign-email-send",
+      "use_pattern": "external_system_update",
+      "confirmation_queue": "action_confirmation_queue",
+      "execution_state": "not_executed"
+    }
+  ]
+}
