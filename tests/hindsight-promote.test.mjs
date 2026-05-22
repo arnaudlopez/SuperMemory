@@ -126,4 +126,130 @@ fs.writeFileSync(
 const broadRecall = runCli(["--input", broadRecallPath, "--json"]);
 assert.notEqual(broadRecall.status, 0);
 assert.match(broadRecall.stderr, /unsafe_adapter_recall_policy/);
+
+const candidateTypePath = path.join(tmpDir, "candidate-type.json");
+fs.writeFileSync(
+  candidateTypePath,
+  JSON.stringify({
+    contract_mode: "vault_sync_v1",
+    entity_type_registry: [
+      { entity_type: "marketing_strategy", status: "candidate" }
+    ],
+    promotion_payloads: [
+      {
+        document_id: "doc-acme-strategy",
+        memory_id: "mem-acme-strategy",
+        status: "active",
+        text: "Acme is evaluating a new marketing strategy.",
+        tags: [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "entity_type:marketing_strategy",
+          "schema_status:candidate"
+        ],
+        metadata: {
+          source_id: "src-acme-strategy",
+          snapshot_id: "snap-acme-strategy-2026-05-22",
+          observation_id: "obs-acme-strategy",
+          interpretation_id: "interp-acme-strategy",
+          memory_id: "mem-acme-strategy",
+          source_version: "snap-acme-strategy-2026-05-22",
+          freshness: "fresh",
+          derived_from: ["snap-acme-strategy-2026-05-22"]
+        }
+      }
+    ]
+  })
+);
+const candidateType = runCli(["--input", candidateTypePath, "--json"]);
+assert.notEqual(candidateType.status, 0);
+assert.match(candidateType.stderr, /candidate_type_not_promotable/);
+
+const missingVaultSyncMetadataPath = path.join(tmpDir, "missing-vault-sync-metadata.json");
+fs.writeFileSync(
+  missingVaultSyncMetadataPath,
+  JSON.stringify({
+    contract_mode: "vault_sync_v1",
+    promotion_payloads: [
+      {
+        document_id: "doc-acme-prd",
+        memory_id: "mem-acme-prd-t1",
+        status: "active",
+        text: "Acme Project Y PRD was reviewed against the t1 snapshot.",
+        tags: [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "entity_type:project",
+          "schema_status:stable"
+        ],
+        metadata: {
+          source_id: "src-acme-prd",
+          snapshot_id: "snap-acme-prd-2026-05-21",
+          observation_id: "obs-acme-prd",
+          interpretation_id: "interp-acme-prd",
+          memory_id: "mem-acme-prd-t1"
+        }
+      }
+    ]
+  })
+);
+const missingVaultSyncMetadata = runCli(["--input", missingVaultSyncMetadataPath, "--json"]);
+assert.notEqual(missingVaultSyncMetadata.status, 0);
+assert.match(missingVaultSyncMetadata.stderr, /vault_sync_metadata_missing/);
+
+const vaultSyncValidPath = path.join(tmpDir, "vault-sync-valid.json");
+fs.writeFileSync(
+  vaultSyncValidPath,
+  JSON.stringify({
+    contract_mode: "vault_sync_v1",
+    entity_type_registry: [
+      { entity_type: "project", status: "stable" }
+    ],
+    snapshot_registry: [
+      {
+        snapshot_id: "snap-acme-prd-2026-05-21",
+        source_id: "src-acme-prd",
+        freshness: "fresh",
+        immutable: true
+      }
+    ],
+    promotion_payloads: [
+      {
+        document_id: "doc-acme-prd",
+        memory_id: "mem-acme-prd-t1",
+        status: "active",
+        text: "Acme Project Y PRD was reviewed against the t1 snapshot.",
+        tags: [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "entity_type:project",
+          "schema_status:stable"
+        ],
+        metadata: {
+          source_id: "src-acme-prd",
+          snapshot_id: "snap-acme-prd-2026-05-21",
+          observation_id: "obs-acme-prd",
+          interpretation_id: "interp-acme-prd",
+          memory_id: "mem-acme-prd-t1",
+          source_version: "snap-acme-prd-2026-05-21",
+          freshness: "fresh",
+          derived_from: ["snap-acme-prd-2026-05-21"]
+        }
+      }
+    ]
+  })
+);
+const vaultSyncValid = parseJson(runCli(["--input", vaultSyncValidPath, "--live", "--mock-transport", "--json"], {
+  HINDSIGHT_API_KEY: "sk-test-secret",
+  HINDSIGHT_BANK_ID: "bank-test",
+  HINDSIGHT_BASE_URL: "https://example.invalid"
+}));
+const vaultSyncRequest = vaultSyncValid.transport.requests.find((request) => request.operation === "retain");
+assert.equal(vaultSyncValid.validation.contract_mode, "vault_sync_v1");
+assert.deepEqual(vaultSyncRequest.body.items[0].metadata.derived_from, ["snap-acme-prd-2026-05-21"]);
+assert.equal(vaultSyncRequest.body.items[0].metadata.source_version, "snap-acme-prd-2026-05-21");
+assert.equal(vaultSyncRequest.body.items[0].metadata.freshness, "fresh");
 fs.rmSync(tmpDir, { recursive: true, force: true });

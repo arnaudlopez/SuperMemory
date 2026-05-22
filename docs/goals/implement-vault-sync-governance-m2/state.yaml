@@ -1,0 +1,219 @@
+version: 2
+
+goal:
+  title: "Implement Vault Sync Governance M2"
+  slug: "implement-vault-sync-governance-m2"
+  kind: specific
+  status: active
+  oracle:
+    signal: "The Hindsight promotion preflight enforces M2 vault-sync governance without live writes."
+    cadence: "after red test, implementation, verification, shipping, and final audit"
+    final_proof: "CLI tests pass, adapter/source/global specs pass, git diff --check pass, GoalBuddy checks pass, commit SHA and push proof."
+  intake:
+    original_request: "Ok, avance sur ce que tu pense être la bonne prochaine étape"
+    interpreted_outcome: "Implement the next useful tranche after mockable Hindsight transport: M2 vault-derived promotion governance."
+    input_shape: specific
+    audience: "SuperMemory maintainers"
+    authority: requested
+    proof_type: test
+    completion_proof: "M2 governance failures and valid metadata propagation are covered by tests."
+    likely_misfire: "Jumping to connectors, broad vault scans, live Hindsight writes, or over-deterministic business-case handling."
+    blind_spots_considered:
+      - "This is a hard governance gate; LLM-first interpretation remains upstream of promotion."
+      - "Existing M1/T3 fixtures must keep passing."
+      - "No real source refresh or external connector should be introduced in this tranche."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-vault-sync-governance-m2"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map M2 scope and safe files."
+    receipt:
+      result: done
+      summary: "M2 scope is the next useful local tranche after mockable transport: stricter vault-derived promotion governance, not connectors or live smoke."
+      evidence:
+        - "docs/prd-memoire-agentique-v2.md M2 requires sync vault -> Hindsight, stable document_id, upsert/delete, candidate-type rejection, snapshot registry, and freshness propagation."
+        - "identity-vault/75_governance/hindsight_contract.md requires source_version, freshness, derived_from, entity type, schema status, and rejects schema_status:candidate."
+        - "scripts/hindsight-promote.mjs already has the CLI boundary and can be extended without new dependencies."
+      module_map:
+        cli: "scripts/hindsight-promote.mjs"
+        cli_test: "tests/hindsight-promote.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+        governance_contract: "identity-vault/75_governance/hindsight_contract.md"
+      ubiquitous_language:
+        - "vault_sync_v1"
+        - "candidate type"
+        - "source_version"
+        - "freshness"
+        - "derived_from"
+        - "snapshot registry"
+      design_concept: "Keep interpretation adaptive upstream, but make the Hindsight handoff a strict contract: only reviewed, fresh-enough, typed, snapshot-backed payloads can be retained."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "adds vault_sync_v1 validation semantics to the local CLI contract"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none in tests/CI"
+        deploy_rollback: "revert M2 governance commit"
+        observability: "CLI JSON validation errors and sanitized operation metadata"
+        docs: "GoalBuddy board only"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve M2 implementation boundary."
+    receipt:
+      result: done
+      decision: approved
+      architecture_review: "Approved. Add tests and local validation for vault_sync_v1 metadata and candidate-type rejection. Do not add connectors, live smoke, dependencies, broad scans, or source refresh jobs."
+      design_concept: "The CLI accepts explicit vault-derived JSON input; it does not discover sources."
+      interface_contract:
+        contract_mode: "vault_sync_v1"
+        required_active_metadata:
+          - "source_version"
+          - "freshness"
+          - "derived_from"
+        rejects:
+          - "schema_status:candidate"
+          - "registry candidate entity type"
+      feedback_policy: "Keep errors named and deterministic; avoid broad refactors."
+      test_strategy:
+        red: "Add CLI tests for candidate-type rejection and missing vault-sync metadata before implementation."
+        green:
+          - "node --test tests/hindsight-promote.test.mjs"
+          - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+          - "node scripts/verify-source-change-t0-t1.mjs"
+          - "node scripts/verify-hindsight-adapter-minimal.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement M2 vault-sync governance validations and tests."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "scripts/hindsight-promote.mjs"
+      - "tests/hindsight-promote.test.mjs"
+    verify:
+      - "node --test tests/hindsight-promote.test.mjs"
+      - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+      - "node scripts/verify-source-change-t0-t1.mjs"
+      - "node scripts/verify-hindsight-adapter-minimal.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need connector/source capture implementation."
+      - "Need broad vault scan or source refresh job."
+      - "Need live Hindsight credentials or network smoke."
+      - "Need dependency, migration, env file, auth, DB, UI, or background job."
+    receipt:
+      result: done
+      summary: "Implemented M2 vault_sync_v1 promotion validation in the existing Hindsight promotion CLI."
+      expected_fail:
+        command: "node --test tests/hindsight-promote.test.mjs"
+        result: "failed before implementation because candidate_type_not_promotable was not enforced"
+      changed_files:
+        - "scripts/hindsight-promote.mjs"
+        - "tests/hindsight-promote.test.mjs"
+      design_delta: "The CLI now distinguishes the existing promotion_payloads_v1 contract from stricter vault_sync_v1 input. vault_sync_v1 rejects candidate schema/entity types, requires source_version/freshness/derived_from metadata, and requires a matching snapshot registry entry before retain/upsert."
+      commands:
+        - command: "node --test tests/hindsight-promote.test.mjs"
+          status: pass
+        - command: "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+          status: pass
+        - command: "node scripts/verify-source-change-t0-t1.mjs"
+          status: pass
+        - command: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        - command: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Ship verified M2 governance tranche."
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit final completion."
+    receipt: null

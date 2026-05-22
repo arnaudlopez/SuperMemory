@@ -19,6 +19,11 @@ function hasTagWithPrefix(tags, prefix) {
   return tags.some((tag) => typeof tag === "string" && tag.startsWith(prefix));
 }
 
+function tagValue(tags, prefix) {
+  const tag = tags.find((item) => typeof item === "string" && item.startsWith(prefix));
+  return tag ? tag.slice(prefix.length) : null;
+}
+
 function isDoNotUse(item) {
   const tags = Array.isArray(item?.tags) ? item.tags : [];
   return item?.status === "do_not_use" || tags.includes("status:do_not_use");
@@ -37,6 +42,46 @@ function hasRequiredRecallScope(policy) {
 function promotionHasProvenance(payload) {
   const metadata = payload.metadata ?? {};
   return requiredPromotionMetadata.every((key) => Boolean(metadata[key]));
+}
+
+function isVaultSync(input) {
+  return input?.contract_mode === "vault_sync_v1";
+}
+
+function registryRows(input, key) {
+  return list(input, key);
+}
+
+function entityTypeRegistryStatus(input, entityType) {
+  if (!entityType) return null;
+  const row = registryRows(input, "entity_type_registry").find((item) => (
+    item?.entity_type === entityType || item?.type === entityType
+  ));
+  return row?.status ?? null;
+}
+
+function snapshotRegistry(input) {
+  return [...registryRows(input, "snapshot_registry"), ...registryRows(input, "snapshots")];
+}
+
+function snapshotIsRegistered(input, metadata) {
+  const registry = snapshotRegistry(input);
+  if (registry.length === 0) return false;
+  return registry.some((snapshot) => (
+    snapshot?.snapshot_id === metadata.snapshot_id &&
+    (!snapshot.source_id || snapshot.source_id === metadata.source_id)
+  ));
+}
+
+function hasVaultSyncMetadata(payload) {
+  const metadata = payload.metadata ?? {};
+  return (
+    Boolean(metadata.source_version) &&
+    Boolean(metadata.freshness) &&
+    Array.isArray(metadata.derived_from) &&
+    metadata.derived_from.length > 0 &&
+    (!metadata.snapshot_id || metadata.derived_from.includes(metadata.snapshot_id))
+  );
 }
 
 function parseArgs(argv) {
@@ -100,6 +145,12 @@ function validate(input) {
   for (const payload of list(input, "promotion_payloads")) {
     if (payload.status !== "active") continue;
     const tags = Array.isArray(payload.tags) ? payload.tags : [];
+    const metadata = payload.metadata ?? {};
+    const entityType = metadata.entity_type ?? tagValue(tags, "entity_type:");
+    const schemaStatus = metadata.schema_status ?? tagValue(tags, "schema_status:");
+    if (schemaStatus === "candidate" || entityTypeRegistryStatus(input, entityType) === "candidate") {
+      errors.add("candidate_type_not_promotable");
+    }
     const hasActiveTag = tags.includes("status:active");
     const hasScopedTags = hasTagWithPrefix(tags, "workspace:") && hasTagWithPrefix(tags, "access_policy:");
     if (!payload.document_id || !payload.memory_id || !payload.text || !hasActiveTag || !hasScopedTags) {
@@ -108,6 +159,14 @@ function validate(input) {
     }
     if (!promotionHasProvenance(payload)) {
       errors.add("adapter_promotion_missing_provenance");
+    }
+    if (isVaultSync(input)) {
+      if (!hasVaultSyncMetadata(payload)) {
+        errors.add("vault_sync_metadata_missing");
+      }
+      if (!snapshotIsRegistered(input, metadata)) {
+        errors.add("snapshot_registry_missing");
+      }
     }
   }
 
@@ -226,6 +285,7 @@ function buildPlan(input, options, env = process.env) {
     bank_id: options.bank ?? env.HINDSIGHT_BANK_ID ?? "supermemory-main",
     env: envStatus(env),
     validation: {
+      contract_mode: input.contract_mode ?? "promotion_payloads_v1",
       errors: validate(input)
     },
     summary,
