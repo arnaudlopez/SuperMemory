@@ -479,6 +479,14 @@ Oracle :
 Une regression sur provenance, permissions, freshness, do_not_use ou relation chain casse la CI.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-ci-regression-suite.mjs
+```
+
+Le contrat T14 ajoute `.github/workflows/supermemory-specs.yml` et verifie localement que la CI lance les scripts critiques, que des mutations provenance/permissions/`do_not_use` cassent les checks, et que promptfoo reste optionnel plutot qu'une dependance ou gate obligatoire.
+
 ## Ordre recommande
 
 ```text

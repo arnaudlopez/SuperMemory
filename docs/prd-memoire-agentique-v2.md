@@ -1099,6 +1099,14 @@ node scripts/verify-enterprise-living-memory-complete.mjs
 
 Ce contrat rend le scenario Orion enterprise-ready au niveau fixture : toutes les questions finales sont sourcees, les chaines relationnelles `supports_answer` sont explicites, les agents email/marketing/product/memory respectent leur scope, toutes les queues attendues existent, les secrets ne sortent pas dans recall/drafts, Graphiti et Memoria restent gouvernes, et les demandes utilisent les use patterns connus plutot que des workflows bespoke.
 
+Contrat executable T14 pour regression/CI :
+
+```bash
+node scripts/verify-ci-regression-suite.mjs
+```
+
+Ce contrat ajoute le workflow GitHub Actions `SuperMemory Specs`, verifie que les commandes critiques tournent en CI, et prouve que des regressions provenance, permission, `do_not_use` et promptfoo obligatoire echouent localement. Les scripts Node restent l'oracle de structure.
+
 ### M4 - Source Capture Port
 
 - Autoriser seulement des sources selectionnees.
@@ -1143,7 +1151,7 @@ SuperMemory V2 est acceptable quand :
 - Faut-il une banque Hindsight unique avec tags ou plusieurs banques par domaine ?
 - Faut-il garder un mode d'audit separe pour verifier les documents supprimes de Hindsight mais conserves comme preuves dans le vault ?
 - Quel format exact pour le script de promotion : Node, Python ou CLI Hindsight ?
-- promptfoo doit-il devenir obligatoire en CI ou rester manuel ?
+- promptfoo doit-il rester un rapport manuel optionnel ou devenir utile plus tard comme couche de reporting au-dessus des scripts Node ?
 - Quelles metadata sont strictement obligatoires pour chaque type de source ?
 - Quels `observation_scopes` minimaux evitent les melanges sans multiplier inutilement les consolidations ?
 - Quels `entity_labels` doivent etre tags versus seulement entites internes ?

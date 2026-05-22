@@ -1,0 +1,20 @@
+name: SuperMemory Specs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run SuperMemory regression suite
+        run: node scripts/verify-ci-regression-suite.mjs

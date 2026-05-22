@@ -607,6 +607,8 @@ Critere de passage :
 Les invariants Golden Case deviennent des regressions automatiques.
 ```
 
+Le contrat executable T14 vit dans `identity-vault/90_evals/cases/ci-regression-suite/`. La CI lance `verify-ci-regression-suite`, `verify-supermemory-specs` et `git diff --check`; promptfoo reste un outil optionnel de reporting.
+
 ## Definition of Done par tranche
 
 Une tranche est done seulement si :

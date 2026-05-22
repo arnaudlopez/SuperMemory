@@ -212,6 +212,7 @@ node scripts/verify-agent-use-patterns.mjs
 node scripts/verify-engine-port-evals.mjs
 node scripts/verify-enterprise-living-memory-partial.mjs
 node scripts/verify-enterprise-living-memory-complete.mjs
+node scripts/verify-ci-regression-suite.mjs
 ```
 
 Expected output:
@@ -327,6 +328,7 @@ Implemented:
 - executable T11 engine-port eval contract for Graphiti/Memoria activation decisions;
 - executable T12 partial enterprise living-memory contract;
 - executable T13 complete enterprise Golden Case contract;
+- executable T14 CI regression suite and GitHub Actions workflow;
 - minimal local Hindsight adapter contract verifier;
 - governed answer evidence contract verifier;
 - mutable source t0/t1 contract verifier.
@@ -337,7 +339,7 @@ Not yet implemented:
 - source capture connectors;
 - real change detection;
 - automated snapshot refresh;
-- promptfoo CI runner;
+- promptfoo reporting layer, if the Node evals become too hard to read manually;
 - Graphiti/Memoria ports.
 
 ## Roadmap

@@ -62,6 +62,29 @@ Verification:
 node scripts/verify-enterprise-living-memory-complete.mjs
 ```
 
+## Eval Run - 2026-05-22 - CI Regression Suite
+
+Scope:
+
+- `90_evals/cases/ci-regression-suite/`
+- `.github/workflows/supermemory-specs.yml`
+
+Expected:
+
+- CI runs `node scripts/verify-ci-regression-suite.mjs`.
+- CI runs `node scripts/verify-supermemory-specs.mjs`.
+- CI runs `git diff --check`.
+- Missing provenance snapshots fail regression checks.
+- Missing fail-closed filters fail permission checks.
+- `do_not_use` memory in active recall fails.
+- promptfoo remains optional, not a required dependency or CI gate.
+
+Verification:
+
+```bash
+node scripts/verify-ci-regression-suite.mjs
+```
+
 ## Eval Run - 2026-05-22 - Enterprise Living Memory Partial
 
 Scope:

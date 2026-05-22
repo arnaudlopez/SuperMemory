@@ -1,0 +1,46 @@
+{
+  "case_id": "ci-regression-suite",
+  "critical_commands": [
+    "node scripts/verify-supermemory-specs.mjs",
+    "git diff --check"
+  ],
+  "workflow": {
+    "file": ".github/workflows/supermemory-specs.yml",
+    "required_events": ["push", "pull_request"],
+    "required_commands": [
+      "node scripts/verify-ci-regression-suite.mjs"
+    ]
+  },
+  "regression_coverage": [
+    {
+      "id": "T14.2",
+      "dimension": "provenance",
+      "complete_case_error": "unsourced_answer"
+    },
+    {
+      "id": "T14.3",
+      "dimension": "permission",
+      "complete_case_error": "agent_scope_violation"
+    },
+    {
+      "id": "T14.4a",
+      "dimension": "do_not_use",
+      "complete_case_error": "forbidden_active_recall"
+    },
+    {
+      "id": "T14.4b",
+      "dimension": "secret",
+      "complete_case_error": "secret_leak"
+    },
+    {
+      "id": "T14.2b",
+      "dimension": "relation_chain",
+      "complete_case_error": "missing_relation_chain"
+    }
+  ],
+  "promptfoo": {
+    "status": "optional",
+    "required_dependency": false,
+    "required_ci_command": false
+  }
+}
