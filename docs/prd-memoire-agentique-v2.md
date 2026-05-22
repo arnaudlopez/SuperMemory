@@ -970,6 +970,14 @@ node scripts/verify-agent-use-patterns.mjs
 
 Ce contrat verifie que les demandes agentiques se rattachent a quelques patterns robustes (`external_draft`, `internal_draft`, `decision_support`, `strategic_analysis`, `audit_and_proof`, `external_system_update`) et rejette les workflows bespoke.
 
+Contrat executable T11 :
+
+```bash
+node scripts/verify-engine-port-evals.mjs
+```
+
+Ce contrat verifie que Graphiti et Memoria restent des ports optionnels gouvernes par evals : `not_activated` quand Hindsight ou les snapshots/logs suffisent, `candidate_port` seulement avec eval rouge justifiee, et `rejected_port` si le moteur veut posseder permissions, revocation, fraicheur ou contrats agents.
+
 ## 17. Milestones
 
 ### M0 - Documentation V2

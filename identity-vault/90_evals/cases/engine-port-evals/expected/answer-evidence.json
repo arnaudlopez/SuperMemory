@@ -1,0 +1,28 @@
+{
+  "engine_port_decisions": [
+    {
+      "eval_id": "eval-temporal-hindsight-current",
+      "candidate": "Graphiti",
+      "status": "not_activated",
+      "eval_result": "pass"
+    },
+    {
+      "eval_id": "eval-versioning-vault-snapshots",
+      "candidate": "Memoria",
+      "status": "not_activated",
+      "eval_result": "pass"
+    },
+    {
+      "eval_id": "eval-temporal-relation-invalidation-red",
+      "candidate": "Graphiti",
+      "status": "candidate_port",
+      "eval_result": "fail"
+    },
+    {
+      "eval_id": "eval-engine-wants-governance",
+      "candidate": "GovernanceOwningMemoryEngine",
+      "status": "rejected_port",
+      "eval_result": "fail"
+    }
+  ]
+}

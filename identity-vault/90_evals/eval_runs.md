@@ -38,3 +38,23 @@ Verification:
 ```bash
 node scripts/verify-enterprise-living-memory-target.mjs
 ```
+
+## Eval Run - 2026-05-22 - Engine Port Evals
+
+Scope:
+
+- `90_evals/cases/engine-port-evals/`
+- `80_logs/engine_port_evals.jsonl`
+
+Purpose:
+
+- Keep Graphiti and Memoria as optional ports, not implicit dependencies.
+- Record `not_activated` decisions when Hindsight or vault snapshots/logs satisfy the current eval.
+- Allow a `candidate_port` only when an eval is red and justified.
+- Reject any port that wants to own permissions, revocation, source freshness, or agent contracts.
+
+Verification:
+
+```bash
+node scripts/verify-engine-port-evals.mjs
+```

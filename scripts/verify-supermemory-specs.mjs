@@ -13,6 +13,7 @@ const commands = [
   ["node", ["scripts/verify-enterprise-access-secrets-retention.mjs"]],
   ["node", ["scripts/verify-review-queues-actions.mjs"]],
   ["node", ["scripts/verify-agent-use-patterns.mjs"]],
+  ["node", ["scripts/verify-engine-port-evals.mjs"]],
   ["node", ["scripts/verify-identity-vault-tdd.mjs"]],
   ["node", ["scripts/verify-enterprise-living-memory-target.mjs"]]
 ];

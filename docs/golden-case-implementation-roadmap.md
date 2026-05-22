@@ -386,6 +386,14 @@ Le Golden Case explique pourquoi Graphiti et Memoria ne sont pas actives.
 Un port ne peut etre active que par eval rouge ou douleur operationnelle prouvee.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-engine-port-evals.mjs
+```
+
+Le contrat T11 reste local et deterministe : il prouve que Graphiti et Memoria restent `not_activated` quand Hindsight ou le vault suffisent, qu'une eval rouge cree seulement un `candidate_port`, et qu'un moteur voulant posseder la gouvernance est rejete.
+
 ## Tranche 12 - Golden Case partiel executable
 
 Objectif :

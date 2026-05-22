@@ -1,0 +1,17 @@
+{
+  "required_test_ids": ["T11.1", "T11.2", "T11.3", "T11.4", "T11.5"],
+  "expected_errors": {
+    "T11.1": "unjustified_graphiti_activation",
+    "T11.2": "unjustified_memoria_activation",
+    "T11.3": "candidate_port_missing_justification",
+    "T11.4": "port_owns_governance",
+    "T11.5": "engine_port_eval_missing_evidence"
+  },
+  "required_eval_ids": [
+    "eval-temporal-hindsight-current",
+    "eval-versioning-vault-snapshots",
+    "eval-temporal-relation-invalidation-red",
+    "eval-engine-wants-governance"
+  ],
+  "required_log_file": "identity-vault/80_logs/engine_port_evals.jsonl"
+}

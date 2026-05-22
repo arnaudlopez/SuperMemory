@@ -203,6 +203,7 @@ node scripts/verify-adaptive-business-types.mjs
 node scripts/verify-enterprise-access-secrets-retention.mjs
 node scripts/verify-review-queues-actions.mjs
 node scripts/verify-agent-use-patterns.mjs
+node scripts/verify-engine-port-evals.mjs
 ```
 
 Expected output:
@@ -288,6 +289,7 @@ Implemented:
 - enterprise target fixture;
 - verification scripts;
 - Hindsight promotion contract and logs as local fixtures;
+- executable T11 engine-port eval contract for Graphiti/Memoria activation decisions;
 - minimal local Hindsight adapter contract verifier;
 - governed answer evidence contract verifier;
 - mutable source t0/t1 contract verifier.

@@ -1,0 +1,155 @@
+{
+  "case_id": "engine-port-evals",
+  "valid": {
+    "engine_port_evals": [
+      {
+        "eval_id": "eval-temporal-hindsight-current",
+        "port_type": "temporal_graph_port",
+        "candidate": "Graphiti",
+        "default_engine": "Hindsight",
+        "eval_result": "pass",
+        "status": "not_activated",
+        "decision_reason": "Hindsight passed current temporal evals; no temporal graph port is justified.",
+        "preserves_supermemory_contract": true,
+        "owns_governance": false
+      },
+      {
+        "eval_id": "eval-versioning-vault-snapshots",
+        "port_type": "memory_versioning_port",
+        "candidate": "Memoria",
+        "default_engine": "vault_snapshots",
+        "eval_result": "pass",
+        "status": "not_activated",
+        "decision_reason": "Vault snapshots and logs cover rollback and audit requirements.",
+        "covered_by": ["snapshot_registry", "source_changes.jsonl", "hindsight_promotions.jsonl"],
+        "preserves_supermemory_contract": true,
+        "owns_governance": false
+      },
+      {
+        "eval_id": "eval-temporal-relation-invalidation-red",
+        "port_type": "temporal_graph_port",
+        "candidate": "Graphiti",
+        "default_engine": "Hindsight",
+        "eval_result": "fail",
+        "status": "candidate_port",
+        "decision_reason": "Temporal relation invalidation across many sources failed current Hindsight eval.",
+        "justification": "Open a Graphiti candidate benchmark while keeping SuperMemory as the governance source of truth.",
+        "preserves_supermemory_contract": true,
+        "owns_governance": false
+      },
+      {
+        "eval_id": "eval-engine-wants-governance",
+        "port_type": "memory_versioning_port",
+        "candidate": "GovernanceOwningMemoryEngine",
+        "default_engine": "vault_snapshots",
+        "eval_result": "fail",
+        "status": "rejected_port",
+        "decision_reason": "Candidate requires ownership of permissions, revocation, source freshness, or agent contracts.",
+        "violates": ["permissions", "revocation", "source_freshness", "agent_contracts"],
+        "preserves_supermemory_contract": false,
+        "owns_governance": true
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T11.1",
+      "description": "Graphiti must not activate when Hindsight passes temporal evals.",
+      "expected_error": "unjustified_graphiti_activation",
+      "input": {
+        "engine_port_evals": [
+          {
+            "eval_id": "eval-temporal-pass",
+            "port_type": "temporal_graph_port",
+            "candidate": "Graphiti",
+            "default_engine": "Hindsight",
+            "eval_result": "pass",
+            "status": "activated",
+            "decision_reason": "Graphiti is powerful.",
+            "preserves_supermemory_contract": true,
+            "owns_governance": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "T11.2",
+      "description": "Memoria must not activate when snapshots/logs cover rollback and audit.",
+      "expected_error": "unjustified_memoria_activation",
+      "input": {
+        "engine_port_evals": [
+          {
+            "eval_id": "eval-versioning-pass",
+            "port_type": "memory_versioning_port",
+            "candidate": "Memoria",
+            "default_engine": "vault_snapshots",
+            "eval_result": "pass",
+            "status": "activated",
+            "decision_reason": "Versioning would be nice.",
+            "covered_by": ["snapshot_registry", "source_changes.jsonl"],
+            "preserves_supermemory_contract": true,
+            "owns_governance": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "T11.3",
+      "description": "A red temporal eval candidate must include justification.",
+      "expected_error": "candidate_port_missing_justification",
+      "input": {
+        "engine_port_evals": [
+          {
+            "eval_id": "eval-temporal-fail",
+            "port_type": "temporal_graph_port",
+            "candidate": "Graphiti",
+            "default_engine": "Hindsight",
+            "eval_result": "fail",
+            "status": "candidate_port",
+            "decision_reason": "Temporal eval failed.",
+            "preserves_supermemory_contract": true,
+            "owns_governance": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "T11.4",
+      "description": "A port that wants governance ownership must be rejected.",
+      "expected_error": "port_owns_governance",
+      "input": {
+        "engine_port_evals": [
+          {
+            "eval_id": "eval-governance-owner",
+            "port_type": "memory_versioning_port",
+            "candidate": "GovernanceOwningMemoryEngine",
+            "default_engine": "vault_snapshots",
+            "eval_result": "fail",
+            "status": "candidate_port",
+            "decision_reason": "It handles permissions internally.",
+            "justification": "It can replace vault policies.",
+            "preserves_supermemory_contract": false,
+            "owns_governance": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "T11.5",
+      "description": "Engine decisions require eval evidence.",
+      "expected_error": "engine_port_eval_missing_evidence",
+      "input": {
+        "engine_port_evals": [
+          {
+            "port_type": "temporal_graph_port",
+            "candidate": "Graphiti",
+            "status": "not_activated",
+            "decision_reason": "No need yet.",
+            "preserves_supermemory_contract": true,
+            "owns_governance": false
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -178,3 +178,11 @@ Puis prototyper Hindsight sur le scenario Acme existant avant d'automatiser dava
 ```bash
 node scripts/verify-supermemory-specs.mjs
 ```
+
+Contrats executables specialises recents :
+
+```bash
+node scripts/verify-review-queues-actions.mjs
+node scripts/verify-agent-use-patterns.mjs
+node scripts/verify-engine-port-evals.mjs
+```
