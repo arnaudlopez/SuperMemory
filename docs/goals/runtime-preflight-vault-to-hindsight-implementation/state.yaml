@@ -4,7 +4,7 @@ goal:
   title: "Implement Runtime Preflight Vault-To-Hindsight Promotion"
   slug: "runtime-preflight-vault-to-hindsight-implementation"
   kind: specific
-  status: active
+  status: done
   oracle:
     signal: "hindsight-promote dry-run CLI and live guards are implemented and verified without network writes."
     cadence: "after red test, implementation, and final audit"
@@ -73,11 +73,11 @@ agents:
 visual_board:
   selected: local
   local:
-    status: not_started
-    url: null
+    status: started_stopped_after_verification
+    url: "http://goalbuddy.localhost:41737/runtime-preflight-vault-to-hindsight-implementation/"
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/runtime-preflight-vault-to-hindsight-implementation"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -228,7 +228,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: queued
+    status: done
     objective: "Ship verified implementation."
     expected_output:
       - "Or shipping_blocker: no_git_repository | no_github_remote"
@@ -238,10 +238,55 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Committed and pushed the verified Hindsight promotion preflight CLI implementation."
+      commit_sha: 0703417
+      remote_branch: origin/main
+      push_result: "successful push to origin main"
+      committed_files:
+        - "scripts/hindsight-promote.mjs"
+        - "tests/hindsight-promote.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "docs/goals/runtime-preflight-vault-to-hindsight-implementation/goal.md"
+        - "docs/goals/runtime-preflight-vault-to-hindsight-implementation/notes/.gitkeep"
+        - "docs/goals/runtime-preflight-vault-to-hindsight-implementation/state.yaml"
+      unrelated_dirty_files_left_untouched: []
+      commands:
+        -
+          command: "node --test tests/hindsight-promote.test.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+        -
+          command: "git push origin main"
+          status: pass
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none; env var names only, no env file"
+        auth_permissions: "none"
+        api_contract: "local CLI contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert commit 0703417"
+        observability: "JSON CLI output and test assertions"
+        docs: "GoalBuddy board"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -267,4 +312,19 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, TDD evidence, and shipping proof are present."
+      design_delta: "SuperMemory now has a runtime preflight CLI that validates governed promotion payloads, plans retain/upsert/delete/skip operations in dry-run, and fails live mode closed without network transport."
+      oracle_evidence:
+        - "node --test tests/hindsight-promote.test.mjs PASS"
+        - "node scripts/verify-hindsight-adapter-minimal.mjs PASS"
+        - "node scripts/verify-governed-answer-evidence.mjs PASS"
+        - "node scripts/verify-supermemory-specs.mjs PASS"
+        - "git diff --check PASS"
+        - "commit 0703417 pushed to origin/main"
+      missing_evidence: []
+      next_task_if_not_complete: null
+      audit: "The requested Slice 1 and Slice 2 implementation is complete. Live transport remains intentionally unimplemented and should be a separate approved goal after official Hindsight API details are checked."
