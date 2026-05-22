@@ -946,6 +946,14 @@ Questions minimales :
 
 promptfoo peut devenir le runner de ces tests si les commandes Node actuelles deviennent insuffisantes.
 
+Contrat executable T8 :
+
+```bash
+node scripts/verify-enterprise-access-secrets-retention.mjs
+```
+
+Ce contrat verifie que la memoire entreprise porte `workspace_id`, `access_policy`, `data_owner` et `allowed_consumers`, que les secrets et champs restreints sont absents des promotions/drafts, et que le legal hold conserve la preuve sans forcer l'usage actif.
+
 ## 17. Milestones
 
 ### M0 - Documentation V2

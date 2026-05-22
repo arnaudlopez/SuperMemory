@@ -5,7 +5,7 @@ goal:
   slug: "implement-enterprise-access-secrets-retention-t8"
   kind: specific
   tranche: "Implement an executable contract proving workspace isolation, access policy metadata, secret redaction, restricted-field withholding, legal hold retention, and data ownership."
-  status: active
+  status: complete
   oracle:
     signal: "A T8 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves enterprise access/secrets/retention while T0-T7 remain green."
     cadence: "after each Worker package and at final audit"
@@ -91,7 +91,7 @@ visual_board:
     url: "http://goalbuddy.localhost:41737/implement-enterprise-access-secrets-retention-t8/"
     command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-enterprise-access-secrets-retention-t8"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -227,11 +227,15 @@ tasks:
         - scripts/verify-enterprise-access-secrets-retention.mjs
         - tests/enterprise-access-secrets-retention.test.mjs
         - scripts/verify-supermemory-specs.mjs
-      red_evidence:
+      red_test_evidence:
         -
-          command: "node scripts/verify-supermemory-specs.mjs"
+          command: "node scripts/verify-enterprise-access-secrets-retention.mjs with embedded invalid fixtures"
           outcome: expected_fail
-          summary: "Failed after global wiring because scripts/verify-enterprise-access-secrets-retention.mjs did not exist yet."
+          summary: "Invalid cases T8.1-T8.6 are expected failures and each rejects the unsafe enterprise access, secret, restricted draft, or legal-hold shape."
+      green_test_evidence:
+        - "green_test status: pass; node scripts/verify-enterprise-access-secrets-retention.mjs"
+        - "green_test status: pass; node --test tests/enterprise-access-secrets-retention.test.mjs"
+        - "green_test status: pass; node scripts/verify-supermemory-specs.mjs"
       commands:
         -
           cmd: "node scripts/verify-enterprise-access-secrets-retention.mjs"
@@ -288,6 +292,7 @@ tasks:
         - README.md
         - docs/golden-case-implementation-roadmap.md
         - docs/golden-case-tdd-matrix.md
+        - docs/prd-memoire-agentique-v2.md
         - identity-vault/75_governance/access_control.md
         - identity-vault/75_governance/hindsight_contract.md
         - identity-vault/75_governance/threat_model.md
@@ -306,7 +311,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     reasoning_hint: default
     objective: "Ship verified T8 work to GitHub before the goal can be marked done."
     constraints:
@@ -324,11 +329,57 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Committed and pushed verified T8 enterprise access/secrets/retention work."
+      commit_sha: 1b846bf
+      remote_branch: origin/main
+      push_result: "success: pushed main to origin"
+      committed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/golden-case-tdd-matrix.md
+        - identity-vault/75_governance/access_control.md
+        - identity-vault/75_governance/hindsight_contract.md
+        - identity-vault/75_governance/threat_model.md
+        - identity-vault/AGENTS.md
+        - scripts/verify-supermemory-specs.mjs
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/actual/README.md
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/answer-evidence.json
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/assertions.json
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/input/fixture.json
+        - scripts/verify-enterprise-access-secrets-retention.mjs
+        - tests/enterprise-access-secrets-retention.test.mjs
+        - docs/goals/implement-enterprise-access-secrets-retention-t8/goal.md
+        - docs/goals/implement-enterprise-access-secrets-retention-t8/state.yaml
+      unrelated_dirty_files_left_untouched:
+        []
+      commands:
+        -
+          cmd: "git status --short"
+          status: pass
+        -
+          cmd: "git diff --check"
+          status: pass
+        -
+          cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: "local verifier contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: none
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "fixture assertions for access metadata, redaction, drafts, and legal hold"
+        docs: "T8 docs aligned"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -352,4 +403,52 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      summary: "Final audit confirms T8 enterprise access/secrets/retention is complete with deterministic fixture/verifier, targeted test, global spec wiring, docs alignment, and pushed implementation commit."
+      design_delta: "SuperMemory now has an executable T8 contract for enterprise leak prevention. The contract proves required workspace_id/access_policy/data_owner/allowed_consumers metadata, secret redaction before promotion/drafts, restricted-field withholding with withheld_fields, and legal-hold proof retention while active Hindsight use can be excluded."
+      workflow_safeguards_result:
+        design_concept: "T001/T002 define enterprise memory as usable only after explicit tenant, owner, access, consumer, redaction, and retention decisions."
+        ubiquitous_language: "T001 defines workspace_id, data_owner, access_policy, allowed_consumers, restricted_fields, withheld_fields, redacted, legal_hold, retention_policy, active_hindsight_excluded."
+        feedback_policy: "T002/T003 verify deterministic metadata/redaction/retention properties, not exact prose."
+        test_strategy: "T003 produced red global-spec failure before verifier implementation, then green verifier/test/global specs."
+        module_map: "T001 maps new case, verifier, targeted Node test, and global oracle."
+        interface_contract: "T002 defines workspace, access policy, data owner, secret redaction, restricted draft, and legal hold invariants."
+        architecture_review: "T002 approves deterministic local contract, not runtime auth/RLS/live Hindsight security."
+        design_delta: "T003/T004/T999 record verifier, fixture, global wiring, and docs alignment."
+      complete: complete
+      full_outcome_complete: true
+      oracle_coverage:
+        - "T8 verifier wired into scripts/verify-supermemory-specs.mjs"
+        - "T8.1 missing workspace rejected"
+        - "T8.2 missing access_policy rejected"
+        - "T8.3 secret leak rejected"
+        - "T8.4 restricted field draft leak rejected"
+        - "T8.5 legal hold proof retention required"
+        - "T8.6 missing data_owner rejected"
+        - "T0-T7 and enterprise target remain green"
+      verification:
+        -
+          cmd: "node scripts/verify-enterprise-access-secrets-retention.mjs"
+          result: passed
+        -
+          cmd: "node --test tests/enterprise-access-secrets-retention.test.mjs"
+          result: passed
+        -
+          cmd: "node scripts/verify-supermemory-specs.mjs"
+          result: passed
+        -
+          cmd: "git diff --check"
+          result: passed
+      shipping:
+        commit_sha: 1b846bf
+        remote_branch: origin/main
+        push_result: "success: pushed main to origin"
+      changed_files:
+        - README.md
+        - docs/prd-memoire-agentique-v2.md
+        - docs/goals/implement-enterprise-access-secrets-retention-t8/state.yaml
+      missing_evidence:
+        []
+      next_task_if_not_complete: null

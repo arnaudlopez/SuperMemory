@@ -154,6 +154,12 @@ Business types emerge from real evidence, not speculation. The local T7 contract
 
 See [`identity-vault/90_evals/cases/adaptive-business-types`](identity-vault/90_evals/cases/adaptive-business-types).
 
+### Enterprise Access, Secrets, And Retention
+
+Enterprise memory is deny-by-default. The local T8 contract verifies required `workspace_id`, `access_policy`, `data_owner`, and `allowed_consumers`, rejects secret exposure in promotions or drafts, withholds restricted fields from drafts, and preserves legal-hold evidence while excluding active Hindsight use when required.
+
+See [`identity-vault/90_evals/cases/enterprise-access-secrets-retention`](identity-vault/90_evals/cases/enterprise-access-secrets-retention).
+
 ### Use Patterns
 
 The system keeps strict core guardrails but flexible workflows. It maps concrete requests to reusable patterns instead of trying to anticipate every enterprise use case.
