@@ -168,6 +168,18 @@ Expected answer:
 
 - `90_evals/cases/enterprise-living-memory-complete/` defines the maximal V2 target: mutable sources, immutable snapshots, stale derived memory, adaptive business types, Hindsight promotion, filtered agents, and optional engine ports.
 
+## Q-ENTERPRISE-PARTIAL-001
+
+Question: Which enterprise Golden Case slice is executable before the full target?
+
+Expected answer:
+
+- `90_evals/cases/enterprise-living-memory-partial/` proves the Orion source/snapshot/change/recall/answer core while full-case dimensions remain explicit `pending` items.
+
+Expected verifier:
+
+- `scripts/verify-enterprise-living-memory-partial.mjs`
+
 ## Q-ANSWER-001
 
 Question: Can an agent answer with current certainty when memory is stale, conflicting, unavailable, restricted, or forbidden?

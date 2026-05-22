@@ -1,0 +1,31 @@
+{
+  "answers": [
+    {
+      "question_id": "orion-api-field",
+      "answer_state": "current",
+      "required_text": "trust_score",
+      "required_snapshot_ids": ["snap-orion-api-t1-2026-05-27"]
+    },
+    {
+      "question_id": "orion-contract-retention",
+      "answer_state": "current",
+      "required_text": "90 days",
+      "required_snapshot_ids": ["snap-orion-contract-t1-2026-05-27"]
+    },
+    {
+      "question_id": "orion-prd-currentness",
+      "answer_state": "current",
+      "required_text": "reviewed t1 PRD is active",
+      "required_snapshot_ids": [
+        "snap-orion-api-t1-2026-05-27",
+        "snap-orion-contract-t1-2026-05-27"
+      ]
+    },
+    {
+      "question_id": "orion-pricing-use",
+      "answer_state": "forbidden",
+      "required_text": "Do not use",
+      "forbidden_used_memory_ids": ["snap-orion-pricing-obsolete-2026-05-18"]
+    }
+  ]
+}

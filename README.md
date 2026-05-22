@@ -238,6 +238,25 @@ The first executable fixture. It proves the initial vault architecture:
 
 See [`identity-vault/90_evals/cases/acme-meeting-complete/`](identity-vault/90_evals/cases/acme-meeting-complete/).
 
+### `enterprise-living-memory-partial`
+
+The first executable Orion enterprise slice. It proves the source/snapshot/change/recall/answer core without claiming the full Golden Case is done:
+
+- API docs change from `risk_score` to `trust_score`;
+- contract retention changes from 30 to 90 days with legal metadata recorded;
+- t0-derived PRD memory becomes `needs_review`, then a reviewed t1 PRD becomes active;
+- Hindsight re-promotion keeps the same `document_id`;
+- obsolete pricing is `do_not_use` and excluded from active recall;
+- core answers cite snapshots and evidence.
+
+Run:
+
+```bash
+node scripts/verify-enterprise-living-memory-partial.mjs
+```
+
+See [`identity-vault/90_evals/cases/enterprise-living-memory-partial/`](identity-vault/90_evals/cases/enterprise-living-memory-partial/).
+
 ### `enterprise-living-memory-complete`
 
 The maximal V2 target fixture. It is currently `spec_only` and defines what enterprise readiness should eventually prove:
@@ -296,6 +315,7 @@ Implemented:
 - verification scripts;
 - Hindsight promotion contract and logs as local fixtures;
 - executable T11 engine-port eval contract for Graphiti/Memoria activation decisions;
+- executable T12 partial enterprise living-memory contract;
 - minimal local Hindsight adapter contract verifier;
 - governed answer evidence contract verifier;
 - mutable source t0/t1 contract verifier.

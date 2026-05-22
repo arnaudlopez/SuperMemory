@@ -545,12 +545,15 @@ Tests rouges :
 | T12.4 | Re-promotion Hindsight | PRD t1 revue | meme `document_id` | Doublons |
 | T12.5 | Pricing `do_not_use` exclu | Pricing obsolete | aucun recall actif | Interdiction faible |
 | T12.6 | Questions noyau repondues | Golden questions noyau | Reponses sourcees | End-to-end absent |
+| T12.7 | Scope complet non couvert | Dimensions T13 | `pending` explicite | Faux sentiment de completion |
 
 Critere de passage :
 
 ```text
 Le noyau source/snapshot/change/recall/answer du Golden Case est executable.
 ```
+
+Le contrat executable T12 vit dans `identity-vault/90_evals/cases/enterprise-living-memory-partial/`. Il ne remplace pas `enterprise-living-memory-complete`, qui reste le target T13 complet.
 
 ## Tranche 13 - Golden Case complet
 

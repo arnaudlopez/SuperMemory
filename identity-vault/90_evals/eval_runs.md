@@ -39,6 +39,27 @@ Verification:
 node scripts/verify-enterprise-living-memory-target.mjs
 ```
 
+## Eval Run - 2026-05-22 - Enterprise Living Memory Partial
+
+Scope:
+
+- `90_evals/cases/enterprise-living-memory-partial/`
+
+Purpose:
+
+- Make the first Orion enterprise Golden Case slice executable.
+- Prove API and contract t0/t1 source changes.
+- Prove PRD stale/review/active lifecycle.
+- Prove stable Hindsight `document_id` re-promotion.
+- Prove obsolete pricing is excluded from active recall.
+- Keep full-case dimensions explicit as `pending`.
+
+Verification:
+
+```bash
+node scripts/verify-enterprise-living-memory-partial.mjs
+```
+
 ## Eval Run - 2026-05-22 - Engine Port Evals
 
 Scope:

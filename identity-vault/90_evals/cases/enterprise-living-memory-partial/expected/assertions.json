@@ -1,0 +1,34 @@
+{
+  "required_test_ids": ["T12.1", "T12.2", "T12.3", "T12.4", "T12.5", "T12.6", "T12.7"],
+  "expected_errors": {
+    "T12.1": "missing_api_t1_active",
+    "T12.2": "missing_contract_legal_metadata",
+    "T12.3": "missing_prd_review_path",
+    "T12.4": "duplicate_hindsight_document_id",
+    "T12.5": "do_not_use_in_active_recall",
+    "T12.6": "unsourced_core_answer",
+    "T12.7": "missing_pending_dimension"
+  },
+  "required_core_question_ids": [
+    "orion-api-field",
+    "orion-contract-retention",
+    "orion-prd-currentness",
+    "orion-pricing-use"
+  ],
+  "required_pending_dimensions": [
+    "marketing_strategy",
+    "legal_hold",
+    "secrets",
+    "engine_port_evals",
+    "specialized_agents_complete"
+  ],
+  "required_active_snapshot_ids": [
+    "snap-orion-api-t1-2026-05-27",
+    "snap-orion-contract-t1-2026-05-27"
+  ],
+  "required_historical_snapshot_ids": [
+    "snap-orion-api-t0-2026-05-20",
+    "snap-orion-contract-t0-2026-05-20"
+  ],
+  "stable_prd_document_id": "doc-orion-prd-checkout-integration"
+}

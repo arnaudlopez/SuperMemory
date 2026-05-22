@@ -1083,6 +1083,14 @@ node scripts/verify-engine-port-evals.mjs
 
 Ce contrat verifie que `engine_port_evals.jsonl` explique pourquoi Graphiti et Memoria restent `not_activated`, qu'une eval temporelle rouge cree seulement un `candidate_port`, et qu'un moteur qui veut posseder permissions, revocation, freshness ou contrats agents est rejete.
 
+Contrat executable T12 pour le premier Golden Case partiel :
+
+```bash
+node scripts/verify-enterprise-living-memory-partial.mjs
+```
+
+Ce contrat prouve le noyau Orion source/snapshot/change/recall/answer : API `risk_score` -> `trust_score`, retention 30 -> 90 jours, PRD `needs_review` puis active apres revue, re-promotion Hindsight avec le meme `document_id`, pricing `do_not_use` exclu, et reponses noyau sourcees. Les dimensions completement enterprise restent `pending` jusqu'a T13.
+
 ### M4 - Source Capture Port
 
 - Autoriser seulement des sources selectionnees.

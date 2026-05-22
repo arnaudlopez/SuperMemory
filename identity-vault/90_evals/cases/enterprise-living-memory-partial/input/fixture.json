@@ -1,0 +1,341 @@
+{
+  "case_id": "enterprise-living-memory-partial",
+  "valid": {
+    "source_snapshots": [
+      {
+        "snapshot_id": "snap-orion-api-t0-2026-05-20",
+        "source_id": "src-orion-api-docs",
+        "source_kind": "api_docs",
+        "captured_at": "2026-05-20T09:00:00Z",
+        "field": "risk_score",
+        "status": "historical_only",
+        "freshness": "superseded",
+        "workspace_id": "orion-retail-workspace"
+      },
+      {
+        "snapshot_id": "snap-orion-api-t1-2026-05-27",
+        "source_id": "src-orion-api-docs",
+        "source_kind": "api_docs",
+        "captured_at": "2026-05-27T09:00:00Z",
+        "field": "trust_score",
+        "status": "active",
+        "freshness": "fresh",
+        "previous_snapshot_id": "snap-orion-api-t0-2026-05-20",
+        "workspace_id": "orion-retail-workspace"
+      },
+      {
+        "snapshot_id": "snap-orion-contract-t0-2026-05-20",
+        "source_id": "src-orion-contract",
+        "source_kind": "contract",
+        "captured_at": "2026-05-20T10:00:00Z",
+        "retention_days": 30,
+        "status": "historical_only",
+        "freshness": "superseded",
+        "workspace_id": "orion-retail-workspace"
+      },
+      {
+        "snapshot_id": "snap-orion-contract-t1-2026-05-27",
+        "source_id": "src-orion-contract",
+        "source_kind": "contract",
+        "captured_at": "2026-05-27T10:00:00Z",
+        "retention_days": 90,
+        "status": "active",
+        "freshness": "fresh",
+        "previous_snapshot_id": "snap-orion-contract-t0-2026-05-20",
+        "workspace_id": "orion-retail-workspace",
+        "legal_metadata": {
+          "retention_policy": "orion-contract-retention-90d",
+          "retention_until": "2026-08-25",
+          "legal_hold_status": "pending_full_case"
+        }
+      },
+      {
+        "snapshot_id": "snap-orion-pricing-obsolete-2026-05-18",
+        "source_id": "src-orion-pricing",
+        "source_kind": "pricing",
+        "captured_at": "2026-05-18T12:00:00Z",
+        "status": "do_not_use",
+        "freshness": "obsolete",
+        "active_recall_allowed": false,
+        "workspace_id": "orion-retail-workspace"
+      }
+    ],
+    "derived_memories": [
+      {
+        "memory_id": "mem-orion-prd-t0",
+        "document_id": "doc-orion-prd-checkout-integration",
+        "entity_type": "prd",
+        "status": "needs_review",
+        "review_state": "stale_due_to_source_change",
+        "derived_from": [
+          "snap-orion-api-t0-2026-05-20",
+          "snap-orion-contract-t0-2026-05-20"
+        ],
+        "opens_review": "review-orion-prd-refresh"
+      },
+      {
+        "memory_id": "mem-orion-prd-t1",
+        "document_id": "doc-orion-prd-checkout-integration",
+        "entity_type": "prd",
+        "status": "active",
+        "review_state": "reviewed",
+        "derived_from": [
+          "snap-orion-api-t1-2026-05-27",
+          "snap-orion-contract-t1-2026-05-27"
+        ],
+        "supersedes_memory": "mem-orion-prd-t0",
+        "validated_by": "review-orion-prd-refresh"
+      }
+    ],
+    "hindsight_promotions": [
+      {
+        "promotion_id": "promote-orion-prd-t0",
+        "memory_id": "mem-orion-prd-t0",
+        "document_id": "doc-orion-prd-checkout-integration",
+        "status": "historical_only",
+        "snapshot_ids": [
+          "snap-orion-api-t0-2026-05-20",
+          "snap-orion-contract-t0-2026-05-20"
+        ]
+      },
+      {
+        "promotion_id": "promote-orion-prd-t1",
+        "memory_id": "mem-orion-prd-t1",
+        "document_id": "doc-orion-prd-checkout-integration",
+        "status": "active",
+        "re_promotion": true,
+        "snapshot_ids": [
+          "snap-orion-api-t1-2026-05-27",
+          "snap-orion-contract-t1-2026-05-27"
+        ]
+      }
+    ],
+    "recall_results": [
+      {
+        "recall_id": "recall-product-orion-current",
+        "consumer": "product_agent",
+        "status": "active",
+        "used_memory_ids": ["mem-orion-prd-t1"],
+        "excluded_memory_ids": ["snap-orion-pricing-obsolete-2026-05-18"],
+        "filters": [
+          "workspace:orion-retail-workspace",
+          "consumer:product_agent",
+          "status:active"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "question_id": "orion-api-field",
+        "answer_state": "current",
+        "answer": "Use trust_score for the current Orion checkout integration.",
+        "source_backed": true,
+        "used_memory_ids": ["mem-orion-prd-t1"],
+        "snapshot_ids": ["snap-orion-api-t1-2026-05-27"],
+        "evidence_refs": ["snap-orion-api-t1-2026-05-27", "mem-orion-prd-t1"],
+        "supports_answer": ["rel-api-t1-supports-answer"]
+      },
+      {
+        "question_id": "orion-contract-retention",
+        "answer_state": "current",
+        "answer": "The current retention clause is 90 days.",
+        "source_backed": true,
+        "used_memory_ids": ["mem-orion-prd-t1"],
+        "snapshot_ids": ["snap-orion-contract-t1-2026-05-27"],
+        "evidence_refs": ["snap-orion-contract-t1-2026-05-27", "mem-orion-prd-t1"],
+        "supports_answer": ["rel-contract-t1-supports-answer"]
+      },
+      {
+        "question_id": "orion-prd-currentness",
+        "answer_state": "current",
+        "answer": "The t0-derived PRD is stale, but the reviewed t1 PRD is active.",
+        "source_backed": true,
+        "used_memory_ids": ["mem-orion-prd-t1"],
+        "snapshot_ids": [
+          "snap-orion-api-t1-2026-05-27",
+          "snap-orion-contract-t1-2026-05-27"
+        ],
+        "evidence_refs": ["mem-orion-prd-t0", "mem-orion-prd-t1", "review-orion-prd-refresh"],
+        "supports_answer": ["rel-prd-t1-supports-answer"]
+      },
+      {
+        "question_id": "orion-pricing-use",
+        "answer_state": "forbidden",
+        "answer": "Do not use the obsolete pricing sheet for active recall or client answers.",
+        "source_backed": true,
+        "used_memory_ids": [],
+        "snapshot_ids": ["snap-orion-pricing-obsolete-2026-05-18"],
+        "evidence_refs": ["snap-orion-pricing-obsolete-2026-05-18", "recall-product-orion-current"],
+        "supports_answer": ["rel-pricing-do-not-use-supports-refusal"]
+      }
+    ],
+    "pending_dimensions": [
+      {
+        "dimension": "marketing_strategy",
+        "status": "pending",
+        "reason": "Full adaptive marketing strategy flow is T13 scope."
+      },
+      {
+        "dimension": "legal_hold",
+        "status": "pending",
+        "reason": "T12 records retention metadata only; full legal-hold behavior remains T13 scope."
+      },
+      {
+        "dimension": "secrets",
+        "status": "pending",
+        "reason": "Full secret redaction coverage remains T13 scope."
+      },
+      {
+        "dimension": "engine_port_evals",
+        "status": "pending",
+        "reason": "Covered by T11, not re-expanded inside the partial enterprise fixture."
+      },
+      {
+        "dimension": "specialized_agents_complete",
+        "status": "pending",
+        "reason": "T12 proves product/core answers only."
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T12.1",
+      "description": "API t1 must be active and API t0 historical.",
+      "expected_error": "missing_api_t1_active",
+      "input": {
+        "source_snapshots": [
+          {
+            "snapshot_id": "snap-api-t0",
+            "source_id": "src-orion-api-docs",
+            "source_kind": "api_docs",
+            "field": "risk_score",
+            "status": "active"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T12.2",
+      "description": "Contract t1 must include retention and legal metadata.",
+      "expected_error": "missing_contract_legal_metadata",
+      "input": {
+        "source_snapshots": [
+          {
+            "snapshot_id": "snap-contract-t0",
+            "source_id": "src-orion-contract",
+            "source_kind": "contract",
+            "retention_days": 30,
+            "status": "historical_only"
+          },
+          {
+            "snapshot_id": "snap-contract-t1",
+            "source_id": "src-orion-contract",
+            "source_kind": "contract",
+            "retention_days": 90,
+            "status": "active"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T12.3",
+      "description": "PRD must move through needs_review before reviewed t1 active memory.",
+      "expected_error": "missing_prd_review_path",
+      "input": {
+        "derived_memories": [
+          {
+            "memory_id": "mem-prd-t0",
+            "document_id": "doc-orion-prd",
+            "entity_type": "prd",
+            "status": "active",
+            "review_state": "none",
+            "derived_from": ["snap-api-t0", "snap-contract-t0"]
+          },
+          {
+            "memory_id": "mem-prd-t1",
+            "document_id": "doc-orion-prd",
+            "entity_type": "prd",
+            "status": "active",
+            "review_state": "reviewed",
+            "derived_from": ["snap-api-t1", "snap-contract-t1"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T12.4",
+      "description": "Hindsight re-promotion must reuse the same document_id.",
+      "expected_error": "duplicate_hindsight_document_id",
+      "input": {
+        "hindsight_promotions": [
+          {
+            "promotion_id": "promote-prd-t0",
+            "memory_id": "mem-prd-t0",
+            "document_id": "doc-orion-prd-old",
+            "status": "historical_only"
+          },
+          {
+            "promotion_id": "promote-prd-t1",
+            "memory_id": "mem-prd-t1",
+            "document_id": "doc-orion-prd-new",
+            "status": "active",
+            "re_promotion": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "T12.5",
+      "description": "do_not_use pricing must not appear in active recall.",
+      "expected_error": "do_not_use_in_active_recall",
+      "input": {
+        "source_snapshots": [
+          {
+            "snapshot_id": "snap-pricing-obsolete",
+            "source_kind": "pricing",
+            "status": "do_not_use",
+            "active_recall_allowed": false
+          }
+        ],
+        "recall_results": [
+          {
+            "recall_id": "recall-bad",
+            "status": "active",
+            "used_memory_ids": ["snap-pricing-obsolete"],
+            "excluded_memory_ids": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "T12.6",
+      "description": "Core answers must cite evidence and snapshots.",
+      "expected_error": "unsourced_core_answer",
+      "input": {
+        "answers": [
+          {
+            "question_id": "orion-api-field",
+            "answer_state": "current",
+            "answer": "Use trust_score.",
+            "source_backed": false,
+            "snapshot_ids": [],
+            "evidence_refs": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "T12.7",
+      "description": "Full Golden Case dimensions outside T12 must remain explicit pending items.",
+      "expected_error": "missing_pending_dimension",
+      "input": {
+        "pending_dimensions": [
+          {
+            "dimension": "marketing_strategy",
+            "status": "pending"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -416,6 +416,14 @@ Le cas enterprise-living-memory-complete passe pour le noyau source/snapshot/cha
 Les parties non implementees restent marquees pending, pas ignorees.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-enterprise-living-memory-partial.mjs
+```
+
+Le contrat T12 reste separe du target complet : il prouve le noyau Orion API/contrat/PRD/Hindsight/pricing/reponses sourcees, et conserve `marketing_strategy`, `legal_hold`, `secrets`, `engine_port_evals` et les agents specialises complets en `pending`.
+
 ## Tranche 13 - Golden Case complet
 
 Objectif :
