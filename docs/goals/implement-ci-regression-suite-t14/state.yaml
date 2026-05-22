@@ -5,7 +5,7 @@ goal:
   slug: "implement-ci-regression-suite-t14"
   kind: specific
   tranche: "Make Golden Case invariants automatic regressions in CI."
-  status: complete
+  status: done
   oracle:
     signal: "A T14 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves CI runs critical checks while provenance, permission, do_not_use, relation-chain, and promptfoo-optionality regressions are caught."
     cadence: "after each Worker package and at final audit"
@@ -74,8 +74,8 @@ agents:
 visual_board:
   selected: local
   local:
-    status: not_started
-    url: null
+    status: started_stopped_after_verification
+    url: "http://goalbuddy.localhost:41737/implement-ci-regression-suite-t14/"
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-ci-regression-suite-t14"
 
 active_task: null
@@ -217,7 +217,7 @@ tasks:
           command: "git diff --check"
           status: pass
       contract_coverage:
-        - "T14.1 GitHub Actions workflow invokes node scripts/verify-ci-regression-suite.mjs on push and pull_request."
+        - "T14.1 GitHub Actions workflow invokes node scripts/verify-ci-regression-suite.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check on push and pull_request."
         - "T14.2 provenance/source-backed regression coverage is checked through complete Golden Case invalid cases."
         - "T14.3 permission/fail-closed regression coverage is checked through agent scope invalid cases."
         - "T14.4 do_not_use active recall is checked by T14 local mutation and secret regression is checked through complete Golden Case invalid cases."
@@ -304,8 +304,11 @@ tasks:
       - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
     receipt:
       result: done
-      summary: "Committed and pushed the verified T14 CI regression suite to origin/main."
-      commit_sha: 0969a87
+      summary: "Committed and pushed the verified T14 CI regression suite to origin/main, then aligned the CI workflow contract so the three critical commands are explicit."
+      commit_sha: 948b91f
+      implementation_commits:
+        - 0969a87
+        - 948b91f
       remote_branch: origin/main
       push_result: "successful push to origin main"
       committed_files:
@@ -342,6 +345,9 @@ tasks:
         -
           command: "git push origin main"
           status: pass
+        -
+          command: "git push origin main after CI workflow contract alignment"
+          status: pass
       impact_assessment:
         db_schema_migrations: none
         data_backfill: none
@@ -351,7 +357,7 @@ tasks:
         ui_routes: none
         background_jobs: "GitHub Actions workflow only; no runtime jobs"
         external_services: "GitHub Actions on push/PR; local verification remains source of truth"
-        deploy_rollback: "revert commit 0969a87"
+        deploy_rollback: "revert commits 0969a87 and 948b91f"
         observability: "CI logs plus deterministic verifier errors"
         docs: "README, roadmap, TDD matrix, PRD, and eval runs updated"
   - id: T999
@@ -395,8 +401,8 @@ tasks:
         - "node --test tests/ci-regression-suite.test.mjs PASS"
         - "node scripts/verify-supermemory-specs.mjs PASS"
         - "git diff --check PASS"
-        - ".github/workflows/supermemory-specs.yml invokes node scripts/verify-ci-regression-suite.mjs on push and pull_request"
-        - "commit 0969a87 pushed to origin/main"
+        - ".github/workflows/supermemory-specs.yml invokes node scripts/verify-ci-regression-suite.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check on push and pull_request"
+        - "commits 0969a87 and 948b91f pushed to origin/main"
       missing_evidence:
         []
       next_task_if_not_complete: null
