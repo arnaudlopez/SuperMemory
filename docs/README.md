@@ -72,7 +72,7 @@ sources brutes
 
 La source de verite reste le vault Markdown. Hindsight accelere et enrichit le rappel, mais ne decide pas quelles sources sont autorisees.
 
-Les systemes de retrieval maison ne sont plus la trajectoire par defaut. Les moteurs additionnels comme Graphiti ou Memoria sont des ports d'extension, actives seulement si les evaluations montrent un manque apres integration Hindsight.
+Les systemes de retrieval maison ne sont plus la trajectoire par defaut. Les moteurs additionnels comme Graphiti ou Memoria sont des ports d'extension, actives seulement si les evaluations montrent un manque apres integration Hindsight. Le contrat T11 executable (`node scripts/verify-engine-port-evals.mjs`) garde cette decision auditable via `80_logs/engine_port_evals.jsonl`.
 
 ## V1 minimale
 

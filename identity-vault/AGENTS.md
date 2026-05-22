@@ -55,6 +55,7 @@ This vault is a governed memory system, not a chat transcript dump.
 
 - Hindsight is the default engine.
 - Do not add Graphiti, Memoria, or capture engines unless an eval or operational burden justifies it.
+- Record engine-port activation decisions in `80_logs/engine_port_evals.jsonl` and keep `node scripts/verify-engine-port-evals.mjs` green.
 - Any engine must preserve the SuperMemory stable contract: document id, source id, snapshot id, derived_from, freshness, status, visibility, sensitivity, entity type, schema status, consumer, and source paths.
 - Reject engines that need to own permissions, revocation, freshness, or agent contracts.
 

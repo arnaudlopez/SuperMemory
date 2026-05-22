@@ -53,6 +53,13 @@ Purpose:
 - Allow a `candidate_port` only when an eval is red and justified.
 - Reject any port that wants to own permissions, revocation, source freshness, or agent contracts.
 
+Expected:
+
+- Graphiti remains `not_activated` while Hindsight passes current temporal evals.
+- Memoria remains `not_activated` while vault snapshots and logs cover rollback and audit.
+- A red temporal eval creates only a justified `candidate_port`.
+- A port that wants to own permissions, revocation, freshness, or agent contracts is rejected.
+
 Verification:
 
 ```bash

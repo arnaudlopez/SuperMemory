@@ -1075,6 +1075,14 @@ Ce contrat verifie qu'une source mutable changee cree une snapshot t1 reliee a t
 - Ajouter evals de declenchement Graphiti et Memoria sans les integrer encore.
 - Evaluer si promptfoo apporte assez de valeur.
 
+Contrat executable T11 avant ports moteurs reels :
+
+```bash
+node scripts/verify-engine-port-evals.mjs
+```
+
+Ce contrat verifie que `engine_port_evals.jsonl` explique pourquoi Graphiti et Memoria restent `not_activated`, qu'une eval temporelle rouge cree seulement un `candidate_port`, et qu'un moteur qui veut posseder permissions, revocation, freshness ou contrats agents est rejete.
+
 ### M4 - Source Capture Port
 
 - Autoriser seulement des sources selectionnees.

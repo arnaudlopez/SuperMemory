@@ -392,7 +392,7 @@ Contrat executable :
 node scripts/verify-engine-port-evals.mjs
 ```
 
-Le contrat T11 reste local et deterministe : il prouve que Graphiti et Memoria restent `not_activated` quand Hindsight ou le vault suffisent, qu'une eval rouge cree seulement un `candidate_port`, et qu'un moteur voulant posseder la gouvernance est rejete.
+Le contrat T11 reste local et deterministe : il enregistre des preuves JSONL-shaped, garde Graphiti et Memoria en `not_activated` quand les evals natives passent, cree seulement un `candidate_port` sur eval rouge, et rejette tout moteur qui veut posseder la gouvernance interne.
 
 ## Tranche 12 - Golden Case partiel executable
 

@@ -509,12 +509,16 @@ Tests rouges :
 | T11.2 | Memoria non active si snapshots suffisent | Rollback/audit couverts vault | `Memoria not_activated` | Versioning premature |
 | T11.3 | Eval rouge cree candidat port | Temporal eval rouge | Port candidate + justification | Pas de voie d'extension |
 | T11.4 | Port ne devient pas source de verite | Port exige permissions internes | Rejet integration | Gouvernance cedee |
+| T11.5 | Decision sans preuve eval | Record incomplet | Rejet evidence manquante | Activation opaque |
+| T11.6 | Activation sans declencheur | Eval verte et douleur non prouvee | Rejet activation | Attrait technique |
 
 Critere de passage :
 
 ```text
 Les ports sont gouvernes par evals, jamais par attrait technique.
 ```
+
+Le contrat executable T11 vit dans `identity-vault/90_evals/cases/engine-port-evals/`. Il verifie aussi le log `identity-vault/80_logs/engine_port_evals.jsonl`.
 
 ## Tranche 12 - Golden Case partiel executable
 

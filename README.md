@@ -124,6 +124,12 @@ Hindsight is the default engine. Other tools are optional ports, not default dep
 
 See [`identity-vault/75_governance/memory_engine_ports.md`](identity-vault/75_governance/memory_engine_ports.md).
 
+The executable T11 proof records `identity-vault/80_logs/engine_port_evals.jsonl` and verifies that Graphiti and Memoria stay `not_activated` while existing Hindsight and vault snapshot evals pass:
+
+```bash
+node scripts/verify-engine-port-evals.mjs
+```
+
 ### Minimal Hindsight Adapter Contract
 
 The current adapter proof is local and contractual. It verifies the SuperMemory -> Hindsight boundary before any real runtime integration: governed promotion payloads upsert by stable `document_id`, `do_not_use` deletes or excludes active recall, recall fails closed without scoped tags, raw LLM conclusions are not retained, and recall traces keep answer evidence auditable.

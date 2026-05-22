@@ -97,6 +97,18 @@ Add an engine when:
 - the integration preserves the stable SuperMemory contract;
 - rollback and removal are possible without losing vault truth.
 
+Every activation decision must be recorded in `80_logs/engine_port_evals.jsonl` and remain reproducible by:
+
+```bash
+node scripts/verify-engine-port-evals.mjs
+```
+
+Current governed decisions:
+
+- Graphiti is `not_activated` while Hindsight passes the current temporal evals.
+- Memoria is `not_activated` while vault snapshots and logs cover rollback and audit.
+- A red eval may create a `candidate_port`, but does not grant source-of-truth authority.
+
 ## Rejection Rule
 
 If a candidate engine requires making it the source of truth for permissions, revocation, source freshness, or agent contracts, reject the integration.
