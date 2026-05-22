@@ -1,0 +1,238 @@
+{
+  "case_id": "enterprise-access-secrets-retention",
+  "valid": {
+    "enterprise_memories": [
+      {
+        "memory_id": "mem-acme-contract-summary",
+        "workspace_id": "acme-workspace",
+        "data_owner": "legal-team",
+        "access_policy": "enterprise-contract-summary",
+        "allowed_consumers": ["marketing_agent"],
+        "restricted_fields": ["contract_value", "termination_clause"],
+        "restricted_values": ["EUR 2.4M", "termination for convenience within 30 days"],
+        "sensitivity": "restricted",
+        "status": "active"
+      },
+      {
+        "memory_id": "mem-acme-api-credential-redacted",
+        "workspace_id": "acme-workspace",
+        "data_owner": "security-team",
+        "access_policy": "security-redacted-reference",
+        "allowed_consumers": ["security_agent"],
+        "restricted_fields": ["api_key"],
+        "secret_values": ["sk-live-acme-123456"],
+        "sensitivity": "restricted",
+        "status": "active"
+      },
+      {
+        "memory_id": "mem-acme-legal-hold-contract",
+        "workspace_id": "acme-workspace",
+        "data_owner": "legal-team",
+        "access_policy": "legal-hold-proof",
+        "allowed_consumers": ["legal_agent"],
+        "retention_policy": "legal_hold_7y",
+        "legal_hold": true,
+        "status": "historical_only"
+      }
+    ],
+    "captured_sources": [
+      {
+        "source_id": "src-acme-contract-legal-hold",
+        "workspace_id": "acme-workspace",
+        "data_owner": "legal-team",
+        "retention_policy": "legal_hold_7y",
+        "legal_hold": true,
+        "status": "revoked_for_active_use",
+        "proof_path": "identity-vault/00_inbox/documents/2026-05-19-acme-contract-excerpt.md"
+      }
+    ],
+    "promotion_payloads": [
+      {
+        "promotion_id": "promo-acme-contract-summary",
+        "memory_id": "mem-acme-contract-summary",
+        "workspace_id": "acme-workspace",
+        "data_owner": "legal-team",
+        "access_policy": "enterprise-contract-summary",
+        "allowed_consumers": ["marketing_agent"],
+        "content": "Acme has an enterprise contract. Commercially restricted fields are withheld.",
+        "redaction_state": "restricted_fields_removed",
+        "tags": ["workspace:acme-workspace", "access_policy:enterprise-contract-summary", "consumer:marketing_agent"]
+      },
+      {
+        "promotion_id": "promo-acme-api-credential-redacted",
+        "memory_id": "mem-acme-api-credential-redacted",
+        "workspace_id": "acme-workspace",
+        "data_owner": "security-team",
+        "access_policy": "security-redacted-reference",
+        "allowed_consumers": ["security_agent"],
+        "content": "Acme has an API credential on file. Secret value redacted.",
+        "redaction_state": "secret_redacted",
+        "tags": ["workspace:acme-workspace", "access_policy:security-redacted-reference", "consumer:security_agent"]
+      }
+    ],
+    "drafts": [
+      {
+        "draft_id": "draft-marketing-acme-contract",
+        "consumer": "marketing_agent",
+        "workspace_id": "acme-workspace",
+        "source_memory_ids": ["mem-acme-contract-summary"],
+        "content": "Acme has an enterprise agreement; sensitive commercial terms are withheld.",
+        "withheld_fields": ["contract_value", "termination_clause"],
+        "contains_allowed_summary": true
+      }
+    ],
+    "retention_records": [
+      {
+        "retention_id": "retention-src-acme-contract-legal-hold",
+        "source_id": "src-acme-contract-legal-hold",
+        "workspace_id": "acme-workspace",
+        "data_owner": "legal-team",
+        "legal_hold": true,
+        "retention_policy": "legal_hold_7y",
+        "vault_proof_retained": true,
+        "active_hindsight_excluded": true,
+        "proof_path": "identity-vault/00_inbox/documents/2026-05-19-acme-contract-excerpt.md"
+      }
+    ]
+  },
+  "invalid_cases": [
+    {
+      "id": "T8.1",
+      "description": "Enterprise memory must carry workspace_id.",
+      "expected_error": "enterprise_memory_missing_workspace",
+      "input": {
+        "enterprise_memories": [
+          {
+            "memory_id": "mem-missing-workspace",
+            "data_owner": "legal-team",
+            "access_policy": "enterprise-contract-summary",
+            "allowed_consumers": ["marketing_agent"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T8.2",
+      "description": "Enterprise memory must carry access_policy.",
+      "expected_error": "enterprise_memory_missing_access_policy",
+      "input": {
+        "enterprise_memories": [
+          {
+            "memory_id": "mem-missing-access-policy",
+            "workspace_id": "acme-workspace",
+            "data_owner": "legal-team",
+            "allowed_consumers": ["marketing_agent"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "T8.3",
+      "description": "Secret-like source values must not reach promotion payloads or drafts.",
+      "expected_error": "secret_leaked_to_promotion_or_draft",
+      "input": {
+        "enterprise_memories": [
+          {
+            "memory_id": "mem-secret",
+            "workspace_id": "acme-workspace",
+            "data_owner": "security-team",
+            "access_policy": "security-redacted-reference",
+            "allowed_consumers": ["security_agent"],
+            "secret_values": ["sk-live-acme-123456"]
+          }
+        ],
+        "promotion_payloads": [
+          {
+            "promotion_id": "promo-secret-leak",
+            "memory_id": "mem-secret",
+            "workspace_id": "acme-workspace",
+            "data_owner": "security-team",
+            "access_policy": "security-redacted-reference",
+            "allowed_consumers": ["security_agent"],
+            "content": "Credential is sk-live-acme-123456"
+          }
+        ]
+      }
+    },
+    {
+      "id": "T8.4",
+      "description": "Restricted fields must be withheld from drafts.",
+      "expected_error": "restricted_field_leaked_to_draft",
+      "input": {
+        "enterprise_memories": [
+          {
+            "memory_id": "mem-restricted",
+            "workspace_id": "acme-workspace",
+            "data_owner": "legal-team",
+            "access_policy": "enterprise-contract-summary",
+            "allowed_consumers": ["marketing_agent"],
+            "restricted_fields": ["contract_value"],
+            "restricted_values": ["EUR 2.4M"]
+          }
+        ],
+        "drafts": [
+          {
+            "draft_id": "draft-restricted-leak",
+            "source_memory_ids": ["mem-restricted"],
+            "workspace_id": "acme-workspace",
+            "consumer": "marketing_agent",
+            "content": "The Acme contract is worth EUR 2.4M.",
+            "withheld_fields": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "T8.5",
+      "description": "Legal-hold proof must remain retained even when active use is excluded.",
+      "expected_error": "legal_hold_proof_not_retained",
+      "input": {
+        "captured_sources": [
+          {
+            "source_id": "src-legal-hold",
+            "workspace_id": "acme-workspace",
+            "data_owner": "legal-team",
+            "legal_hold": true,
+            "retention_policy": "legal_hold_7y"
+          }
+        ],
+        "retention_records": [
+          {
+            "retention_id": "retention-src-legal-hold",
+            "source_id": "src-legal-hold",
+            "legal_hold": true,
+            "retention_policy": "legal_hold_7y",
+            "vault_proof_retained": false,
+            "active_hindsight_excluded": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "T8.6",
+      "description": "Promotion payloads must preserve data_owner.",
+      "expected_error": "promotion_missing_data_owner",
+      "input": {
+        "enterprise_memories": [
+          {
+            "memory_id": "mem-owner",
+            "workspace_id": "acme-workspace",
+            "data_owner": "legal-team",
+            "access_policy": "enterprise-contract-summary",
+            "allowed_consumers": ["marketing_agent"]
+          }
+        ],
+        "promotion_payloads": [
+          {
+            "promotion_id": "promo-missing-owner",
+            "memory_id": "mem-owner",
+            "workspace_id": "acme-workspace",
+            "access_policy": "enterprise-contract-summary",
+            "allowed_consumers": ["marketing_agent"],
+            "content": "Owner missing."
+          }
+        ]
+      }
+    }
+  ]
+}

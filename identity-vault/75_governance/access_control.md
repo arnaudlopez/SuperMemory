@@ -32,3 +32,9 @@ sensitivity:<level>
 ```
 
 The vault remains the authority for access. Hindsight tags execute the vault decision.
+
+## Executable Contract
+
+The local T8 verifier lives at `scripts/verify-enterprise-access-secrets-retention.mjs`.
+
+It proves that enterprise memory and promotion payloads carry `workspace_id`, `access_policy`, `data_owner`, and `allowed_consumers`; that secrets and restricted fields are withheld from promotion payloads and drafts; and that legal-hold evidence remains retained while active Hindsight use can be excluded.

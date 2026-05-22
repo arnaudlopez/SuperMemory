@@ -1,0 +1,23 @@
+{
+  "case_id": "enterprise-access-secrets-retention",
+  "required_test_ids": ["T8.1", "T8.2", "T8.3", "T8.4", "T8.5", "T8.6"],
+  "expected_errors": {
+    "T8.1": "enterprise_memory_missing_workspace",
+    "T8.2": "enterprise_memory_missing_access_policy",
+    "T8.3": "secret_leaked_to_promotion_or_draft",
+    "T8.4": "restricted_field_leaked_to_draft",
+    "T8.5": "legal_hold_proof_not_retained",
+    "T8.6": "promotion_missing_data_owner"
+  },
+  "required_memory_ids": [
+    "mem-acme-contract-summary",
+    "mem-acme-api-credential-redacted",
+    "mem-acme-legal-hold-contract"
+  ],
+  "required_promotion_ids": [
+    "promo-acme-contract-summary",
+    "promo-acme-api-credential-redacted"
+  ],
+  "required_draft_ids": ["draft-marketing-acme-contract"],
+  "required_legal_hold_source_id": "src-acme-contract-legal-hold"
+}

@@ -299,6 +299,14 @@ Un secret present dans une source n'apparait ni dans Hindsight actif ni dans un 
 Une source sous legal hold reste conservee comme preuve.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-enterprise-access-secrets-retention.mjs
+```
+
+Ce contrat verifie que les payloads de promotion et les drafts respectent `workspace_id`, `access_policy`, `data_owner`, `allowed_consumers`, redaction de secrets, `withheld_fields`, et retention legal hold.
+
 ## Tranche 9 - Review queues et actions externes
 
 Objectif :

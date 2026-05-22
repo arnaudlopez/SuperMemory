@@ -53,6 +53,8 @@ An item may be promoted only when:
 - status is not `do_not_use`.
 - schema status is not `candidate`.
 
+The enterprise portion of this gate is executable in `scripts/verify-enterprise-access-secrets-retention.mjs`. Promotion payloads must preserve `workspace_id`, `data_owner`, `access_policy`, and `allowed_consumers`; they must not carry raw secrets or restricted field values.
+
 Default promotion favors compiled notes. Raw sources are promoted only for exact-text retrieval, missing compiled notes, or audit fixtures.
 
 ## Minimal Payload

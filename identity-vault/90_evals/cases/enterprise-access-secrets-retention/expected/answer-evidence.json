@@ -1,0 +1,32 @@
+{
+  "enterprise_outputs": [
+    {
+      "id": "promo-acme-contract-summary",
+      "workspace_id": "acme-workspace",
+      "data_owner": "legal-team",
+      "access_policy": "enterprise-contract-summary",
+      "allowed_consumers": ["marketing_agent"],
+      "redaction_state": "restricted_fields_removed"
+    },
+    {
+      "id": "promo-acme-api-credential-redacted",
+      "workspace_id": "acme-workspace",
+      "data_owner": "security-team",
+      "access_policy": "security-redacted-reference",
+      "allowed_consumers": ["security_agent"],
+      "redaction_state": "secret_redacted"
+    },
+    {
+      "id": "draft-marketing-acme-contract",
+      "withheld_fields": ["contract_value", "termination_clause"],
+      "contains_allowed_summary": true
+    },
+    {
+      "id": "retention-src-acme-contract-legal-hold",
+      "source_id": "src-acme-contract-legal-hold",
+      "legal_hold": true,
+      "vault_proof_retained": true,
+      "active_hindsight_excluded": true
+    }
+  ]
+}

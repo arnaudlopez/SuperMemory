@@ -1,0 +1,355 @@
+version: 2
+
+goal:
+  title: "T8 Enterprise Access Secrets Retention"
+  slug: "implement-enterprise-access-secrets-retention-t8"
+  kind: specific
+  tranche: "Implement an executable contract proving workspace isolation, access policy metadata, secret redaction, restricted-field withholding, legal hold retention, and data ownership."
+  status: active
+  oracle:
+    signal: "A T8 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves enterprise access/secrets/retention while T0-T7 remain green."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "T8 verifier status pass, global specs status pass, git diff --check status pass, GoalBuddy final quality check status pass, commit SHA, pushed branch, and final audit full_outcome_complete true."
+  intake:
+    original_request: "OK vas-y."
+    interpreted_outcome: "Continue with T8 enterprise access, secrets, and legal hold."
+    input_shape: specific
+    audience: "SuperMemory maintainers and future memory agents"
+    authority: requested
+    proof_type: test
+    completion_proof: "A T8 fixture/verifier proves enterprise isolation and retention behavior, global specs pass, and the work is committed and pushed."
+    likely_misfire: "Treating tags as sufficient security, leaking secret-like strings into promotion/drafts, or deleting legal-hold evidence while excluding active recall."
+    blind_spots_considered:
+      - "workspace_id, access_policy, and data_owner must be mandatory for enterprise memory."
+      - "Secret redaction must cover promotion payloads and drafts."
+      - "Restricted fields must be withheld from drafts while allowed summaries remain possible."
+      - "Legal hold must preserve vault evidence even when active Hindsight use is excluded."
+      - "This remains a deterministic contract, not runtime auth."
+    existing_plan_facts:
+      - "docs/golden-case-tdd-matrix.md defines T8.1-T8.6."
+      - "docs/golden-case-implementation-roadmap.md defines the enterprise leak-prevention oracle."
+      - "identity-vault/75_governance/access_control.md defines deny-by-default access metadata."
+      - "identity-vault/75_governance/hindsight_contract.md defines enterprise promotion metadata and fail-closed recall."
+      - "docs/prd-memoire-agentique-v2.md defines secret redaction and legal-hold retention expectations."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/implement-enterprise-access-secrets-retention-t8/"
+    command: "npx goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-enterprise-access-secrets-retention-t8"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map T8 source documents and insertion point."
+    receipt:
+      result: done
+      summary: "T8 target found in roadmap/matrix. Existing access control, Hindsight contract, answer policy, and PRD define the enterprise leak-prevention contract."
+      evidence:
+        - "docs/golden-case-tdd-matrix.md defines node scripts/verify-enterprise-access-secrets-retention.mjs and T8.1-T8.6."
+        - "identity-vault/75_governance/access_control.md requires workspace_id, data_owner, restricted_fields, access_policy, and deny-by-default behavior."
+        - "identity-vault/75_governance/hindsight_contract.md requires enterprise metadata before promotion and fail-closed recall filters."
+        - "docs/prd-memoire-agentique-v2.md requires secret redaction/exclusion and legal-hold proof retention."
+      module_map:
+        new_case: "identity-vault/90_evals/cases/enterprise-access-secrets-retention"
+        new_verifier: "scripts/verify-enterprise-access-secrets-retention.mjs"
+        new_test: "tests/enterprise-access-secrets-retention.test.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "workspace_id"
+        - "data_owner"
+        - "access_policy"
+        - "allowed_consumers"
+        - "restricted_fields"
+        - "withheld_fields"
+        - "redacted"
+        - "legal_hold"
+        - "retention_policy"
+        - "active_hindsight_excluded"
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none"
+        deploy_rollback: "revert fixture/script/test/docs changes"
+        observability: "fixture assertions for access metadata, redaction, drafts, and legal hold"
+        docs: "update enterprise access/retention docs after green behavior"
+
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve T8 architecture and select Worker slice."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      architecture_review: "Approved. Implement a deterministic local T8 contract, not runtime auth, RLS, or live Hindsight security."
+      design_concept: "Enterprise memory is usable only when the vault has explicit tenant, owner, access, consumer, redaction, and retention decisions. Hindsight tags execute those vault decisions; they are not the governance source."
+      interface_contract:
+        workspace_required: "Enterprise memory and promotion payloads require workspace_id."
+        access_policy_required: "Enterprise memory and recall payloads require access_policy."
+        data_owner_required: "Enterprise memory and promotion payloads require data_owner."
+        secret_redaction: "Secret-like values from sources must be absent from promotion payloads and drafts."
+        restricted_drafts: "Drafts may contain allowed summaries but must exclude restricted fields and list withheld_fields."
+        legal_hold: "Legal-hold sources keep vault proof and retention metadata while active Hindsight use can be excluded."
+      test_strategy:
+        red: "Add fixture/global wiring before verifier implementation so global specs fail on missing verifier."
+        green: "Implement verifier for T8.1-T8.6 and wire Node test/global specs."
+      feedback_policy: "Check hard metadata/redaction/retention properties, not exact prose."
+      impact_assessment_ref: "T001 receipt impact_assessment"
+      allowed_files:
+        - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/input/fixture.json"
+        - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/assertions.json"
+        - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/answer-evidence.json"
+        - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/actual/README.md"
+        - "scripts/verify-enterprise-access-secrets-retention.mjs"
+        - "tests/enterprise-access-secrets-retention.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      verify:
+        - "node scripts/verify-enterprise-access-secrets-retention.mjs"
+        - "node --test tests/enterprise-access-secrets-retention.test.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement T8 enterprise access/secrets/retention fixture, verifier, Node test, and global spec wiring."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T001 receipt"
+      - "T002 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/input/fixture.json"
+      - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/assertions.json"
+      - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/answer-evidence.json"
+      - "identity-vault/90_evals/cases/enterprise-access-secrets-retention/actual/README.md"
+      - "scripts/verify-enterprise-access-secrets-retention.mjs"
+      - "tests/enterprise-access-secrets-retention.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-enterprise-access-secrets-retention.mjs"
+      - "node --test tests/enterprise-access-secrets-retention.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files before T003 is complete."
+      - "Cannot produce a meaningful red failure before implementation."
+      - "Implementation would weaken T0-T7 or global specs."
+      - "Behavior becomes runtime auth/RLS/security or live Hindsight integration instead of deterministic contract checks."
+    receipt:
+      result: done
+      summary: "Implemented the T8 enterprise access/secrets/retention contract with fixture, verifier, targeted Node test, and global spec wiring."
+      changed_files:
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/input/fixture.json
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/assertions.json
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/expected/answer-evidence.json
+        - identity-vault/90_evals/cases/enterprise-access-secrets-retention/actual/README.md
+        - scripts/verify-enterprise-access-secrets-retention.mjs
+        - tests/enterprise-access-secrets-retention.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+      red_evidence:
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          outcome: expected_fail
+          summary: "Failed after global wiring because scripts/verify-enterprise-access-secrets-retention.mjs did not exist yet."
+      commands:
+        -
+          cmd: "node scripts/verify-enterprise-access-secrets-retention.mjs"
+          status: pass
+        -
+          cmd: "node --test tests/enterprise-access-secrets-retention.test.mjs"
+          status: pass
+        -
+          cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          cmd: "git diff --check"
+          status: pass
+      design_delta: "T8 now proves enterprise leak-prevention deterministically: enterprise memory and promotion payloads require workspace_id, access_policy, allowed consumers, and data_owner; secret-like values are absent from promotion payloads and drafts; restricted fields are withheld from drafts while allowed summaries remain; legal-hold sources retain vault proof while active Hindsight use can be excluded."
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Documentation-only alignment with implemented T8 behavior after verifier is green."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 receipt"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "README.md"
+      - "docs/golden-case-implementation-roadmap.md"
+      - "docs/golden-case-tdd-matrix.md"
+      - "docs/prd-memoire-agentique-v2.md"
+      - "identity-vault/75_governance/access_control.md"
+      - "identity-vault/75_governance/hindsight_contract.md"
+      - "identity-vault/75_governance/answer_policy.md"
+      - "identity-vault/75_governance/threat_model.md"
+      - "identity-vault/AGENTS.md"
+    verify:
+      - "node scripts/verify-enterprise-access-secrets-retention.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "T003 is not green."
+      - "Need to alter behavior instead of documenting it."
+    receipt:
+      result: done
+      summary: "Aligned T8 docs with the implemented enterprise access/secrets/retention verifier."
+      changed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/golden-case-tdd-matrix.md
+        - identity-vault/75_governance/access_control.md
+        - identity-vault/75_governance/hindsight_contract.md
+        - identity-vault/75_governance/threat_model.md
+        - identity-vault/AGENTS.md
+      commands:
+        -
+          cmd: "node scripts/verify-enterprise-access-secrets-retention.mjs"
+          status: pass
+        -
+          cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          cmd: "git diff --check"
+          status: pass
+      design_delta: "Docs now point to the executable T8 verifier and name the exact enterprise leak-prevention invariants: workspace, access policy, data owner, allowed consumers, secret redaction, restricted-field withholding, and legal-hold proof retention."
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    reasoning_hint: default
+    objective: "Ship verified T8 work to GitHub before the goal can be marked done."
+    constraints:
+      - "Run git status --short."
+      - "Run git diff --check."
+      - "Run node scripts/verify-supermemory-specs.mjs."
+      - "Run node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.3.7/skills/goalbuddy/scripts/goalbuddy-quality-check.mjs --final docs/goals/implement-enterprise-access-secrets-retention-t8/state.yaml."
+      - "Commit all goal-related changes with a clear message."
+      - "Push the current branch to origin."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

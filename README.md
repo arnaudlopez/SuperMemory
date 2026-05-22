@@ -182,6 +182,7 @@ node scripts/verify-governed-answer-evidence.mjs
 node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
 node scripts/verify-adaptive-business-types.mjs
+node scripts/verify-enterprise-access-secrets-retention.mjs
 ```
 
 Expected output:

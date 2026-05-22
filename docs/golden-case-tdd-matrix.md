@@ -425,18 +425,20 @@ Tests rouges :
 
 | ID | Test | Entree | Attendu | Risque couvert |
 |---|---|---|---|---|
-| T8.1 | Workspace obligatoire | Memoire enterprise sans `workspace_id` | Rejet | Fuite cross-client |
-| T8.2 | Access policy obligatoire | Memoire sans `access_policy` | Rejet | Recall non borne |
-| T8.3 | Secret redacte avant promotion | Source contient token/API key | Payload ne contient pas secret | Fuite secret |
-| T8.4 | Champs restreints exclus draft | Email agent demande contrat | Resume autorise seulement | Fuite contractuelle |
-| T8.5 | Legal hold conserve preuve | Source sous legal hold + revocation active | Vault conserve preuve, Hindsight actif exclu si requis | Destruction illegale |
-| T8.6 | Data owner conserve | Promotion sans `data_owner` | Rejet | Gouvernance floue |
+| T8.1 | Workspace obligatoire | Memoire enterprise sans `workspace_id` | Rejet `enterprise_memory_missing_workspace` | Fuite cross-client |
+| T8.2 | Access policy obligatoire | Memoire sans `access_policy` | Rejet `enterprise_memory_missing_access_policy` | Recall non borne |
+| T8.3 | Secret redacte avant promotion | Source contient token/API key | Rejet `secret_leaked_to_promotion_or_draft` | Fuite secret |
+| T8.4 | Champs restreints exclus draft | Email agent demande contrat | Rejet `restricted_field_leaked_to_draft` | Fuite contractuelle |
+| T8.5 | Legal hold conserve preuve | Source sous legal hold + revocation active | Rejet `legal_hold_proof_not_retained` | Destruction illegale |
+| T8.6 | Data owner conserve | Promotion sans `data_owner` | Rejet `promotion_missing_data_owner` | Gouvernance floue |
 
 Critere de passage :
 
 ```text
 L'isolation enterprise est prouvee avant les agents specialises.
 ```
+
+Le contrat executable T8 vit dans `identity-vault/90_evals/cases/enterprise-access-secrets-retention/`. Il verifie des proprietes du payload, pas une formulation exacte.
 
 ## Tranche 9 - Review queues et actions externes
 
