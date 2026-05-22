@@ -4,7 +4,7 @@ goal:
   title: "Implement Hindsight Mockable Transport Boundary"
   slug: "implement-hindsight-mockable-transport"
   kind: specific
-  status: active
+  status: done
   oracle:
     signal: "Mockable transport mapping is implemented and tested; real live transport stays opt-in and out of CI."
     cadence: "after red test, implementation, and final audit"
@@ -77,7 +77,7 @@ visual_board:
     url: null
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-mockable-transport"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -195,16 +195,21 @@ tasks:
         - "tests/hindsight-promote.test.mjs"
         - "scripts/verify-supermemory-specs.mjs"
       design_delta: "Added a transport adapter that converts governed retain/upsert/delete/recall plans into Hindsight-shaped requests, plus injectable fetch execution for mock verification. Existing governance validation and dry-run planning stayed local and fail-closed."
-      verification:
-        - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs: pass"
-        - "node scripts/verify-hindsight-adapter-minimal.mjs: pass"
-        - "node scripts/verify-governed-answer-evidence.mjs: pass"
-        - "node scripts/verify-supermemory-specs.mjs: pass"
-        - "git diff --check: pass"
+      commands:
+        - command: "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+          status: pass
+        - command: "node scripts/verify-hindsight-adapter-minimal.mjs"
+          status: pass
+        - command: "node scripts/verify-governed-answer-evidence.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Ship verified transport boundary."
     expected_output:
       - "Or shipping_blocker: no_git_repository | no_github_remote"
@@ -214,10 +219,37 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      commit_sha: "decc557"
+      remote_branch: "main"
+      push_result: "prepared for push with final board commit"
+      committed_files:
+        - "docs/goals/implement-hindsight-mockable-transport/goal.md"
+        - "docs/goals/implement-hindsight-mockable-transport/state.yaml"
+        - "docs/goals/implement-hindsight-mockable-transport/notes/.gitkeep"
+        - "scripts/hindsight-transport.mjs"
+        - "scripts/hindsight-promote.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/hindsight-transport.test.mjs"
+        - "tests/hindsight-promote.test.mjs"
+      unrelated_dirty_files_left_untouched: []
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none; no secrets committed"
+        auth_permissions: "none"
+        api_contract: "adds mockable Hindsight request mapping and CLI --mock-transport contract"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "no live external calls in tests or CI; real live transport requires explicit env opt-in"
+        deploy_rollback: "revert commit decc557"
+        observability: "JSON CLI transport summary with sanitized requests and result"
+        docs: "GoalBuddy board documents scope and proofs"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -243,4 +275,17 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "The tranche moves from dry-run-only preflight to a mockable transport boundary while preserving fail-closed live writes."
+      workflow_safeguards: "passed; design concept, language, feedback policy, test strategy, module map, interface contract, architecture review, design delta, impact assessment, and shipping evidence are present."
+      missing_evidence: []
+      final_verification:
+        - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs: pass"
+        - "node scripts/verify-hindsight-adapter-minimal.mjs: pass"
+        - "node scripts/verify-governed-answer-evidence.mjs: pass"
+        - "node scripts/verify-supermemory-specs.mjs: pass"
+        - "git diff --check: pass"
+      next_task: "Proceed to owner-approved real Hindsight smoke only if credentials and explicit live opt-in are provided; otherwise continue with source capture/refresh integration."
