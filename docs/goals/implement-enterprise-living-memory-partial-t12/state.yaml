@@ -84,8 +84,8 @@ agents:
 visual_board:
   selected: local
   local:
-    status: not_started
-    url: null
+    status: generated
+    url: "http://goalbuddy.localhost:41737/implement-enterprise-living-memory-partial-t12/"
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-enterprise-living-memory-partial-t12"
 
 active_task: null
