@@ -5,7 +5,7 @@ goal:
   slug: "implement-engine-port-evals-t11"
   kind: specific
   tranche: "Implement an executable contract proving that Graphiti and Memoria remain governed optional ports."
-  status: complete
+  status: done
   oracle:
     signal: "A T11 verifier is wired into node scripts/verify-supermemory-specs.mjs and proves engine ports remain governed optional ports while T0-T10 remain green."
     cadence: "after each Worker package and at final audit"
@@ -85,8 +85,8 @@ agents:
 visual_board:
   selected: local
   local:
-    status: not_started
-    url: null
+    status: generated
+    url: "http://goalbuddy.localhost:41737/implement-engine-port-evals-t11/"
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-engine-port-evals-t11"
 
 active_task: null
@@ -222,16 +222,21 @@ tasks:
         - "node scripts/verify-supermemory-specs.mjs PASS"
         - "git diff --check PASS"
       commands:
-        - "node scripts/verify-engine-port-evals.mjs"
-        - "node --test tests/engine-port-evals.test.mjs"
-        - "node scripts/verify-supermemory-specs.mjs"
-        - "git diff --check"
+        - command: "node scripts/verify-engine-port-evals.mjs"
+          status: pass
+        - command: "node --test tests/engine-port-evals.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
       contract_coverage:
         - "T11.1 Graphiti not_activated when Hindsight temporal eval passes."
         - "T11.2 Memoria not_activated when vault snapshots/logs cover rollback and audit."
         - "T11.3 red temporal eval creates candidate_port with justification."
         - "T11.4 governance-owning port is rejected."
         - "T11.5 missing eval evidence is rejected."
+        - "T11.6 activation without eval failure or proven operational burden is rejected."
       design_delta: "Added executable proof that engine ports remain governed optional ports and are activated only by red eval evidence or proven operational pain."
       impact_assessment_ref: "T001 receipt impact_assessment"
   - id: T004
@@ -270,12 +275,15 @@ tasks:
       - "Need to alter behavior instead of documenting it."
     receipt:
       result: done
-      summary: "Aligned README, roadmap, PRD, docs README, and eval run log with the implemented T11 engine-port eval contract."
+      summary: "Aligned README, roadmap, matrix, PRD, docs README, engine-port governance, agent guidance, and eval run log with the implemented T11 contract."
       changed_files:
         - README.md
         - docs/golden-case-implementation-roadmap.md
+        - docs/golden-case-tdd-matrix.md
         - docs/prd-memoire-agentique-v2.md
         - docs/README.md
+        - identity-vault/75_governance/memory_engine_ports.md
+        - identity-vault/AGENTS.md
         - identity-vault/90_evals/eval_runs.md
       design_delta:
         before: "T11 was described as a future policy/oracle in roadmap and PRD."
@@ -285,9 +293,12 @@ tasks:
         - "node scripts/verify-supermemory-specs.mjs PASS"
         - "git diff --check PASS"
       commands:
-        - "node scripts/verify-engine-port-evals.mjs"
-        - "node scripts/verify-supermemory-specs.mjs"
-        - "git diff --check"
+        - command: "node scripts/verify-engine-port-evals.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
       impact_assessment_ref: "T001 receipt impact_assessment"
   - id: T998
     type: pm
@@ -354,7 +365,7 @@ tasks:
         external_services: "none; no Graphiti or Memoria runtime installation"
         deploy_rollback: "revert commits 49a7774168beaa86db3d96992d6acc9a585b95d4, fe1de6e9a953fc13db288988f095fca4dce10ff6, and f7e8d463dace236eec18624d2ffebfff2043fe2a"
         observability: "engine_port_evals JSONL log plus deterministic verifier assertions"
-        docs: "README, docs README, roadmap, PRD, eval runs, and fixture README updated"
+        docs: "README, docs README, roadmap, matrix, PRD, memory_engine_ports, AGENTS, eval runs, and fixture README updated"
   - id: T999
     type: judge
     assignee: Judge
@@ -385,7 +396,8 @@ tasks:
       - "missing evidence"
       - "next task if not complete"
     receipt:
-      result: complete
+      result: done
+      decision: complete
       full_outcome_complete: true
       workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, and shipping proof are present."
       design_delta: "T11 is now executable: Graphiti and Memoria remain optional governed ports, candidate_port requires red eval evidence, and governance-owning ports are rejected."
