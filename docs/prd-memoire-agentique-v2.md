@@ -53,7 +53,7 @@ Hindsight intervient ensuite pour :
 
 ### Optionnel court terme
 
-- promptfoo pour executer des tests de regression sur `90_evals/`.
+- promptfoo comme couche optionnelle de reporting sur `90_evals/` si les scripts Node deviennent trop difficiles a lire.
 
 ### Ports d'extension officiels
 
@@ -111,7 +111,7 @@ Certains restent des candidats de ports officiels, mais aucun n'est installe ou 
 | Contrats agents | SuperMemory vault | Definir lecture, ecriture, actions, confirmations et interdits. |
 | Moteur memoire | Hindsight | Retain, recall, reflect, documents, chunks, observations, temporalite, graphe. |
 | Ports moteurs | SuperMemory vault | Encadrer Graphiti, Memoria ou autres moteurs sans leur ceder la source de verite. |
-| Evals | SuperMemory, puis promptfoo si utile | Verifier recall, permissions, prompt injection, action safety et provenance. |
+| Evals | SuperMemory, puis promptfoo optionnel si utile | Verifier recall, permissions, prompt injection, action safety et provenance. |
 
 ## 6. Architecture fonctionnelle
 
@@ -944,7 +944,7 @@ Questions minimales :
 - les chunks/source facts sont-ils disponibles quand une preuve textuelle est requise ?
 - `trace` explique-t-il les echecs de recall pendant les evals ?
 
-promptfoo peut devenir le runner de ces tests si les commandes Node actuelles deviennent insuffisantes.
+promptfoo peut devenir une couche optionnelle de reporting si les commandes Node actuelles deviennent insuffisantes a lire.
 
 Contrat executable T8 :
 
@@ -1073,7 +1073,7 @@ Ce contrat verifie qu'une source mutable changee cree une snapshot t1 reliee a t
 - Ajouter tests de cycle de vie des types metier.
 - Ajouter tests de changement de source mutable et staleness des notes derivees.
 - Ajouter evals de declenchement Graphiti et Memoria sans les integrer encore.
-- Evaluer si promptfoo apporte assez de valeur.
+- Garder promptfoo optionnel comme reporting au-dessus des scripts Node, pas comme dependance ni gate CI obligatoire.
 
 Contrat executable T11 avant ports moteurs reels :
 
@@ -1151,7 +1151,7 @@ SuperMemory V2 est acceptable quand :
 - Faut-il une banque Hindsight unique avec tags ou plusieurs banques par domaine ?
 - Faut-il garder un mode d'audit separe pour verifier les documents supprimes de Hindsight mais conserves comme preuves dans le vault ?
 - Quel format exact pour le script de promotion : Node, Python ou CLI Hindsight ?
-- promptfoo doit-il rester un rapport manuel optionnel ou devenir utile plus tard comme couche de reporting au-dessus des scripts Node ?
+- Quand les rapports Node deviennent-ils assez difficiles a lire pour justifier une couche optionnelle promptfoo ?
 - Quelles metadata sont strictement obligatoires pour chaque type de source ?
 - Quels `observation_scopes` minimaux evitent les melanges sans multiplier inutilement les consolidations ?
 - Quels `entity_labels` doivent etre tags versus seulement entites internes ?
