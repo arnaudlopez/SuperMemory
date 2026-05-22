@@ -4,7 +4,7 @@ goal:
   title: "Implement Vault Sync Governance M2"
   slug: "implement-vault-sync-governance-m2"
   kind: specific
-  status: active
+  status: done
   oracle:
     signal: "The Hindsight promotion preflight enforces M2 vault-sync governance without live writes."
     cadence: "after red test, implementation, verification, shipping, and final audit"
@@ -77,7 +77,7 @@ visual_board:
     url: null
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-vault-sync-governance-m2"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -118,6 +118,10 @@ tasks:
         deploy_rollback: "revert M2 governance commit"
         observability: "CLI JSON validation errors and sanitized operation metadata"
         docs: "GoalBuddy board only"
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
   - id: T002
     type: judge
     assignee: Judge
@@ -176,6 +180,8 @@ tasks:
       - "node scripts/verify-supermemory-specs.mjs"
       - "git diff --check"
     stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
       - "Need connector/source capture implementation."
       - "Need broad vault scan or source refresh job."
       - "Need live Hindsight credentials or network smoke."
@@ -208,12 +214,82 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Ship verified M2 governance tranche."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+    receipt:
+      result: done
+      summary: "Committed the verified M2 vault-sync governance tranche."
+      commit_sha: "105aff8"
+      remote_branch: "main"
+      push_result: "prepared for final board commit and push"
+      committed_files:
+        - "docs/goals/implement-vault-sync-governance-m2/goal.md"
+        - "docs/goals/implement-vault-sync-governance-m2/state.yaml"
+        - "docs/goals/implement-vault-sync-governance-m2/notes/.gitkeep"
+        - "scripts/hindsight-promote.mjs"
+        - "tests/hindsight-promote.test.mjs"
+      unrelated_dirty_files_left_untouched: []
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local CLI contract gains vault_sync_v1 validation semantics"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none in tests/CI"
+        deploy_rollback: "revert commit 105aff8"
+        observability: "CLI JSON validation errors and sanitized operation metadata"
+        docs: "GoalBuddy board documents scope and proofs"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
-    objective: "Audit final completion."
-    receipt: null
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "M2 governance now exists as a local, test-covered CLI contract layer on top of the previous dry-run/mock transport boundary."
+      workflow_safeguards: "passed; design concept, language, feedback policy, test strategy, module map, interface contract, architecture review, design delta, impact assessment, and shipping evidence are present."
+      missing_evidence: []
+      final_verification:
+        - "node --test tests/hindsight-promote.test.mjs: pass"
+        - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs: pass"
+        - "node scripts/verify-source-change-t0-t1.mjs: pass"
+        - "node scripts/verify-hindsight-adapter-minimal.mjs: pass"
+        - "node scripts/verify-governed-answer-evidence.mjs: pass"
+        - "node scripts/verify-supermemory-specs.mjs: pass"
+        - "git diff --check: pass"
+      next_task: "Next meaningful tranche is explicit vault-derived payload generation from validated_memories, still without broad vault scan or connectors."
