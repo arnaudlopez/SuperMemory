@@ -99,8 +99,37 @@
             "captured_at": "2026-05-23T12:30:00Z"
           }
         ],
-        "source_registry_entries": [],
-        "snapshots": [],
+        "source_registry_entries": [
+          {
+            "source_id": "source:local-manual:escape",
+            "source_kind": "local_file",
+            "connector_id": "manual.local_file",
+            "connector_type": "manual_file",
+            "connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
+            "original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/other/private.md",
+            "workspace_id": "workspace:orion",
+            "requested_by": "owner:arnaud",
+            "capture_reason": "manual_prd_context_for_memory",
+            "owner_confirmed": true,
+            "active_snapshot_id": "snap:source:local-manual:escape:20260523",
+            "freshness": "fresh",
+            "status": "captured",
+            "sensitivity": "medium"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap:source:local-manual:escape:20260523",
+            "source_id": "source:local-manual:escape",
+            "connector_id": "manual.local_file",
+            "connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
+            "original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/other/private.md",
+            "content_hash": "sha256:escape",
+            "captured_at": "2026-05-23T12:30:00Z",
+            "immutable": true,
+            "source_text_role": "evidence_only"
+          }
+        ],
         "derived_memories": [],
         "promotion_payloads": []
       }
@@ -126,8 +155,34 @@
             "captured_at": "2026-05-23T12:30:00Z"
           }
         ],
-        "source_registry_entries": [],
-        "snapshots": [],
+        "source_registry_entries": [
+          {
+            "source_id": "source:local-manual:no-owner",
+            "source_kind": "local_file",
+            "connector_id": "manual.local_file",
+            "connector_type": "manual_file",
+            "connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
+            "original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/no-owner.md",
+            "workspace_id": "workspace:orion",
+            "active_snapshot_id": "snap:source:local-manual:no-owner:20260523",
+            "freshness": "fresh",
+            "status": "captured",
+            "sensitivity": "medium"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap:source:local-manual:no-owner:20260523",
+            "source_id": "source:local-manual:no-owner",
+            "connector_id": "manual.local_file",
+            "connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
+            "original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/no-owner.md",
+            "content_hash": "sha256:no-owner",
+            "captured_at": "2026-05-23T12:30:00Z",
+            "immutable": true,
+            "source_text_role": "evidence_only"
+          }
+        ],
         "derived_memories": [],
         "promotion_payloads": []
       }
@@ -159,6 +214,9 @@
         "source_registry_entries": [
           {
             "source_id": "source:local-manual:missing-proof",
+            "connector_id": "manual.local_file",
+            "connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
+            "original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/missing-proof.md",
             "active_snapshot_id": "snap:source:local-manual:missing-proof:20260523"
           }
         ],
@@ -167,6 +225,7 @@
             "snapshot_id": "snap:source:local-manual:missing-proof:20260523",
             "source_id": "source:local-manual:missing-proof",
             "connector_id": "manual.local_file",
+            "connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
             "original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/missing-proof.md",
             "content_hash": "sha256:missing-proof",
             "captured_at": "2026-05-23T12:30:00Z"
