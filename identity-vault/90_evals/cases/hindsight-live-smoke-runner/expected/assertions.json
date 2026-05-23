@@ -1,0 +1,18 @@
+{
+  "required_case_ids": [
+    "capture-retain",
+    "source-change-upsert",
+    "revocation-delete"
+  ],
+  "required_operations": [
+    "retain",
+    "upsert",
+    "delete",
+    "recall"
+  ],
+  "required_missing_env": [
+    "HINDSIGHT_API_KEY",
+    "HINDSIGHT_BANK_ID",
+    "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1"
+  ]
+}
