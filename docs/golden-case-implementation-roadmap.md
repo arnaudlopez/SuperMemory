@@ -219,6 +219,34 @@ puis la version revue est re-promue avec le meme document_id.
 Quand une source est indisponible, aucun nouveau snapshot frais n'est invente.
 ```
 
+Contrat executable :
+
+```bash
+node scripts/verify-source-change-t0-t1.mjs
+```
+
+## Tranche 5b - Source snapshot refresh preflight
+
+Objectif :
+
+Prouver localement la decision de refresh avant connecteur reel.
+
+Scenario :
+
+- source unchanged : aucun nouveau snapshot ;
+- source changed : plan de nouveau snapshot immuable avec `previous_snapshot_id` ;
+- source unavailable : last-known/unverified, jamais fresh ;
+- source `do_not_use` : skip, sans promotion active ;
+- memoire derivee d'un snapshot change routee vers revue.
+
+Contrat executable :
+
+```bash
+node scripts/verify-source-snapshot-refresh-preflight.mjs
+```
+
+Ce contrat reste local et deterministe. Il ne fetch aucune source externe, ne scanne pas tout le vault, et ne lance pas de promotion Hindsight live.
+
 ## Tranche 6 - Conflit, indisponibilite et arbitrage
 
 Objectif :

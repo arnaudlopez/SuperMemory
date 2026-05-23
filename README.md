@@ -332,12 +332,13 @@ Implemented:
 - minimal local Hindsight adapter contract verifier;
 - governed answer evidence contract verifier;
 - mutable source t0/t1 contract verifier.
+- source snapshot refresh preflight contract verifier.
 
 Not yet implemented:
 
 - live Hindsight API integration;
 - source capture connectors;
-- real change detection;
+- real connector-backed change detection;
 - automated snapshot refresh;
 - promptfoo reporting layer, if the Node evals become too hard to read manually;
 - Graphiti/Memoria ports.
@@ -347,7 +348,7 @@ Not yet implemented:
 1. Keep the T0-T14 executable specification green in CI.
 2. Prepare the runtime preflight for vault-to-Hindsight promotion with dry-run behavior.
 3. Implement the real promotion script only after the local adapter, answer, and freshness contracts remain green.
-4. Implement source snapshot refresh for mutable sources.
+4. Implement connector-backed snapshot refresh for mutable sources.
 5. Add optional source-capture tools only when a concrete source workflow requires them.
 6. Add promptfoo only as an optional reporting layer if the Node eval output becomes too hard to inspect.
 7. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.

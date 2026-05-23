@@ -1,0 +1,512 @@
+version: 2
+goal:
+  slug: "source-snapshot-refresh-preflight-notes"
+  title: "Source Snapshot Refresh Preflight Notes"
+  status: active
+  created_at: "2026-05-23"
+  updated_at: "2026-05-23"
+  kind: specific
+  original_request: "# Source Snapshot Refresh Preflight Notes\n\n## Intent\n\nImplement the next SuperMemory runtime-preflight tranche after Hindsight promotion/live-smoke readiness: a local, deterministic source snapshot refresh preflight for mutable sources.\n\nThe goal is to prove that SuperMemory can compare a previously captured mutable source with a refreshed capture candidate, decide whether a new immutable snapshot is needed, and route downstream memory safely without adding real connectors yet.\n\nA maintainer can run a local command against fixture data and see a refresh plan that distinguishes unchanged, changed, unavailable, and forbidden sources without mutating production data or calling external services.\n\n- Do not implement real web, Drive, Gmail, CRM, or API connectors.\n- Do not run live Hindsight writes.\n- Do not scan the whole vault automatically.\n- Do not add dependencies, env files, migrations, jobs, or UI.\n- Do not weaken existing T0-T14, Hindsight promotion, live-smoke, or source-change contracts.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nSource snapshot refresh is complete when local tests prove unchanged, changed, unavailable, and do_not_use refresh behavior, and node scripts/verify-source-change-t0-t1.mjs, node --test tests/hindsight-promote.test.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- A deterministic fixture represents mutable source refresh candidates.\n- A local verifier or test proves unchanged sources do not create new snapshots.\n- Changed sources produce a new immutable snapshot plan with `previous_snapshot_id`.\n- Changed derived memory is routed to `needs_review` before active promotion.\n- Unavailable sources are treated as unknown or last-known/unverified, never fresh.\n- `do_not_use` sources are not refreshed into active memory or Hindsight promotion.\n- Existing source-change, Hindsight promotion, governed-answer, and global specs remain green.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/source-snapshot-refresh-preflight/brief.md --mode implementation --oracle \"Source snapshot refresh is complete when local tests prove unchanged, changed, unavailable, and do_not_use refresh behavior, and node scripts/verify-source-change-t0-t1.mjs, node --test tests/hindsight-promote.test.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\" --out docs/goals/source-snapshot-refresh-preflight-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/source-snapshot-refresh-preflight-notes.md\n\n> # Source Snapshot Refresh Preflight Notes\n> \n> ## Intent\n> \n> Implement the next SuperMemory runtime-preflight tranche after Hindsight promotion/live-smoke readiness: a local, deterministic source snapshot refresh preflight for mutable sources.\n> \n> The goal is to prove that SuperMemory can compare a previously captured mutable source with a refreshed capture candidate, decide whether a new immutable snapshot is needed, and route downstream memory safely without adding real connectors yet.\n> \n> ## User Outcome\n> \n> A maintainer can run a local command against fixture data and see a refresh plan that distinguishes unchanged, changed, unavailable, and forbidden sources without mutating production data or calling external services.\n> \n> ## Non-Goals\n> \n> - Do not implement real web, Drive, Gmail, CRM, or API connectors.\n> - Do not run live Hindsight writes.\n> - Do not scan the whole vault automatically.\n> - Do not add dependencies, env files, migrations, jobs, or UI.\n> - Do not weaken existing T0-T14, Hindsight promotion, live-smoke, or source-change contracts.\n> \n> ## Acceptance\n> \n> - A deterministic fixture represents mutable source refresh candidates.\n> - A local verifier or test proves unchanged sources do not create new snapshots.\n> - Changed sources produce a new immutable snapshot plan with `previous_snapshot_id`.\n> - Changed derived memory is routed to `needs_review` before active promotion.\n> - Unavailable sources are treated as unknown or last-known/unverified, never fresh.\n> - `do_not_use` sources are not refreshed into active memory or Hindsight promotion.\n> - Existing source-change, Hindsight promotion, governed-answer, and global specs remain green.\n> \n> ## Oracle\n> \n> Source snapshot refresh is complete when local tests prove unchanged, changed, unavailable, and `do_not_use` refresh behavior, and `node scripts/verify-source-change-t0-t1.mjs`, `node --test tests/hindsight-promote.test.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` all pass."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Source Snapshot Refresh Preflight Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "Source snapshot refresh is complete when local tests prove unchanged, changed, unavailable, and do_not_use refresh behavior, and node scripts/verify-source-change-t0-t1.mjs, node --test tests/hindsight-promote.test.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+  oracle:
+    signal: "Source snapshot refresh is complete when local tests prove unchanged, changed, unavailable, and do_not_use refresh behavior, and node scripts/verify-source-change-t0-t1.mjs, node --test tests/hindsight-promote.test.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped the existing source freshness and Hindsight promotion surfaces. Current T5 proves post-change invariants, but there is no dedicated refresh preflight fixture/verifier that compares previous snapshots to refresh candidates and emits unchanged/changed/unavailable/do_not_use plans before downstream review/promotion."
+      design_concept: "Add a local deterministic source snapshot refresh preflight. It consumes fixture data only, performs no connector/network work, and outputs/validates a refresh plan that can later feed T5 source-change and Hindsight promotion paths."
+      ubiquitous_language:
+        source_refresh_candidate: "A simulated fresh capture/check result for a mutable source."
+        refresh_plan: "Deterministic plan saying unchanged, create_snapshot, unavailable_last_known, or skip_do_not_use."
+        unchanged: "Candidate hash/version matches active snapshot; update last_checked metadata only, no new snapshot."
+        changed: "Candidate differs; plan a new immutable snapshot with previous_snapshot_id and affected memory review routing."
+        unavailable: "Source could not be fetched; preserve last-known snapshot and do not mark fresh."
+        do_not_use: "Forbidden source state; no active refresh, promotion, or recall path."
+      module_map:
+        existing_t5: "scripts/verify-source-change-t0-t1.mjs plus identity-vault/90_evals/cases/source-change-t0-t1 prove post-change state."
+        hindsight_preflight: "scripts/hindsight-promote.mjs and tests/hindsight-promote.test.mjs prove promotion planning/live guards."
+        new_contract_candidate: "identity-vault/90_evals/cases/source-snapshot-refresh-preflight plus scripts/verify-source-snapshot-refresh-preflight.mjs and tests/source-snapshot-refresh-preflight.test.mjs."
+      interface_contract: "A verifier command should fail on missing changed snapshot lineage, unchanged sources creating snapshots, unavailable sources marked fresh, forbidden sources producing active refresh/promotion, and missing review routing for changed derived memory."
+      test_strategy: "TDD: first add fixture/verifier/test wiring that fails because verifier is missing; then implement minimal deterministic verifier and fixture; finally wire into global specs if green."
+      feedback_policy: "Run node --test tests/source-snapshot-refresh-preflight.test.mjs, node scripts/verify-source-change-t0-t1.mjs, node --test tests/hindsight-promote.test.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check."
+      acceptance_contract_updates:
+        visible_outcome: "A maintainer can run node scripts/verify-source-snapshot-refresh-preflight.mjs and see PASS for a deterministic refresh preflight contract."
+        failure_modes:
+          - "unchanged source creates a new snapshot"
+          - "changed source lacks previous_snapshot_id"
+          - "changed memory stays active/fresh before review"
+          - "unavailable source is treated as fresh"
+          - "do_not_use source produces active refresh or promotion"
+          - "global specs regress"
+      dirty_worktree_risk_map:
+        existing_dirty_files:
+          - docs/source-snapshot-refresh-preflight-notes.md
+          - "docs/goals/source-snapshot-refresh-preflight/**"
+        unrelated_dirty_files: "none before goal except current goal entry artifacts"
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: none
+        ui_routes: none
+        background_jobs: none
+        external_services: "none; fixtures only"
+        deploy_rollback: "local verifier/test/docs only; rollback by reverting commit"
+        observability: none
+        docs: "goal notes and possibly README/roadmap mention if needed"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved a full deterministic contract slice: add the red test for source snapshot refresh preflight, then implement fixture, verifier, test wrapper, and global spec wiring."
+      approved_design_concept: "Source refresh preflight is the decision layer before T5 post-change state: compare candidates, plan snapshot/no-snapshot/unavailable/skip behavior, and route review safely without connector or live Hindsight work."
+      approved_ubiquitous_language:
+        source_refresh_candidate: "simulated source check result"
+        refresh_plan: "planned outcome for a candidate"
+        create_snapshot: "changed candidate requires immutable t1 snapshot with previous_snapshot_id"
+        unchanged: "no new snapshot"
+        unavailable_last_known: "use last known snapshot only, not fresh"
+        skip_do_not_use: "forbidden source cannot be refreshed/promoted"
+      feedback_policy: "Red test first, implementation second, full verifier suite before shipping."
+      test_strategy: "Add node:test wrapper that calls scripts/verify-source-snapshot-refresh-preflight.mjs and initially fails because the script/fixture is absent. Green stage adds deterministic fixture and verifier, then wires verifier into verify-supermemory-specs.mjs."
+      module_map:
+        new_fixture: "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+        new_verifier: scripts/verify-source-snapshot-refresh-preflight.mjs
+        test_wrapper: tests/source-snapshot-refresh-preflight.test.mjs
+        global_oracle: scripts/verify-supermemory-specs.mjs
+        docs: "README.md and docs/golden-case-implementation-roadmap.md only if needed for next-step accuracy"
+      interface_contract: "The verifier must reject exact invalid cases for unchanged snapshot creation, changed missing previous snapshot lineage, changed memory not routed to review, unavailable marked fresh, and do_not_use active refresh/promotion."
+      architecture_review: "Approved. This extends the existing deterministic verifier pattern and does not add runtime connector, network, DB, env, dependency, or UI work."
+      impact_assessment_ref: T001.receipt.impact_assessment
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/source-snapshot-refresh-preflight.test.mjs
+          verify:
+            - "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "The selected contract is ambiguous."
+            - "No meaningful failing test can be written."
+            - "Tests require production implementation changes before the red stage."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Unrelated dirty files would need to be modified."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/verify-source-snapshot-refresh-preflight.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - tests/source-snapshot-refresh-preflight.test.mjs
+            - "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+          verify:
+            - "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+            - "node scripts/verify-source-change-t0-t1.mjs"
+            - "node --test tests/hindsight-promote.test.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Implementation starts adding real connectors, network calls, dependencies, jobs, migrations, or UI."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - scripts/verify-source-snapshot-refresh-preflight.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - tests/source-snapshot-refresh-preflight.test.mjs
+            - "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+          verify:
+            - "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+            - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+            - "node scripts/verify-source-change-t0-t1.mjs"
+            - "node --test tests/hindsight-promote.test.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/source-snapshot-refresh-preflight.test.mjs
+    verify:
+      - "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The selected contract is ambiguous."
+      - "No meaningful failing test can be written."
+      - "Tests require production implementation changes before the red stage."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Unrelated dirty files would need to be modified."
+    receipt:
+      result: done
+      summary: "Added the red test wrapper for the source snapshot refresh preflight verifier. It fails as expected because scripts/verify-source-snapshot-refresh-preflight.mjs does not exist yet."
+      red_test_evidence:
+        command: "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+        result: failed_as_expected
+        failure: "Cannot find module scripts/verify-source-snapshot-refresh-preflight.mjs"
+      changed_files:
+        - tests/source-snapshot-refresh-preflight.test.mjs
+      oracle_coverage: "The red test locks the new verifier command that must prove unchanged, changed, unavailable, and do_not_use refresh behavior."
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-source-snapshot-refresh-preflight.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - tests/source-snapshot-refresh-preflight.test.mjs
+      - "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+    verify:
+      - "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+      - "node scripts/verify-source-change-t0-t1.mjs"
+      - "node --test tests/hindsight-promote.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Implementation starts adding real connectors, network calls, dependencies, jobs, migrations, or UI."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented the source snapshot refresh preflight contract with fixture, deterministic verifier, test wrapper, global spec wiring, and docs alignment."
+      changed_files:
+        - tests/source-snapshot-refresh-preflight.test.mjs
+        - scripts/verify-source-snapshot-refresh-preflight.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+      green_test_evidence:
+        -
+          command: "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+          result: "green test pass"
+        -
+          command: "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+          result: "green verification pass"
+        -
+          command: "node scripts/verify-source-change-t0-t1.mjs"
+          result: "green verification pass"
+        -
+          command: "node --test tests/hindsight-promote.test.mjs"
+          result: "green test pass"
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          result: "green verification pass"
+        -
+          command: "git diff --check"
+          result: "green verification pass"
+      design_delta: "Added Tranche 5b as a local preflight before connector-backed refresh: it validates refresh plans for unchanged, changed, unavailable, and do_not_use sources before downstream review or promotion."
+      oracle_coverage: "The fixture and verifier cover unchanged no-snapshot, changed previous_snapshot_id lineage, changed memory review routing, unavailable not-fresh handling, do_not_use skip/no-promotion, and global regression preservation."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-source-snapshot-refresh-preflight.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - tests/source-snapshot-refresh-preflight.test.mjs
+      - "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+    verify:
+      - "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+      - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+      - "node scripts/verify-source-change-t0-t1.mjs"
+      - "node --test tests/hindsight-promote.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Full verification package passed for source snapshot refresh preflight."
+      verification:
+        -
+          command: "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-change-t0-t1.mjs"
+          result: pass
+        -
+          command: "node --test tests/hindsight-promote.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          result: pass
+        -
+          command: "git diff --check"
+          result: pass
+      changed_files:
+        - tests/source-snapshot-refresh-preflight.test.mjs
+        - scripts/verify-source-snapshot-refresh-preflight.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - "identity-vault/90_evals/cases/source-snapshot-refresh-preflight/**"
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+      oracle_coverage: "All required refresh behaviors and regression commands passed."
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Judge approved the source snapshot refresh preflight implementation for shipping."
+      design_delta: "Added a Tranche 5b preflight contract before connector-backed refresh. It proves refresh decision behavior locally before real source fetchers exist."
+      architecture_review: "Appropriate extension of existing verifier architecture: fixture plus deterministic Node verifier plus test wrapper plus global spec wiring. No connector, network, dependency, env, DB, job, migration, or UI was added."
+      oracle_coverage: "Covered unchanged no-new-snapshot, changed snapshot lineage, changed memory review routing, unavailable not-fresh, do_not_use skip/no-active-promotion, and all required regression commands."
+      remaining_risks:
+        - "This is not real connector-backed refresh yet; it is the preflight contract that future connectors must satisfy."
+      another_worker_slice_needed: false
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

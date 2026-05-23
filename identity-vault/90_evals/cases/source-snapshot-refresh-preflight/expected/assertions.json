@@ -1,0 +1,18 @@
+{
+  "case_id": "source-snapshot-refresh-preflight",
+  "required_test_ids": ["SR1", "SR2", "SR3", "SR4", "SR5"],
+  "expected_errors": {
+    "SR1": "unchanged_source_created_snapshot",
+    "SR2": "changed_refresh_missing_previous_snapshot",
+    "SR3": "changed_memory_not_routed_to_review",
+    "SR4": "unavailable_refresh_marked_fresh",
+    "SR5": "do_not_use_source_refreshed"
+  },
+  "required_unchanged_source_id": "src-acme-api-doc",
+  "required_changed_source_id": "src-acme-prd",
+  "required_changed_snapshot_id": "snap-acme-prd-2026-05-24",
+  "required_previous_snapshot_id": "snap-acme-prd-2026-05-22",
+  "required_review_id": "review-acme-prd-refresh-2026-05-24",
+  "required_unavailable_source_id": "src-acme-contract",
+  "required_do_not_use_source_id": "src-legacy-pricing"
+}
