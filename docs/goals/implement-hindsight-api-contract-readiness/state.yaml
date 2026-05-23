@@ -4,7 +4,7 @@ goal:
   title: "Implement Hindsight API Contract Readiness"
   slug: "implement-hindsight-api-contract-readiness"
   kind: specific
-  status: active
+  status: done
   oracle:
     signal: "A dedicated verifier proves the generated Hindsight transport request contract is strict, documented, and ready for owner live smoke."
     cadence: "after strict recall fix, verifier, global specs, shipping, and final audit"
@@ -77,7 +77,7 @@ visual_board:
     url: null
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-api-contract-readiness"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -216,7 +216,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Ship verified Hindsight API contract readiness."
     expected_output:
       - "Or shipping_blocker: no_git_repository | no_github_remote"
@@ -226,11 +226,40 @@ tasks:
       - "Committed files"
       - "Unrelated dirty files left untouched"
       - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Committed and pushed the verified Hindsight API contract readiness tranche."
+      commit_sha: "d9236ba"
+      remote_branch: "main"
+      push_result: "pushed to origin/main"
+      committed_files:
+        - "docs/goals/implement-hindsight-api-contract-readiness/goal.md"
+        - "docs/goals/implement-hindsight-api-contract-readiness/state.yaml"
+        - "docs/goals/implement-hindsight-api-contract-readiness/notes/.gitkeep"
+        - "identity-vault/90_evals/cases/hindsight-api-contract-readiness/expected/assertions.json"
+        - "scripts/hindsight-api-contract-readiness.mjs"
+        - "scripts/verify-hindsight-api-contract-readiness.mjs"
+        - "scripts/hindsight-transport.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+        - "tests/hindsight-api-contract-readiness.test.mjs"
+        - "tests/hindsight-transport.test.mjs"
+      unrelated_dirty_files_left_untouched: []
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "Hindsight recall requests now set tags_match=all_strict; retain/upsert/delete shapes are verified before owner live smoke."
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no real Hindsight calls"
+        deploy_rollback: "revert commit d9236ba"
+        observability: "readiness JSON report and verifier output"
+        docs: "GoalBuddy board documents scope, contract sources, and proofs"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -254,13 +283,27 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "SuperMemory now has strict Hindsight recall filtering in the transport layer and a credential-free API contract readiness oracle for retain, upsert, recall, and delete request shapes."
+      workflow_safeguards: "passed; design concept, ubiquitous language, feedback policy, test strategy, module map, interface contract, architecture review, design delta, impact assessment, and shipping evidence are present."
+      missing_evidence: []
+      final_verification:
+        - "node scripts/verify-hindsight-api-contract-readiness.mjs: pass"
+        - "node scripts/hindsight-api-contract-readiness.mjs --json: pass"
+        - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-api-contract-readiness.test.mjs: pass"
+        - "node scripts/verify-supermemory-specs.mjs: pass"
+        - "git diff --check: pass"
+        - "goalbuddy-quality-check: pass"
+      next_task: "Run the owner-approved real Hindsight live smoke with real credentials and a sacrificial bank."
 
 checks:
-  dirty_fingerprint: "implementation complete; shipping pending"
+  dirty_fingerprint: "goal complete; final board commit pending"
   last_verification:
     result: pass
-    task: T003
+    task: T999
     commands:
       - "node scripts/verify-hindsight-api-contract-readiness.mjs"
       - "node scripts/hindsight-api-contract-readiness.mjs --json"
