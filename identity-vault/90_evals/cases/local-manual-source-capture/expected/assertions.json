@@ -1,0 +1,18 @@
+{
+  "required_test_ids": ["LC1", "LC2", "LC3", "LC4", "LC5", "LC6"],
+  "expected_errors": {
+    "LC1": "manual_capture_scope_escape",
+    "LC2": "missing_owner_intent",
+    "LC3": "missing_snapshot_proof",
+    "LC4": "source_instruction_leaked",
+    "LC5": "secret_leaked_from_manual_capture",
+    "LC6": "do_not_use_manual_source_captured"
+  },
+  "required_capture_id": "cap:manual:orion-prd-excerpt:20260523",
+  "required_source_id": "source:local-manual:orion-prd-excerpt",
+  "required_snapshot_id": "snap:source:local-manual:orion-prd-excerpt:20260523",
+  "required_connector_id": "manual.local_file",
+  "required_connector_type": "manual_file",
+  "required_connector_scope": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/",
+  "required_original_ref": "/Users/arnaud/Documents/SuperMemory/manual-input/orion/prd-excerpt.md"
+}

@@ -16,6 +16,7 @@ const commands = [
   ["node", ["scripts/verify-hindsight-docker-compose.mjs"]],
   ["node", ["--test", "tests/hindsight-transport.test.mjs", "tests/hindsight-promote.test.mjs", "tests/hindsight-live-smoke-readiness.test.mjs", "tests/hindsight-api-contract-readiness.test.mjs", "tests/hindsight-live-smoke-runner.test.mjs"]],
   ["node", ["scripts/verify-governed-answer-evidence.mjs"]],
+  ["node", ["scripts/verify-local-manual-source-capture.mjs"]],
   ["node", ["scripts/verify-source-snapshot-refresh-preflight.mjs"]],
   ["node", ["scripts/verify-source-refresh-connector-boundary.mjs"]],
   ["node", ["scripts/verify-source-change-t0-t1.mjs"]],

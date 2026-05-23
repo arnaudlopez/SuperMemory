@@ -270,6 +270,30 @@ node scripts/verify-source-refresh-connector-boundary.mjs
 
 Ce contrat reste local et deterministe. Il ne remplace pas un connecteur Gmail, Drive, Web ou CRM reel : il fixe l'interface que ces connecteurs devront respecter.
 
+## Tranche 5d - Local manual source capture
+
+Objectif :
+
+Prouver le premier workflow concret de capture source sans connecteur externe.
+
+Scenario :
+
+- une source locale/manuelle explicite est demandee par le owner ;
+- la capture est bornee a un seul fichier/ref, sans scan voisin ;
+- une entree de source registry et une snapshot immuable sont produites ;
+- la snapshot cite `source_id`, `connector_id`, `connector_scope`, `original_ref`, `content_hash` et `captured_at` ;
+- le texte source reste une preuve, jamais une instruction agent ;
+- les secrets sont redactes avant memoire derivee ou promotion ;
+- une source `do_not_use` ne cree aucune preuve active.
+
+Contrat executable :
+
+```bash
+node scripts/verify-local-manual-source-capture.mjs
+```
+
+Ce contrat ne lit pas le filesystem reel. Il fixe le comportement attendu avant d'ajouter une commande dry-run operateur ou un vrai connecteur automatise.
+
 ## Tranche 6 - Conflit, indisponibilite et arbitrage
 
 Objectif :

@@ -1,0 +1,529 @@
+version: 2
+goal:
+  slug: "local-manual-source-capture"
+  title: "Local Manual Source Capture"
+  status: active
+  created_at: "2026-05-23"
+  updated_at: "2026-05-23"
+  kind: specific
+  original_request: "# Local Manual Source Capture\n\n## Intent\n\nImplement the first concrete source-capture workflow without external credentials, network calls, or a real connector.\n\nThe existing tranches already prove mutable source refresh, refresh preflight, and connector safety boundaries. The next useful step is to prove that a manually supplied local source can become a governed source record and immutable snapshot candidate without scanning neighboring files or bypassing governance.\n\nA local/manual source capture fixture proves:\n\n- a manually provided file/text source has explicit owner intent, connector metadata, workspace, source kind, sensitivity, and allowed scope;\n- capture produces a source registry entry and an immutable snapshot record;\n- snapshot proof includes content hash, captured_at, original_ref, connector_id, connector_scope, and source_id;\n- the capture is bounded to the requested file/ref only, not a folder or broad local scan;\n- source text is evidence only and cannot provide agent instructions;\n- secrets are redacted before snapshot-derived memory/promotion surfaces;\n- `do_not_use` sources are not snapshotted or promoted as active evidence;\n- invalid captures fail closed with named errors.\n\n- No real filesystem crawler.\n- No live external connector.\n- No Hindsight runtime call.\n- No UI.\n- No database migration.\n- No broad folder scan.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nLocal manual source capture is complete when node scripts/verify-local-manual-source-capture.mjs, node --test tests/local-manual-source-capture.test.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- The first tests/evidence should cover these user-visible paths:\n- happy path: one explicit local/manual source is accepted and yields exactly one source registry entry plus one immutable snapshot;\n- bounded capture: a folder-like source scope or neighboring file reference is rejected as `manual_capture_scope_escape`;\n- owner intent: a capture without `requested_by`, `capture_reason`, or `owner_confirmed: true` is rejected as `missing_owner_intent`;\n- provenance: a snapshot without `source_id`, `connector_id`, `connector_scope`, `original_ref`, `content_hash`, `captured_at`, or `immutable: true` is rejected as `missing_snapshot_proof`;\n- source text safety: source content containing agent instructions is recorded only as evidence and rejected if surfaced as executable guidance, with error `source_instruction_leaked`;\n- secret safety: raw API keys/tokens/password-like values are rejected from derived memory/promotion surfaces as `secret_leaked_from_manual_capture`;\n- forbidden status: `do_not_use` source capture creates no active snapshot or promotion and fails as `do_not_use_manual_source_captured`;\n- global regression: source refresh connector boundary and full SuperMemory specs still pass.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/local-manual-source-capture/brief.md --mode implementation --oracle \"Local manual source capture is complete when node scripts/verify-local-manual-source-capture.mjs, node --test tests/local-manual-source-capture.test.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\" --out docs/goals/local-manual-source-capture\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/local-manual-source-capture-notes.md\n\n> # Local Manual Source Capture\n> \n> ## Intent\n> \n> Implement the first concrete source-capture workflow without external credentials, network calls, or a real connector.\n> \n> The existing tranches already prove mutable source refresh, refresh preflight, and connector safety boundaries. The next useful step is to prove that a manually supplied local source can become a governed source record and immutable snapshot candidate without scanning neighboring files or bypassing governance.\n> \n> ## Outcome\n> \n> A local/manual source capture fixture proves:\n> \n> - a manually provided file/text source has explicit owner intent, connector metadata, workspace, source kind, sensitivity, and allowed scope;\n> - capture produces a source registry entry and an immutable snapshot record;\n> - snapshot proof includes content hash, captured_at, original_ref, connector_id, connector_scope, and source_id;\n> - the capture is bounded to the requested file/ref only, not a folder or broad local scan;\n> - source text is evidence only and cannot provide agent instructions;\n> - secrets are redacted before snapshot-derived memory/promotion surfaces;\n> - `do_not_use` sources are not snapshotted or promoted as active evidence;\n> - invalid captures fail closed with named errors.\n> \n> ## Non-goals\n> \n> - No real filesystem crawler.\n> - No live external connector.\n> - No Hindsight runtime call.\n> - No UI.\n> - No database migration.\n> - No broad folder scan.\n> \n> ## Oracle\n> \n> Complete when all commands pass:\n> \n> ```bash\n> node scripts/verify-local-manual-source-capture.mjs\n> node --test tests/local-manual-source-capture.test.mjs\n> node scripts/verify-source-refresh-connector-boundary.mjs\n> node scripts/verify-supermemory-specs.mjs\n> git diff --check\n> ```\n> \n> ## Acceptance\n> \n> The first tests/evidence should cover these user-visible paths:\n> \n> - happy path: one explicit local/manual source is accepted and yields exactly one source registry entry plus one immutable snapshot;\n> - bounded capture: a folder-like source scope or neighboring file reference is rejected as `manual_capture_scope_escape`;\n> - owner intent: a capture without `requested_by`, `capture_reason`, or `owner_confirmed: true` is rejected as `missing_owner_intent`;\n> - provenance: a snapshot without `source_id`, `connector_id`, `connector_scope`, `original_ref`, `content_hash`, `captured_at`, or `immutable: true` is rejected as `missing_snapshot_proof`;\n> - source text safety: source content containing agent instructions is recorded only as evidence and rejected if surfaced as executable guidance, with error `source_instruction_leaked`;\n> - secret safety: raw API keys/tokens/password-like values are rejected from derived memory/promotion surfaces as `secret_leaked_from_manual_capture`;\n> - forbidden status: `do_not_use` source capture creates no active snapshot or promotion and fails as `do_not_use_manual_source_captured`;\n> - global regression: source refresh connector boundary and full SuperMemory specs still pass.\n> \n> ## Expected files\n> \n> - `identity-vault/90_evals/cases/local-manual-source-capture/**`\n> - `scripts/verify-local-manual-source-capture.mjs`\n> - `tests/local-manual-source-capture.test.mjs`\n> - `scripts/verify-supermemory-specs.mjs`\n> - `README.md`\n> - `docs/golden-case-implementation-roadmap.md`\n> - `docs/goals/local-manual-source-capture/**`"
+  interpreted_outcome: "Run the prepared LLM-first workflow for Local Manual Source Capture."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "Local manual source capture is complete when node scripts/verify-local-manual-source-capture.mjs, node --test tests/local-manual-source-capture.test.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+  oracle:
+    signal: "Local manual source capture is complete when node scripts/verify-local-manual-source-capture.mjs, node --test tests/local-manual-source-capture.test.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped existing source registry, snapshot registry, refresh preflight, connector boundary, and global spec verifier surfaces for local/manual source capture."
+      design_concept: "A manual local source capture is the first concrete ingestion path after connector boundary work: owner-supplied content becomes a governed source and immutable snapshot candidate only when intent, bounded scope, provenance, redaction, status, and registry evidence are explicit. It is not a crawler or live connector."
+      ubiquitous_language:
+        manual_capture: "Owner-supplied local/file/text source captured without automated scanning."
+        source_registry_entry: "Governed pointer/provenance record for a source; not proof by itself."
+        source_snapshot: "Immutable proof of the captured content with hash and provenance."
+        connector_scope: "Bounded authorized ref/scope for this one capture."
+        source_text: "Evidence only; never executable agent instruction."
+        forbidden_status: "do_not_use blocks active snapshot/promotion."
+      module_map:
+        deep_modules:
+          - "identity-vault/00_inbox/source_registry.md and snapshot_registry.md define existing registry vocabulary"
+          - "identity-vault/90_evals/cases/* holds executable acceptance fixtures"
+          - "scripts/verify-*.mjs holds deterministic governance validators"
+          - "tests/*.test.mjs wraps verifier commands for node --test"
+          - "scripts/verify-supermemory-specs.mjs is the global regression orchestrator"
+        target_files:
+          - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+          - scripts/verify-local-manual-source-capture.mjs
+          - tests/local-manual-source-capture.test.mjs
+          - scripts/verify-supermemory-specs.mjs
+          - README.md
+          - docs/golden-case-implementation-roadmap.md
+        shallow_risks:
+          - "Do not duplicate connector-boundary logic as a fake connector runtime"
+          - "Keep this as fixture plus deterministic verifier rather than a broad local filesystem implementation"
+      interface_contract:
+        valid: "One explicit manual source yields exactly one source_registry entry and one immutable snapshot with source_id, connector_id, connector_scope, original_ref, content_hash, captured_at, immutable true, workspace, source_kind, sensitivity, requested_by, capture_reason, owner_confirmed true."
+        invalid_errors:
+          - manual_capture_scope_escape
+          - missing_owner_intent
+          - missing_snapshot_proof
+          - source_instruction_leaked
+          - secret_leaked_from_manual_capture
+          - do_not_use_manual_source_captured
+      test_strategy:
+        red_first: "Add fixture/test/verifier reference so node --test tests/local-manual-source-capture.test.mjs and node scripts/verify-local-manual-source-capture.mjs fail before implementation exists."
+        green: "Implement deterministic verifier plus valid/invalid fixture and wire global specs."
+        regression:
+          - "node scripts/verify-source-refresh-connector-boundary.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      feedback_policy: "Run the local verifier and node --test wrapper after the red stage, then connector-boundary and full specs before shipping. No browser or visual proof needed."
+      acceptance_contract_updates:
+        - "Replace placeholder visible outcome with fixture proves explicit bounded local/manual capture and governance gates."
+        - "Keep no UI/no DB/no external connector/no crawler as hard non-goals."
+      dirty_worktree_risk_map: "Current worktree only contains this goal preparation; no unrelated dirty files detected before implementation."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: "none; verifier must reject leaked secret-like values"
+        auth_permissions: "local fixture only; owner_confirmed and workspace/access policy evidence required"
+        api_contract: none
+        ui_routes: none
+        background_jobs: none
+        external_services: none
+        deploy_rollback: "docs/fixture/script only; rollback is git revert"
+        observability: "verifier PASS/FAIL output and GoalBuddy receipts"
+        docs: "README and roadmap updates expected"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved a deterministic fixture/verifier tranche for local/manual capture. Red stage starts with a node --test wrapper that proves the verifier is missing/failing before implementation."
+      approved_design_concept: "Manual local capture is a bounded owner-intent ingestion path: one declared source ref may become one source registry entry and one immutable snapshot only after provenance, scope, safety, status, and redaction checks pass."
+      approved_ubiquitous_language:
+        - manual_capture
+        - source_registry_entry
+        - source_snapshot
+        - connector_scope
+        - source_text_is_evidence_only
+        - do_not_use_manual_source
+      feedback_policy: "Red: run node --test tests/local-manual-source-capture.test.mjs and expect failure. Green: run local verifier and wrapper, then connector-boundary regression, full specs, and git diff check."
+      test_strategy: "Use one executable fixture with valid and invalid_cases. The verifier must return named errors for scope escape, missing owner intent, missing snapshot proof, source instruction leakage, secret leakage, and do_not_use capture."
+      module_map:
+        - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+        - scripts/verify-local-manual-source-capture.mjs
+        - tests/local-manual-source-capture.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+      interface_contract:
+        valid: "exactly one source_registry entry and one immutable snapshot for one owner-confirmed local/manual source"
+        invalid_errors:
+          - manual_capture_scope_escape
+          - missing_owner_intent
+          - missing_snapshot_proof
+          - source_instruction_leaked
+          - secret_leaked_from_manual_capture
+          - do_not_use_manual_source_captured
+      architecture_review: "Approved. This fits the existing architecture: acceptance fixture + deterministic verifier + node --test wrapper + global specs wiring. No runtime crawler, connector, env, DB, UI, job, or Hindsight runtime should be added."
+      impact_assessment_ref: T001.receipt.impact_assessment
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/local-manual-source-capture.test.mjs
+            - "docs/goals/local-manual-source-capture/**"
+          verify:
+            - "node --test tests/local-manual-source-capture.test.mjs"
+          stop_if:
+            - "Need production verifier implementation before red evidence."
+            - "Need files outside allowed_files."
+            - "Test does not fail before implementation."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+        T004:
+          allowed_files:
+            - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+            - scripts/verify-local-manual-source-capture.mjs
+            - tests/local-manual-source-capture.test.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+            - docs/local-manual-source-capture-notes.md
+            - "docs/goals/local-manual-source-capture/**"
+          verify:
+            - "node scripts/verify-local-manual-source-capture.mjs"
+            - "node --test tests/local-manual-source-capture.test.mjs"
+            - "node scripts/verify-source-refresh-connector-boundary.mjs"
+          stop_if:
+            - "Need real filesystem crawler, live connector, network, env, DB, UI, or Hindsight runtime."
+            - "Need files outside allowed_files."
+            - "Cannot express behavior with deterministic fixture checks."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+        T005:
+          allowed_files:
+            - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+            - scripts/verify-local-manual-source-capture.mjs
+            - tests/local-manual-source-capture.test.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+            - docs/local-manual-source-capture-notes.md
+            - "docs/goals/local-manual-source-capture/**"
+          verify:
+            - "node scripts/verify-local-manual-source-capture.mjs"
+            - "node --test tests/local-manual-source-capture.test.mjs"
+            - "node scripts/verify-source-refresh-connector-boundary.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Verification fails twice without a bounded local fix."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: null
+    allowed_files:
+      - tests/local-manual-source-capture.test.mjs
+      - "docs/goals/local-manual-source-capture/**"
+    verify:
+      - "node --test tests/local-manual-source-capture.test.mjs"
+    stop_if:
+      - "Need production verifier implementation before red evidence."
+      - "Need files outside allowed_files."
+      - "Test does not fail before implementation."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Red TDD wrapper added for local manual source capture. It fails before implementation because scripts/verify-local-manual-source-capture.mjs does not exist."
+      changed_files:
+        - tests/local-manual-source-capture.test.mjs
+      red_evidence:
+        command: "node --test tests/local-manual-source-capture.test.mjs"
+        result: "failed as expected"
+        failure: "MODULE_NOT_FOUND scripts/verify-local-manual-source-capture.mjs"
+      verify:
+        -
+          command: "node --test tests/local-manual-source-capture.test.mjs"
+          result: expected_failure
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: null
+    allowed_files:
+      - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+      - scripts/verify-local-manual-source-capture.mjs
+      - tests/local-manual-source-capture.test.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+      - docs/local-manual-source-capture-notes.md
+      - "docs/goals/local-manual-source-capture/**"
+    verify:
+      - "node scripts/verify-local-manual-source-capture.mjs"
+      - "node --test tests/local-manual-source-capture.test.mjs"
+      - "node scripts/verify-source-refresh-connector-boundary.mjs"
+    stop_if:
+      - "Need real filesystem crawler, live connector, network, env, DB, UI, or Hindsight runtime."
+      - "Need files outside allowed_files."
+      - "Cannot express behavior with deterministic fixture checks."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Implemented the local manual source capture contract with deterministic fixture, verifier, test wrapper, global spec wiring, and docs alignment."
+      changed_files:
+        - tests/local-manual-source-capture.test.mjs
+        - scripts/verify-local-manual-source-capture.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/local-manual-source-capture-notes.md
+        - "docs/goals/local-manual-source-capture/**"
+      green_test_evidence:
+        -
+          command: "node scripts/verify-local-manual-source-capture.mjs"
+          result: "green verification pass"
+        -
+          command: "node --test tests/local-manual-source-capture.test.mjs"
+          result: "green test pass"
+      design_delta: "Added Tranche 5d as a local/manual source-capture contract before any filesystem crawler or external connector. It proves owner intent, bounded selected-file scope, immutable snapshot proof, source text evidence-only handling, secret redaction, and do_not_use blocking."
+      oracle_coverage: "Covers happy path plus LM1-LM6 named failure modes."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: null
+    allowed_files:
+      - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+      - scripts/verify-local-manual-source-capture.mjs
+      - tests/local-manual-source-capture.test.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+      - docs/local-manual-source-capture-notes.md
+      - "docs/goals/local-manual-source-capture/**"
+    verify:
+      - "node scripts/verify-local-manual-source-capture.mjs"
+      - "node --test tests/local-manual-source-capture.test.mjs"
+      - "node scripts/verify-source-refresh-connector-boundary.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Verification fails twice without a bounded local fix."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Full verification package passed for local manual source capture."
+      verification:
+        -
+          command: "node scripts/verify-local-manual-source-capture.mjs"
+          result: pass
+        -
+          command: "node --test tests/local-manual-source-capture.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-refresh-connector-boundary.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          result: pass
+        -
+          command: "git diff --check"
+          result: pass
+      changed_files:
+        - tests/local-manual-source-capture.test.mjs
+        - scripts/verify-local-manual-source-capture.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - "identity-vault/90_evals/cases/local-manual-source-capture/**"
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/local-manual-source-capture-notes.md
+        - "docs/goals/local-manual-source-capture/**"
+      oracle_coverage: "All local manual capture acceptance behavior and regression commands passed."
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Judge approved the local manual source capture implementation for shipping."
+      design_delta: "Added Tranche 5d to prove explicit owner-confirmed local/manual source capture before any operator command, filesystem crawler, or automated external connector."
+      architecture_review: "Appropriate extension of the deterministic verifier architecture: fixture plus Node verifier plus node:test wrapper plus global spec wiring. No real crawler, network, env, DB, background job, UI, or Hindsight runtime call was added."
+      oracle_coverage: "Covered bounded source selection, owner intent, snapshot proof, source instruction quarantine, secret redaction, do_not_use exclusion, connector-boundary regression, and global specs."
+      remaining_risks:
+        - "This is still fixture-only. The next tranche should turn it into an operator-facing dry-run command if we want actual local files."
+      another_worker_slice_needed: false
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
