@@ -496,7 +496,7 @@ Passer du contrat local/mock a un runtime Hindsight reel sans adopter Hindsight 
 Decision :
 
 - le premier runtime Hindsight cible doit etre self-hosted/local ;
-- Docker est le packaging recommande pour ce premier smoke local ;
+- Docker Compose est le packaging recommande pour ce premier smoke local, via `compose.hindsight.yml` ;
 - `HINDSIGHT_BASE_URL` doit pointer explicitement vers ce runtime local, par exemple `http://127.0.0.1:8888` ;
 - Hindsight Cloud reste un endpoint optionnel et explicite, pas le chemin par defaut de SuperMemory ;
 - aucun test CI ne doit dependre d'un service Hindsight live, local ou cloud ;

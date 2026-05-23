@@ -1,0 +1,14 @@
+services:
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:latest
+    pull_policy: always
+    container_name: supermemory-hindsight-local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:9999:9999"
+    environment:
+      HINDSIGHT_API_LLM_PROVIDER: llamacpp
+      HINDSIGHT_API_WORKER_ID: supermemory-local
+    volumes:
+      - "${HOME}/.hindsight-docker-supermemory:/home/hindsight/.pg0"

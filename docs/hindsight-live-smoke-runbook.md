@@ -22,12 +22,33 @@ export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 
 ## Docker Local Runtime
 
-Start Docker Desktop, then run the self-hosted Hindsight container:
+Start Docker Desktop, then run the self-hosted Hindsight container with Compose:
+
+```bash
+docker compose -f compose.hindsight.yml up -d
+```
+
+The repository compose file binds Hindsight to localhost only:
+
+```text
+127.0.0.1:8888 -> Hindsight API
+127.0.0.1:9999 -> Hindsight UI
+```
+
+If you already started the manual container before the compose file existed, either keep using it or stop and remove it before switching to Compose:
+
+```bash
+docker stop supermemory-hindsight-local
+docker rm supermemory-hindsight-local
+docker compose -f compose.hindsight.yml up -d
+```
+
+Manual equivalent:
 
 ```bash
 docker run -d --name supermemory-hindsight-local --pull always \
-  -p 8888:8888 \
-  -p 9999:9999 \
+  -p 127.0.0.1:8888:8888 \
+  -p 127.0.0.1:9999:9999 \
   -e HINDSIGHT_API_LLM_PROVIDER=llamacpp \
   -e HINDSIGHT_API_WORKER_ID=supermemory-local \
   -v "$HOME/.hindsight-docker-supermemory:/home/hindsight/.pg0" \
@@ -44,8 +65,8 @@ curl http://127.0.0.1:8888/health
 Useful lifecycle commands:
 
 ```bash
-docker stop supermemory-hindsight-local
-docker start supermemory-hindsight-local
+docker compose -f compose.hindsight.yml stop
+docker compose -f compose.hindsight.yml start
 docker logs --tail 120 supermemory-hindsight-local
 ```
 
@@ -173,6 +194,7 @@ Before live:
 ```bash
 export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 node scripts/verify-hindsight-live-smoke-runner.mjs
+node scripts/verify-hindsight-docker-compose.mjs
 node scripts/verify-supermemory-specs.mjs
 git diff --check
 ```
