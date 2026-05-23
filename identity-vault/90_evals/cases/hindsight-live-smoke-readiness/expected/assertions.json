@@ -1,0 +1,26 @@
+{
+  "required_status": "ready_for_manual_live_smoke",
+  "required_live_writes_performed": false,
+  "required_env_keys": [
+    "HINDSIGHT_API_KEY",
+    "HINDSIGHT_BANK_ID",
+    "HINDSIGHT_BASE_URL",
+    "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT"
+  ],
+  "required_case_ids": [
+    "capture-retain",
+    "source-change-upsert",
+    "revocation-delete"
+  ],
+  "required_mock_commands": [
+    "node scripts/verify-hindsight-capture-refresh-sync.mjs",
+    "node scripts/verify-hindsight-source-change-sync.mjs",
+    "node scripts/verify-hindsight-revocation-delete-sync.mjs"
+  ],
+  "required_live_commands": [
+    "node scripts/hindsight-promote.mjs --input identity-vault/90_evals/cases/hindsight-capture-refresh-sync/input/fixture.json --live --json",
+    "node scripts/hindsight-promote.mjs --input identity-vault/90_evals/cases/hindsight-source-change-sync/input/fixture.json --live --json",
+    "node scripts/hindsight-promote.mjs --input identity-vault/90_evals/cases/hindsight-revocation-delete-sync/input/fixture.json --live --json"
+  ],
+  "required_guard_error": "live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport"
+}

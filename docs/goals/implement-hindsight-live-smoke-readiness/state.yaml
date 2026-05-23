@@ -1,0 +1,199 @@
+version: 2
+
+goal:
+  title: "Implement Hindsight Live Smoke Readiness"
+  slug: "implement-hindsight-live-smoke-readiness"
+  kind: specific
+  status: active
+  oracle:
+    signal: "A dedicated verifier proves live smoke readiness without credentials or live writes."
+    cadence: "after red verifier, implementation, verification, shipping, and final audit"
+    final_proof: "Dedicated verifier passes, global specs pass, git diff --check pass, GoalBuddy checks pass, commit SHA and push proof."
+  intake:
+    original_request: "Ok go"
+    interpreted_outcome: "Prepare the manual real Hindsight smoke test without running live writes."
+    input_shape: specific
+    audience: "SuperMemory maintainers"
+    authority: requested
+    proof_type: test
+    completion_proof: "Verifier proves readiness report covers retain/upsert/delete, guard, env redaction, and mock proof status."
+    likely_misfire: "Accidentally running live Hindsight writes or printing credentials."
+    blind_spots_considered:
+      - "Readiness must be useful even without credentials."
+      - "Live mode must remain out of CI."
+      - "Manual commands should be exact enough to run later without rediscovery."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-live-smoke-readiness"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map live smoke readiness scope."
+    receipt:
+      result: done
+      summary: "The next safe step is a readiness report that proves mock coverage and prepares exact live commands without executing them."
+      evidence:
+        - "The project brief lists manual real Hindsight smoke as P0, but credentials are not present in the task."
+        - "Existing fixtures cover capture/retain, source-change upsert, and revocation delete through mock transport."
+        - "scripts/hindsight-promote.mjs already requires credentials plus SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 for real live transport."
+      module_map:
+        readiness_script: "scripts/hindsight-live-smoke-readiness.mjs"
+        verifier: "scripts/verify-hindsight-live-smoke-readiness.mjs"
+        assertions: "identity-vault/90_evals/cases/hindsight-live-smoke-readiness/expected/assertions.json"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "live smoke"
+        - "readiness report"
+        - "redacted env"
+        - "fail-closed guard"
+        - "manual live command"
+      design_concept: "Separate readiness from execution: CI proves the live smoke plan and guard without touching the real Hindsight service."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local readiness report contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no live Hindsight calls"
+        deploy_rollback: "revert live smoke readiness commit"
+        observability: "readiness JSON report and verifier output"
+        docs: "GoalBuddy board only"
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve readiness implementation boundary."
+    receipt:
+      result: done
+      decision: approved
+      architecture_review: "Approved. Add readiness script, verifier, assertions, and global spec wiring. Do not run live writes or require credentials."
+      design_concept: "The report runs mock verifiers and a fail-closed guard check, then prints exact manual live commands for later owner-approved execution."
+      interface_contract:
+        report_command: "node scripts/hindsight-live-smoke-readiness.mjs --json"
+        verify_command: "node scripts/verify-hindsight-live-smoke-readiness.mjs"
+        live_writes_performed: false
+      feedback_policy: "Do not print env values; only set/not_set statuses."
+      test_strategy:
+        red: "Add verifier before readiness script exists."
+        green:
+          - "node scripts/verify-hindsight-live-smoke-readiness.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement live smoke readiness report and verifier."
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/hindsight-live-smoke-readiness/**"
+      - "scripts/hindsight-live-smoke-readiness.mjs"
+      - "scripts/verify-hindsight-live-smoke-readiness.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-hindsight-live-smoke-readiness.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need live Hindsight credentials or network smoke."
+      - "Need to print or store secrets."
+      - "Need DB migration, schema change, backfill, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Implemented the Hindsight live smoke readiness report, verifier, assertions, and global spec wiring without running live writes."
+      expected_fail:
+        command: "node scripts/verify-hindsight-live-smoke-readiness.mjs"
+        result: "failed before implementation with MODULE_NOT_FOUND for scripts/hindsight-live-smoke-readiness.mjs"
+      changed_files:
+        - "identity-vault/90_evals/cases/hindsight-live-smoke-readiness/expected/assertions.json"
+        - "scripts/hindsight-live-smoke-readiness.mjs"
+        - "scripts/verify-hindsight-live-smoke-readiness.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      design_delta: "The repo now has a non-live readiness report that proves mock retain/upsert/delete coverage, live guard behavior, env redaction, and exact manual live commands."
+      commands:
+        - command: "node scripts/verify-hindsight-live-smoke-readiness.mjs"
+          status: pass
+        - command: "node scripts/hindsight-live-smoke-readiness.mjs --json"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Ship verified live smoke readiness."
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit final completion."
+    receipt: null
