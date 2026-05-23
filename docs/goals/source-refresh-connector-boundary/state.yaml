@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: "source-refresh-connector-boundary-notes"
   title: "Source Refresh Connector Boundary Notes"
-  status: active
+  status: complete
   created_at: "2026-05-23"
   updated_at: "2026-05-23"
   kind: specific
@@ -76,7 +76,7 @@ agents:
   worker: installed
   judge: installed
 
-active_task: T998
+active_task: null
 tasks:
   - id: T001
     type: scout
@@ -443,7 +443,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Commit all goal-related changes and push the current branch once verification is green."
     inputs:
       - "Approved implementation and verification receipts"
@@ -464,11 +464,32 @@ tasks:
       - "push_result"
       - "committed_files"
       - "unrelated_dirty_files_left_untouched"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Committed and pushed the source refresh connector boundary tranche."
+      commit_sha: 49c059a
+      remote_branch: origin/main
+      push_result: "pushed to https://github.com/arnaudlopez/SuperMemory.git main"
+      committed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/source-refresh-connector-boundary-notes.md
+        - docs/goals/source-refresh-connector-boundary/acceptance-contract.md
+        - docs/goals/source-refresh-connector-boundary/brief.md
+        - docs/goals/source-refresh-connector-boundary/goal.md
+        - docs/goals/source-refresh-connector-boundary/state.yaml
+        - identity-vault/90_evals/cases/source-refresh-connector-boundary/actual/README.md
+        - identity-vault/90_evals/cases/source-refresh-connector-boundary/expected/assertions.json
+        - identity-vault/90_evals/cases/source-refresh-connector-boundary/input/fixture.json
+        - scripts/verify-source-refresh-connector-boundary.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - tests/source-refresh-connector-boundary.test.mjs
+      unrelated_dirty_files_left_untouched:
+        []
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -494,4 +515,33 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      summary: "Final audit complete: source refresh connector boundary satisfies the oracle with red test evidence, green verifier/test evidence, global specs, diff check, and shipping proof."
+      oracle_result: satisfied
+      evidence:
+        -
+          command: "node --test tests/source-refresh-connector-boundary.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-refresh-connector-boundary.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          result: pass
+        -
+          command: "git diff --check"
+          result: pass
+        -
+          commit_sha: 49c059a
+          push_result: "origin/main pushed"
+      missing_evidence:
+        []
+      remaining_risks:
+        - "No real external connector is implemented yet; this is the boundary contract those connectors must satisfy."
+      next_recommendation: "Next tranche should choose one concrete external source workflow before implementing a real connector."
