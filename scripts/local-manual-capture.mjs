@@ -17,6 +17,8 @@ function parseArgs(argv) {
     connectorType: "manual_file",
     capturedAt: new Date().toISOString(),
     writePlan: null,
+    applyPlan: null,
+    outDir: null,
     json: false
   };
 
@@ -60,6 +62,12 @@ function parseArgs(argv) {
     } else if (arg === "--write-plan") {
       options.writePlan = argv[index + 1];
       index += 1;
+    } else if (arg === "--apply-plan") {
+      options.applyPlan = argv[index + 1];
+      index += 1;
+    } else if (arg === "--out-dir") {
+      options.outDir = argv[index + 1];
+      index += 1;
     } else if (arg === "--json" || arg === "--dry-run") {
       options.json = options.json || arg === "--json";
     } else {
@@ -73,8 +81,10 @@ function parseArgs(argv) {
 function usage() {
   return [
     "Usage: node scripts/local-manual-capture.mjs --file <path> --scope <dir> --workspace <id> --requested-by <owner> --capture-reason <reason> [--json] [--write-plan <file>]",
+    "       node scripts/local-manual-capture.mjs --apply-plan <file> --out-dir <staging-dir> [--json]",
     "",
-    "Dry-runs one explicit local/manual source capture. Reads only --file, emits source registry and snapshot plan, and never writes to the vault."
+    "Dry-runs one explicit local/manual source capture. Reads only --file, emits source registry and snapshot plan, and never writes to the vault.",
+    "Applies a saved dry-run plan only to a reviewable staging directory outside identity-vault."
   ].join("\n");
 }
 
@@ -228,6 +238,180 @@ function writePlanFile(plan, outputPath) {
   fs.writeFileSync(outputPath, `${JSON.stringify(plan, null, 2)}\n`);
 }
 
+function readJsonFile(inputPath) {
+  try {
+    return JSON.parse(fs.readFileSync(inputPath, "utf8"));
+  } catch {
+    throw new Error("apply_plan_unreadable");
+  }
+}
+
+function isPathInside(parent, child) {
+  const relative = path.relative(parent, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function resolveApplyPlanPath(inputPath) {
+  if (!hasValue(inputPath)) {
+    throw new Error("missing_apply_plan");
+  }
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+    throw new Error("apply_plan_unreadable");
+  }
+  return fs.realpathSync(resolved);
+}
+
+function resolveApplyOutDir(outputDir) {
+  if (!hasValue(outputDir)) {
+    throw new Error("missing_apply_out_dir");
+  }
+
+  const requestedPath = path.resolve(outputDir);
+  const parent = path.dirname(requestedPath);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) {
+    throw new Error("apply_plan_parent_missing");
+  }
+  if (fs.existsSync(requestedPath) && !fs.statSync(requestedPath).isDirectory()) {
+    throw new Error("apply_plan_out_dir_is_file");
+  }
+
+  const vaultRoot = path.resolve("identity-vault");
+  if (isPathInside(vaultRoot, requestedPath)) {
+    throw new Error("apply_plan_vault_write_forbidden");
+  }
+
+  fs.mkdirSync(requestedPath, { recursive: true });
+  if (fs.readdirSync(requestedPath).length > 0) {
+    throw new Error("apply_plan_out_dir_not_empty");
+  }
+
+  return fs.realpathSync(requestedPath);
+}
+
+function planContainsRawContentField(value) {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) {
+    return value.some((item) => planContainsRawContentField(item));
+  }
+  return Object.entries(value).some(([key, nestedValue]) => {
+    if (["body", "content", "raw_content", "source_text"].includes(key)) {
+      return true;
+    }
+    return planContainsRawContentField(nestedValue);
+  });
+}
+
+function validateApplyPlan(plan) {
+  if (!plan || typeof plan !== "object" || Array.isArray(plan)) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (plan.generated_from !== "local_manual_capture" || plan.mode !== "dry-run") {
+    throw new Error("apply_plan_invalid");
+  }
+  if (plan.network_writes !== false || plan.writes_performed !== false) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (!plan.validation || !Array.isArray(plan.validation.errors) || plan.validation.errors.length > 0) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (planContainsRawContentField(plan)) {
+    throw new Error("apply_plan_contains_raw_content");
+  }
+
+  const requiredArrays = ["manual_captures", "source_registry_entries", "snapshots", "derived_memories", "promotion_payloads"];
+  for (const key of requiredArrays) {
+    if (!Array.isArray(plan[key])) {
+      throw new Error("apply_plan_invalid");
+    }
+  }
+  if (plan.manual_captures.length === 0 || plan.source_registry_entries.length === 0 || plan.snapshots.length === 0) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (plan.derived_memories.length > 0 || plan.promotion_payloads.length > 0) {
+    throw new Error("apply_plan_invalid");
+  }
+
+  for (const capture of plan.manual_captures) {
+    if (!hasValue(capture.source_id) || !hasValue(capture.original_ref) || capture.owner_confirmed !== true) {
+      throw new Error("apply_plan_invalid");
+    }
+  }
+  for (const entry of plan.source_registry_entries) {
+    if (!hasValue(entry.source_id) || !hasValue(entry.active_snapshot_id) || entry.owner_confirmed !== true) {
+      throw new Error("apply_plan_invalid");
+    }
+  }
+  for (const snapshot of plan.snapshots) {
+    if (
+      !hasValue(snapshot.snapshot_id) ||
+      !hasValue(snapshot.source_id) ||
+      typeof snapshot.content_hash !== "string" ||
+      !snapshot.content_hash.startsWith("sha256:") ||
+      snapshot.immutable !== true ||
+      snapshot.source_text_role !== "evidence_only"
+    ) {
+      throw new Error("apply_plan_invalid");
+    }
+  }
+}
+
+function writeJsonFile(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function applyPlanFile(planPath, outDir) {
+  const resolvedPlanPath = resolveApplyPlanPath(planPath);
+  const plan = readJsonFile(resolvedPlanPath);
+  validateApplyPlan(plan);
+
+  const stagingDir = resolveApplyOutDir(outDir);
+  const stagedFiles = [
+    ["capture-plan.json", plan],
+    ["manual-captures.json", { manual_captures: plan.manual_captures }],
+    ["source-registry.json", { source_registry_entries: plan.source_registry_entries }],
+    ["snapshots.json", { snapshots: plan.snapshots }]
+  ];
+
+  const writtenFiles = [];
+  for (const [fileName, payload] of stagedFiles) {
+    const filePath = path.join(stagingDir, fileName);
+    writeJsonFile(filePath, payload);
+    writtenFiles.push(filePath);
+  }
+
+  const result = {
+    mode: "apply-plan",
+    generated_from: "local_manual_capture",
+    source_plan: resolvedPlanPath,
+    out_dir: stagingDir,
+    network_writes: false,
+    writes_performed: true,
+    staging_only: true,
+    vault_writes_performed: false,
+    source_count: plan.source_registry_entries.length,
+    snapshot_count: plan.snapshots.length,
+    manual_capture_count: plan.manual_captures.length,
+    files_written: writtenFiles.length + 1,
+    written_files: [...writtenFiles, path.join(stagingDir, "manifest.json")],
+    validation: {
+      errors: []
+    }
+  };
+  writeJsonFile(path.join(stagingDir, "manifest.json"), result);
+  return result;
+}
+
+function printApplyResult(result, json) {
+  if (json) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`mode=${result.mode} staging_only=${result.staging_only} writes_performed=${result.writes_performed}\n`);
+  process.stdout.write(`out_dir=${result.out_dir}\n`);
+  process.stdout.write(`files_written=${result.files_written}\n`);
+}
+
 function printPlan(plan, json) {
   if (json) {
     process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
@@ -246,6 +430,11 @@ function main() {
     const options = parseArgs(process.argv.slice(2));
     if (options.help) {
       process.stdout.write(`${usage()}\n`);
+      return;
+    }
+    if (options.applyPlan) {
+      const result = applyPlanFile(options.applyPlan, options.outDir);
+      printApplyResult(result, options.json);
       return;
     }
     const result = filePlan(options);

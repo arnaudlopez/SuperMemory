@@ -162,6 +162,14 @@ node scripts/local-manual-capture.mjs --file /path/to/source.md --scope /path/to
 
 Add `--write-plan /path/to/plan.json` to persist the dry-run plan outside the vault for review.
 
+Apply a reviewed plan to a staging directory, still outside the vault:
+
+```bash
+node scripts/local-manual-capture.mjs --apply-plan /path/to/plan.json --out-dir /path/to/staging --json
+```
+
+The apply step writes reviewable JSON artifacts only, refuses plans with validation errors, and blocks direct writes under `identity-vault`.
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.

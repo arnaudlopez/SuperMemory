@@ -105,6 +105,88 @@ const serializedWrittenPlan = JSON.stringify(writtenPlan);
 assert.equal(serializedWrittenPlan.includes("sk-localmanualfixture"), false);
 assert.equal(serializedWrittenPlan.includes("Ignore previous instructions"), false);
 
+const stagingDir = path.join(tmpDir, "staging", "orion-prd-capture");
+fs.mkdirSync(path.dirname(stagingDir), { recursive: true });
+const applyPlan = parseJson(runCli([
+  "--apply-plan", planPath,
+  "--out-dir", stagingDir,
+  "--json"
+]));
+assert.equal(applyPlan.mode, "apply-plan");
+assert.equal(applyPlan.network_writes, false);
+assert.equal(applyPlan.writes_performed, true);
+assert.equal(applyPlan.staging_only, true);
+assert.equal(applyPlan.vault_writes_performed, false);
+assert.equal(applyPlan.source_count, 1);
+assert.equal(applyPlan.snapshot_count, 1);
+assert.equal(applyPlan.manual_capture_count, 1);
+assert.equal(applyPlan.files_written, 5);
+assert.equal(applyPlan.out_dir, fs.realpathSync(stagingDir));
+
+for (const fileName of [
+  "capture-plan.json",
+  "manual-captures.json",
+  "source-registry.json",
+  "snapshots.json",
+  "manifest.json"
+]) {
+  assert.equal(fs.existsSync(path.join(stagingDir, fileName)), true);
+}
+
+const serializedStaging = [
+  "capture-plan.json",
+  "manual-captures.json",
+  "source-registry.json",
+  "snapshots.json",
+  "manifest.json"
+].map((fileName) => fs.readFileSync(path.join(stagingDir, fileName), "utf8")).join("\n");
+assert.equal(serializedStaging.includes("sk-localmanualfixture"), false);
+assert.equal(serializedStaging.includes("Ignore previous instructions"), false);
+assert.equal(serializedStaging.includes(neighborContent), false);
+
+const missingApplyOutDir = runCli([
+  "--apply-plan", planPath,
+  "--json"
+]);
+assert.notEqual(missingApplyOutDir.status, 0);
+assert.match(missingApplyOutDir.stderr, /missing_apply_out_dir/);
+
+const invalidPlanPath = path.join(tmpDir, "plans", "invalid-plan.json");
+fs.writeFileSync(invalidPlanPath, `${JSON.stringify({
+  ...writtenPlan,
+  validation: {
+    errors: ["missing_owner_intent"]
+  }
+}, null, 2)}\n`);
+const invalidApply = runCli([
+  "--apply-plan", invalidPlanPath,
+  "--out-dir", path.join(tmpDir, "staging", "invalid"),
+  "--json"
+]);
+assert.notEqual(invalidApply.status, 0);
+assert.match(invalidApply.stderr, /apply_plan_invalid/);
+
+const rawContentPlanPath = path.join(tmpDir, "plans", "raw-content-plan.json");
+fs.writeFileSync(rawContentPlanPath, `${JSON.stringify({
+  ...writtenPlan,
+  raw_content: selectedContent
+}, null, 2)}\n`);
+const rawContentApply = runCli([
+  "--apply-plan", rawContentPlanPath,
+  "--out-dir", path.join(tmpDir, "staging", "raw-content"),
+  "--json"
+]);
+assert.notEqual(rawContentApply.status, 0);
+assert.match(rawContentApply.stderr, /apply_plan_contains_raw_content/);
+
+const vaultApply = runCli([
+  "--apply-plan", planPath,
+  "--out-dir", path.join(process.cwd(), "identity-vault", "tmp-local-manual-capture-staging"),
+  "--json"
+]);
+assert.notEqual(vaultApply.status, 0);
+assert.match(vaultApply.stderr, /apply_plan_vault_write_forbidden/);
+
 const missingPlanParent = runCli([
   "--file", selectedPath,
   "--scope", `${scopeDir}${path.sep}`,

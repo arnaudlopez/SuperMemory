@@ -271,6 +271,27 @@ Contrat executable :
 node --test tests/local-manual-capture-cli.test.mjs
 ```
 
+## Tranche 5a.2 - Local manual capture staging apply
+
+Objectif :
+
+Permettre a l'operateur de rejouer un plan dry-run deja revu vers un dossier de staging, sans ingestion finale.
+
+Scenario :
+
+- l'operateur fournit `--apply-plan <file>` et `--out-dir <staging-dir>` ;
+- la commande relit le plan sauvegarde sans relire la source locale ;
+- elle refuse les plans invalides, les plans avec erreurs de validation, les payloads de promotion et les champs de contenu brut ;
+- elle ecrit uniquement des artefacts JSON reviewables dans le staging ;
+- elle refuse toute ecriture directe sous `identity-vault` ;
+- elle ne modifie pas le vault et n'appelle aucun service externe.
+
+Contrat executable :
+
+```bash
+node --test tests/local-manual-capture-cli.test.mjs
+```
+
 ## Tranche 5b - Source snapshot refresh preflight
 
 Objectif :
