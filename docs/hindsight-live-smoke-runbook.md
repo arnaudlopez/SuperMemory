@@ -6,25 +6,39 @@ Date: 2026-05-23
 
 Run the first owner-approved Hindsight live smoke against a sacrificial bank, then keep a redacted local proof of what happened.
 
+SuperMemory is local-first. Prefer a self-hosted/local Hindsight runtime for the first smoke. Hindsight Cloud is allowed only when the owner explicitly chooses that endpoint.
+
 This runbook is for the runtime boundary only. It does not replace the vault as source of truth, does not run source capture, and does not promote arbitrary vault content.
 
 ## Preconditions
 
 Use a sacrificial Hindsight bank. Do not point the first smoke at a production or long-lived bank.
 
+Start or identify the local Hindsight API before running the live smoke. The expected local endpoint is:
+
+```bash
+export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
+```
+
 Required environment:
 
 ```bash
 export HINDSIGHT_API_KEY="..."
 export HINDSIGHT_BANK_ID="..."
+export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 export SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1
 ```
 
 Optional environment:
 
 ```bash
-export HINDSIGHT_BASE_URL="https://api.hindsight.vectorize.io"
 export SUPERMEMORY_LIVE_SMOKE_EVIDENCE_PATH="tmp/hindsight-live-smoke-evidence.jsonl"
+```
+
+Cloud alternative, explicit only:
+
+```bash
+export HINDSIGHT_BASE_URL="https://api.hindsight.vectorize.io"
 ```
 
 Rules:
@@ -32,6 +46,7 @@ Rules:
 - never commit env files or evidence files with live run data;
 - keep evidence under `tmp/` unless a separate goal approves another location;
 - verify the target bank is disposable before running `--execute-live`;
+- prefer local/self-hosted Hindsight; do not silently fall back to cloud;
 - stop if the runner reports anything other than `pass`.
 
 ## Rehearsal
@@ -127,6 +142,7 @@ doc-acme-pricing-note
 Before live:
 
 ```bash
+export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 node scripts/verify-hindsight-live-smoke-runner.mjs
 node scripts/verify-supermemory-specs.mjs
 git diff --check

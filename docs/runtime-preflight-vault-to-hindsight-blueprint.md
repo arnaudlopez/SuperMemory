@@ -13,6 +13,7 @@ The target is a vault-to-Hindsight promotion preflight, not a broad connector sy
 - support dry-run as the default;
 - only allow live writes after explicit env and command opt-in;
 - preserve the fake/local adapter as the contract oracle.
+- prefer a self-hosted/local Hindsight runtime for the first real smoke; Hindsight Cloud is an explicit optional endpoint, not the default runtime assumption.
 
 ## Current Contract Inputs
 
@@ -41,6 +42,14 @@ The runtime preflight must preserve these invariants:
 The implementation goal must verify official Hindsight API details before writing live calls.
 
 Do not hard-code unverified endpoint syntax from this blueprint. Treat live API method names, auth header shape, rate limits, retry semantics, delete/upsert semantics, and local-vs-hosted setup as implementation-time documentation checks.
+
+Runtime placement decision:
+
+- SuperMemory should run the first real smoke against self-hosted/local Hindsight, not Hindsight Cloud.
+- `HINDSIGHT_BASE_URL` must be explicit for live runs. For local smoke, use a local endpoint such as `http://127.0.0.1:8888`.
+- Hindsight Cloud (`https://api.hindsight.vectorize.io`) may be used only when the owner intentionally chooses a cloud target.
+- The transport layer must not silently fall back from local/self-hosted to cloud.
+- CI remains mock-only.
 
 This blueprint only fixes the SuperMemory side of the contract.
 
@@ -91,6 +100,8 @@ Rules:
 - dry-run must not require credentials;
 - dry-run must not read or print secrets;
 - live mode must fail closed if required env is missing;
+- live self-hosted/local smoke should set `HINDSIGHT_BASE_URL` explicitly;
+- cloud usage must be opt-in by setting `HINDSIGHT_BASE_URL=https://api.hindsight.vectorize.io` intentionally;
 - logs must redact token-like values;
 - `SUPERMEMORY_PROMOTION_MODE=live` may confirm intent, but the command still needs `--live`.
 
@@ -174,12 +185,19 @@ git diff --check
 
 Goal: run a non-CI live smoke only when the owner provides credentials and explicitly asks for it.
 
+Runtime target:
+
+- prefer self-hosted/local Hindsight for the first smoke;
+- require explicit `HINDSIGHT_BASE_URL`, normally `http://127.0.0.1:8888`;
+- do not use Hindsight Cloud unless the owner explicitly chooses that endpoint.
+
 Behavior:
 
 - promote one governed fixture document;
 - recall with restrictive tags;
 - delete or exclude one `do_not_use` document;
 - write redacted operation evidence to a local ignored or explicitly approved log path.
+- fail rather than silently switching endpoints if the configured local runtime is unavailable.
 
 This slice is not required for the first merged implementation PR.
 
@@ -237,6 +255,7 @@ It should be accepted only if:
 - no live network is required in CI;
 - dry-run remains default;
 - live mode is impossible without explicit opt-in and env;
+- the next live smoke target is self-hosted/local by default, with cloud documented as an explicit alternative only;
 - all existing T0-T14 checks remain green;
 - the implementation does not claim full runtime readiness until an owner-approved live smoke has run.
 

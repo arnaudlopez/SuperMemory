@@ -487,6 +487,52 @@ node scripts/verify-ci-regression-suite.mjs
 
 Le contrat T14 ajoute `.github/workflows/supermemory-specs.yml` et verifie localement que la CI lance les scripts critiques, que des mutations provenance/permissions/`do_not_use` cassent les checks, et que promptfoo reste optionnel plutot qu'une dependance ou gate obligatoire.
 
+## Tranche 15 - Hindsight self-hosted local-first
+
+Objectif :
+
+Passer du contrat local/mock a un runtime Hindsight reel sans adopter Hindsight Cloud comme dependance implicite.
+
+Decision :
+
+- le premier runtime Hindsight cible doit etre self-hosted/local ;
+- `HINDSIGHT_BASE_URL` doit pointer explicitement vers ce runtime local, par exemple `http://127.0.0.1:8888` ;
+- Hindsight Cloud reste un endpoint optionnel et explicite, pas le chemin par defaut de SuperMemory ;
+- aucun test CI ne doit dependre d'un service Hindsight live, local ou cloud ;
+- les preuves live restent redacted et non commitees.
+
+Comportements a prouver :
+
+- Hindsight self-hosted demarre localement avec une bank sacrifiable ;
+- le runner live execute retain -> recall strict, upsert -> recall strict, puis delete ;
+- le recall live utilise `tags_match: "all_strict"` ;
+- la preuve locale confirme `live_writes_performed: true` et `secrets_redacted: true` sans exposer de secret ;
+- si le runtime local n'est pas disponible, le systeme bloque ou reste en mock, sans basculer silencieusement vers le cloud.
+
+Contrats executables deja disponibles :
+
+```bash
+node scripts/verify-hindsight-live-smoke-runner.mjs
+node scripts/verify-hindsight-live-smoke-runbook.mjs
+node scripts/verify-supermemory-specs.mjs
+```
+
+Prochain oracle live manuel :
+
+```bash
+export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
+export HINDSIGHT_API_KEY="..."
+export HINDSIGHT_BANK_ID="..."
+export SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1
+node scripts/hindsight-live-smoke-runner.mjs --execute-live --json
+```
+
+Point de vigilance :
+
+- ne pas presenter `https://api.hindsight.vectorize.io` comme le chemin naturel ;
+- ne pas commiter de credentials, de responses live completes, ni de preuve contenant des donnees sensibles ;
+- ne pas lancer le smoke live sur une bank durable ou production.
+
 ## Ordre recommande
 
 ```text
@@ -504,6 +550,7 @@ T1 contrats techniques
   -> T12 Golden Case partiel
   -> T13 Golden Case complet
   -> T14 regression/CI
+  -> T15 Hindsight self-hosted local-first runtime smoke
 ```
 
 ## Regle de passage
