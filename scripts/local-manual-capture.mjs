@@ -16,6 +16,7 @@ function parseArgs(argv) {
     connectorId: "manual.local_file",
     connectorType: "manual_file",
     capturedAt: new Date().toISOString(),
+    writePlan: null,
     json: false
   };
 
@@ -56,6 +57,9 @@ function parseArgs(argv) {
     } else if (arg === "--captured-at") {
       options.capturedAt = argv[index + 1];
       index += 1;
+    } else if (arg === "--write-plan") {
+      options.writePlan = argv[index + 1];
+      index += 1;
     } else if (arg === "--json" || arg === "--dry-run") {
       options.json = options.json || arg === "--json";
     } else {
@@ -68,9 +72,9 @@ function parseArgs(argv) {
 
 function usage() {
   return [
-    "Usage: node scripts/local-manual-capture.mjs --file <path> --scope <dir> --workspace <id> --requested-by <owner> --capture-reason <reason> [--json]",
+    "Usage: node scripts/local-manual-capture.mjs --file <path> --scope <dir> --workspace <id> --requested-by <owner> --capture-reason <reason> [--json] [--write-plan <file>]",
     "",
-    "Dry-runs one explicit local/manual source capture. Reads only --file, emits source registry and snapshot plan, and performs no writes."
+    "Dry-runs one explicit local/manual source capture. Reads only --file, emits source registry and snapshot plan, and never writes to the vault."
   ].join("\n");
 }
 
@@ -206,6 +210,24 @@ function filePlan(options) {
   };
 }
 
+function resolveWritablePlanPath(outputPath) {
+  if (!hasValue(outputPath)) return null;
+  const requestedPath = path.resolve(outputPath);
+  const parent = path.dirname(requestedPath);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) {
+    throw new Error("write_plan_parent_missing");
+  }
+  if (fs.existsSync(requestedPath) && fs.statSync(requestedPath).isDirectory()) {
+    throw new Error("write_plan_target_is_directory");
+  }
+  return path.join(fs.realpathSync(parent), path.basename(requestedPath));
+}
+
+function writePlanFile(plan, outputPath) {
+  if (!outputPath) return;
+  fs.writeFileSync(outputPath, `${JSON.stringify(plan, null, 2)}\n`);
+}
+
 function printPlan(plan, json) {
   if (json) {
     process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
@@ -229,6 +251,11 @@ function main() {
     const result = filePlan(options);
     if (result.errors.length > 0) {
       throw new Error(result.errors.join(","));
+    }
+    const writtenPath = resolveWritablePlanPath(options.writePlan);
+    if (writtenPath) {
+      result.plan.plan_written_to = writtenPath;
+      writePlanFile(result.plan, writtenPath);
     }
     printPlan(result.plan, options.json);
   } catch (error) {

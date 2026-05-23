@@ -262,6 +262,7 @@ Scenario :
 - elle calcule `content_hash` et emet un plan `manual_captures`, `source_registry_entries`, `snapshots` ;
 - elle refuse les dossiers, les refs hors scope et l'intent owner incomplet ;
 - elle ne sort pas le contenu brut du fichier, les instructions source ou les secrets ;
+- elle peut persister le plan avec `--write-plan <file>` hors vault ;
 - elle ne modifie pas le vault et n'appelle aucun service externe.
 
 Contrat executable :

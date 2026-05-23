@@ -84,6 +84,39 @@ assert.equal(serializedHappy.includes("sk-localmanualfixture"), false);
 assert.equal(serializedHappy.includes("Ignore previous instructions"), false);
 assert.equal(serializedHappy.includes(neighborContent), false);
 
+const planPath = path.join(tmpDir, "plans", "orion-prd-capture.json");
+fs.mkdirSync(path.dirname(planPath), { recursive: true });
+const writePlan = parseJson(runCli([
+  "--file", selectedPath,
+  "--scope", `${scopeDir}${path.sep}`,
+  "--workspace", "workspace:orion",
+  "--requested-by", "owner:arnaud",
+  "--capture-reason", "manual_prd_context_for_memory",
+  "--source-id", sourceId,
+  "--captured-at", capturedAt,
+  "--write-plan", planPath,
+  "--json"
+]));
+const writtenPlan = JSON.parse(fs.readFileSync(planPath, "utf8"));
+assert.equal(writePlan.plan_written_to, fs.realpathSync(planPath));
+assert.equal(writtenPlan.validation.errors.length, 0);
+assert.equal(writtenPlan.snapshots[0].content_hash, expectedHash);
+const serializedWrittenPlan = JSON.stringify(writtenPlan);
+assert.equal(serializedWrittenPlan.includes("sk-localmanualfixture"), false);
+assert.equal(serializedWrittenPlan.includes("Ignore previous instructions"), false);
+
+const missingPlanParent = runCli([
+  "--file", selectedPath,
+  "--scope", `${scopeDir}${path.sep}`,
+  "--workspace", "workspace:orion",
+  "--requested-by", "owner:arnaud",
+  "--capture-reason", "manual_prd_context_for_memory",
+  "--write-plan", path.join(tmpDir, "missing-parent", "plan.json"),
+  "--json"
+]);
+assert.notEqual(missingPlanParent.status, 0);
+assert.match(missingPlanParent.stderr, /write_plan_parent_missing/);
+
 const scopeEscape = runCli([
   "--file", selectedPath,
   "--scope", `${neighborDir}${path.sep}`,

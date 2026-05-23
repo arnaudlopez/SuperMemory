@@ -160,6 +160,8 @@ The operator dry-run command reads exactly one selected local file and prints a 
 node scripts/local-manual-capture.mjs --file /path/to/source.md --scope /path/to/ --workspace workspace:example --requested-by owner:name --capture-reason "manual evidence" --json
 ```
 
+Add `--write-plan /path/to/plan.json` to persist the dry-run plan outside the vault for review.
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.
