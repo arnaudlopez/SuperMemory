@@ -1,0 +1,23 @@
+{
+  "case_id": "source-refresh-connector-boundary",
+  "required_test_ids": ["CB1", "CB2", "CB3", "CB4", "CB5", "CB6"],
+  "expected_errors": {
+    "CB1": "unauthorized_connector_used",
+    "CB2": "connector_scope_escape",
+    "CB3": "changed_connector_result_missing_lineage",
+    "CB4": "connector_unavailable_marked_fresh",
+    "CB5": "do_not_use_connector_refreshed",
+    "CB6": "connector_secret_leaked"
+  },
+  "required_connector_id": "fixture-acme-docs",
+  "required_connector_type": "fixture_connector",
+  "required_connector_scope": "fixture://acme/",
+  "required_changed_source_id": "src-acme-prd",
+  "required_changed_result_id": "result-prd-changed",
+  "required_changed_candidate_id": "candidate-prd-changed",
+  "required_changed_snapshot_id": "snap-acme-prd-2026-05-25",
+  "required_previous_snapshot_id": "snap-acme-prd-2026-05-22",
+  "required_review_id": "review-acme-prd-connector-refresh-2026-05-25",
+  "required_unavailable_source_id": "src-acme-contract",
+  "required_do_not_use_source_id": "src-legacy-pricing"
+}

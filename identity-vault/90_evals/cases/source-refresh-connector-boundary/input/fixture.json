@@ -1,0 +1,613 @@
+{
+  "case_id": "source-refresh-connector-boundary",
+  "valid": {
+    "connector_registry": [
+      {
+        "connector_id": "fixture-acme-docs",
+        "connector_type": "fixture_connector",
+        "status": "enabled",
+        "auth_status": "configured",
+        "workspace_id": "ws-acme",
+        "allowed_scopes": ["fixture://acme/"],
+        "allowed_source_kinds": ["mutable_doc", "crm_contract", "spreadsheet"],
+        "secret_ref": "env:ACME_FIXTURE_CONNECTOR_TOKEN"
+      }
+    ],
+    "sources": [
+      {
+        "source_id": "src-acme-api-doc",
+        "source_kind": "mutable_doc",
+        "status": "active",
+        "workspace_id": "ws-acme",
+        "connector_id": "fixture-acme-docs",
+        "connector_scope": "fixture://acme/",
+        "original_ref": "fixture://acme/api-doc",
+        "active_snapshot_id": "snap-acme-api-doc-2026-05-20",
+        "freshness": "fresh"
+      },
+      {
+        "source_id": "src-acme-prd",
+        "source_kind": "mutable_doc",
+        "status": "active",
+        "workspace_id": "ws-acme",
+        "connector_id": "fixture-acme-docs",
+        "connector_scope": "fixture://acme/",
+        "original_ref": "fixture://acme/prd",
+        "active_snapshot_id": "snap-acme-prd-2026-05-22",
+        "freshness": "fresh"
+      },
+      {
+        "source_id": "src-acme-contract",
+        "source_kind": "crm_contract",
+        "status": "active",
+        "workspace_id": "ws-acme",
+        "connector_id": "fixture-acme-docs",
+        "connector_scope": "fixture://acme/",
+        "original_ref": "fixture://acme/contracts/42",
+        "active_snapshot_id": "snap-acme-contract-2026-05-01",
+        "freshness": "fresh"
+      },
+      {
+        "source_id": "src-legacy-pricing",
+        "source_kind": "spreadsheet",
+        "status": "do_not_use",
+        "workspace_id": "ws-acme",
+        "connector_id": "fixture-acme-docs",
+        "connector_scope": "fixture://acme/",
+        "original_ref": "fixture://acme/legacy/pricing",
+        "active_snapshot_id": "snap-legacy-pricing-2026-04-01",
+        "freshness": "do_not_use"
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-api-doc-2026-05-20",
+        "source_id": "src-acme-api-doc",
+        "content_hash": "sha256:api-doc-v1",
+        "captured_at": "2026-05-20T09:00:00Z",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-22",
+        "source_id": "src-acme-prd",
+        "content_hash": "sha256:prd-v2",
+        "captured_at": "2026-05-22T14:00:00Z",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-25",
+        "source_id": "src-acme-prd",
+        "content_hash": "sha256:prd-v3",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-22",
+        "captured_at": "2026-05-25T08:30:00Z",
+        "capture_method": "connector_pull",
+        "connector_result_id": "result-prd-changed",
+        "immutable": true,
+        "change_status": "changed"
+      },
+      {
+        "snapshot_id": "snap-acme-contract-2026-05-01",
+        "source_id": "src-acme-contract",
+        "content_hash": "sha256:contract-v1",
+        "captured_at": "2026-05-01T12:00:00Z",
+        "immutable": true
+      },
+      {
+        "snapshot_id": "snap-legacy-pricing-2026-04-01",
+        "source_id": "src-legacy-pricing",
+        "content_hash": "sha256:legacy-pricing",
+        "captured_at": "2026-04-01T10:00:00Z",
+        "immutable": true
+      }
+    ],
+    "connector_runs": [
+      {
+        "run_id": "run-acme-fixture-refresh-2026-05-25",
+        "connector_id": "fixture-acme-docs",
+        "connector_type": "fixture_connector",
+        "mode": "mock",
+        "network_writes": false,
+        "started_at": "2026-05-25T08:00:00Z",
+        "secrets_redacted": true
+      }
+    ],
+    "connector_results": [
+      {
+        "result_id": "result-api-doc-unchanged",
+        "run_id": "run-acme-fixture-refresh-2026-05-25",
+        "connector_id": "fixture-acme-docs",
+        "source_id": "src-acme-api-doc",
+        "source_ref": "fixture://acme/api-doc",
+        "result": "available",
+        "content_hash": "sha256:api-doc-v1",
+        "connector_version": "etag-api-v1",
+        "checked_at": "2026-05-25T08:05:00Z",
+        "secrets_redacted": true
+      },
+      {
+        "result_id": "result-prd-changed",
+        "run_id": "run-acme-fixture-refresh-2026-05-25",
+        "connector_id": "fixture-acme-docs",
+        "source_id": "src-acme-prd",
+        "source_ref": "fixture://acme/prd",
+        "result": "available",
+        "content_hash": "sha256:prd-v3",
+        "connector_version": "etag-prd-v3",
+        "checked_at": "2026-05-25T08:30:00Z",
+        "planned_snapshot_id": "snap-acme-prd-2026-05-25",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-22",
+        "capture_method": "connector_pull",
+        "secrets_redacted": true
+      },
+      {
+        "result_id": "result-contract-unavailable",
+        "run_id": "run-acme-fixture-refresh-2026-05-25",
+        "connector_id": "fixture-acme-docs",
+        "source_id": "src-acme-contract",
+        "source_ref": "fixture://acme/contracts/42",
+        "result": "unavailable",
+        "error_kind": "connector_timeout",
+        "retryable": true,
+        "checked_at": "2026-05-25T08:35:00Z",
+        "secrets_redacted": true
+      },
+      {
+        "result_id": "result-legacy-pricing-blocked",
+        "run_id": "run-acme-fixture-refresh-2026-05-25",
+        "connector_id": "fixture-acme-docs",
+        "source_id": "src-legacy-pricing",
+        "source_ref": "fixture://acme/legacy/pricing",
+        "result": "blocked",
+        "blocked_reason": "do_not_use",
+        "checked_at": "2026-05-25T08:40:00Z",
+        "secrets_redacted": true
+      }
+    ],
+    "refresh_candidates": [
+      {
+        "candidate_id": "candidate-api-doc-unchanged",
+        "connector_result_id": "result-api-doc-unchanged",
+        "source_id": "src-acme-api-doc",
+        "connector_id": "fixture-acme-docs",
+        "source_ref": "fixture://acme/api-doc",
+        "checked_at": "2026-05-25T08:05:00Z",
+        "result": "available",
+        "content_hash": "sha256:api-doc-v1"
+      },
+      {
+        "candidate_id": "candidate-prd-changed",
+        "connector_result_id": "result-prd-changed",
+        "source_id": "src-acme-prd",
+        "connector_id": "fixture-acme-docs",
+        "source_ref": "fixture://acme/prd",
+        "checked_at": "2026-05-25T08:30:00Z",
+        "result": "available",
+        "content_hash": "sha256:prd-v3",
+        "planned_snapshot_id": "snap-acme-prd-2026-05-25",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-22"
+      },
+      {
+        "candidate_id": "candidate-contract-unavailable",
+        "connector_result_id": "result-contract-unavailable",
+        "source_id": "src-acme-contract",
+        "connector_id": "fixture-acme-docs",
+        "source_ref": "fixture://acme/contracts/42",
+        "checked_at": "2026-05-25T08:35:00Z",
+        "result": "unavailable",
+        "unavailable_reason": "connector_timeout"
+      },
+      {
+        "candidate_id": "candidate-legacy-pricing-blocked",
+        "connector_result_id": "result-legacy-pricing-blocked",
+        "source_id": "src-legacy-pricing",
+        "connector_id": "fixture-acme-docs",
+        "source_ref": "fixture://acme/legacy/pricing",
+        "checked_at": "2026-05-25T08:40:00Z",
+        "result": "blocked",
+        "blocked_reason": "do_not_use"
+      }
+    ],
+    "refresh_plans": [
+      {
+        "plan_id": "plan-api-doc-unchanged",
+        "source_id": "src-acme-api-doc",
+        "candidate_id": "candidate-api-doc-unchanged",
+        "operation": "unchanged",
+        "created_snapshot_id": null,
+        "freshness_after_check": "fresh"
+      },
+      {
+        "plan_id": "plan-prd-create-snapshot",
+        "source_id": "src-acme-prd",
+        "candidate_id": "candidate-prd-changed",
+        "operation": "create_snapshot",
+        "created_snapshot_id": "snap-acme-prd-2026-05-25",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-22",
+        "freshness_after_check": "changed",
+        "review_id": "review-acme-prd-connector-refresh-2026-05-25"
+      },
+      {
+        "plan_id": "plan-contract-unavailable",
+        "source_id": "src-acme-contract",
+        "candidate_id": "candidate-contract-unavailable",
+        "operation": "unavailable_last_known",
+        "created_snapshot_id": null,
+        "freshness_after_check": "unavailable"
+      },
+      {
+        "plan_id": "plan-legacy-pricing-skip",
+        "source_id": "src-legacy-pricing",
+        "candidate_id": "candidate-legacy-pricing-blocked",
+        "operation": "skip_do_not_use",
+        "created_snapshot_id": null,
+        "freshness_after_check": "do_not_use"
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-prd-t2",
+        "document_id": "doc-acme-prd",
+        "status": "needs_review",
+        "freshness": "changed",
+        "snapshot_id": "snap-acme-prd-2026-05-22",
+        "derived_from": ["snap-acme-prd-2026-05-22"],
+        "staleness_policy": "needs_review_on_source_change",
+        "review_reason": "connector_snapshot_changed"
+      }
+    ],
+    "review_items": [
+      {
+        "review_id": "review-acme-prd-connector-refresh-2026-05-25",
+        "queue": "staleness_queue",
+        "source_id": "src-acme-prd",
+        "old_snapshot_id": "snap-acme-prd-2026-05-22",
+        "new_snapshot_id": "snap-acme-prd-2026-05-25",
+        "affected_memory_ids": ["mem-acme-prd-t2"],
+        "status": "open"
+      }
+    ],
+    "promotion_payloads": []
+  },
+  "invalid_cases": [
+    {
+      "id": "CB1",
+      "description": "Connector results must come from an enabled and configured connector.",
+      "expected_error": "unauthorized_connector_used",
+      "input": {
+        "connector_registry": [
+          {
+            "connector_id": "fixture-acme-docs",
+            "connector_type": "fixture_connector",
+            "status": "disabled",
+            "auth_status": "missing",
+            "workspace_id": "ws-acme",
+            "allowed_scopes": ["fixture://acme/"]
+          }
+        ],
+        "sources": [
+          {
+            "source_id": "src-acme-api-doc",
+            "status": "active",
+            "workspace_id": "ws-acme",
+            "connector_id": "fixture-acme-docs",
+            "connector_scope": "fixture://acme/",
+            "original_ref": "fixture://acme/api-doc",
+            "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+          }
+        ],
+        "connector_results": [
+          {
+            "result_id": "result-api-doc-unchanged",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-api-doc",
+            "source_ref": "fixture://acme/api-doc",
+            "result": "available",
+            "content_hash": "sha256:api-doc-v1",
+            "secrets_redacted": true
+          }
+        ],
+        "refresh_candidates": [
+          {
+            "candidate_id": "candidate-api-doc-unchanged",
+            "connector_result_id": "result-api-doc-unchanged",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-api-doc",
+            "source_ref": "fixture://acme/api-doc",
+            "result": "available",
+            "content_hash": "sha256:api-doc-v1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CB2",
+      "description": "Connector results must not escape the declared source scope.",
+      "expected_error": "connector_scope_escape",
+      "input": {
+        "connector_registry": [
+          {
+            "connector_id": "fixture-acme-docs",
+            "connector_type": "fixture_connector",
+            "status": "enabled",
+            "auth_status": "configured",
+            "workspace_id": "ws-acme",
+            "allowed_scopes": ["fixture://acme/"]
+          }
+        ],
+        "sources": [
+          {
+            "source_id": "src-acme-api-doc",
+            "status": "active",
+            "workspace_id": "ws-acme",
+            "connector_id": "fixture-acme-docs",
+            "connector_scope": "fixture://acme/",
+            "original_ref": "fixture://acme/api-doc",
+            "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+          }
+        ],
+        "connector_results": [
+          {
+            "result_id": "result-api-doc-escape",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-api-doc",
+            "source_ref": "fixture://other-company/api-doc",
+            "result": "available",
+            "content_hash": "sha256:api-doc-v2",
+            "secrets_redacted": true
+          }
+        ],
+        "refresh_candidates": [
+          {
+            "candidate_id": "candidate-api-doc-escape",
+            "connector_result_id": "result-api-doc-escape",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-api-doc",
+            "source_ref": "fixture://other-company/api-doc",
+            "result": "available",
+            "content_hash": "sha256:api-doc-v2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CB3",
+      "description": "Changed connector results must carry snapshot lineage into the candidate and plan.",
+      "expected_error": "changed_connector_result_missing_lineage",
+      "input": {
+        "connector_registry": [
+          {
+            "connector_id": "fixture-acme-docs",
+            "connector_type": "fixture_connector",
+            "status": "enabled",
+            "auth_status": "configured",
+            "workspace_id": "ws-acme",
+            "allowed_scopes": ["fixture://acme/"]
+          }
+        ],
+        "sources": [
+          {
+            "source_id": "src-acme-prd",
+            "status": "active",
+            "workspace_id": "ws-acme",
+            "connector_id": "fixture-acme-docs",
+            "connector_scope": "fixture://acme/",
+            "original_ref": "fixture://acme/prd",
+            "active_snapshot_id": "snap-acme-prd-2026-05-22"
+          }
+        ],
+        "snapshots": [
+          {
+            "snapshot_id": "snap-acme-prd-2026-05-22",
+            "source_id": "src-acme-prd",
+            "content_hash": "sha256:prd-v2",
+            "immutable": true
+          }
+        ],
+        "connector_results": [
+          {
+            "result_id": "result-prd-changed",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-prd",
+            "source_ref": "fixture://acme/prd",
+            "result": "available",
+            "content_hash": "sha256:prd-v3",
+            "secrets_redacted": true
+          }
+        ],
+        "refresh_candidates": [
+          {
+            "candidate_id": "candidate-prd-changed",
+            "connector_result_id": "result-prd-changed",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-prd",
+            "source_ref": "fixture://acme/prd",
+            "result": "available",
+            "content_hash": "sha256:prd-v3"
+          }
+        ],
+        "refresh_plans": []
+      }
+    },
+    {
+      "id": "CB4",
+      "description": "Unavailable connector results must not create fresh snapshots.",
+      "expected_error": "connector_unavailable_marked_fresh",
+      "input": {
+        "connector_registry": [
+          {
+            "connector_id": "fixture-acme-docs",
+            "connector_type": "fixture_connector",
+            "status": "enabled",
+            "auth_status": "configured",
+            "workspace_id": "ws-acme",
+            "allowed_scopes": ["fixture://acme/"]
+          }
+        ],
+        "sources": [
+          {
+            "source_id": "src-acme-contract",
+            "status": "active",
+            "workspace_id": "ws-acme",
+            "connector_id": "fixture-acme-docs",
+            "connector_scope": "fixture://acme/",
+            "original_ref": "fixture://acme/contracts/42",
+            "active_snapshot_id": "snap-acme-contract-2026-05-01",
+            "freshness": "fresh"
+          }
+        ],
+        "connector_results": [
+          {
+            "result_id": "result-contract-unavailable",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-contract",
+            "source_ref": "fixture://acme/contracts/42",
+            "result": "unavailable",
+            "error_kind": "connector_timeout",
+            "secrets_redacted": true
+          }
+        ],
+        "refresh_candidates": [
+          {
+            "candidate_id": "candidate-contract-unavailable",
+            "connector_result_id": "result-contract-unavailable",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-contract",
+            "source_ref": "fixture://acme/contracts/42",
+            "result": "unavailable"
+          }
+        ],
+        "refresh_plans": [
+          {
+            "source_id": "src-acme-contract",
+            "candidate_id": "candidate-contract-unavailable",
+            "operation": "create_snapshot",
+            "created_snapshot_id": "snap-acme-contract-2026-05-25",
+            "freshness_after_check": "fresh"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CB5",
+      "description": "do_not_use sources must be blocked before connector-backed refresh.",
+      "expected_error": "do_not_use_connector_refreshed",
+      "input": {
+        "connector_registry": [
+          {
+            "connector_id": "fixture-acme-docs",
+            "connector_type": "fixture_connector",
+            "status": "enabled",
+            "auth_status": "configured",
+            "workspace_id": "ws-acme",
+            "allowed_scopes": ["fixture://acme/"]
+          }
+        ],
+        "sources": [
+          {
+            "source_id": "src-legacy-pricing",
+            "status": "do_not_use",
+            "workspace_id": "ws-acme",
+            "connector_id": "fixture-acme-docs",
+            "connector_scope": "fixture://acme/",
+            "original_ref": "fixture://acme/legacy/pricing",
+            "active_snapshot_id": "snap-legacy-pricing-2026-04-01"
+          }
+        ],
+        "connector_results": [
+          {
+            "result_id": "result-legacy-pricing",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-legacy-pricing",
+            "source_ref": "fixture://acme/legacy/pricing",
+            "result": "available",
+            "content_hash": "sha256:new-pricing",
+            "secrets_redacted": true
+          }
+        ],
+        "refresh_candidates": [
+          {
+            "candidate_id": "candidate-legacy-pricing",
+            "connector_result_id": "result-legacy-pricing",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-legacy-pricing",
+            "source_ref": "fixture://acme/legacy/pricing",
+            "result": "available",
+            "content_hash": "sha256:new-pricing"
+          }
+        ],
+        "promotion_payloads": [
+          {
+            "document_id": "doc-legacy-pricing",
+            "status": "active",
+            "metadata": {
+              "source_id": "src-legacy-pricing"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "CB6",
+      "description": "Connector output and audit data must redact secrets.",
+      "expected_error": "connector_secret_leaked",
+      "input": {
+        "connector_registry": [
+          {
+            "connector_id": "fixture-acme-docs",
+            "connector_type": "fixture_connector",
+            "status": "enabled",
+            "auth_status": "configured",
+            "workspace_id": "ws-acme",
+            "allowed_scopes": ["fixture://acme/"],
+            "secret_ref": "env:ACME_FIXTURE_CONNECTOR_TOKEN"
+          }
+        ],
+        "sources": [
+          {
+            "source_id": "src-acme-api-doc",
+            "status": "active",
+            "workspace_id": "ws-acme",
+            "connector_id": "fixture-acme-docs",
+            "connector_scope": "fixture://acme/",
+            "original_ref": "fixture://acme/api-doc",
+            "active_snapshot_id": "snap-acme-api-doc-2026-05-20"
+          }
+        ],
+        "connector_runs": [
+          {
+            "run_id": "run-acme-fixture-refresh-2026-05-25",
+            "connector_id": "fixture-acme-docs",
+            "mode": "mock",
+            "network_writes": false,
+            "secret_value": "sk-live-do-not-log",
+            "secrets_redacted": false
+          }
+        ],
+        "connector_results": [
+          {
+            "result_id": "result-api-doc",
+            "run_id": "run-acme-fixture-refresh-2026-05-25",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-api-doc",
+            "source_ref": "fixture://acme/api-doc",
+            "result": "available",
+            "content_hash": "sha256:api-doc-v1",
+            "secret_value": "sk-live-do-not-log",
+            "secrets_redacted": false
+          }
+        ],
+        "refresh_candidates": [
+          {
+            "candidate_id": "candidate-api-doc",
+            "connector_result_id": "result-api-doc",
+            "connector_id": "fixture-acme-docs",
+            "source_id": "src-acme-api-doc",
+            "source_ref": "fixture://acme/api-doc",
+            "result": "available",
+            "content_hash": "sha256:api-doc-v1"
+          }
+        ]
+      }
+    }
+  ]
+}

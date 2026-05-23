@@ -1,0 +1,497 @@
+version: 2
+goal:
+  slug: "source-refresh-connector-boundary-notes"
+  title: "Source Refresh Connector Boundary Notes"
+  status: active
+  created_at: "2026-05-23"
+  updated_at: "2026-05-23"
+  kind: specific
+  original_request: "# Source Refresh Connector Boundary Notes\n\n## Intent\n\nImplement the next SuperMemory tranche after source snapshot refresh preflight: a local, deterministic connector boundary contract for source refresh.\n\nThe system should prove what a connector-backed refresh report must contain before any real connector is allowed to feed snapshot refresh. This is still not a real web, Gmail, Drive, CRM, or API connector.\n\nA maintainer can run a local verifier proving that connector-backed refresh input is scoped, authorized, explicit, and safe before it can become source refresh candidates.\n\n- Do not implement real external connectors.\n- Do not fetch remote sources.\n- Do not scan the whole vault automatically.\n- Do not run live Hindsight writes.\n- Do not add dependencies, env files, migrations, jobs, or UI.\n- Do not weaken existing source refresh, source-change, Hindsight promotion, or global specs.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nSource refresh connector boundary is complete when node scripts/verify-source-refresh-connector-boundary.mjs, node --test tests/source-refresh-connector-boundary.test.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Connector refresh reports require `connector_id`, `connector_type`, `connector_scope`, `workspace_id`, and `access_policy`.\n- Connector scope must be selected-source or explicitly bounded; broad/all-vault scans fail closed.\n- Every refresh candidate must point to a registered mutable source.\n- Connector candidates must carry either a content hash, connector version, or unavailable result.\n- `do_not_use` sources cannot produce active refresh candidates.\n- The connector boundary feeds the existing source snapshot refresh preflight shape without doing network work.\n- Existing source refresh, source-change, Hindsight promotion, and global specs remain green.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/source-refresh-connector-boundary/brief.md --mode implementation --oracle \"Source refresh connector boundary is complete when node scripts/verify-source-refresh-connector-boundary.mjs, node --test tests/source-refresh-connector-boundary.test.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\" --out docs/goals/source-refresh-connector-boundary-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/source-refresh-connector-boundary-notes.md\n\n> # Source Refresh Connector Boundary Notes\n> \n> ## Intent\n> \n> Implement the next SuperMemory tranche after source snapshot refresh preflight: a local, deterministic connector boundary contract for source refresh.\n> \n> The system should prove what a connector-backed refresh report must contain before any real connector is allowed to feed snapshot refresh. This is still not a real web, Gmail, Drive, CRM, or API connector.\n> \n> ## User Outcome\n> \n> A maintainer can run a local verifier proving that connector-backed refresh input is scoped, authorized, explicit, and safe before it can become source refresh candidates.\n> \n> ## Non-Goals\n> \n> - Do not implement real external connectors.\n> - Do not fetch remote sources.\n> - Do not scan the whole vault automatically.\n> - Do not run live Hindsight writes.\n> - Do not add dependencies, env files, migrations, jobs, or UI.\n> - Do not weaken existing source refresh, source-change, Hindsight promotion, or global specs.\n> \n> ## Acceptance\n> \n> - Connector refresh reports require `connector_id`, `connector_type`, `connector_scope`, `workspace_id`, and `access_policy`.\n> - Connector scope must be selected-source or explicitly bounded; broad/all-vault scans fail closed.\n> - Every refresh candidate must point to a registered mutable source.\n> - Connector candidates must carry either a content hash, connector version, or unavailable result.\n> - `do_not_use` sources cannot produce active refresh candidates.\n> - The connector boundary feeds the existing source snapshot refresh preflight shape without doing network work.\n> - Existing source refresh, source-change, Hindsight promotion, and global specs remain green.\n> \n> ## Oracle\n> \n> Source refresh connector boundary is complete when `node scripts/verify-source-refresh-connector-boundary.mjs`, `node --test tests/source-refresh-connector-boundary.test.mjs`, `node scripts/verify-source-snapshot-refresh-preflight.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` all pass."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Source Refresh Connector Boundary Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "Source refresh connector boundary is complete when node scripts/verify-source-refresh-connector-boundary.mjs, node --test tests/source-refresh-connector-boundary.test.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+  oracle:
+    signal: "Source refresh connector boundary is complete when node scripts/verify-source-refresh-connector-boundary.mjs, node --test tests/source-refresh-connector-boundary.test.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped source capture and refresh contracts. Existing source-snapshot-refresh-preflight validates refresh plans after candidates exist; this tranche should validate connector-backed refresh reports before they become candidates. A red test file already exists and fails on missing verifier."
+      design_concept: "A connector boundary is a local deterministic contract for allowed connector reports: it proves connector metadata, scope, source registration, result shape, and do_not_use exclusion before any future real connector can feed refresh preflight."
+      ubiquitous_language:
+        connector_refresh_report: "Fixture-only report produced by a hypothetical connector check."
+        connector_scope: "Bounded source selection authorized for a connector, never all-vault by default."
+        registered_source: "A mutable source already known to the vault/source registry."
+        refresh_candidate: "Safe normalized candidate that can feed source snapshot refresh preflight."
+        broad_scan: "Unbounded connector run, forbidden in this tranche."
+      module_map:
+        red_test: "tests/source-refresh-connector-boundary.test.mjs already calls missing verifier."
+        new_fixture: "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+        new_verifier: scripts/verify-source-refresh-connector-boundary.mjs
+        global_oracle: scripts/verify-supermemory-specs.mjs
+        related_contracts:
+          - scripts/verify-source-snapshot-refresh-preflight.mjs
+          - scripts/verify-hindsight-capture-refresh-sync.mjs
+      interface_contract: "The verifier must reject missing connector metadata, broad/all-vault scope, candidates for unregistered sources, candidates without hash/version/unavailable result, and do_not_use sources producing active candidates."
+      test_strategy: "Use existing red test wrapper as T003 evidence; green stage adds fixture, verifier, and global spec wiring."
+      feedback_policy: "Run node --test tests/source-refresh-connector-boundary.test.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, git diff --check."
+      acceptance_contract_updates:
+        visible_outcome: "A maintainer can run node scripts/verify-source-refresh-connector-boundary.mjs and see PASS for a deterministic connector boundary contract."
+        failure_modes:
+          - "connector report missing connector_id/type/scope"
+          - "connector scope is broad/all-vault"
+          - "refresh candidate targets an unregistered source"
+          - "candidate lacks hash/version/unavailable result"
+          - "do_not_use source produces active candidate"
+          - "global specs regress"
+      dirty_worktree_risk_map:
+        existing_dirty_files:
+          - tests/source-refresh-connector-boundary.test.mjs
+          - docs/source-refresh-connector-boundary-notes.md
+          - "docs/goals/source-refresh-connector-boundary/**"
+        unrelated_dirty_files: "none observed"
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: none
+        ui_routes: none
+        background_jobs: none
+        external_services: "none; fixture-only connector boundary"
+        deploy_rollback: "local verifier/test/docs only; rollback by reverting commit"
+        observability: none
+        docs: "README/roadmap may be updated to reflect this boundary"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved the connector boundary contract slice. Use the existing red test wrapper, then implement deterministic fixture/verifier/global wiring without any real connector or network call."
+      approved_design_concept: "Connector-backed refresh must pass a local boundary before it can feed source snapshot refresh: scoped connector report in, normalized refresh candidates out, no broad scan, no unregistered source, no do_not_use active candidate."
+      approved_ubiquitous_language:
+        connector_refresh_report: "hypothetical connector check report fixture"
+        connector_scope: "bounded authorized scope"
+        refresh_candidate: "normalized candidate for refresh preflight"
+        broad_scan: "forbidden all-vault/source scan"
+      feedback_policy: "Red wrapper first, then fixture/verifier implementation, then targeted and global verification."
+      test_strategy: "T003 records existing red test failure. T004 adds identity-vault/90_evals/cases/source-refresh-connector-boundary, verifier script, global spec wiring, and docs alignment."
+      module_map:
+        fixture: "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+        verifier: scripts/verify-source-refresh-connector-boundary.mjs
+        test: tests/source-refresh-connector-boundary.test.mjs
+        global: scripts/verify-supermemory-specs.mjs
+        docs: "README.md and docs/golden-case-implementation-roadmap.md if needed"
+      interface_contract: "Verifier rejects missing connector metadata, broad connector scope, unregistered source candidates, ambiguous candidates without hash/version/unavailable, and do_not_use active candidate generation."
+      architecture_review: "Approved. This is a deterministic boundary contract, not real connector integration. No dependencies, env, network, jobs, DB, or UI."
+      impact_assessment_ref: T001.receipt.impact_assessment
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/source-refresh-connector-boundary.test.mjs
+          verify:
+            - "node --test tests/source-refresh-connector-boundary.test.mjs"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "The selected contract is ambiguous."
+            - "No meaningful failing test can be written."
+            - "Tests require production implementation changes before the red stage."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Unrelated dirty files would need to be modified."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/verify-source-refresh-connector-boundary.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - tests/source-refresh-connector-boundary.test.mjs
+            - "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+          verify:
+            - "node --test tests/source-refresh-connector-boundary.test.mjs"
+            - "node scripts/verify-source-refresh-connector-boundary.mjs"
+            - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Implementation starts adding real connectors, network calls, dependencies, jobs, migrations, env files, or UI."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - scripts/verify-source-refresh-connector-boundary.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - tests/source-refresh-connector-boundary.test.mjs
+            - "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+          verify:
+            - "node --test tests/source-refresh-connector-boundary.test.mjs"
+            - "node scripts/verify-source-refresh-connector-boundary.mjs"
+            - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/source-refresh-connector-boundary.test.mjs
+    verify:
+      - "node --test tests/source-refresh-connector-boundary.test.mjs"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "The selected contract is ambiguous."
+      - "No meaningful failing test can be written."
+      - "Tests require production implementation changes before the red stage."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Unrelated dirty files would need to be modified."
+    receipt:
+      result: done
+      summary: "Recorded the existing red test wrapper for the connector boundary. It fails because the draft verifier emits extra lineage errors for CB2 and CB6 instead of one exact expected error per invalid case."
+      red_test_evidence:
+        command: "node --test tests/source-refresh-connector-boundary.test.mjs"
+        result: failed_as_expected
+        failure: "CB2 expected connector_scope_escape got connector_scope_escape,changed_connector_result_missing_lineage; CB6 expected connector_secret_leaked got connector_secret_leaked,changed_connector_result_missing_lineage"
+      changed_files:
+        - tests/source-refresh-connector-boundary.test.mjs
+      oracle_coverage: "The red test locks the verifier command and exact invalid-case behavior before implementation is finalized."
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-source-refresh-connector-boundary.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - tests/source-refresh-connector-boundary.test.mjs
+      - "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+    verify:
+      - "node --test tests/source-refresh-connector-boundary.test.mjs"
+      - "node scripts/verify-source-refresh-connector-boundary.mjs"
+      - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Implementation starts adding real connectors, network calls, dependencies, jobs, migrations, env files, or UI."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented the source refresh connector boundary contract with deterministic fixture, verifier, global spec wiring, and docs alignment."
+      changed_files:
+        - tests/source-refresh-connector-boundary.test.mjs
+        - scripts/verify-source-refresh-connector-boundary.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+      green_test_evidence:
+        -
+          command: "node --test tests/source-refresh-connector-boundary.test.mjs"
+          result: "green test pass"
+        -
+          command: "node scripts/verify-source-refresh-connector-boundary.mjs"
+          result: "green verification pass"
+      design_delta: "Added Tranche 5c as a local connector boundary before any real external connector. It validates connector registry, scope, source registration, candidate projection, changed lineage, unavailable handling, do_not_use blocking, and secret redaction."
+      oracle_coverage: "Covers missing/unauthorized connector, scope escape, missing changed lineage, unavailable not-fresh, do_not_use blocking, and secret leakage failure modes."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-source-refresh-connector-boundary.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - tests/source-refresh-connector-boundary.test.mjs
+      - "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+    verify:
+      - "node --test tests/source-refresh-connector-boundary.test.mjs"
+      - "node scripts/verify-source-refresh-connector-boundary.mjs"
+      - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Full verification package passed for source refresh connector boundary."
+      verification:
+        -
+          command: "node --test tests/source-refresh-connector-boundary.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-refresh-connector-boundary.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          result: pass
+        -
+          command: "git diff --check"
+          result: pass
+      changed_files:
+        - tests/source-refresh-connector-boundary.test.mjs
+        - scripts/verify-source-refresh-connector-boundary.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - "identity-vault/90_evals/cases/source-refresh-connector-boundary/**"
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+      oracle_coverage: "All required connector boundary behaviors and regression commands passed."
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Judge approved the source refresh connector boundary for shipping."
+      design_delta: "Added Tranche 5c to prove the connector report boundary before any real external connector is introduced."
+      architecture_review: "Appropriate deterministic verifier extension: fixture connector only, no real external connector, no network, no env, no dependency, no DB, no job, no UI. The boundary feeds existing source refresh preflight semantics."
+      oracle_coverage: "Covers connector authorization, scope escape, changed lineage, unavailable last-known behavior, do_not_use blocking, secret redaction, and global regression wiring."
+      remaining_risks:
+        - "No real Gmail/Drive/Web/CRM connector is implemented yet; this only fixes the interface such connectors must satisfy."
+      another_worker_slice_needed: false
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

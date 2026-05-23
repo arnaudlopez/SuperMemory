@@ -247,6 +247,29 @@ node scripts/verify-source-snapshot-refresh-preflight.mjs
 
 Ce contrat reste local et deterministe. Il ne fetch aucune source externe, ne scanne pas tout le vault, et ne lance pas de promotion Hindsight live.
 
+## Tranche 5c - Source refresh connector boundary
+
+Objectif :
+
+Prouver la frontiere connecteur avant tout vrai connecteur externe.
+
+Scenario :
+
+- un connecteur local `fixture_connector` est autorise, scope et configure ;
+- ses resultats produisent des `refresh_candidates` auditables ;
+- un resultat changed conserve `previous_snapshot_id` jusque dans le plan de snapshot ;
+- un resultat unavailable ne cree aucune preuve fraiche ;
+- une source `do_not_use` est bloquee avant refresh ou promotion active ;
+- les secrets de connecteur restent redactes.
+
+Contrat executable :
+
+```bash
+node scripts/verify-source-refresh-connector-boundary.mjs
+```
+
+Ce contrat reste local et deterministe. Il ne remplace pas un connecteur Gmail, Drive, Web ou CRM reel : il fixe l'interface que ces connecteurs devront respecter.
+
 ## Tranche 6 - Conflit, indisponibilite et arbitrage
 
 Objectif :
