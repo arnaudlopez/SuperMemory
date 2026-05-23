@@ -249,6 +249,27 @@ node scripts/verify-local-manual-source-capture.mjs
 
 Ce contrat reste local et deterministe. Il ne lit pas le disque, ne scanne aucun dossier, n'appelle aucun connecteur reel et ne promeut rien dans Hindsight.
 
+## Tranche 5a.1 - Local manual capture dry-run
+
+Objectif :
+
+Transformer le contrat local/manual en commande operateur dry-run.
+
+Scenario :
+
+- l'operateur fournit explicitement un fichier et un scope ;
+- la commande lit uniquement ce fichier ;
+- elle calcule `content_hash` et emet un plan `manual_captures`, `source_registry_entries`, `snapshots` ;
+- elle refuse les dossiers, les refs hors scope et l'intent owner incomplet ;
+- elle ne sort pas le contenu brut du fichier, les instructions source ou les secrets ;
+- elle ne modifie pas le vault et n'appelle aucun service externe.
+
+Contrat executable :
+
+```bash
+node --test tests/local-manual-capture-cli.test.mjs
+```
+
 ## Tranche 5b - Source snapshot refresh preflight
 
 Objectif :

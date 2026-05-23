@@ -154,6 +154,12 @@ The first concrete ingestion proof is local and manual, not a crawler. The fixtu
 
 See [`identity-vault/90_evals/cases/local-manual-source-capture`](identity-vault/90_evals/cases/local-manual-source-capture).
 
+The operator dry-run command reads exactly one selected local file and prints a source/snapshot plan without writing to the vault:
+
+```bash
+node scripts/local-manual-capture.mjs --file /path/to/source.md --scope /path/to/ --workspace workspace:example --requested-by owner:name --capture-reason "manual evidence" --json
+```
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.
@@ -210,6 +216,7 @@ node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-hindsight-adapter-minimal.mjs
 node scripts/verify-governed-answer-evidence.mjs
 node scripts/verify-local-manual-source-capture.mjs
+node --test tests/local-manual-capture-cli.test.mjs
 node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
 node scripts/verify-adaptive-business-types.mjs
