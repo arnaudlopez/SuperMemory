@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: "source-snapshot-refresh-preflight-notes"
   title: "Source Snapshot Refresh Preflight Notes"
-  status: active
+  status: complete
   created_at: "2026-05-23"
   updated_at: "2026-05-23"
   kind: specific
@@ -76,7 +76,7 @@ agents:
   worker: installed
   judge: installed
 
-active_task: T998
+active_task: null
 tasks:
   - id: T001
     type: scout
@@ -458,7 +458,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Commit all goal-related changes and push the current branch once verification is green."
     inputs:
       - "Approved implementation and verification receipts"
@@ -479,11 +479,32 @@ tasks:
       - "push_result"
       - "committed_files"
       - "unrelated_dirty_files_left_untouched"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Committed and pushed the source snapshot refresh preflight tranche."
+      commit_sha: 5f47481
+      remote_branch: origin/main
+      push_result: "pushed to https://github.com/arnaudlopez/SuperMemory.git main"
+      committed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/source-snapshot-refresh-preflight-notes.md
+        - docs/goals/source-snapshot-refresh-preflight/acceptance-contract.md
+        - docs/goals/source-snapshot-refresh-preflight/brief.md
+        - docs/goals/source-snapshot-refresh-preflight/goal.md
+        - docs/goals/source-snapshot-refresh-preflight/state.yaml
+        - identity-vault/90_evals/cases/source-snapshot-refresh-preflight/actual/README.md
+        - identity-vault/90_evals/cases/source-snapshot-refresh-preflight/expected/assertions.json
+        - identity-vault/90_evals/cases/source-snapshot-refresh-preflight/input/fixture.json
+        - scripts/verify-source-snapshot-refresh-preflight.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - tests/source-snapshot-refresh-preflight.test.mjs
+      unrelated_dirty_files_left_untouched:
+        []
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -509,4 +530,36 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      summary: "Final audit complete: source snapshot refresh preflight satisfies the oracle with red test evidence, green verifier/test evidence, global specs, diff check, and shipping proof."
+      oracle_result: satisfied
+      evidence:
+        -
+          command: "node --test tests/source-snapshot-refresh-preflight.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-source-change-t0-t1.mjs"
+          result: pass
+        -
+          command: "node --test tests/hindsight-promote.test.mjs"
+          result: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          result: pass
+        -
+          command: "git diff --check"
+          result: pass
+        -
+          commit_sha: 5f47481
+          push_result: "origin/main pushed"
+      missing_evidence:
+        []
+      remaining_risks:
+        - "This preflight is fixture-only; connector-backed snapshot refresh remains a later tranche."
+      next_recommendation: "Next tranche should implement connector-backed refresh boundaries or a concrete source-capture workflow only after choosing one real source type."
