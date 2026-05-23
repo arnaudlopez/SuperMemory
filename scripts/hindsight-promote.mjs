@@ -306,6 +306,7 @@ function requireLiveEnv(env = process.env) {
   const missing = [];
   if (!env.HINDSIGHT_API_KEY) missing.push("HINDSIGHT_API_KEY");
   if (!env.HINDSIGHT_BANK_ID) missing.push("HINDSIGHT_BANK_ID");
+  if (!env.HINDSIGHT_BASE_URL) missing.push("HINDSIGHT_BASE_URL");
   return missing;
 }
 

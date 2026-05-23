@@ -8,6 +8,20 @@ function encodePath(value) {
   return encodeURIComponent(String(value));
 }
 
+function metadataValue(value) {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
+}
+
+function retainMetadata(metadata) {
+  return Object.fromEntries(
+    Object.entries(metadata ?? {})
+      .map(([key, value]) => [key, metadataValue(value)])
+      .filter(([, value]) => value !== undefined)
+  );
+}
+
 function retainBody(operation) {
   return {
     items: [
@@ -15,10 +29,10 @@ function retainBody(operation) {
         content: operation.content,
         document_id: operation.document_id,
         tags: operation.tags ?? [],
-        metadata: {
+        metadata: retainMetadata({
           ...(operation.metadata ?? {}),
           memory_id: operation.memory_id
-        }
+        })
       }
     ]
   };

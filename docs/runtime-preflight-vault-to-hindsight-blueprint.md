@@ -46,6 +46,8 @@ Do not hard-code unverified endpoint syntax from this blueprint. Treat live API 
 Runtime placement decision:
 
 - SuperMemory should run the first real smoke against self-hosted/local Hindsight, not Hindsight Cloud.
+- Docker is the preferred packaging for that first local smoke.
+- The Docker runtime may use `HINDSIGHT_API_LLM_PROVIDER=llamacpp` to avoid a required external LLM key during local validation.
 - `HINDSIGHT_BASE_URL` must be explicit for live runs. For local smoke, use a local endpoint such as `http://127.0.0.1:8888`.
 - Hindsight Cloud (`https://api.hindsight.vectorize.io`) may be used only when the owner intentionally chooses a cloud target.
 - The transport layer must not silently fall back from local/self-hosted to cloud.

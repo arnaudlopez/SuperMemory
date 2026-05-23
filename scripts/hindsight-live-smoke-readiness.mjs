@@ -98,6 +98,7 @@ function buildReport() {
     required_manual_env: [
       "HINDSIGHT_API_KEY",
       "HINDSIGHT_BANK_ID",
+      "HINDSIGHT_BASE_URL",
       "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1"
     ],
     guard_check: runGuardCheck(smokeCases[0].fixture),

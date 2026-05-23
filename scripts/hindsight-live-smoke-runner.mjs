@@ -18,7 +18,11 @@ const smokeCases = [
   {
     id: "revocation-delete",
     fixture: "identity-vault/90_evals/cases/hindsight-revocation-delete-sync/input/fixture.json",
-    expected_operations: ["delete"]
+    expected_operations: ["delete"],
+    setup_document: {
+      document_id: "doc-acme-pricing-note",
+      memory_id: "mem-acme-pricing-note-live-smoke-seed"
+    }
   }
 ];
 
@@ -68,15 +72,20 @@ function missingLiveEnv(env = process.env) {
   const missing = [];
   if (!env.HINDSIGHT_API_KEY) missing.push("HINDSIGHT_API_KEY");
   if (!env.HINDSIGHT_BANK_ID) missing.push("HINDSIGHT_BANK_ID");
+  if (!env.HINDSIGHT_BASE_URL) missing.push("HINDSIGHT_BASE_URL");
   if (env.SUPERMEMORY_ALLOW_LIVE_HINDSIGHT !== "1") missing.push("SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1");
   return missing;
 }
 
 function commandFor(smokeCase, options) {
+  return commandForInput(smokeCase.fixture, options);
+}
+
+function commandForInput(input, options) {
   const args = [
     "scripts/hindsight-promote.mjs",
     "--input",
-    smokeCase.fixture,
+    input,
     "--live",
     "--json"
   ];
@@ -95,56 +104,138 @@ function envFor(options) {
   };
 }
 
-function runCase(smokeCase, options) {
-  const [cmd, args] = commandFor(smokeCase, options);
-  const result = spawnSync(cmd, args, {
+function deleteSetupInput(setupDocument) {
+  return {
+    promotion_payloads: [
+      {
+        document_id: setupDocument.document_id,
+        memory_id: setupDocument.memory_id,
+        status: "active",
+        text: "Temporary SuperMemory live smoke seed document for revocation delete verification.",
+        tags: [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "entity_type:fact",
+          "schema_status:stable",
+          "consumer:email_agent",
+          "source_kind:live_smoke_seed"
+        ],
+        metadata: {
+          source_id: "src-live-smoke-delete-seed",
+          snapshot_id: "snap-live-smoke-delete-seed",
+          observation_id: "obs-live-smoke-delete-seed",
+          interpretation_id: "interp-live-smoke-delete-seed",
+          memory_id: setupDocument.memory_id,
+          source_version: "snap-live-smoke-delete-seed",
+          freshness: "fresh",
+          derived_from: ["snap-live-smoke-delete-seed"]
+        }
+      }
+    ]
+  };
+}
+
+function runPromote(input, options) {
+  const [cmd, args] = commandForInput(input, options);
+  return spawnSync(cmd, args, {
     encoding: "utf8",
     env: envFor(options)
   });
+}
+
+function summarizePromoteResult(result) {
   if (result.status !== 0) {
     return {
-      id: smokeCase.id,
-      fixture: smokeCase.fixture,
-      status: "fail",
-      expected_operations: smokeCase.expected_operations,
+      ok: false,
       error: result.stderr.trim().split(/\r?\n/).slice(-1)[0] || `exit ${result.status}`
     };
   }
 
-  let report;
   try {
-    report = JSON.parse(result.stdout);
+    const report = JSON.parse(result.stdout);
+    return {
+      ok: true,
+      mode: report.transport?.mode ?? report.mode,
+      network_writes: report.network_writes,
+      operations: (report.operations ?? []).map((operation) => ({
+        operation: operation.operation,
+        document_id: operation.document_id,
+        memory_id: operation.memory_id,
+        trace_id: operation.trace_id,
+        reason: operation.reason
+      })),
+      requests: (report.transport?.requests ?? []).map((request) => ({
+        operation: request.operation,
+        method: request.method,
+        path: request.path,
+        document_id: request.document_id,
+        policy_id: request.policy_id,
+        tags_match: request.body?.tags_match
+      })),
+      responses: (report.transport?.result?.responses ?? []).map((response) => ({
+        operation: response.operation,
+        document_id: response.document_id,
+        policy_id: response.policy_id,
+        status: response.status
+      }))
+    };
   } catch (error) {
+    return {
+      ok: false,
+      error: `invalid JSON: ${error.message}`
+    };
+  }
+}
+
+function runSetup(smokeCase, options) {
+  if (!smokeCase.setup_document) return null;
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "hindsight-live-smoke-setup-"));
+  const inputPath = path.join(tmpDir, `${smokeCase.id}.json`);
+  fs.writeFileSync(inputPath, JSON.stringify(deleteSetupInput(smokeCase.setup_document), null, 2));
+  const summary = summarizePromoteResult(runPromote(inputPath, options));
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  return {
+    id: `${smokeCase.id}-setup`,
+    purpose: "seed document before delete verification",
+    status: summary.ok ? "pass" : "fail",
+    error: summary.error,
+    mode: summary.mode,
+    network_writes: summary.network_writes,
+    operations: summary.operations ?? [],
+    requests: summary.requests ?? [],
+    responses: summary.responses ?? []
+  };
+}
+
+function runCase(smokeCase, options) {
+  const setup = runSetup(smokeCase, options);
+  if (setup?.status === "fail") {
     return {
       id: smokeCase.id,
       fixture: smokeCase.fixture,
       status: "fail",
       expected_operations: smokeCase.expected_operations,
-      error: `invalid JSON: ${error.message}`
+      setup,
+      error: setup.error
     };
   }
 
-  const operations = (report.operations ?? []).map((operation) => ({
-    operation: operation.operation,
-    document_id: operation.document_id,
-    memory_id: operation.memory_id,
-    trace_id: operation.trace_id,
-    reason: operation.reason
-  }));
-  const requests = (report.transport?.requests ?? []).map((request) => ({
-    operation: request.operation,
-    method: request.method,
-    path: request.path,
-    document_id: request.document_id,
-    policy_id: request.policy_id,
-    tags_match: request.body?.tags_match
-  }));
-  const responses = (report.transport?.result?.responses ?? []).map((response) => ({
-    operation: response.operation,
-    document_id: response.document_id,
-    policy_id: response.policy_id,
-    status: response.status
-  }));
+  const summary = summarizePromoteResult(runPromote(smokeCase.fixture, options));
+  if (!summary.ok) {
+    return {
+      id: smokeCase.id,
+      fixture: smokeCase.fixture,
+      status: "fail",
+      expected_operations: smokeCase.expected_operations,
+      setup,
+      error: summary.error
+    };
+  }
+
+  const operations = summary.operations;
+  const requests = summary.requests;
+  const responses = summary.responses;
   const observedOperations = new Set([
     ...operations.map((operation) => operation.operation),
     ...requests.map((request) => request.operation)
@@ -157,9 +248,10 @@ function runCase(smokeCase, options) {
     status: missingOperations.length === 0 ? "pass" : "fail",
     expected_operations: smokeCase.expected_operations,
     missing_operations: missingOperations,
-    mode: report.transport?.mode ?? report.mode,
-    network_writes: report.network_writes,
-    bank_id_status: report.bank_id ? "set" : "not_set",
+    setup,
+    mode: summary.mode,
+    network_writes: summary.network_writes,
+    bank_id_status: envFor(options).HINDSIGHT_BANK_ID ? "set" : "not_set",
     operations,
     requests,
     responses

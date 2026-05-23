@@ -249,9 +249,10 @@ const vaultSyncValid = parseJson(runCli(["--input", vaultSyncValidPath, "--live"
 }));
 const vaultSyncRequest = vaultSyncValid.transport.requests.find((request) => request.operation === "retain");
 assert.equal(vaultSyncValid.validation.contract_mode, "vault_sync_v1");
-assert.deepEqual(vaultSyncRequest.body.items[0].metadata.derived_from, ["snap-acme-prd-2026-05-21"]);
+assert.equal(vaultSyncRequest.body.items[0].metadata.derived_from, "[\"snap-acme-prd-2026-05-21\"]");
 assert.equal(vaultSyncRequest.body.items[0].metadata.source_version, "snap-acme-prd-2026-05-21");
 assert.equal(vaultSyncRequest.body.items[0].metadata.freshness, "fresh");
+assert.ok(Object.values(vaultSyncRequest.body.items[0].metadata).every((value) => typeof value === "string"));
 
 const generatedFromValidatedPath = path.join(tmpDir, "generated-from-validated.json");
 fs.writeFileSync(

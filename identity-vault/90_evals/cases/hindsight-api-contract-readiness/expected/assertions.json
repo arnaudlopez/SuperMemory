@@ -15,6 +15,7 @@
   "required_owner_live_env": [
     "HINDSIGHT_API_KEY",
     "HINDSIGHT_BANK_ID",
+    "HINDSIGHT_BASE_URL",
     "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1"
   ]
 }

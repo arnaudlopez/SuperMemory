@@ -496,6 +496,7 @@ Passer du contrat local/mock a un runtime Hindsight reel sans adopter Hindsight 
 Decision :
 
 - le premier runtime Hindsight cible doit etre self-hosted/local ;
+- Docker est le packaging recommande pour ce premier smoke local ;
 - `HINDSIGHT_BASE_URL` doit pointer explicitement vers ce runtime local, par exemple `http://127.0.0.1:8888` ;
 - Hindsight Cloud reste un endpoint optionnel et explicite, pas le chemin par defaut de SuperMemory ;
 - aucun test CI ne doit dependre d'un service Hindsight live, local ou cloud ;
@@ -504,6 +505,7 @@ Decision :
 Comportements a prouver :
 
 - Hindsight self-hosted demarre localement avec une bank sacrifiable ;
+- le container Docker `ghcr.io/vectorize-io/hindsight:latest` peut demarrer avec `HINDSIGHT_API_LLM_PROVIDER=llamacpp` pour eviter une dependance initiale a une cle LLM externe ;
 - le runner live execute retain -> recall strict, upsert -> recall strict, puis delete ;
 - le recall live utilise `tags_match: "all_strict"` ;
 - la preuve locale confirme `live_writes_performed: true` et `secrets_redacted: true` sans exposer de secret ;

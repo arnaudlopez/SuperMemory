@@ -137,6 +137,9 @@ function checkCase(smokeCase) {
     if (!item?.document_id) errors.push("retain/upsert item must include document_id");
     if (!Array.isArray(item?.tags) || item.tags.length === 0) errors.push("retain/upsert item must include tags");
     if (!hasObject(item?.metadata)) errors.push("retain/upsert item must include metadata");
+    if (hasObject(item?.metadata) && !Object.values(item.metadata).every((value) => typeof value === "string")) {
+      errors.push("retain/upsert metadata values must be strings");
+    }
   }
 
   if (expectedRequest && smokeCase.expectedOperation === "delete") {
@@ -190,6 +193,7 @@ function buildReport() {
     required_owner_live_env: [
       "HINDSIGHT_API_KEY",
       "HINDSIGHT_BANK_ID",
+      "HINDSIGHT_BASE_URL",
       "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1"
     ],
     next_live_boundary: "owner-provided credentials and a sacrificial Hindsight bank"

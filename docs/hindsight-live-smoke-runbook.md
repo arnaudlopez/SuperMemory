@@ -20,6 +20,35 @@ Start or identify the local Hindsight API before running the live smoke. The exp
 export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 ```
 
+## Docker Local Runtime
+
+Start Docker Desktop, then run the self-hosted Hindsight container:
+
+```bash
+docker run -d --name supermemory-hindsight-local --pull always \
+  -p 8888:8888 \
+  -p 9999:9999 \
+  -e HINDSIGHT_API_LLM_PROVIDER=llamacpp \
+  -e HINDSIGHT_API_WORKER_ID=supermemory-local \
+  -v "$HOME/.hindsight-docker-supermemory:/home/hindsight/.pg0" \
+  ghcr.io/vectorize-io/hindsight:latest
+```
+
+First boot with `llamacpp` can download a local model. Watch readiness with:
+
+```bash
+docker logs -f supermemory-hindsight-local
+curl http://127.0.0.1:8888/health
+```
+
+Useful lifecycle commands:
+
+```bash
+docker stop supermemory-hindsight-local
+docker start supermemory-hindsight-local
+docker logs --tail 120 supermemory-hindsight-local
+```
+
 Required environment:
 
 ```bash
@@ -84,7 +113,7 @@ The runner executes three governed fixtures:
 
 1. `capture-retain`: retain `doc-acme-contract-june-rollout`, then recall with `tags_match: "all_strict"`.
 2. `source-change-upsert`: upsert `doc-acme-prd`, then recall with `tags_match: "all_strict"`.
-3. `revocation-delete`: delete `doc-acme-pricing-note`.
+3. `revocation-delete`: seed `doc-acme-pricing-note`, then delete it.
 
 The runner writes one redacted JSON line to:
 
