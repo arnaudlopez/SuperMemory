@@ -4,7 +4,7 @@ goal:
   title: "Implement Hindsight Live Smoke Readiness"
   slug: "implement-hindsight-live-smoke-readiness"
   kind: specific
-  status: active
+  status: done
   oracle:
     signal: "A dedicated verifier proves live smoke readiness without credentials or live writes."
     cadence: "after red verifier, implementation, verification, shipping, and final audit"
@@ -77,7 +77,7 @@ visual_board:
     url: null
     command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-live-smoke-readiness"
 
-active_task: T998
+active_task: null
 
 tasks:
   - id: T001
@@ -121,6 +121,7 @@ tasks:
       - "module_map: relevant deep modules, boundaries, and shallow-module risks"
       - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
       - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
   - id: T002
     type: judge
     assignee: Judge
@@ -150,17 +151,31 @@ tasks:
     status: done
     reasoning_hint: medium
     objective: "Implement live smoke readiness report and verifier."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
     impact_assessment_ref: "T001 receipt impact_assessment"
     allowed_files:
       - "identity-vault/90_evals/cases/hindsight-live-smoke-readiness/**"
       - "scripts/hindsight-live-smoke-readiness.mjs"
       - "scripts/verify-hindsight-live-smoke-readiness.mjs"
+      - "tests/hindsight-live-smoke-readiness.test.mjs"
       - "scripts/verify-supermemory-specs.mjs"
     verify:
       - "node scripts/verify-hindsight-live-smoke-readiness.mjs"
+      - "node --test tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
       - "node scripts/verify-supermemory-specs.mjs"
       - "git diff --check"
     stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
       - "Need live Hindsight credentials or network smoke."
       - "Need to print or store secrets."
       - "Need DB migration, schema change, backfill, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
@@ -174,12 +189,15 @@ tasks:
         - "identity-vault/90_evals/cases/hindsight-live-smoke-readiness/expected/assertions.json"
         - "scripts/hindsight-live-smoke-readiness.mjs"
         - "scripts/verify-hindsight-live-smoke-readiness.mjs"
+        - "tests/hindsight-live-smoke-readiness.test.mjs"
         - "scripts/verify-supermemory-specs.mjs"
       design_delta: "The repo now has a non-live readiness report that proves mock retain/upsert/delete coverage, live guard behavior, env redaction, and exact manual live commands."
       commands:
         - command: "node scripts/verify-hindsight-live-smoke-readiness.mjs"
           status: pass
         - command: "node scripts/hindsight-live-smoke-readiness.mjs --json"
+          status: pass
+        - command: "node --test tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
           status: pass
         - command: "node scripts/verify-supermemory-specs.mjs"
           status: pass
@@ -188,12 +206,81 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Ship verified live smoke readiness."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+    receipt:
+      result: done
+      summary: "Committed the verified Hindsight live smoke readiness tranche."
+      commit_sha: "168548c"
+      remote_branch: "main"
+      push_result: "prepared for final board commit and push"
+      committed_files:
+        - "docs/goals/implement-hindsight-live-smoke-readiness/goal.md"
+        - "docs/goals/implement-hindsight-live-smoke-readiness/state.yaml"
+        - "docs/goals/implement-hindsight-live-smoke-readiness/notes/.gitkeep"
+        - "identity-vault/90_evals/cases/hindsight-live-smoke-readiness/expected/assertions.json"
+        - "scripts/hindsight-live-smoke-readiness.mjs"
+        - "scripts/verify-hindsight-live-smoke-readiness.mjs"
+        - "tests/hindsight-live-smoke-readiness.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      unrelated_dirty_files_left_untouched: []
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local readiness report contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no live Hindsight calls"
+        deploy_rollback: "revert commit f89bde3"
+        observability: "readiness JSON report and verifier output"
+        docs: "GoalBuddy board documents scope and proofs"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
-    objective: "Audit final completion."
-    receipt: null
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      design_delta: "The repo now has a credential-free readiness report that proves mock coverage and prepares exact manual live Hindsight commands without executing them."
+      workflow_safeguards: "passed; design concept, language, feedback policy, test strategy, module map, interface contract, architecture review, design delta, impact assessment, and shipping evidence are present."
+      missing_evidence: []
+      final_verification:
+        - "node scripts/verify-hindsight-live-smoke-readiness.mjs: pass"
+        - "node scripts/hindsight-live-smoke-readiness.mjs --json: pass"
+        - "node --test tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs: pass"
+        - "node scripts/verify-supermemory-specs.mjs: pass"
+        - "git diff --check: pass"
+      next_task: "Manual live Hindsight smoke is now the next real boundary when credentials and owner opt-in are available."
