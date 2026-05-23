@@ -29,6 +29,19 @@ After reviewing the model's blind spots, Arnaud asked what to do next and approv
 
 ## Current Tranche
 
+Status: superseded and closed on 2026-05-23.
+
+This early broad tranche was later split into narrower executable tranches:
+
+- T5 source change t0/t1;
+- T6 conflict and unavailable arbitration;
+- T8 enterprise access, secrets, and retention;
+- T9 review queues and action confirmation;
+- T13 complete Golden Case;
+- Hindsight source-change and revocation sync fixtures.
+
+The canonical completion evidence is now in `state.yaml`, which maps the original blind spots to those shipped verifiers. No standalone `verify-source-lifecycle-conflict.mjs` is required anymore because the broad acceptance case was intentionally decomposed into stronger, smaller oracles.
+
 Build one coherent vertical slice:
 
 1. Define the expected acceptance case first.
