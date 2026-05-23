@@ -498,9 +498,12 @@ tasks:
     receipt:
       result: done
       summary: "Committed and pushed the local manual source capture tranche."
-      commit_sha: d4810dc
+      commit_sha: 58970f9
       remote_branch: origin/main
       push_result: "pushed to https://github.com/arnaudlopez/SuperMemory.git main"
+      followup_commits:
+        - "9fe7cd7 Record local manual capture goal completion"
+        - "58970f9 Tighten local manual capture fixture errors"
       committed_files:
         - README.md
         - docs/golden-case-implementation-roadmap.md
@@ -571,7 +574,7 @@ tasks:
           command: "git diff --check"
           result: pass
         -
-          commit_sha: d4810dc
+          commit_sha: 58970f9
           push_result: "origin/main pushed"
       missing_evidence:
         []
