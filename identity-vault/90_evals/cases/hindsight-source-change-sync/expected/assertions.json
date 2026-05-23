@@ -1,0 +1,12 @@
+{
+  "required_source_id": "src-acme-prd",
+  "required_t0_snapshot_id": "snap-acme-prd-2026-05-18",
+  "required_t1_snapshot_id": "snap-acme-prd-2026-05-22",
+  "required_t0_memory_id": "mem-acme-prd-t0",
+  "required_t1_memory_id": "mem-acme-prd-t2",
+  "required_document_id": "doc-acme-prd",
+  "required_operation": "upsert",
+  "required_generated_from": "validated_memories",
+  "required_recall_policy_id": "recall-acme-prd-email-agent",
+  "required_mock_request_count": 2
+}

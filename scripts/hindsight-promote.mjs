@@ -179,9 +179,11 @@ function promotionPayloadFromValidatedMemory(memory) {
       ...(memory.metadata ?? {}),
       source_id: memory.source_id ?? memory.metadata?.source_id,
       snapshot_id: memory.snapshot_id ?? memory.metadata?.snapshot_id,
+      previous_snapshot_id: memory.previous_snapshot_id ?? memory.metadata?.previous_snapshot_id,
       observation_id: memory.observation_id ?? memory.metadata?.observation_id,
       interpretation_id: memory.interpretation_id ?? memory.metadata?.interpretation_id,
       memory_id: memory.memory_id,
+      replaces_memory_id: memory.supersedes_memory_id ?? memory.replaces_memory_id ?? memory.metadata?.replaces_memory_id,
       source_version: memory.source_version ?? memory.snapshot_id ?? memory.metadata?.source_version,
       freshness: memory.freshness ?? memory.metadata?.freshness,
       derived_from: derivedFrom.length > 0 ? derivedFrom : memory.metadata?.derived_from,
@@ -263,6 +265,10 @@ function validate(input) {
   return [...errors];
 }
 
+function isReplacementPayload(payload) {
+  return Boolean(payload.metadata?.replaces_memory_id || payload.metadata?.previous_snapshot_id);
+}
+
 function envStatus(env = process.env) {
   return {
     HINDSIGHT_API_KEY: env.HINDSIGHT_API_KEY ? "set" : "not_set",
@@ -290,7 +296,7 @@ function buildPlan(input, options, env = process.env) {
     promotedDocumentIds.add(payload.document_id);
 
     if (payload.status === "active") {
-      const operation = seenDocumentIds.has(payload.document_id) ? "upsert" : "retain";
+      const operation = seenDocumentIds.has(payload.document_id) || isReplacementPayload(payload) ? "upsert" : "retain";
       seenDocumentIds.add(payload.document_id);
       activeDocuments.set(payload.document_id, {
         document_id: payload.document_id,

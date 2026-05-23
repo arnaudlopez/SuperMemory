@@ -6,6 +6,7 @@ const commands = [
   ["node", ["scripts/verify-memory-contracts.mjs"]],
   ["node", ["scripts/verify-m1-hindsight-promotion-recall-fixture.mjs"]],
   ["node", ["scripts/verify-hindsight-adapter-minimal.mjs"]],
+  ["node", ["scripts/verify-hindsight-source-change-sync.mjs"]],
   ["node", ["--test", "tests/hindsight-transport.test.mjs", "tests/hindsight-promote.test.mjs"]],
   ["node", ["scripts/verify-governed-answer-evidence.mjs"]],
   ["node", ["scripts/verify-source-change-t0-t1.mjs"]],

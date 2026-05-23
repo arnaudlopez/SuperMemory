@@ -1,0 +1,91 @@
+{
+  "case_id": "hindsight-source-change-sync",
+  "valid": {
+    "contract_mode": "vault_sync_v1",
+    "promotion_source": "validated_memories",
+    "entity_type_registry": [
+      {
+        "entity_type": "project",
+        "status": "stable"
+      }
+    ],
+    "sources": [
+      {
+        "source_id": "src-acme-prd",
+        "external_ref": "https://docs.example.test/acme/project-y-prd",
+        "source_kind": "mutable_doc",
+        "status": "changed",
+        "active_snapshot_id": "snap-acme-prd-2026-05-22",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "freshness": "changed"
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "source_id": "src-acme-prd",
+        "content_hash": "sha256:acme-prd-t0",
+        "captured_at": "2026-05-18T09:00:00Z",
+        "immutable": true,
+        "freshness": "superseded"
+      },
+      {
+        "snapshot_id": "snap-acme-prd-2026-05-22",
+        "source_id": "src-acme-prd",
+        "content_hash": "sha256:acme-prd-t2",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "captured_at": "2026-05-22T14:00:00Z",
+        "immutable": true,
+        "change_status": "changed",
+        "freshness": "fresh"
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-prd-t0",
+        "document_id": "doc-acme-prd",
+        "status": "needs_review",
+        "review_status": "pending",
+        "freshness": "changed",
+        "snapshot_id": "snap-acme-prd-2026-05-18",
+        "derived_from": ["snap-acme-prd-2026-05-18"],
+        "staleness_policy": "needs_review_on_source_change",
+        "review_reason": "source_snapshot_changed"
+      },
+      {
+        "memory_id": "mem-acme-prd-t2",
+        "document_id": "doc-acme-prd",
+        "status": "active",
+        "review_status": "approved",
+        "promote_to_hindsight": true,
+        "text": "Acme Project Y PRD was reviewed against the 2026-05-22 snapshot.",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "consumer": "email_agent",
+        "entity_type": "project",
+        "schema_status": "stable",
+        "source_id": "src-acme-prd",
+        "snapshot_id": "snap-acme-prd-2026-05-22",
+        "previous_snapshot_id": "snap-acme-prd-2026-05-18",
+        "observation_id": "obs-acme-prd-t2",
+        "interpretation_id": "interp-acme-prd-t2",
+        "freshness": "fresh",
+        "derived_from": ["snap-acme-prd-2026-05-22"],
+        "supersedes_memory_id": "mem-acme-prd-t0"
+      }
+    ],
+    "recall_policies": [
+      {
+        "policy_id": "recall-acme-prd-email-agent",
+        "query": "Which Acme PRD snapshot should the email agent cite?",
+        "fail_closed": true,
+        "required_tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "consumer:email_agent"
+        ]
+      }
+    ]
+  }
+}
