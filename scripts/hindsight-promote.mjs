@@ -155,6 +155,13 @@ function validatedMemoryIsPromotable(memory) {
   );
 }
 
+function validatedMemoryIsRevocable(memory) {
+  return (
+    (memory?.status === "do_not_use" || memory?.review_status === "revoked") &&
+    memory?.revoke_from_hindsight === true
+  );
+}
+
 function validatedMemoryTags(memory) {
   return unique([
     ...(Array.isArray(memory.tags) ? memory.tags : []),
@@ -207,7 +214,8 @@ function promotionPayloadFromValidatedMemory(memory, context = {}) {
       connector_type: enrichedMemory.connector_type ?? enrichedMemory.metadata?.connector_type ?? capturedSource?.connector_type,
       connector_scope: enrichedMemory.connector_scope ?? enrichedMemory.metadata?.connector_scope ?? capturedSource?.connector_scope,
       capture_method: enrichedMemory.capture_method ?? enrichedMemory.metadata?.capture_method ?? capturedSource?.capture_method,
-      captured_at: enrichedMemory.captured_at ?? enrichedMemory.metadata?.captured_at ?? capturedSource?.captured_at
+      captured_at: enrichedMemory.captured_at ?? enrichedMemory.metadata?.captured_at ?? capturedSource?.captured_at,
+      revocation_reason: enrichedMemory.revocation_reason ?? enrichedMemory.metadata?.revocation_reason ?? capturedSource?.revocation_reason
     }
   };
 }
@@ -228,7 +236,7 @@ function buildEffectiveInput(input) {
     generated_from: "validated_memories",
     generation_errors: generationErrors,
     promotion_payloads: memories
-      .filter(validatedMemoryIsPromotable)
+      .filter((memory) => validatedMemoryIsPromotable(memory) || validatedMemoryIsRevocable(memory))
       .map((memory) => promotionPayloadFromValidatedMemory(memory, { capturedSources: capturedSourceById(input) }))
   };
 }
@@ -341,6 +349,8 @@ function buildPlan(input, options, env = process.env) {
         document_id: payload.document_id,
         memory_id: payload.memory_id,
         reason: payload.metadata?.revocation_reason ?? "do_not_use",
+        metadata: payload.metadata ?? {},
+        tags: payload.tags ?? [],
         trace_id: `trace-delete-${payload.document_id}`
       });
     }

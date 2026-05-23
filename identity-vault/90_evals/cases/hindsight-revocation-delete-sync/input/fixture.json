@@ -1,0 +1,67 @@
+{
+  "case_id": "hindsight-revocation-delete-sync",
+  "valid": {
+    "contract_mode": "vault_sync_v1",
+    "promotion_source": "validated_memories",
+    "entity_type_registry": [
+      {
+        "entity_type": "fact",
+        "status": "stable"
+      }
+    ],
+    "captured_sources": [
+      {
+        "source_id": "src-acme-pricing-note",
+        "source_kind": "raw_capture",
+        "source_path": "identity-vault/00_inbox/documents/2026-05-19-acme-pricing-note.md",
+        "original_ref": "/Users/arnaud/Documents/Clients/Acme/pricing-note.md",
+        "connector_id": "local-folder-acme",
+        "connector_type": "local_folder",
+        "connector_scope": "/Users/arnaud/Documents/Clients/Acme/",
+        "capture_method": "copy",
+        "captured_at": "2026-05-19T11:00:00Z",
+        "status": "do_not_use",
+        "visibility": "professional",
+        "sensitivity": "medium",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "active_snapshot_id": "snap-acme-pricing-note-2026-05-19",
+        "revocation_reason": "source_owner_revoked"
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-pricing-note-2026-05-19",
+        "source_id": "src-acme-pricing-note",
+        "content_hash": "sha256:fixture-sha256-acme-pricing-note",
+        "captured_at": "2026-05-19T11:00:00Z",
+        "capture_method": "copy",
+        "immutable": true,
+        "change_status": "revoked",
+        "freshness": "do_not_use"
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-pricing-note-revoked",
+        "document_id": "doc-acme-pricing-note",
+        "status": "do_not_use",
+        "review_status": "revoked",
+        "revoke_from_hindsight": true,
+        "text": "Acme pricing note was revoked by the source owner and must not be recalled.",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "consumer": "email_agent",
+        "entity_type": "fact",
+        "schema_status": "stable",
+        "source_id": "src-acme-pricing-note",
+        "snapshot_id": "snap-acme-pricing-note-2026-05-19",
+        "observation_id": "obs-acme-pricing-note-revoked",
+        "interpretation_id": "interp-acme-pricing-note-revoked",
+        "freshness": "do_not_use",
+        "derived_from": ["snap-acme-pricing-note-2026-05-19"],
+        "revocation_reason": "source_owner_revoked"
+      }
+    ]
+  }
+}

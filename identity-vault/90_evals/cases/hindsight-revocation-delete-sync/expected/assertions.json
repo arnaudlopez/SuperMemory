@@ -1,0 +1,11 @@
+{
+  "required_source_id": "src-acme-pricing-note",
+  "required_snapshot_id": "snap-acme-pricing-note-2026-05-19",
+  "required_memory_id": "mem-acme-pricing-note-revoked",
+  "required_document_id": "doc-acme-pricing-note",
+  "required_generated_from": "validated_memories",
+  "required_operation": "delete",
+  "required_reason": "source_owner_revoked",
+  "required_mock_request_count": 1,
+  "required_delete_path": "/v1/default/banks/bank-test/documents/doc-acme-pricing-note"
+}
