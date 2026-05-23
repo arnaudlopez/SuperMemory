@@ -163,34 +163,51 @@ function validatedMemoryTags(memory) {
     memory.status ? `status:${memory.status}` : null,
     memory.entity_type ? `entity_type:${memory.entity_type}` : null,
     memory.schema_status ? `schema_status:${memory.schema_status}` : null,
-    memory.consumer ? `consumer:${memory.consumer}` : null
+    memory.consumer ? `consumer:${memory.consumer}` : null,
+    memory.source_kind ? `source_kind:${memory.source_kind}` : null
   ]);
 }
 
-function promotionPayloadFromValidatedMemory(memory) {
+function capturedSourceById(input) {
+  return new Map(list(input, "captured_sources").map((source) => [source.source_id, source]).filter(([sourceId]) => Boolean(sourceId)));
+}
+
+function promotionPayloadFromValidatedMemory(memory, context = {}) {
   const derivedFrom = Array.isArray(memory.derived_from) ? memory.derived_from : [];
+  const capturedSource = context.capturedSources?.get(memory.source_id ?? memory.metadata?.source_id);
+  const enrichedMemory = {
+    ...memory,
+    source_kind: memory.source_kind ?? memory.metadata?.source_kind ?? capturedSource?.source_kind
+  };
   return {
-    document_id: memory.document_id,
-    memory_id: memory.memory_id,
-    status: memory.status,
-    text: memory.text ?? memory.content,
-    tags: validatedMemoryTags(memory),
+    document_id: enrichedMemory.document_id,
+    memory_id: enrichedMemory.memory_id,
+    status: enrichedMemory.status,
+    text: enrichedMemory.text ?? enrichedMemory.content,
+    tags: validatedMemoryTags(enrichedMemory),
     metadata: {
-      ...(memory.metadata ?? {}),
-      source_id: memory.source_id ?? memory.metadata?.source_id,
-      snapshot_id: memory.snapshot_id ?? memory.metadata?.snapshot_id,
-      previous_snapshot_id: memory.previous_snapshot_id ?? memory.metadata?.previous_snapshot_id,
-      observation_id: memory.observation_id ?? memory.metadata?.observation_id,
-      interpretation_id: memory.interpretation_id ?? memory.metadata?.interpretation_id,
-      memory_id: memory.memory_id,
-      replaces_memory_id: memory.supersedes_memory_id ?? memory.replaces_memory_id ?? memory.metadata?.replaces_memory_id,
-      source_version: memory.source_version ?? memory.snapshot_id ?? memory.metadata?.source_version,
-      freshness: memory.freshness ?? memory.metadata?.freshness,
-      derived_from: derivedFrom.length > 0 ? derivedFrom : memory.metadata?.derived_from,
-      workspace_id: memory.workspace_id ?? memory.metadata?.workspace_id,
-      access_policy: memory.access_policy ?? memory.metadata?.access_policy,
-      entity_type: memory.entity_type ?? memory.metadata?.entity_type,
-      schema_status: memory.schema_status ?? memory.metadata?.schema_status
+      ...(enrichedMemory.metadata ?? {}),
+      source_id: enrichedMemory.source_id ?? enrichedMemory.metadata?.source_id,
+      snapshot_id: enrichedMemory.snapshot_id ?? enrichedMemory.metadata?.snapshot_id,
+      previous_snapshot_id: enrichedMemory.previous_snapshot_id ?? enrichedMemory.metadata?.previous_snapshot_id,
+      observation_id: enrichedMemory.observation_id ?? enrichedMemory.metadata?.observation_id,
+      interpretation_id: enrichedMemory.interpretation_id ?? enrichedMemory.metadata?.interpretation_id,
+      memory_id: enrichedMemory.memory_id,
+      replaces_memory_id: enrichedMemory.supersedes_memory_id ?? enrichedMemory.replaces_memory_id ?? enrichedMemory.metadata?.replaces_memory_id,
+      source_version: enrichedMemory.source_version ?? enrichedMemory.snapshot_id ?? enrichedMemory.metadata?.source_version,
+      freshness: enrichedMemory.freshness ?? enrichedMemory.metadata?.freshness,
+      derived_from: derivedFrom.length > 0 ? derivedFrom : enrichedMemory.metadata?.derived_from,
+      workspace_id: enrichedMemory.workspace_id ?? enrichedMemory.metadata?.workspace_id ?? capturedSource?.workspace_id,
+      access_policy: enrichedMemory.access_policy ?? enrichedMemory.metadata?.access_policy ?? capturedSource?.access_policy,
+      entity_type: enrichedMemory.entity_type ?? enrichedMemory.metadata?.entity_type,
+      schema_status: enrichedMemory.schema_status ?? enrichedMemory.metadata?.schema_status,
+      source_kind: enrichedMemory.source_kind,
+      source_path: enrichedMemory.source_path ?? enrichedMemory.metadata?.source_path ?? capturedSource?.source_path,
+      connector_id: enrichedMemory.connector_id ?? enrichedMemory.metadata?.connector_id ?? capturedSource?.connector_id,
+      connector_type: enrichedMemory.connector_type ?? enrichedMemory.metadata?.connector_type ?? capturedSource?.connector_type,
+      connector_scope: enrichedMemory.connector_scope ?? enrichedMemory.metadata?.connector_scope ?? capturedSource?.connector_scope,
+      capture_method: enrichedMemory.capture_method ?? enrichedMemory.metadata?.capture_method ?? capturedSource?.capture_method,
+      captured_at: enrichedMemory.captured_at ?? enrichedMemory.metadata?.captured_at ?? capturedSource?.captured_at
     }
   };
 }
@@ -212,7 +229,7 @@ function buildEffectiveInput(input) {
     generation_errors: generationErrors,
     promotion_payloads: memories
       .filter(validatedMemoryIsPromotable)
-      .map(promotionPayloadFromValidatedMemory)
+      .map((memory) => promotionPayloadFromValidatedMemory(memory, { capturedSources: capturedSourceById(input) }))
   };
 }
 

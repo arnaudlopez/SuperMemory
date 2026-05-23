@@ -1,0 +1,210 @@
+version: 2
+
+goal:
+  title: "Implement Hindsight Capture Refresh Sync Fixture"
+  slug: "implement-hindsight-capture-refresh-sync-fixture"
+  kind: specific
+  status: active
+  oracle:
+    signal: "A dedicated verifier proves authorized capture metadata reaches generated Hindsight payloads and mock transport."
+    cadence: "after red verifier, implementation, verification, shipping, and final audit"
+    final_proof: "Dedicated verifier passes, global specs pass, git diff --check pass, GoalBuddy checks pass, commit SHA and push proof."
+  intake:
+    original_request: "ok enchaine"
+    interpreted_outcome: "Implement the next local runtime proof: capture/refresh metadata through Hindsight mock sync."
+    input_shape: specific
+    audience: "SuperMemory maintainers"
+    authority: requested
+    proof_type: test
+    completion_proof: "Verifier proves captured source metadata, snapshot, validated memory, generated payload, and mock transport."
+    likely_misfire: "Building a real connector or scanning the vault instead of proving explicit local capture metadata propagation."
+    blind_spots_considered:
+      - "Connector scope metadata is governance, not decoration."
+      - "The proof should be wired into global specs."
+      - "Existing Hindsight preflight behavior must stay fail-closed."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-capture-refresh-sync-fixture"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map capture-refresh sync fixture scope."
+    receipt:
+      result: done
+      summary: "The next safe local runtime proof is capture metadata propagation through the existing generated-payload and mock-transport path."
+      evidence:
+        - "Project brief lists source capture/refresh integration as P0 while keeping live writes out."
+        - "identity-vault/75_governance/hindsight_contract.md requires connector_id, connector_scope, source_kind, source_path, and capture metadata when applicable."
+        - "Existing CLI already generates payloads from explicit validated_memories and can be enriched from explicit captured_sources input."
+      module_map:
+        fixture: "identity-vault/90_evals/cases/hindsight-capture-refresh-sync/input/fixture.json"
+        assertions: "identity-vault/90_evals/cases/hindsight-capture-refresh-sync/expected/assertions.json"
+        verifier: "scripts/verify-hindsight-capture-refresh-sync.mjs"
+        cli: "scripts/hindsight-promote.mjs"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "captured source"
+        - "connector scope"
+        - "immutable snapshot"
+        - "source_kind"
+        - "generated payload"
+        - "mock transport"
+      design_concept: "Treat capture metadata as explicit input to the preflight, then prove it is carried into Hindsight payload metadata and tags."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "local verifier/fixture contract only"
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none in tests/CI"
+        deploy_rollback: "revert capture-refresh sync fixture commit"
+        observability: "verifier output and CLI JSON mock transport summary"
+        docs: "GoalBuddy board only"
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve capture-refresh fixture boundary."
+    receipt:
+      result: done
+      decision: approved
+      architecture_review: "Approved. Add a fixture, assertions, verifier, and minimal CLI enrichment from explicit captured_sources input. No real connectors, broad scans, live writes, dependencies, jobs, or migrations."
+      design_concept: "The verifier should run the existing CLI with --live --mock-transport and fake env, then assert capture metadata is present in operation and request payloads."
+      interface_contract:
+        command: "node scripts/hindsight-promote.mjs --input identity-vault/90_evals/cases/hindsight-capture-refresh-sync/input/fixture.json --live --mock-transport --json"
+        expected_flow: "captured source -> immutable snapshot -> reviewed validated_memory -> generated payload -> mock transport"
+        expected_network_writes: false
+      feedback_policy: "Keep fixture explicit and small; use verifier assertions rather than prose-only docs."
+      test_strategy:
+        red: "Add verifier expecting capture metadata before CLI enriches generated payloads from captured_sources."
+        green:
+          - "node scripts/verify-hindsight-capture-refresh-sync.mjs"
+          - "node scripts/verify-hindsight-source-change-sync.mjs"
+          - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement capture-refresh sync fixture and verifier."
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/hindsight-capture-refresh-sync/**"
+      - "scripts/verify-hindsight-capture-refresh-sync.mjs"
+      - "scripts/hindsight-promote.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-hindsight-capture-refresh-sync.mjs"
+      - "node scripts/verify-hindsight-source-change-sync.mjs"
+      - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need real connector/source capture implementation."
+      - "Need broad vault scan or source refresh job."
+      - "Need live Hindsight credentials or network smoke."
+    receipt:
+      result: done
+      summary: "Implemented the capture-refresh sync fixture, dedicated verifier, CLI enrichment from explicit captured_sources input, and global spec wiring."
+      expected_fail:
+        command: "node scripts/verify-hindsight-capture-refresh-sync.mjs"
+        result: "failed before implementation because generated payloads omitted connector_id, connector_scope, source_path, source_kind, capture_method, and source_kind tag"
+      changed_files:
+        - "identity-vault/90_evals/cases/hindsight-capture-refresh-sync/input/fixture.json"
+        - "identity-vault/90_evals/cases/hindsight-capture-refresh-sync/expected/assertions.json"
+        - "scripts/verify-hindsight-capture-refresh-sync.mjs"
+        - "scripts/hindsight-promote.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      design_delta: "The runtime preflight proof now shows explicit captured_sources governance metadata flowing into generated payloads and mock Hindsight transport without a connector or vault scan."
+      commands:
+        - command: "node scripts/verify-hindsight-capture-refresh-sync.mjs"
+          status: pass
+        - command: "node scripts/verify-hindsight-source-change-sync.mjs"
+          status: pass
+        - command: "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Ship verified capture-refresh sync fixture."
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit final completion."
+    receipt: null

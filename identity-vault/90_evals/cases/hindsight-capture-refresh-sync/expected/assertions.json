@@ -1,0 +1,15 @@
+{
+  "required_source_id": "src-acme-contract-excerpt",
+  "required_snapshot_id": "snap-acme-contract-excerpt-2026-05-19",
+  "required_memory_id": "mem-acme-contract-june-rollout",
+  "required_document_id": "doc-acme-contract-june-rollout",
+  "required_connector_id": "local-folder-acme",
+  "required_connector_scope": "/Users/arnaud/Documents/Clients/Acme/",
+  "required_source_path": "identity-vault/00_inbox/documents/2026-05-19-acme-contract-excerpt.md",
+  "required_source_kind": "raw_capture",
+  "required_capture_method": "extract_text",
+  "required_operation": "retain",
+  "required_generated_from": "validated_memories",
+  "required_recall_policy_id": "recall-acme-contract-email-agent",
+  "required_mock_request_count": 2
+}

@@ -1,0 +1,78 @@
+{
+  "case_id": "hindsight-capture-refresh-sync",
+  "valid": {
+    "contract_mode": "vault_sync_v1",
+    "promotion_source": "validated_memories",
+    "entity_type_registry": [
+      {
+        "entity_type": "fact",
+        "status": "stable"
+      }
+    ],
+    "captured_sources": [
+      {
+        "source_id": "src-acme-contract-excerpt",
+        "source_kind": "raw_capture",
+        "source_path": "identity-vault/00_inbox/documents/2026-05-19-acme-contract-excerpt.md",
+        "original_ref": "/Users/arnaud/Documents/Clients/Acme/contract-excerpt.pdf",
+        "connector_id": "local-folder-acme",
+        "connector_type": "local_folder",
+        "connector_scope": "/Users/arnaud/Documents/Clients/Acme/",
+        "capture_method": "extract_text",
+        "captured_at": "2026-05-19T10:00:00Z",
+        "status": "raw_captured",
+        "visibility": "professional",
+        "sensitivity": "medium",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "active_snapshot_id": "snap-acme-contract-excerpt-2026-05-19"
+      }
+    ],
+    "snapshots": [
+      {
+        "snapshot_id": "snap-acme-contract-excerpt-2026-05-19",
+        "source_id": "src-acme-contract-excerpt",
+        "content_hash": "sha256:fixture-sha256-acme-contract-excerpt",
+        "captured_at": "2026-05-19T10:00:00Z",
+        "capture_method": "extract_text",
+        "immutable": true,
+        "change_status": "initial_capture",
+        "freshness": "fresh"
+      }
+    ],
+    "validated_memories": [
+      {
+        "memory_id": "mem-acme-contract-june-rollout",
+        "document_id": "doc-acme-contract-june-rollout",
+        "status": "active",
+        "review_status": "approved",
+        "promote_to_hindsight": true,
+        "text": "Acme contract excerpt confirms Project Y rollout is targeted for June.",
+        "workspace_id": "ws-acme",
+        "access_policy": "professional-default",
+        "consumer": "email_agent",
+        "entity_type": "fact",
+        "schema_status": "stable",
+        "source_id": "src-acme-contract-excerpt",
+        "snapshot_id": "snap-acme-contract-excerpt-2026-05-19",
+        "observation_id": "obs-acme-contract-june-rollout",
+        "interpretation_id": "interp-acme-contract-june-rollout",
+        "freshness": "fresh",
+        "derived_from": ["snap-acme-contract-excerpt-2026-05-19"]
+      }
+    ],
+    "recall_policies": [
+      {
+        "policy_id": "recall-acme-contract-email-agent",
+        "query": "Which captured contract source supports the Acme rollout month?",
+        "fail_closed": true,
+        "required_tags": [
+          "workspace:ws-acme",
+          "access_policy:professional-default",
+          "status:active",
+          "consumer:email_agent"
+        ]
+      }
+    ]
+  }
+}
