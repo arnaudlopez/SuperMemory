@@ -225,6 +225,30 @@ Contrat executable :
 node scripts/verify-source-change-t0-t1.mjs
 ```
 
+## Tranche 5a - Local manual source capture
+
+Objectif :
+
+Prouver le premier flux concret de capture source sans connecteur externe.
+
+Scenario :
+
+- une source locale/manuelle explicite est fournie par le proprietaire ;
+- la capture declare `requested_by`, `capture_reason`, `owner_confirmed`, workspace, source kind, sensibilite et scope ;
+- une seule entree de source registry et une seule snapshot immuable sont creees ;
+- le scope interdit les fichiers voisins et les scans de dossier ;
+- le texte source reste une preuve, jamais une instruction agent executable ;
+- les secrets ne sortent pas vers les surfaces derivees ou promues ;
+- une source `do_not_use` ne cree aucune preuve active.
+
+Contrat executable :
+
+```bash
+node scripts/verify-local-manual-source-capture.mjs
+```
+
+Ce contrat reste local et deterministe. Il ne lit pas le disque, ne scanne aucun dossier, n'appelle aucun connecteur reel et ne promeut rien dans Hindsight.
+
 ## Tranche 5b - Source snapshot refresh preflight
 
 Objectif :

@@ -148,6 +148,12 @@ Mutable external references are pointers, not proof. The local T5 contract verif
 
 See [`identity-vault/90_evals/cases/source-change-t0-t1`](identity-vault/90_evals/cases/source-change-t0-t1).
 
+### Local Manual Source Capture
+
+The first concrete ingestion proof is local and manual, not a crawler. The fixture verifies that one owner-confirmed local source can produce one governed source registry entry and one immutable snapshot, while scope escapes, missing owner intent, missing snapshot proof, executable source instructions, leaked secrets, and `do_not_use` captures fail closed.
+
+See [`identity-vault/90_evals/cases/local-manual-source-capture`](identity-vault/90_evals/cases/local-manual-source-capture).
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.
@@ -203,6 +209,7 @@ node scripts/verify-identity-vault-tdd.mjs
 node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-hindsight-adapter-minimal.mjs
 node scripts/verify-governed-answer-evidence.mjs
+node scripts/verify-local-manual-source-capture.mjs
 node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
 node scripts/verify-adaptive-business-types.mjs
