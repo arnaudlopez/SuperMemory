@@ -63,7 +63,8 @@ assert.equal(requests[3].path, "/v1/default/banks/bank-test/memories/recall");
 assert.deepEqual(requests[3].body, {
   query: "What should A recall?",
   trace: true,
-  tags: ["workspace:ws-a", "status:active"]
+  tags: ["workspace:ws-a", "status:active"],
+  tags_match: "all_strict"
 });
 assert.equal(JSON.stringify(requests).includes("sk-test-secret"), false);
 

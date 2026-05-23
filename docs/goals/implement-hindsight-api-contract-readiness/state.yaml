@@ -1,0 +1,269 @@
+version: 2
+
+goal:
+  title: "Implement Hindsight API Contract Readiness"
+  slug: "implement-hindsight-api-contract-readiness"
+  kind: specific
+  status: active
+  oracle:
+    signal: "A dedicated verifier proves the generated Hindsight transport request contract is strict, documented, and ready for owner live smoke."
+    cadence: "after strict recall fix, verifier, global specs, shipping, and final audit"
+    final_proof: "Dedicated verifier passes, global specs pass, git diff --check passes, GoalBuddy checks pass, commit SHA and push proof."
+  intake:
+    original_request: "Ok go"
+    interpreted_outcome: "Implement the next no-credentials step before real Hindsight live smoke: contract hardening against documented API shapes."
+    input_shape: specific
+    audience: "SuperMemory maintainers"
+    authority: requested
+    proof_type: test
+    completion_proof: "Verifier proves retain/upsert/delete/recall request shapes, strict tag matching, fake credentials only, no writes, and global spec compatibility."
+    likely_misfire: "Claiming live readiness while recall tag filtering remains permissive or while transport request shape is only assumed."
+    blind_spots_considered:
+      - "Hindsight recall defaults can include untagged memories unless strict tag matching is explicit."
+      - "Readiness must not run real live writes or expose fake/real secrets."
+      - "Transport docs can change; this tranche records the current documented request assumptions."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_impact_assessment: true
+  require_quality_checker: true
+  require_github_ship_task: true
+  require_tdd_worker_flow: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: not_started
+    url: null
+    command: "npx --yes goalbuddy board /Users/arnaud/Documents/SuperMemory/docs/goals/implement-hindsight-api-contract-readiness"
+
+active_task: T998
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: medium
+    objective: "Map current Hindsight API contract readiness gap."
+    receipt:
+      result: done
+      summary: "The useful pre-live gap is not more fake credential testing; it is strict transport contract readiness against documented Hindsight request shapes."
+      evidence:
+        - "Hindsight retain is documented as POST /v1/default/banks/:bank_id/memories with items[].content and optional document_id/tags/metadata."
+        - "Hindsight recall is documented as POST /v1/default/banks/:bank_id/memories/recall with tags and tags_match."
+        - "Hindsight recall tag filtering defaults are not fail-closed for SuperMemory scope; all_strict is required."
+        - "Existing fake credential checks already prove live guard behavior and mock transport execution."
+      module_map:
+        transport: "scripts/hindsight-transport.mjs"
+        readiness_report: "scripts/hindsight-api-contract-readiness.mjs"
+        verifier: "scripts/verify-hindsight-api-contract-readiness.mjs"
+        assertions: "identity-vault/90_evals/cases/hindsight-api-contract-readiness/expected/assertions.json"
+        global_oracle: "scripts/verify-supermemory-specs.mjs"
+      ubiquitous_language:
+        - "retain"
+        - "upsert"
+        - "recall"
+        - "delete"
+        - "tags_match"
+        - "all_strict"
+        - "owner live smoke"
+      design_concept: "Keep SuperMemory deterministic at the governance boundary and LLM-first upstream, while making the Hindsight transport contract strict enough that real live smoke is a credentials problem, not a hidden request-shape problem."
+      impact_assessment:
+        db_schema_migrations: "none"
+        data_backfill: "none"
+        env_secrets: "none"
+        auth_permissions: "none"
+        api_contract: "Hindsight recall request becomes stricter with tags_match=all_strict; retain/upsert/delete request shapes are verified."
+        ui_routes: "none"
+        background_jobs: "none"
+        external_services: "none; no real Hindsight calls"
+        deploy_rollback: "revert this transport/readiness commit"
+        observability: "readiness JSON report and verifier output"
+        docs: "GoalBuddy board and embedded Hindsight contract source URLs"
+    expected_output:
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Approve the implementation boundary."
+    receipt:
+      result: done
+      decision: approved
+      architecture_review: "Approved. Add strict recall matching, a contract readiness report, verifier, assertions, test wrapper, and global spec wiring. Do not run live writes or require credentials."
+      design_concept: "Use fake credentials plus mock transport to inspect the exact live-shaped requests SuperMemory would send, without touching Hindsight."
+      interface_contract:
+        report_command: "node scripts/hindsight-api-contract-readiness.mjs --json"
+        verify_command: "node scripts/verify-hindsight-api-contract-readiness.mjs"
+        required_recall_filter: "tags_match: all_strict"
+        live_writes_performed: false
+      feedback_policy: "Never print API keys; report only fake_credentials_only and request shape summaries."
+      test_strategy:
+        red: "The verifier requires the new readiness report and strict recall tags_match before the implementation can pass."
+        green:
+          - "node scripts/verify-hindsight-api-contract-readiness.mjs"
+          - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-api-contract-readiness.test.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      impact_assessment_ref: "T001 receipt impact_assessment"
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implement Hindsight API contract readiness."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "Completed impact_assessment receipt"
+      - "Judge decision with impact_assessment_ref"
+    impact_assessment_ref: "T001 receipt impact_assessment"
+    allowed_files:
+      - "identity-vault/90_evals/cases/hindsight-api-contract-readiness/**"
+      - "scripts/hindsight-api-contract-readiness.mjs"
+      - "scripts/verify-hindsight-api-contract-readiness.mjs"
+      - "scripts/hindsight-transport.mjs"
+      - "tests/hindsight-api-contract-readiness.test.mjs"
+      - "tests/hindsight-transport.test.mjs"
+      - "scripts/verify-supermemory-specs.mjs"
+    verify:
+      - "node scripts/verify-hindsight-api-contract-readiness.mjs"
+      - "node scripts/hindsight-api-contract-readiness.mjs --json"
+      - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-api-contract-readiness.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need real Hindsight credentials or network writes."
+      - "Need package dependencies."
+      - "Need source capture, source refresh, DB migration, auth, background job, deployment, or UI work."
+    receipt:
+      result: done
+      summary: "Implemented strict recall transport and a Hindsight API contract readiness report/verifier."
+      expected_fail:
+        command: "node scripts/verify-hindsight-api-contract-readiness.mjs"
+        result: "failed before implementation because the verifier and readiness report did not exist and recall transport lacked an explicit strict tags_match assertion."
+      changed_files:
+        - "identity-vault/90_evals/cases/hindsight-api-contract-readiness/expected/assertions.json"
+        - "scripts/hindsight-api-contract-readiness.mjs"
+        - "scripts/verify-hindsight-api-contract-readiness.mjs"
+        - "scripts/hindsight-transport.mjs"
+        - "tests/hindsight-api-contract-readiness.test.mjs"
+        - "tests/hindsight-transport.test.mjs"
+        - "scripts/verify-supermemory-specs.mjs"
+      design_delta: "Generated Hindsight recall requests now explicitly use tags_match=all_strict, and a new readiness report proves retain/upsert/delete/recall request shapes with fake credentials only."
+      commands:
+        - command: "node scripts/verify-hindsight-api-contract-readiness.mjs"
+          status: pass
+        - command: "node scripts/hindsight-api-contract-readiness.mjs --json"
+          status: pass
+        - command: "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-api-contract-readiness.test.mjs"
+          status: pass
+        - command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Ship verified Hindsight API contract readiness."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Commit SHA"
+      - "Remote branch"
+      - "Push result"
+      - "Committed files"
+      - "Unrelated dirty files left untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
+
+checks:
+  dirty_fingerprint: "implementation complete; shipping pending"
+  last_verification:
+    result: pass
+    task: T003
+    commands:
+      - "node scripts/verify-hindsight-api-contract-readiness.mjs"
+      - "node scripts/hindsight-api-contract-readiness.mjs --json"
+      - "node --test tests/hindsight-transport.test.mjs tests/hindsight-promote.test.mjs tests/hindsight-live-smoke-readiness.test.mjs tests/hindsight-api-contract-readiness.test.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"

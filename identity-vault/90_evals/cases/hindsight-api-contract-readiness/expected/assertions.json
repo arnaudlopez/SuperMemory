@@ -1,0 +1,20 @@
+{
+  "required_status": "ready_for_owner_live_smoke",
+  "required_contract_source_ids": [
+    "retain",
+    "recall",
+    "strict_tag_filtering",
+    "documents"
+  ],
+  "required_check_ids": [
+    "retain",
+    "upsert",
+    "delete"
+  ],
+  "required_recall_tags_match": "all_strict",
+  "required_owner_live_env": [
+    "HINDSIGHT_API_KEY",
+    "HINDSIGHT_BANK_ID",
+    "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1"
+  ]
+}

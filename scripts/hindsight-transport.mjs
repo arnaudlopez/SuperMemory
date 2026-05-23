@@ -60,7 +60,8 @@ export function buildHindsightRequests(plan, options = {}) {
       body: {
         query: policy.query,
         trace: true,
-        tags: policy.required_tags ?? []
+        tags: policy.required_tags ?? [],
+        tags_match: "all_strict"
       }
     });
   }
