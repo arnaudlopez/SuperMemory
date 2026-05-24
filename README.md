@@ -137,6 +137,14 @@ The current adapter proof is local and contractual. It verifies the SuperMemory 
 
 See [`identity-vault/90_evals/cases/hindsight-adapter-minimal`](identity-vault/90_evals/cases/hindsight-adapter-minimal).
 
+The first local live-smoke step remains read-only until the operator clears the runtime blockers:
+
+```bash
+node scripts/hindsight-local-live-smoke-preflight.mjs --json
+```
+
+It reports redacted env readiness, local Hindsight health, Docker/container binding status, and the manual live-smoke command without performing Hindsight writes or falling back to cloud.
+
 ### Governed Answer Evidence
 
 Final answers are governed by evidence, not by fluent recall. A `current` answer must cite used memory, document ids, source snapshots, adapter traces when recall-backed, and `supports_answer` relations. Stale, changed, restricted, and forbidden memory must degrade to the matching answer state instead of pretending to be current truth.
@@ -405,7 +413,7 @@ Implemented:
 
 Not yet implemented:
 
-- live Hindsight API integration;
+- live Hindsight API integration after the local Docker preflight is ready;
 - automated external source capture connectors;
 - real external connector-backed change detection;
 - automated remote snapshot refresh;
@@ -415,7 +423,7 @@ Not yet implemented:
 ## Roadmap
 
 1. Keep the T0-T14 executable specification green in CI.
-2. Prepare the runtime preflight for vault-to-Hindsight promotion with dry-run behavior.
+2. Keep the local Docker Hindsight live-smoke preflight green and clear its runtime blockers before any live writes.
 3. Implement the real promotion script only after the local adapter, answer, and freshness contracts remain green.
 4. Promote the local/manual capture contract into an operator-facing dry-run command.
 5. Harden connector-backed snapshot refresh beyond the first local-file source type.

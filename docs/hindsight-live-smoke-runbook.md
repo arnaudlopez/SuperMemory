@@ -79,6 +79,14 @@ export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 export SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1
 ```
 
+Run the local preflight before any live write:
+
+```bash
+node scripts/hindsight-local-live-smoke-preflight.mjs --json
+```
+
+The preflight is read-only. It checks redacted env status, the local `/health` endpoint, Docker availability, and whether `supermemory-hindsight-local` is bound to localhost-only ports. It reports `ready` or `blocked` and prints the live command to run manually after blockers are cleared.
+
 Optional environment:
 
 ```bash
@@ -195,6 +203,7 @@ Before live:
 ```bash
 export HINDSIGHT_BASE_URL="http://127.0.0.1:8888"
 node scripts/verify-hindsight-live-smoke-runner.mjs
+node scripts/verify-hindsight-local-live-smoke-preflight.mjs
 node scripts/verify-hindsight-docker-compose.mjs
 node scripts/verify-supermemory-specs.mjs
 git diff --check
