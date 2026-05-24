@@ -145,6 +145,15 @@ node scripts/hindsight-local-live-smoke-preflight.mjs --json
 
 It reports redacted env readiness, local Hindsight health, Docker/container binding status, and the manual live-smoke command without performing Hindsight writes or falling back to cloud.
 
+Create a reviewed Hindsight promotion plan before applying promotion:
+
+```bash
+node scripts/hindsight-promote.mjs --input /path/to/governed-promotion.json --write-plan /path/to/reviewed-promotion-plan.json --json
+node scripts/hindsight-promote.mjs --apply-plan /path/to/reviewed-promotion-plan.json --owner-confirmed --mock-transport --json
+```
+
+Live apply requires explicit local Hindsight env and `SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1`.
+
 ### Governed Answer Evidence
 
 Final answers are governed by evidence, not by fluent recall. A `current` answer must cite used memory, document ids, source snapshots, adapter traces when recall-backed, and `supports_answer` relations. Stale, changed, restricted, and forbidden memory must degrade to the matching answer state instead of pretending to be current truth.

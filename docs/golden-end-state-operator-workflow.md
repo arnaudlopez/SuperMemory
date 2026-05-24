@@ -68,6 +68,18 @@ node scripts/hindsight-local-live-smoke-preflight.mjs --json
 
 No implicit cloud fallback is allowed. If the preflight reports `blocked`, clear the blocker first.
 
+Prepare a reviewed Hindsight promotion plan from an explicit governed input:
+
+```bash
+node scripts/hindsight-promote.mjs --input /path/to/governed-promotion.json --write-plan /path/to/reviewed-promotion-plan.json --json
+```
+
+Apply the reviewed plan through mock transport for rehearsal:
+
+```bash
+node scripts/hindsight-promote.mjs --apply-plan /path/to/reviewed-promotion-plan.json --owner-confirmed --mock-transport --json
+```
+
 Run the live smoke only when a bounded task permits it, a sacrificial bank is selected, credentials are set locally, and the preflight reports `ready`:
 
 ```bash

@@ -361,4 +361,82 @@ fs.writeFileSync(
 const implicitGeneration = runCli(["--input", implicitGenerationPath, "--json"]);
 assert.notEqual(implicitGeneration.status, 0);
 assert.match(implicitGeneration.stderr, /validated_memory_not_explicitly_promotable/);
+
+const reviewedPlanPath = path.join(tmpDir, "reviewed-promotion-plan.json");
+const writeReviewedPlan = parseJson(runCli([
+  "--input", generatedFromValidatedPath,
+  "--write-plan", reviewedPlanPath,
+  "--json"
+]));
+assert.equal(writeReviewedPlan.mode, "write-plan");
+assert.equal(writeReviewedPlan.generated_from, "hindsight_reviewed_promotion_plan");
+assert.equal(writeReviewedPlan.network_writes, false);
+assert.equal(writeReviewedPlan.writes_performed, true);
+assert.equal(writeReviewedPlan.review_required, true);
+assert.equal(writeReviewedPlan.plan_path, fs.realpathSync(reviewedPlanPath));
+assert.equal(fs.existsSync(reviewedPlanPath), true);
+assert.equal(JSON.stringify(writeReviewedPlan).includes("sk-test-secret"), false);
+
+const savedReviewedPlan = JSON.parse(fs.readFileSync(reviewedPlanPath, "utf8"));
+assert.equal(savedReviewedPlan.generated_from, "hindsight_reviewed_promotion_plan");
+assert.equal(savedReviewedPlan.mode, "review-required");
+assert.equal(savedReviewedPlan.review_required, true);
+assert.equal(savedReviewedPlan.network_writes, false);
+assert.equal(savedReviewedPlan.plan.validation.errors.length, 0);
+assert.equal(savedReviewedPlan.plan.summary.retained, 1);
+
+const applyWithoutConfirmation = runCli([
+  "--apply-plan", reviewedPlanPath,
+  "--mock-transport",
+  "--json"
+], {
+  HINDSIGHT_API_KEY: "sk-test-secret",
+  HINDSIGHT_BANK_ID: "bank-test",
+  HINDSIGHT_BASE_URL: "http://127.0.0.1:8888"
+});
+assert.notEqual(applyWithoutConfirmation.status, 0);
+assert.match(applyWithoutConfirmation.stderr, /owner_confirmation_required/);
+
+const applyReviewedPlanMock = parseJson(runCli([
+  "--apply-plan", reviewedPlanPath,
+  "--owner-confirmed",
+  "--mock-transport",
+  "--json"
+], {
+  HINDSIGHT_API_KEY: "sk-test-secret",
+  HINDSIGHT_BANK_ID: "bank-test",
+  HINDSIGHT_BASE_URL: "http://127.0.0.1:8888"
+}));
+assert.equal(applyReviewedPlanMock.mode, "apply-plan");
+assert.equal(applyReviewedPlanMock.reviewed_plan, true);
+assert.equal(applyReviewedPlanMock.owner_confirmed, true);
+assert.equal(applyReviewedPlanMock.network_writes, false);
+assert.equal(applyReviewedPlanMock.transport.mode, "mock");
+assert.equal(applyReviewedPlanMock.transport.requests.length, 1);
+assert.equal(JSON.stringify(applyReviewedPlanMock).includes("sk-test-secret"), false);
+
+const tamperedPlanPath = path.join(tmpDir, "reviewed-promotion-plan-tampered.json");
+const tamperedPlan = JSON.parse(fs.readFileSync(reviewedPlanPath, "utf8"));
+tamperedPlan.plan.operations[0].document_id = "doc-tampered";
+fs.writeFileSync(tamperedPlanPath, JSON.stringify(tamperedPlan, null, 2));
+const tamperedApply = runCli([
+  "--apply-plan", tamperedPlanPath,
+  "--owner-confirmed",
+  "--mock-transport",
+  "--json"
+], {
+  HINDSIGHT_API_KEY: "sk-test-secret",
+  HINDSIGHT_BANK_ID: "bank-test",
+  HINDSIGHT_BASE_URL: "http://127.0.0.1:8888"
+});
+assert.notEqual(tamperedApply.status, 0);
+assert.match(tamperedApply.stderr, /apply_plan_tampered/);
+
+const identityVaultPlan = runCli([
+  "--input", generatedFromValidatedPath,
+  "--write-plan", "identity-vault/reviewed-promotion-plan.json",
+  "--json"
+]);
+assert.notEqual(identityVaultPlan.status, 0);
+assert.match(identityVaultPlan.stderr, /write_plan_vault_write_forbidden/);
 fs.rmSync(tmpDir, { recursive: true, force: true });

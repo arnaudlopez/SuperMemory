@@ -1,0 +1,517 @@
+version: 2
+goal:
+  slug: "hindsight-reviewed-promotion-plan-notes"
+  title: "Hindsight Reviewed Promotion Plan Notes"
+  status: active
+  created_at: "2026-05-24"
+  updated_at: "2026-05-24"
+  kind: specific
+  original_request: "# Hindsight Reviewed Promotion Plan Notes\n\n## Intent\n\nMove Hindsight promotion from a direct fixture/input execution to an operator-reviewed promotion workflow:\n\n```text\ngoverned input -> dry-run promotion plan -> reviewed plan artifact -> apply reviewed plan with mock or explicit live mode\n```\n\nThis makes the path safer before using real local Hindsight writes beyond smoke tests.\n\n- No broad vault scan.\n- No promotion from arbitrary vault content.\n- No source capture, refresh, compilation, review queue, or answer generation behavior changes.\n- No committed secrets, env files, bank ids, raw live responses, or live evidence.\n- No Hindsight Cloud fallback.\n- No live write in CI.\n- No UI.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nThe reviewed promotion plan goal is complete when an operator can produce a redacted Hindsight promotion plan from an explicit governed input, apply that reviewed plan through mock transport in tests, and see fail-closed behavior for tampering, missing approval, unsafe live/cloud use, validation errors, and secret leakage, while existing direct hindsight-promote behavior, node --test tests/hindsight-promote.test.mjs, node scripts/verify-golden-end-state-workflow.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check stay green.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Add an operator-reviewed promotion plan gate for Hindsight promotion.\n- The first step writes a reviewable plan artifact outside the vault with no network writes and no secrets.\n- Applying a plan refuses tampering, validation errors, missing approval, stale command mode, cloud fallback by default, raw secret-like values, and direct writes without explicit live opt-in.\n- Apply can run in mock mode for CI and targeted tests.\n- Live apply remains possible only with explicit local env and `SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1`, but should not run in CI.\n- The existing `hindsight-promote` direct dry-run/live behavior remains compatible.\n- `node --test tests/hindsight-promote.test.mjs`, the new reviewed-plan tests/verifier, `node scripts/verify-golden-end-state-workflow.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` pass.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/hindsight-reviewed-promotion-plan/brief.md --mode implementation --oracle \"The reviewed promotion plan goal is complete when an operator can produce a redacted Hindsight promotion plan from an explicit governed input, apply that reviewed plan through mock transport in tests, and see fail-closed behavior for tampering, missing approval, unsafe live/cloud use, validation errors, and secret leakage, while existing direct hindsight-promote behavior, node --test tests/hindsight-promote.test.mjs, node scripts/verify-golden-end-state-workflow.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check stay green.\" --out docs/goals/hindsight-reviewed-promotion-plan-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/hindsight-reviewed-promotion-plan-notes.md\n\n> # Hindsight Reviewed Promotion Plan Notes\n> \n> Date: 2026-05-24\n> \n> ## Intent\n> \n> Move Hindsight promotion from a direct fixture/input execution to an operator-reviewed promotion workflow:\n> \n> ```text\n> governed input -> dry-run promotion plan -> reviewed plan artifact -> apply reviewed plan with mock or explicit live mode\n> ```\n> \n> This makes the path safer before using real local Hindsight writes beyond smoke tests.\n> \n> ## Current State\n> \n> - `scripts/hindsight-promote.mjs` can read `promotion_payloads` or explicit `validated_memories`.\n> - Dry-run is default and validates provenance, review state, recall scope, `do_not_use`, and candidate type blockers.\n> - `--live --mock-transport` is covered by tests.\n> - Local Hindsight live smoke has passed against `http://127.0.0.1:8888` with fake local credentials and sacrificial bank `bank-local-smoke`.\n> - Capture and refresh CLIs already use an operator pattern with `--write-plan`, `--apply-plan`, and owner-confirmed commit gates.\n> \n> ## Non-Goals\n> \n> - No broad vault scan.\n> - No promotion from arbitrary vault content.\n> - No source capture, refresh, compilation, review queue, or answer generation behavior changes.\n> - No committed secrets, env files, bank ids, raw live responses, or live evidence.\n> - No Hindsight Cloud fallback.\n> - No live write in CI.\n> - No UI.\n> \n> ## Acceptance\n> \n> - Add an operator-reviewed promotion plan gate for Hindsight promotion.\n> - The first step writes a reviewable plan artifact outside the vault with no network writes and no secrets.\n> - Applying a plan refuses tampering, validation errors, missing approval, stale command mode, cloud fallback by default, raw secret-like values, and direct writes without explicit live opt-in.\n> - Apply can run in mock mode for CI and targeted tests.\n> - Live apply remains possible only with explicit local env and `SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1`, but should not run in CI.\n> - The existing `hindsight-promote` direct dry-run/live behavior remains compatible.\n> - `node --test tests/hindsight-promote.test.mjs`, the new reviewed-plan tests/verifier, `node scripts/verify-golden-end-state-workflow.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` pass.\n> \n> ## Observable Oracle\n> \n> The reviewed promotion plan goal is complete when an operator can produce a redacted Hindsight promotion plan from an explicit governed input, apply that reviewed plan through mock transport in tests, and see fail-closed behavior for tampering, missing approval, unsafe live/cloud use, validation errors, and secret leakage, while all existing global specs stay green."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Hindsight Reviewed Promotion Plan Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "The reviewed promotion plan goal is complete when an operator can produce a redacted Hindsight promotion plan from an explicit governed input, apply that reviewed plan through mock transport in tests, and see fail-closed behavior for tampering, missing approval, unsafe live/cloud use, validation errors, and secret leakage, while existing direct hindsight-promote behavior, node --test tests/hindsight-promote.test.mjs, node scripts/verify-golden-end-state-workflow.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check stay green."
+  oracle:
+    signal: "The reviewed promotion plan goal is complete when an operator can produce a redacted Hindsight promotion plan from an explicit governed input, apply that reviewed plan through mock transport in tests, and see fail-closed behavior for tampering, missing approval, unsafe live/cloud use, validation errors, and secret leakage, while existing direct hindsight-promote behavior, node --test tests/hindsight-promote.test.mjs, node scripts/verify-golden-end-state-workflow.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check stay green."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Read-only Scout mapping completed. The safest next slice is to extend the existing Hindsight promotion CLI with an operator-reviewed plan gate that mirrors local capture/refresh plan patterns, while preserving existing direct dry-run/live behavior and keeping CI mock-only."
+      design_concept:
+        shared_understanding: "Direct hindsight-promote execution is useful for fixtures and smoke tests, but the operator path should require a reviewable promotion plan before applying to Hindsight. This keeps LLM-first upstream interpretation flexible while deterministic governance and human review gate promotion."
+        non_goals:
+          - "No broad vault scan"
+          - "No arbitrary vault promotion"
+          - "No source capture/refresh/compile/answer behavior changes"
+          - "No committed secrets or live evidence"
+          - "No Hindsight Cloud fallback by default"
+          - "No live write in CI"
+        decision_dependencies:
+          - "Plan artifacts must be redacted and local"
+          - "Apply must refuse tampered or invalid plans"
+          - "Mock apply must be enough for CI"
+          - "Live apply remains possible only with local explicit env and opt-in"
+      ubiquitous_language:
+        promotion_plan: "reviewable artifact generated from a validated dry-run Hindsight promotion plan"
+        apply_plan: "operator action that executes an already reviewed promotion plan through mock or explicit live transport"
+        reviewed_plan: "plan file whose validation passed and whose operation shape was not tampered with"
+        mock_apply: "CI-safe execution through mock transport with no network writes"
+        live_apply: "local Hindsight network writes, allowed only with explicit env and SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1"
+      module_map:
+        scripts/hindsight-promote.mjs: "Primary CLI to extend with write-plan/apply-plan while preserving direct input behavior"
+        tests/hindsight-promote.test.mjs: "Primary acceptance coverage for direct mode and reviewed plan mode"
+        scripts/hindsight-transport.mjs: "Existing mockable/live transport boundary"
+        README.md: "Operator command docs if implementation lands"
+        docs/golden-end-state-operator-workflow.md: "Golden workflow docs may mention reviewed promotion plan"
+        scripts/verify-supermemory-specs.mjs: "Global suite already runs hindsight-promote tests"
+      interface_contract:
+        write_plan: "node scripts/hindsight-promote.mjs --input <governed.json> --write-plan <plan.json> --json validates input, writes a redacted plan artifact outside identity-vault, performs no network writes, and returns mode write-plan metadata."
+        apply_plan_mock: "node scripts/hindsight-promote.mjs --apply-plan <plan.json> --mock-transport --owner-confirmed --json validates the saved plan and executes mock transport with network_writes false."
+        apply_plan_live: "node scripts/hindsight-promote.mjs --apply-plan <plan.json> --live --owner-confirmed --json requires local explicit Hindsight env and live opt-in; not used in CI."
+        fail_closed: "Refuse validation errors, tampered operations, missing owner confirmation, missing mode, unsafe cloud endpoint unless explicitly allowed later, secret-like values, identity-vault plan writes, and raw response leakage."
+      test_strategy:
+        red_tests: "Add failing tests to tests/hindsight-promote.test.mjs for write-plan success, apply-plan mock success, owner confirmation required, tampered plan rejection, identity-vault write-plan refusal, and no secret leakage."
+        green_commands:
+          - "node --test tests/hindsight-promote.test.mjs"
+          - "node scripts/verify-golden-end-state-workflow.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+        mocks: "Use temporary plan files and --mock-transport; do not use live writes in tests."
+      feedback_policy: "Run the focused hindsight-promote tests after each edit, then Golden/global verifiers before review. Stop before adding new dependencies, broad scans, credentials, cloud default, or live CI writes."
+      acceptance_contract_updates:
+        exact_end_state_evidence:
+          - "write-plan artifact generated from explicit governed input"
+          - "mock apply of reviewed plan succeeds"
+          - "tamper/missing confirmation/unsafe paths fail closed"
+          - "direct existing hindsight-promote tests remain green"
+          - "global specs remain green"
+        failure_modes:
+          - "operator bypasses review plan"
+          - "plan tampering"
+          - "secret leakage"
+          - "cloud fallback"
+          - "live write without opt-in"
+          - "identity-vault plan artifact write"
+      dirty_worktree_risk_map:
+        current_dirty_files:
+          - docs/hindsight-reviewed-promotion-plan-notes.md
+          - docs/goals/hindsight-reviewed-promotion-plan/
+        risk: "Only goal setup artifacts are dirty now; product files should change only after T002/T003 boundaries."
+        guard: "Keep edits to hindsight-promote test/CLI/docs unless Judge expands boundaries."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: "none; tests use fake env and redact values"
+        auth_permissions: none
+        api_contract: "local CLI contract adds reviewed plan mode"
+        ui_routes: none
+        background_jobs: none
+        external_services: "mock transport in CI; live local Hindsight only with explicit opt-in outside tests"
+        deploy_rollback: "none; CLI addition can be reverted by commit"
+        observability: "JSON plan/apply reports and existing redacted transport summaries"
+        docs: "README and Golden operator workflow docs may update with reviewed promotion commands"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approve the reviewed promotion plan slice. The largest safe useful work is red tests in the existing hindsight-promote test file, followed by a bounded CLI extension for write-plan/apply-plan mock execution and docs."
+      approved_design_concept: "Add a review gate between governed input and Hindsight promotion, without weakening existing direct dry-run/live behavior. CI remains mock-only; live apply remains explicit and local-first."
+      approved_ubiquitous_language:
+        write_plan: "persisted reviewable promotion plan from validated dry-run"
+        apply_plan: "execute a reviewed plan after owner confirmation"
+        owner_confirmed: "explicit operator approval flag for apply-plan"
+        mock_apply: "CI-safe transport execution with network_writes=false"
+        live_apply: "explicit local Hindsight network write outside CI"
+      feedback_policy: "Write red tests first, implement only the approved CLI surface, run focused tests frequently, then Golden/global verification. Stop before broad vault scans, secrets, cloud default, or live CI writes."
+      test_strategy: "T003 extends tests/hindsight-promote.test.mjs with red cases for write-plan, apply-plan mock, missing owner confirmation, tampering, identity-vault plan path refusal, and secret redaction. T004 implements in scripts/hindsight-promote.mjs and updates docs. T005 verifies targeted and global suites."
+      module_map:
+        tests/hindsight-promote.test.mjs: "red/green acceptance tests"
+        scripts/hindsight-promote.mjs: "CLI implementation boundary"
+        README.md: "operator docs"
+        docs/golden-end-state-operator-workflow.md: "Golden workflow docs"
+      interface_contract:
+        write_plan: "--input <file> --write-plan <plan.json> --json writes redacted plan outside identity-vault, returns mode write-plan, network_writes false, writes_performed true, validation errors empty."
+        apply_plan_mock: "--apply-plan <plan.json> --owner-confirmed --mock-transport --json executes transport in mock mode, returns mode live/apply-plan or reviewed-plan, network_writes false, transport.mode mock."
+        guards:
+          - owner_confirmation_required
+          - "apply_plan_invalid or apply_plan_tampered"
+          - write_plan_vault_write_forbidden
+          - "governance validation errors are not writeable/applyable"
+          - "no token-like secrets in output"
+      architecture_review: "Approved. Keeping the behavior in hindsight-promote avoids a shallow wrapper and reuses validation/transport code. Plan artifacts must be normalized enough to detect tampering and safe enough for review; no new dependency or runtime service is needed."
+      exact_worker_objective: "Add failing tests for reviewed Hindsight promotion plan write/apply gates while preserving direct promotion tests."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/hindsight-promote.test.mjs
+          verify:
+            - "node --test tests/hindsight-promote.test.mjs"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/hindsight-promote.mjs
+            - tests/hindsight-promote.test.mjs
+            - README.md
+            - docs/golden-end-state-operator-workflow.md
+          verify:
+            - "node --test tests/hindsight-promote.test.mjs"
+            - "node scripts/verify-golden-end-state-workflow.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Implementation starts scanning the vault broadly or adding live CI writes."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - scripts/hindsight-promote.mjs
+            - tests/hindsight-promote.test.mjs
+            - README.md
+            - docs/golden-end-state-operator-workflow.md
+          verify:
+            - "node --test tests/hindsight-promote.test.mjs"
+            - "node scripts/verify-golden-end-state-workflow.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/hindsight-promote.test.mjs
+    verify:
+      - "node --test tests/hindsight-promote.test.mjs"
+    stop_if:
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Added failing reviewed promotion plan tests to hindsight-promote coverage. The tests expect write-plan, apply-plan mock execution, owner confirmation, tamper detection, identity-vault write refusal, and secret redaction."
+      changed_files:
+        - tests/hindsight-promote.test.mjs
+      red_evidence:
+        command: "node --test tests/hindsight-promote.test.mjs"
+        result: "failed as expected"
+        failure: "unknown argument: --write-plan"
+      verify:
+        - "node --test tests/hindsight-promote.test.mjs (expected fail/red)"
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/hindsight-promote.mjs
+      - tests/hindsight-promote.test.mjs
+      - README.md
+      - docs/golden-end-state-operator-workflow.md
+    verify:
+      - "node --test tests/hindsight-promote.test.mjs"
+      - "node scripts/verify-golden-end-state-workflow.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Implementation starts scanning the vault broadly or adding live CI writes."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented reviewed Hindsight promotion plans in the existing hindsight-promote CLI. Operators can now write a redacted review-required plan and apply that reviewed plan through mock transport with owner confirmation; live apply remains gated by explicit local env and SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1."
+      changed_files:
+        - scripts/hindsight-promote.mjs
+        - tests/hindsight-promote.test.mjs
+        - README.md
+        - docs/golden-end-state-operator-workflow.md
+      green_test:
+        command: "node --test tests/hindsight-promote.test.mjs"
+        result: pass
+      verify:
+        - "node --test tests/hindsight-promote.test.mjs"
+        - "node scripts/verify-golden-end-state-workflow.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      evidence:
+        - "--write-plan writes a review-required redacted plan outside identity-vault."
+        - "--apply-plan requires --owner-confirmed and supports --mock-transport with network_writes=false."
+        - "Tampered plans and identity-vault plan writes fail closed."
+        - "Existing direct hindsight-promote behavior remains covered by the same test file."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/hindsight-promote.mjs
+      - tests/hindsight-promote.test.mjs
+      - README.md
+      - docs/golden-end-state-operator-workflow.md
+    verify:
+      - "node --test tests/hindsight-promote.test.mjs"
+      - "node scripts/verify-golden-end-state-workflow.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran the approved verification package for reviewed Hindsight promotion plans. Focused tests, Golden workflow, global specs, and whitespace checks all pass."
+      changed_files:
+        - scripts/hindsight-promote.mjs
+        - tests/hindsight-promote.test.mjs
+        - README.md
+        - docs/golden-end-state-operator-workflow.md
+      green_test:
+        command: "node scripts/verify-supermemory-specs.mjs"
+        result: pass
+      verify:
+        - "node --test tests/hindsight-promote.test.mjs"
+        - "node scripts/verify-golden-end-state-workflow.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      evidence:
+        - "Reviewed plan write/apply tests are green."
+        - "Global specs remain green."
+        - "No live writes were run for this goal; apply-plan test uses mock transport."
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approve shipping for reviewed Hindsight promotion plans. The implementation adds a review gate to hindsight-promote while preserving existing direct dry-run/live behavior and keeping tests mock-only."
+      design_delta: "Hindsight promotion now supports a persisted review-required plan artifact and owner-confirmed apply-plan execution. This aligns promotion with the capture/refresh operator pattern: plan first, review, then explicit apply."
+      architecture_review: "Approved. The change is contained in the existing promotion CLI and test surface, reuses existing validation and transport code, rejects tampered plans via a stable hash, refuses identity-vault plan writes, and does not add broad scans, dependencies, background work, UI, or live CI writes."
+      oracle_coverage:
+        - "node --test tests/hindsight-promote.test.mjs passed"
+        - "node scripts/verify-golden-end-state-workflow.mjs passed"
+        - "node scripts/verify-supermemory-specs.mjs passed"
+        - "git diff --check passed"
+        - "Tests cover write-plan, apply-plan mock, owner confirmation, tamper rejection, identity-vault plan path refusal, and secret redaction."
+      remaining_risks:
+        - "Live apply of reviewed plans remains intentionally untested in CI and should be done only with explicit local env and preflight readiness."
+        - "The plan hash signs the generated plan content but does not represent a human signature; owner confirmation remains an explicit CLI flag."
+      another_worker_slice_needed: false
+      task_updates:
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

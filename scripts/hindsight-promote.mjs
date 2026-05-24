@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { buildHindsightRequests, executeHindsightRequests } from "./hindsight-transport.mjs";
 
 const requiredPromotionMetadata = [
@@ -91,7 +92,10 @@ function parseArgs(argv) {
     dryRun: false,
     live: false,
     json: false,
-    mockTransport: false
+    mockTransport: false,
+    writePlan: null,
+    applyPlan: null,
+    ownerConfirmed: false
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -110,18 +114,32 @@ function parseArgs(argv) {
       options.json = true;
     } else if (arg === "--mock-transport") {
       options.mockTransport = true;
+    } else if (arg === "--write-plan") {
+      options.writePlan = argv[index + 1];
+      index += 1;
+    } else if (arg === "--apply-plan") {
+      options.applyPlan = argv[index + 1];
+      index += 1;
+    } else if (arg === "--owner-confirmed") {
+      options.ownerConfirmed = true;
     } else {
       throw new Error(`unknown argument: ${arg}`);
     }
   }
 
-  if (!options.input) {
+  if (options.applyPlan && options.input) {
+    throw new Error("--apply-plan and --input are mutually exclusive");
+  }
+  if (!options.applyPlan && !options.input) {
     throw new Error("missing required --input <path>");
+  }
+  if (options.writePlan && options.applyPlan) {
+    throw new Error("--write-plan and --apply-plan are mutually exclusive");
   }
   if (options.live && options.dryRun) {
     throw new Error("--live and --dry-run are mutually exclusive");
   }
-  if (!options.live) {
+  if (!options.live && !options.applyPlan) {
     options.dryRun = true;
   }
   return options;
@@ -133,6 +151,14 @@ function readInput(inputPath) {
     throw new Error(`missing input file: ${inputPath}`);
   }
   return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+}
+
+function readJsonFile(inputPath, errorCode = "input_unreadable") {
+  try {
+    return JSON.parse(fs.readFileSync(inputPath, "utf8"));
+  } catch {
+    throw new Error(errorCode);
+  }
 }
 
 function normalizeInput(input) {
@@ -302,6 +328,119 @@ function envStatus(env = process.env) {
   };
 }
 
+function canonicalJson(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function hashPlan(plan) {
+  const jsonStablePlan = JSON.parse(JSON.stringify(plan));
+  return `sha256:${crypto.createHash("sha256").update(canonicalJson(jsonStablePlan)).digest("hex")}`;
+}
+
+function hasSecretLikeValue(value) {
+  if (typeof value === "string") {
+    return /sk-[A-Za-z0-9_-]+|password\s*[:=]|api[_-]?key\s*[:=]|secret_value/i.test(value);
+  }
+  if (Array.isArray(value)) {
+    return value.some((item) => hasSecretLikeValue(item));
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value).some((item) => hasSecretLikeValue(item));
+  }
+  return false;
+}
+
+function isPathInside(parent, child) {
+  const relative = path.relative(parent, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function resolveWritablePlanPath(outputPath) {
+  if (!outputPath) throw new Error("missing_write_plan");
+  const requestedPath = path.resolve(outputPath);
+  const parent = path.dirname(requestedPath);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) {
+    throw new Error("write_plan_parent_missing");
+  }
+  if (fs.existsSync(requestedPath) && fs.statSync(requestedPath).isDirectory()) {
+    throw new Error("write_plan_target_is_directory");
+  }
+  if (isPathInside(path.resolve("identity-vault"), requestedPath)) {
+    throw new Error("write_plan_vault_write_forbidden");
+  }
+  return path.join(fs.realpathSync(parent), path.basename(requestedPath));
+}
+
+function writeReviewedPlan(plan, outputPath) {
+  if (plan.validation.errors.length > 0) {
+    throw new Error(`governance validation failed: ${plan.validation.errors.join(", ")}`);
+  }
+  if (hasSecretLikeValue(plan)) {
+    throw new Error("write_plan_contains_secret_like_value");
+  }
+  const planPath = resolveWritablePlanPath(outputPath);
+  const reviewedPlan = {
+    generated_from: "hindsight_reviewed_promotion_plan",
+    mode: "review-required",
+    created_at: new Date().toISOString(),
+    review_required: true,
+    network_writes: false,
+    live_writes_performed: false,
+    plan,
+    plan_hash: hashPlan(plan)
+  };
+  fs.writeFileSync(planPath, `${JSON.stringify(reviewedPlan, null, 2)}\n`);
+  return {
+    mode: "write-plan",
+    generated_from: "hindsight_reviewed_promotion_plan",
+    plan_path: planPath,
+    plan_hash: reviewedPlan.plan_hash,
+    review_required: true,
+    network_writes: false,
+    writes_performed: true,
+    validation: plan.validation,
+    summary: plan.summary
+  };
+}
+
+function readReviewedPlan(inputPath) {
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+    throw new Error("apply_plan_unreadable");
+  }
+  const reviewedPlan = readJsonFile(resolved, "apply_plan_unreadable");
+  if (
+    reviewedPlan?.generated_from !== "hindsight_reviewed_promotion_plan" ||
+    reviewedPlan?.mode !== "review-required" ||
+    reviewedPlan.review_required !== true ||
+    reviewedPlan.network_writes !== false ||
+    !reviewedPlan.plan ||
+    !reviewedPlan.plan_hash
+  ) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (hashPlan(reviewedPlan.plan) !== reviewedPlan.plan_hash) {
+    throw new Error("apply_plan_tampered");
+  }
+  if (hasSecretLikeValue(reviewedPlan)) {
+    throw new Error("apply_plan_contains_secret_like_value");
+  }
+  if (reviewedPlan.plan.validation?.errors?.length > 0) {
+    throw new Error(`governance validation failed: ${reviewedPlan.plan.validation.errors.join(", ")}`);
+  }
+  return {
+    source_plan: fs.realpathSync(resolved),
+    reviewedPlan,
+    plan: reviewedPlan.plan
+  };
+}
+
 function requireLiveEnv(env = process.env) {
   const missing = [];
   if (!env.HINDSIGHT_API_KEY) missing.push("HINDSIGHT_API_KEY");
@@ -419,6 +558,72 @@ function printOutput(plan, json) {
   }
 }
 
+async function applyReviewedPlan(options) {
+  if (!options.ownerConfirmed) {
+    throw new Error("owner_confirmation_required");
+  }
+  if (!options.live && !options.mockTransport) {
+    throw new Error("apply-plan requires --mock-transport or --live");
+  }
+  const { source_plan, reviewedPlan, plan } = readReviewedPlan(options.applyPlan);
+  const missing = requireLiveEnv();
+  if (missing.length > 0) {
+    throw new Error(`missing required live env: ${missing.join(", ")}`);
+  }
+  const requests = buildHindsightRequests(plan, {
+    baseUrl: process.env.HINDSIGHT_BASE_URL,
+    apiKey: process.env.HINDSIGHT_API_KEY
+  });
+  if (options.mockTransport) {
+    const transport = await executeHindsightRequests(requests, {
+      apiKey: process.env.HINDSIGHT_API_KEY,
+      fetchImpl: async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true, mocked: true })
+      })
+    });
+    return {
+      ...plan,
+      mode: "apply-plan",
+      reviewed_plan: true,
+      owner_confirmed: true,
+      source_plan,
+      plan_hash: reviewedPlan.plan_hash,
+      network_writes: false,
+      transport: {
+        mode: "mock",
+        requests: sanitizedTransportRequests(requests),
+        result: transport
+      }
+    };
+  }
+  if (process.env.SUPERMEMORY_ALLOW_LIVE_HINDSIGHT !== "1") {
+    throw new Error("live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport");
+  }
+  const baseUrl = process.env.HINDSIGHT_BASE_URL ?? "";
+  if (!/^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(?::|\/|$)/.test(baseUrl)) {
+    throw new Error("live reviewed plan requires explicit local HINDSIGHT_BASE_URL");
+  }
+  const transport = await executeHindsightRequests(requests, {
+    apiKey: process.env.HINDSIGHT_API_KEY
+  });
+  return {
+    ...plan,
+    mode: "apply-plan",
+    reviewed_plan: true,
+    owner_confirmed: true,
+    source_plan,
+    plan_hash: reviewedPlan.plan_hash,
+    network_writes: true,
+    transport: {
+      mode: "live",
+      requests: sanitizedTransportRequests(requests),
+      result: transport
+    }
+  };
+}
+
 function sanitizedTransportRequests(requests) {
   return requests.map(({ method, path, operation, document_id, policy_id, body }) => ({
     method,
@@ -433,8 +638,17 @@ function sanitizedTransportRequests(requests) {
 async function main() {
   try {
     const options = parseArgs(process.argv.slice(2));
+    if (options.applyPlan) {
+      printOutput(await applyReviewedPlan(options), options.json);
+      return;
+    }
     const input = buildEffectiveInput(normalizeInput(readInput(options.input)));
     const plan = buildPlan(input, options);
+
+    if (options.writePlan) {
+      printOutput(writeReviewedPlan(plan, options.writePlan), options.json);
+      return;
+    }
 
     if (plan.validation.errors.length > 0) {
       printOutput(plan, options.json);
