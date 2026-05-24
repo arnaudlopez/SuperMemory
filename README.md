@@ -40,6 +40,7 @@ The project separates governance from retrieval:
 
 - **Hindsight integration contract**
   - Promoted memory carries stable `document_id`, tags, provenance metadata, freshness, source paths, and access policy.
+  - SuperMemory keeps rich internal metadata, while the Hindsight transport serializes metadata values to strings before mock or live API calls.
 
 - **Fail-closed agent recall**
   - Specialized agents must query memory with restrictive tags and forbidden-tag rules.

@@ -100,6 +100,8 @@ metadata:
   legal_hold: <true|false if applicable>
 ```
 
+SuperMemory may keep richer internal metadata shapes such as arrays, nested objects, booleans, and numeric confidence scores while planning a promotion. The Hindsight transport boundary serializes every metadata value to a string before live or mock API calls, and drops null or undefined metadata values, so self-hosted/local Hindsight receives a strict string-valued metadata map without weakening the internal vault contract.
+
 ## Recall Gate
 
 Agents must not call Hindsight broadly.

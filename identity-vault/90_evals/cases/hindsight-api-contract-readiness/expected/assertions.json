@@ -11,6 +11,7 @@
     "upsert",
     "delete"
   ],
+  "required_metadata_values_are_strings": true,
   "required_recall_tags_match": "all_strict",
   "required_owner_live_env": [
     "HINDSIGHT_API_KEY",

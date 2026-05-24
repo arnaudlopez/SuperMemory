@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { buildHindsightRequests, executeHindsightRequests } from "../scripts/hindsight-transport.mjs";
+import {
+  buildHindsightRequests,
+  executeHindsightRequests,
+  serializeHindsightMetadata
+} from "../scripts/hindsight-transport.mjs";
 
 const plan = {
   bank_id: "bank-test",
@@ -10,7 +14,15 @@ const plan = {
       memory_id: "mem-a",
       content: "Retain A",
       tags: ["workspace:ws-a", "status:active"],
-      metadata: { source_id: "src-a", snapshot_id: "snap-a" }
+      metadata: {
+        source_id: "src-a",
+        snapshot_id: "snap-a",
+        derived_from: ["snap-a"],
+        reliability: { score: 0.93, rule: "owner_verified" },
+        confidence: 0.93,
+        owner_confirmed: true,
+        nullable: null
+      }
     },
     {
       operation: "upsert",
@@ -53,8 +65,17 @@ assert.deepEqual(requests[0].body.items[0], {
   content: "Retain A",
   document_id: "doc-a",
   tags: ["workspace:ws-a", "status:active"],
-  metadata: { source_id: "src-a", snapshot_id: "snap-a", memory_id: "mem-a" }
+  metadata: {
+    source_id: "src-a",
+    snapshot_id: "snap-a",
+    derived_from: "[\"snap-a\"]",
+    reliability: "{\"score\":0.93,\"rule\":\"owner_verified\"}",
+    confidence: "0.93",
+    owner_confirmed: "true",
+    memory_id: "mem-a"
+  }
 });
+assert.ok(Object.values(requests[0].body.items[0].metadata).every((value) => typeof value === "string"));
 assert.equal(requests[1].body.items[0].document_id, "doc-a");
 assert.equal(requests[2].method, "DELETE");
 assert.equal(requests[2].path, "/v1/default/banks/bank-test/documents/doc-old");
@@ -67,6 +88,21 @@ assert.deepEqual(requests[3].body, {
   tags_match: "all_strict"
 });
 assert.equal(JSON.stringify(requests).includes("sk-test-secret"), false);
+assert.deepEqual(serializeHindsightMetadata({
+  keep: "as-string",
+  list: ["a", "b"],
+  object: { nested: true },
+  number: 42,
+  bool: false,
+  nil: null,
+  missing: undefined
+}), {
+  keep: "as-string",
+  list: "[\"a\",\"b\"]",
+  object: "{\"nested\":true}",
+  number: "42",
+  bool: "false"
+});
 
 const calls = [];
 const result = await executeHindsightRequests(requests, {

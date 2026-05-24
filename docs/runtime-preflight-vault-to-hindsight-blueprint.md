@@ -103,6 +103,7 @@ Rules:
 - dry-run must not read or print secrets;
 - live mode must fail closed if required env is missing;
 - live self-hosted/local smoke should set `HINDSIGHT_BASE_URL` explicitly;
+- SuperMemory can keep arrays/objects/booleans/numbers in internal promotion metadata, but the Hindsight transport must serialize metadata values to strings and omit nullish values before API calls;
 - cloud usage must be opt-in by setting `HINDSIGHT_BASE_URL=https://api.hindsight.vectorize.io` intentionally;
 - logs must redact token-like values;
 - `SUPERMEMORY_PROMOTION_MODE=live` may confirm intent, but the command still needs `--live`.

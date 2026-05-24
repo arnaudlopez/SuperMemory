@@ -80,6 +80,7 @@ function verifyReport(result, assertions) {
   requireEqual(deletion?.requests.some((request) => request.method === "DELETE" && request.path.includes("/documents/")), true, "delete /documents path");
 
   for (const check of [retain, upsert]) {
+    requireEqual(check?.metadata_values_are_strings, assertions.required_metadata_values_are_strings, `${check?.id} metadata values`);
     const recall = check?.requests.find((request) => request.operation === "recall");
     requireEqual(recall?.tags_match, assertions.required_recall_tags_match, `${check?.id} recall tags_match`);
   }

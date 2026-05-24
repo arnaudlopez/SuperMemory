@@ -236,7 +236,15 @@ fs.writeFileSync(
           memory_id: "mem-acme-prd-t1",
           source_version: "snap-acme-prd-2026-05-21",
           freshness: "fresh",
-          derived_from: ["snap-acme-prd-2026-05-21"]
+          derived_from: ["snap-acme-prd-2026-05-21"],
+          evidence_refs: ["source_registry", "snapshot_registry"],
+          reliability: {
+            rule: "owner_reviewed_snapshot",
+            score: 0.98
+          },
+          confidence: 0.98,
+          restricted: false,
+          nullish: null
         }
       }
     ]
@@ -249,7 +257,20 @@ const vaultSyncValid = parseJson(runCli(["--input", vaultSyncValidPath, "--live"
 }));
 const vaultSyncRequest = vaultSyncValid.transport.requests.find((request) => request.operation === "retain");
 assert.equal(vaultSyncValid.validation.contract_mode, "vault_sync_v1");
+assert.deepEqual(vaultSyncValid.operations[0].metadata.derived_from, ["snap-acme-prd-2026-05-21"]);
+assert.deepEqual(vaultSyncValid.operations[0].metadata.evidence_refs, ["source_registry", "snapshot_registry"]);
+assert.deepEqual(vaultSyncValid.operations[0].metadata.reliability, {
+  rule: "owner_reviewed_snapshot",
+  score: 0.98
+});
+assert.equal(vaultSyncValid.operations[0].metadata.confidence, 0.98);
+assert.equal(vaultSyncValid.operations[0].metadata.restricted, false);
 assert.equal(vaultSyncRequest.body.items[0].metadata.derived_from, "[\"snap-acme-prd-2026-05-21\"]");
+assert.equal(vaultSyncRequest.body.items[0].metadata.evidence_refs, "[\"source_registry\",\"snapshot_registry\"]");
+assert.equal(vaultSyncRequest.body.items[0].metadata.reliability, "{\"rule\":\"owner_reviewed_snapshot\",\"score\":0.98}");
+assert.equal(vaultSyncRequest.body.items[0].metadata.confidence, "0.98");
+assert.equal(vaultSyncRequest.body.items[0].metadata.restricted, "false");
+assert.equal(Object.hasOwn(vaultSyncRequest.body.items[0].metadata, "nullish"), false);
 assert.equal(vaultSyncRequest.body.items[0].metadata.source_version, "snap-acme-prd-2026-05-21");
 assert.equal(vaultSyncRequest.body.items[0].metadata.freshness, "fresh");
 assert.ok(Object.values(vaultSyncRequest.body.items[0].metadata).every((value) => typeof value === "string"));

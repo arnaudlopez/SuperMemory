@@ -131,13 +131,14 @@ function checkCase(smokeCase) {
 
   if (expectedRequest && (smokeCase.expectedOperation === "retain" || smokeCase.expectedOperation === "upsert")) {
     const item = expectedRequest.body?.items?.[0];
+    const metadataValuesAreStrings = hasObject(item?.metadata) && Object.values(item.metadata).every((value) => typeof value === "string");
     if (expectedRequest.method !== "POST") errors.push("retain/upsert must use POST");
     if (!requestMatchesPath(expectedRequest, "/memories")) errors.push("retain/upsert must target /memories");
     if (!item?.content) errors.push("retain/upsert item must include content");
     if (!item?.document_id) errors.push("retain/upsert item must include document_id");
     if (!Array.isArray(item?.tags) || item.tags.length === 0) errors.push("retain/upsert item must include tags");
     if (!hasObject(item?.metadata)) errors.push("retain/upsert item must include metadata");
-    if (hasObject(item?.metadata) && !Object.values(item.metadata).every((value) => typeof value === "string")) {
+    if (!metadataValuesAreStrings) {
       errors.push("retain/upsert metadata values must be strings");
     }
   }
@@ -170,6 +171,9 @@ function checkCase(smokeCase) {
     status: errors.length === 0 ? "pass" : "fail",
     expected_operation: smokeCase.expectedOperation,
     request_count: requests.length,
+    metadata_values_are_strings: expectedRequest && (smokeCase.expectedOperation === "retain" || smokeCase.expectedOperation === "upsert")
+      ? Object.values(expectedRequest.body?.items?.[0]?.metadata ?? {}).every((value) => typeof value === "string")
+      : null,
     requests: requests.map((request) => ({
       operation: request.operation,
       method: request.method,

@@ -692,6 +692,7 @@ Comportements a prouver :
 - Hindsight self-hosted demarre localement avec une bank sacrifiable ;
 - le container Docker `ghcr.io/vectorize-io/hindsight:latest` peut demarrer avec `HINDSIGHT_API_LLM_PROVIDER=llamacpp` pour eviter une dependance initiale a une cle LLM externe ;
 - le runner live execute retain -> recall strict, upsert -> recall strict, puis delete ;
+- les metadata internes riches restent disponibles dans le plan SuperMemory, mais le transport Hindsight convertit chaque valeur metadata en string et supprime les valeurs nulles avant appel API ;
 - le recall live utilise `tags_match: "all_strict"` ;
 - la preuve locale confirme `live_writes_performed: true` et `secrets_redacted: true` sans exposer de secret ;
 - si le runtime local n'est pas disponible, le systeme bloque ou reste en mock, sans basculer silencieusement vers le cloud.

@@ -8,16 +8,16 @@ function encodePath(value) {
   return encodeURIComponent(String(value));
 }
 
-function metadataValue(value) {
+export function serializeHindsightMetadataValue(value) {
   if (value === null || value === undefined) return undefined;
   if (typeof value === "string") return value;
   return JSON.stringify(value);
 }
 
-function retainMetadata(metadata) {
+export function serializeHindsightMetadata(metadata) {
   return Object.fromEntries(
     Object.entries(metadata ?? {})
-      .map(([key, value]) => [key, metadataValue(value)])
+      .map(([key, value]) => [key, serializeHindsightMetadataValue(value)])
       .filter(([, value]) => value !== undefined)
   );
 }
@@ -29,7 +29,7 @@ function retainBody(operation) {
         content: operation.content,
         document_id: operation.document_id,
         tags: operation.tags ?? [],
-        metadata: retainMetadata({
+        metadata: serializeHindsightMetadata({
           ...(operation.metadata ?? {}),
           memory_id: operation.memory_id
         })
