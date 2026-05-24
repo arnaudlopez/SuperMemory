@@ -1,0 +1,561 @@
+version: 2
+goal:
+  slug: "local-file-refresh-staging-gate"
+  title: "Local File Refresh Staging Gate"
+  status: active
+  created_at: "2026-05-24"
+  updated_at: "2026-05-24"
+  kind: specific
+  original_request: "# Local File Refresh Staging Gate\n\n## Intent\n\nImplement the next SuperMemory tranche after the local-file source refresh CLI and workflow smoke: a controlled staging/review gate for refresh plans.\n\nThe current `local-file-source-refresh.mjs` can produce and persist a dry-run plan for a registered `local_file` source. The next step is to let an operator apply a reviewed refresh plan into a staging directory, without writing directly to `identity-vault`, without compiling active memory, and without promoting to Hindsight.\n\nA maintainer can run a local command against a saved refresh plan and get reviewable staging artifacts that contain source registry deltas, snapshot candidates, connector run/result evidence, affected memory review items, and a manifest. The command must fail closed for invalid plans, raw content leakage, malformed lineage, duplicate or unsafe destination paths, and direct vault writes.\n\n- Do not write directly to the final vault.\n- Do not compile active memory.\n- Do not promote or delete anything in Hindsight.\n- Do not implement remote connectors, background jobs, database migrations, UI, or env files.\n- Do not scan the vault, disk, mailbox, Drive, web, or any broad source.\n- Do not weaken existing local-file refresh, source refresh connector boundary, source snapshot refresh, Hindsight, or global specs.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nLocal file refresh staging gate is complete when node --test tests/local-file-source-refresh-cli.test.mjs, node scripts/verify-local-file-source-refresh-workflow.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- A saved local-file refresh plan can be applied to a new empty staging directory.\n- The staging directory contains reviewable JSON artifacts for the original plan, connector runs/results, refresh candidates/plans, snapshot candidates, review items, and manifest.\n- The apply step refuses plans with validation errors, missing lineage, raw-content-like fields, non-empty promotion payloads, or direct `identity-vault` destinations.\n- Changed-source staging preserves `previous_snapshot_id`, `connector_result_id`, `created_snapshot_id`, and `needs_review` routing.\n- Unavailable and `do_not_use` plans stage without creating fresh snapshots or active promotions.\n- No raw source content, source instructions, secrets, or neighboring-file content appear in stdout, stderr, or staged artifacts.\n- Existing specs remain green.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/local-file-refresh-staging-gate/brief.md --mode implementation --oracle \"Local file refresh staging gate is complete when node --test tests/local-file-source-refresh-cli.test.mjs, node scripts/verify-local-file-source-refresh-workflow.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\" --out docs/goals/local-file-refresh-staging-gate\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/local-file-refresh-staging-gate-notes.md\n\n> # Local File Refresh Staging Gate\n> \n> ## Intent\n> \n> Implement the next SuperMemory tranche after the local-file source refresh CLI and workflow smoke: a controlled staging/review gate for refresh plans.\n> \n> The current `local-file-source-refresh.mjs` can produce and persist a dry-run plan for a registered `local_file` source. The next step is to let an operator apply a reviewed refresh plan into a staging directory, without writing directly to `identity-vault`, without compiling active memory, and without promoting to Hindsight.\n> \n> ## User Outcome\n> \n> A maintainer can run a local command against a saved refresh plan and get reviewable staging artifacts that contain source registry deltas, snapshot candidates, connector run/result evidence, affected memory review items, and a manifest. The command must fail closed for invalid plans, raw content leakage, malformed lineage, duplicate or unsafe destination paths, and direct vault writes.\n> \n> ## Non-Goals\n> \n> - Do not write directly to the final vault.\n> - Do not compile active memory.\n> - Do not promote or delete anything in Hindsight.\n> - Do not implement remote connectors, background jobs, database migrations, UI, or env files.\n> - Do not scan the vault, disk, mailbox, Drive, web, or any broad source.\n> - Do not weaken existing local-file refresh, source refresh connector boundary, source snapshot refresh, Hindsight, or global specs.\n> \n> ## Acceptance\n> \n> - A saved local-file refresh plan can be applied to a new empty staging directory.\n> - The staging directory contains reviewable JSON artifacts for the original plan, connector runs/results, refresh candidates/plans, snapshot candidates, review items, and manifest.\n> - The apply step refuses plans with validation errors, missing lineage, raw-content-like fields, non-empty promotion payloads, or direct `identity-vault` destinations.\n> - Changed-source staging preserves `previous_snapshot_id`, `connector_result_id`, `created_snapshot_id`, and `needs_review` routing.\n> - Unavailable and `do_not_use` plans stage without creating fresh snapshots or active promotions.\n> - No raw source content, source instructions, secrets, or neighboring-file content appear in stdout, stderr, or staged artifacts.\n> - Existing specs remain green.\n> \n> ## Oracle\n> \n> Local file refresh staging gate is complete when `node --test tests/local-file-source-refresh-cli.test.mjs`, `node scripts/verify-local-file-source-refresh-workflow.mjs`, `node scripts/verify-source-refresh-connector-boundary.mjs`, `node scripts/verify-source-snapshot-refresh-preflight.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` all pass."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Local File Refresh Staging Gate."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "Local file refresh staging gate is complete when node --test tests/local-file-source-refresh-cli.test.mjs, node scripts/verify-local-file-source-refresh-workflow.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+  oracle:
+    signal: "Local file refresh staging gate is complete when node --test tests/local-file-source-refresh-cli.test.mjs, node scripts/verify-local-file-source-refresh-workflow.mjs, node scripts/verify-source-refresh-connector-boundary.mjs, node scripts/verify-source-snapshot-refresh-preflight.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Read-only Scout mapping completed for the local-file refresh staging gate. The safest design is to extend the existing local-file refresh CLI with an apply-plan staging mode that mirrors the proven local-manual-capture staging pattern while preserving refresh-specific lineage and connector evidence."
+      design_concept:
+        shared_understanding: "A persisted local_file refresh dry-run plan becomes reviewable staging artifacts only. The gate is an operator review bridge, not vault ingestion, memory compilation, or Hindsight promotion."
+        non_goals:
+          - "No direct identity-vault writes"
+          - "No active memory compilation"
+          - "No Hindsight promote/delete"
+          - "No remote connectors, jobs, database migrations, UI, env files, or broad scans"
+        decision_dependencies:
+          - "Keep apply-plan staging in scripts/local-file-source-refresh.mjs unless implementation pressure proves a shared helper is needed"
+          - "Stage artifacts must remain JSON-only and content-redacted"
+      ubiquitous_language:
+        refresh_plan: "Dry-run output generated_from local_file_source_refresh"
+        staging_gate: "Validation plus review-only artifact writing into a fresh non-vault directory"
+        snapshot_candidate: "Planned immutable snapshot represented by snapshots plus refresh_plans.created_snapshot_id"
+        connector_evidence: "connector_runs, connector_results, refresh_candidates, and source-scoped metadata"
+        review_item: "staleness_queue routing for memories derived from the previous snapshot"
+        forbidden_synonyms:
+          - "apply to vault"
+          - promote
+          - compile
+          - "ingest final state"
+      module_map:
+        scripts/local-file-source-refresh.mjs: "Primary CLI. Already builds dry-run plans and write-plan output. Future apply-plan mode should validate saved plans and write staging artifacts."
+        tests/local-file-source-refresh-cli.test.mjs: "Primary acceptance tests. Add red tests for apply-plan success, staging artifacts, invalid plan failures, raw content rejection, non-empty/vault destination refusal, and lineage preservation."
+        scripts/verify-local-file-source-refresh-workflow.mjs: "Workflow smoke. Extend from dry-run/write-plan to apply-plan staging verification and leakage checks."
+        scripts/local-manual-capture.mjs: "Proven staging/apply/commit pattern. Reuse concepts for resolveApplyPlanPath, resolveApplyOutDir, raw-content guard, manifest, and staging-only output, but do not copy manual-capture-specific owner_confirmed/snapshot rules blindly."
+        tests/local-manual-capture-cli.test.mjs: "Reference coverage for apply-plan and vault destination refusal."
+        scripts/verify-source-refresh-connector-boundary.mjs: "Regression guard for connector-scoped refresh evidence."
+        scripts/verify-source-snapshot-refresh-preflight.mjs: "Regression guard for changed/unchanged/unavailable/do_not_use semantics."
+        scripts/verify-supermemory-specs.mjs: "Full local verifier wiring."
+        README.md and docs/golden-case-implementation-roadmap.md: "Operator docs and tranche roadmap should document the new refresh staging step after code is green."
+      interface_contract:
+        cli: "node scripts/local-file-source-refresh.mjs --apply-plan <plan.json> --out-dir <staging-dir> [--json]"
+        mode_behavior: "When --apply-plan is present, the command does not require --input or --source-id, reads exactly the saved JSON plan, validates it, creates a fresh non-vault staging directory, writes review artifacts, and returns a JSON result with mode apply-plan, generated_from local_file_source_refresh, staging_only true, network_writes false, vault_writes_performed false."
+        staged_artifacts:
+          - refresh-plan.json
+          - connector-runs.json
+          - connector-results.json
+          - refresh-candidates.json
+          - refresh-plans.json
+          - snapshot-candidates.json
+          - review-items.json
+          - manifest.json
+        failure_codes:
+          - missing_apply_plan
+          - apply_plan_unreadable
+          - missing_apply_out_dir
+          - apply_plan_parent_missing
+          - apply_plan_out_dir_is_file
+          - apply_plan_out_dir_not_empty
+          - apply_plan_vault_write_forbidden
+          - apply_plan_invalid
+          - apply_plan_contains_raw_content
+          - apply_plan_malformed_lineage
+      test_strategy:
+        red_tests_first:
+          - "Successful changed-source apply writes all expected staging artifacts and manifest"
+          - "Changed-source staging preserves previous_snapshot_id, connector_result_id, created_snapshot_id, and needs_review memory routing"
+          - "Unavailable and do_not_use plans stage without new snapshot candidates or promotion payloads"
+          - "Apply refuses plans with validation errors, malformed lineage, non-empty promotion_payloads, raw-content-like fields, non-empty out dir, and identity-vault destinations"
+          - "Stdout, stderr, and staged artifacts do not leak forbidden source text, prompt-injection text, or secret-like snippets"
+        regression_commands:
+          - "node --test tests/local-file-source-refresh-cli.test.mjs"
+          - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+          - "node scripts/verify-source-refresh-connector-boundary.mjs"
+          - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      feedback_policy: "Use a TDD loop: write the apply-plan tests first and confirm they fail for missing behavior, implement only the approved slice, then run the targeted CLI test and workflow smoke before the full oracle."
+      acceptance_contract_updates:
+        visible_outcome: "A maintainer can run local-file-source-refresh --apply-plan against a saved refresh plan and inspect a fresh staging directory containing only redacted, reviewable refresh artifacts and manifest."
+        main_path: "Changed local_file refresh plan stages connector evidence, refresh plan, snapshot candidate, review item, and manifest without vault writes."
+        edge_cases:
+          - "unchanged plan"
+          - "unavailable source"
+          - "do_not_use source"
+        failure_modes:
+          - "invalid saved plan"
+          - "raw content field"
+          - "malformed changed-source lineage"
+          - "non-empty promotion_payloads"
+          - "identity-vault destination"
+          - "non-empty output directory"
+          - "leakage in stdout/stderr/staged artifacts"
+      dirty_worktree_risk_map:
+        current_dirty_files:
+          - docs/goals/local-file-refresh-staging-gate/
+          - docs/local-file-refresh-staging-gate-notes.md
+        risk: "Only DevLoop prep artifacts are dirty; no unrelated product files are modified yet."
+        guard: "Future workers must stay within Judge-approved allowed_files and leave unrelated dirty files untouched."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: "local CLI contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: none
+        deploy_rollback: none
+        observability: "local manifest and JSON command result only"
+        docs: "README and roadmap update after implementation is green"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Acceptance contract approved. The largest safe next slice is a red-test package for local-file refresh apply-plan staging, covering success artifacts, lineage preservation, forbidden states, destination safety, and leakage guards."
+      approved_design_concept: "Stage a persisted local_file_source_refresh dry-run plan into review-only JSON artifacts. This is a staging gate, not vault ingestion, active memory compilation, or Hindsight promotion."
+      approved_ubiquitous_language:
+        refresh_plan: "dry-run JSON emitted by local-file-source-refresh"
+        staging_gate: "validation plus artifact writing to a fresh non-vault directory"
+        snapshot_candidate: "planned immutable snapshot captured in snapshots plus refresh_plans.created_snapshot_id"
+        connector_evidence: "connector_runs, connector_results, and refresh_candidates"
+        review_item: "staleness_queue routing for memories affected by changed source snapshots"
+      feedback_policy: "T003 writes only failing tests/smoke evidence. T004 implements the minimal CLI apply-plan behavior until those tests pass. T005 runs the full oracle before review and shipping."
+      test_strategy: "Red tests should exercise one vertical operator path: write a changed-source plan, apply it to staging, assert all staging artifacts and manifest, assert lineage and needs_review routing, assert unavailable/do_not_use no fresh snapshot/promotion, and assert fail-closed behavior for invalid plans, raw content fields, promotion payloads, unsafe destinations, and leakage."
+      module_map:
+        primary_cli: scripts/local-file-source-refresh.mjs
+        primary_tests: tests/local-file-source-refresh-cli.test.mjs
+        workflow_smoke: scripts/verify-local-file-source-refresh-workflow.mjs
+        reference_pattern: scripts/local-manual-capture.mjs
+        global_verifier: scripts/verify-supermemory-specs.mjs
+        docs: "README.md and docs/golden-case-implementation-roadmap.md"
+      interface_contract: "node scripts/local-file-source-refresh.mjs --apply-plan <plan.json> --out-dir <staging-dir> [--json] validates a saved local_file_source_refresh dry-run plan, refuses unsafe or malformed plans, writes only reviewable JSON staging artifacts outside identity-vault, and returns mode apply-plan, generated_from local_file_source_refresh, staging_only true, network_writes false, vault_writes_performed false."
+      architecture_review: "Approved. Extend the existing local-file refresh CLI with a local staging mode patterned after local-manual-capture apply-plan, but keep refresh-specific validation separate enough to preserve connector evidence, changed-source lineage, and review queue semantics. No dependencies, network, DB, jobs, env, UI, broad scans, vault commits, memory compilation, or Hindsight writes."
+      impact_assessment_ref: T001.receipt.impact_assessment
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/local-file-source-refresh-cli.test.mjs
+            - scripts/verify-local-file-source-refresh-workflow.mjs
+          verify:
+            - "node --test tests/local-file-source-refresh-cli.test.mjs"
+            - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "The selected apply-plan contract is ambiguous."
+            - "No meaningful failing test can be written."
+            - "Tests require production implementation changes before the red stage."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback, vault writes, memory compilation, Hindsight writes, or broad scans."
+            - "Unrelated dirty files would need to be modified."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/local-file-source-refresh.mjs
+            - tests/local-file-source-refresh-cli.test.mjs
+            - scripts/verify-local-file-source-refresh-workflow.mjs
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+          verify:
+            - "node --test tests/local-file-source-refresh-cli.test.mjs"
+            - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+            - "node scripts/verify-source-refresh-connector-boundary.mjs"
+            - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback, vault writes, memory compilation, Hindsight writes, dependencies, or broad scans."
+            - "Implementation starts adding commit-staging, real connectors, remote APIs, or active promotion semantics."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - scripts/local-file-source-refresh.mjs
+            - tests/local-file-source-refresh-cli.test.mjs
+            - scripts/verify-local-file-source-refresh-workflow.mjs
+            - README.md
+            - docs/golden-case-implementation-roadmap.md
+          verify:
+            - "node --test tests/local-file-source-refresh-cli.test.mjs"
+            - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+            - "node scripts/verify-source-refresh-connector-boundary.mjs"
+            - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful verification evidence can be produced."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback, vault writes, memory compilation, Hindsight writes, or broad scans."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/local-file-source-refresh-cli.test.mjs
+      - scripts/verify-local-file-source-refresh-workflow.mjs
+    verify:
+      - "node --test tests/local-file-source-refresh-cli.test.mjs"
+      - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need files outside allowed_files."
+      - "The selected apply-plan contract is ambiguous."
+      - "No meaningful failing test can be written."
+      - "Tests require production implementation changes before the red stage."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback, vault writes, memory compilation, Hindsight writes, or broad scans."
+      - "Unrelated dirty files would need to be modified."
+    receipt:
+      result: done
+      summary: "Added red acceptance coverage for local-file refresh apply-plan staging in the CLI test and workflow smoke. No production implementation was changed."
+      changed_files:
+        - tests/local-file-source-refresh-cli.test.mjs
+        - scripts/verify-local-file-source-refresh-workflow.mjs
+      red_evidence:
+        command: "node --test tests/local-file-source-refresh-cli.test.mjs && node scripts/verify-local-file-source-refresh-workflow.mjs"
+        result: "failed as expected"
+        failure: "Both red checks fail at the new apply-plan path because scripts/local-file-source-refresh.mjs rejects --apply-plan with unknown argument. The CLI test fails at tests/local-file-source-refresh-cli.test.mjs:216; the workflow smoke reports apply-plan failed with stderr unknown argument: --apply-plan."
+      verify:
+        - "node --test tests/local-file-source-refresh-cli.test.mjs (failed as expected: unknown argument --apply-plan)"
+        - "node scripts/verify-local-file-source-refresh-workflow.mjs (failed as expected: unknown argument --apply-plan)"
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/local-file-source-refresh.mjs
+      - tests/local-file-source-refresh-cli.test.mjs
+      - scripts/verify-local-file-source-refresh-workflow.mjs
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+    verify:
+      - "node --test tests/local-file-source-refresh-cli.test.mjs"
+      - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+      - "node scripts/verify-source-refresh-connector-boundary.mjs"
+      - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback, vault writes, memory compilation, Hindsight writes, dependencies, or broad scans."
+      - "Implementation starts adding commit-staging, real connectors, remote APIs, or active promotion semantics."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented local-file refresh apply-plan staging. The CLI now validates saved local_file_source_refresh dry-run plans, refuses malformed or unsafe plans, writes review-only staging JSON artifacts and a manifest outside identity-vault, and documents the operator flow."
+      changed_files:
+        - scripts/local-file-source-refresh.mjs
+        - tests/local-file-source-refresh-cli.test.mjs
+        - scripts/verify-local-file-source-refresh-workflow.mjs
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+      green_test:
+        command: "node --test tests/local-file-source-refresh-cli.test.mjs && node scripts/verify-local-file-source-refresh-workflow.mjs && node scripts/verify-source-refresh-connector-boundary.mjs && node scripts/verify-source-snapshot-refresh-preflight.mjs && node scripts/verify-supermemory-specs.mjs && git diff --check"
+        result: pass
+      verify:
+        - "node --test tests/local-file-source-refresh-cli.test.mjs: pass"
+        - "node scripts/verify-local-file-source-refresh-workflow.mjs: pass"
+        - "node scripts/verify-source-refresh-connector-boundary.mjs: pass"
+        - "node scripts/verify-source-snapshot-refresh-preflight.mjs: pass"
+        - "node scripts/verify-supermemory-specs.mjs: pass"
+        - "git diff --check: pass"
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/local-file-source-refresh.mjs
+      - tests/local-file-source-refresh-cli.test.mjs
+      - scripts/verify-local-file-source-refresh-workflow.mjs
+      - README.md
+      - docs/golden-case-implementation-roadmap.md
+    verify:
+      - "node --test tests/local-file-source-refresh-cli.test.mjs"
+      - "node scripts/verify-local-file-source-refresh-workflow.mjs"
+      - "node scripts/verify-source-refresh-connector-boundary.mjs"
+      - "node scripts/verify-source-snapshot-refresh-preflight.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No meaningful verification evidence can be produced."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback, vault writes, memory compilation, Hindsight writes, or broad scans."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran the full approved verification package after implementation. No files were changed during verification."
+      changed_files:
+        []
+      green_test:
+        command: "node --test tests/local-file-source-refresh-cli.test.mjs && node scripts/verify-local-file-source-refresh-workflow.mjs && node scripts/verify-source-refresh-connector-boundary.mjs && node scripts/verify-source-snapshot-refresh-preflight.mjs && node scripts/verify-supermemory-specs.mjs && git diff --check"
+        result: pass
+      verify:
+        - "node --test tests/local-file-source-refresh-cli.test.mjs: pass"
+        - "node scripts/verify-local-file-source-refresh-workflow.mjs: pass"
+        - "node scripts/verify-source-refresh-connector-boundary.mjs: pass"
+        - "node scripts/verify-source-snapshot-refresh-preflight.mjs: pass"
+        - "node scripts/verify-supermemory-specs.mjs: pass"
+        - "git diff --check: pass"
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Judge review approved the implementation for shipping. The diff matches the original oracle: saved local_file refresh plans can now be staged into review-only artifacts without vault writes, memory compilation, Hindsight promotion, broad scans, or new dependencies."
+      design_delta: "Added a local apply-plan staging gate to scripts/local-file-source-refresh.mjs, expanded CLI/workflow tests, and documented the operator flow. No runtime connector, Hindsight, DB, UI, env, background job, or final vault ingestion semantics were added."
+      architecture_review: "Approved. The implementation follows the existing local-manual-capture staging pattern while preserving a separate refresh-specific validation path for connector evidence, changed-source lineage, snapshot candidates, and review items. The added helpers are scoped to the CLI and keep final-state mutation out of the staging gate."
+      oracle_coverage:
+        saved_plan_apply: "covered by tests/local-file-source-refresh-cli.test.mjs and workflow smoke"
+        staging_artifacts: "covered for refresh-plan, connector-runs, connector-results, refresh-candidates, refresh-plans, snapshot-candidates, review-items, manifest"
+        fail_closed: "covered for validation errors, raw content fields, promotion payloads, malformed lineage, non-empty out dir, identity-vault destination"
+        changed_lineage: "covered for previous_snapshot_id, connector_result_id, created_snapshot_id, needs_review routing"
+        unavailable_do_not_use: "covered with zero snapshot candidates and no promotions"
+        no_leakage: "covered in CLI test and workflow smoke"
+        regression: "source refresh boundary, snapshot preflight, global specs, and diff check all pass"
+      remaining_risks: "Low. The staging manifest is local JSON evidence only; later tranches can decide whether a reviewed refresh staging should be committed into final vault registries. That is intentionally out of scope here."
+      another_worker_slice_needed: false
+      task_updates:
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

@@ -194,7 +194,9 @@ assert.equal(serializedChanged.includes("Ignore previous instructions"), false);
 assert.equal(serializedChanged.includes(neighborContent), false);
 
 const planPath = path.join(tmpDir, "plans", "local-prd-refresh.json");
+const stagingRoot = path.join(tmpDir, "staging");
 fs.mkdirSync(path.dirname(planPath), { recursive: true });
+fs.mkdirSync(stagingRoot, { recursive: true });
 const writePlan = parseJson(runCli([
   "--input", inputPath,
   "--source-id", "src-local-prd",
@@ -209,6 +211,142 @@ assert.equal(writtenPlan.refresh_plans[0].created_snapshot_id, changedSnapshotId
 assert.equal(JSON.stringify(writtenPlan).includes("sk-localfilerefresh"), false);
 assert.equal(JSON.stringify(writtenPlan).includes("Ignore previous instructions"), false);
 assert.equal(JSON.stringify(writtenPlan).includes(neighborContent), false);
+
+const changedStagingDir = path.join(stagingRoot, "local-prd-refresh");
+const applyChanged = parseJson(runCli([
+  "--apply-plan", planPath,
+  "--out-dir", changedStagingDir,
+  "--json"
+]));
+assert.equal(applyChanged.mode, "apply-plan");
+assert.equal(applyChanged.generated_from, "local_file_source_refresh");
+assert.equal(applyChanged.staging_only, true);
+assert.equal(applyChanged.network_writes, false);
+assert.equal(applyChanged.vault_writes_performed, false);
+assert.equal(applyChanged.source_plan, fs.realpathSync(planPath));
+assert.equal(applyChanged.out_dir, fs.realpathSync(changedStagingDir));
+
+for (const fileName of [
+  "refresh-plan.json",
+  "connector-runs.json",
+  "connector-results.json",
+  "refresh-candidates.json",
+  "refresh-plans.json",
+  "snapshot-candidates.json",
+  "review-items.json",
+  "manifest.json"
+]) {
+  assert.equal(fs.existsSync(path.join(changedStagingDir, fileName)), true);
+}
+
+const stagedPlan = JSON.parse(fs.readFileSync(path.join(changedStagingDir, "refresh-plan.json"), "utf8"));
+const stagedSnapshotCandidates = JSON.parse(fs.readFileSync(path.join(changedStagingDir, "snapshot-candidates.json"), "utf8"));
+const stagedReviewItems = JSON.parse(fs.readFileSync(path.join(changedStagingDir, "review-items.json"), "utf8"));
+const stagedManifest = JSON.parse(fs.readFileSync(path.join(changedStagingDir, "manifest.json"), "utf8"));
+assert.equal(stagedPlan.refresh_plans[0].created_snapshot_id, changedSnapshotId);
+assert.equal(stagedSnapshotCandidates.snapshots[0].snapshot_id, changedSnapshotId);
+assert.equal(stagedSnapshotCandidates.snapshots[0].previous_snapshot_id, "snap-local-prd-v2");
+assert.equal(stagedSnapshotCandidates.snapshots[0].connector_result_id, writtenPlan.connector_results[0].result_id);
+assert.equal(stagedReviewItems.review_items[0].old_snapshot_id, "snap-local-prd-v2");
+assert.equal(stagedReviewItems.review_items[0].new_snapshot_id, changedSnapshotId);
+assert.equal(stagedPlan.validated_memories.find((item) => item.memory_id === "mem-local-prd").status, "needs_review");
+assert.equal(stagedManifest.snapshot_candidate_count, 1);
+
+const serializedStaging = [
+  "refresh-plan.json",
+  "connector-runs.json",
+  "connector-results.json",
+  "refresh-candidates.json",
+  "refresh-plans.json",
+  "snapshot-candidates.json",
+  "review-items.json",
+  "manifest.json"
+].map((fileName) => fs.readFileSync(path.join(changedStagingDir, fileName), "utf8")).join("\n");
+assert.equal(serializedStaging.includes("sk-localfilerefresh"), false);
+assert.equal(serializedStaging.includes("Ignore previous instructions"), false);
+assert.equal(serializedStaging.includes(neighborContent), false);
+
+const missingApplyOutDir = runCli([
+  "--apply-plan", planPath,
+  "--json"
+]);
+assert.notEqual(missingApplyOutDir.status, 0);
+assert.match(missingApplyOutDir.stderr, /missing_apply_out_dir/);
+
+const invalidApplyPlanPath = path.join(tmpDir, "plans", "invalid-apply-plan.json");
+fs.writeFileSync(invalidApplyPlanPath, `${JSON.stringify({
+  ...writtenPlan,
+  validation: {
+    errors: ["connector_scope_escape"]
+  }
+}, null, 2)}\n`);
+const invalidApply = runCli([
+  "--apply-plan", invalidApplyPlanPath,
+  "--out-dir", path.join(stagingRoot, "invalid"),
+  "--json"
+]);
+assert.notEqual(invalidApply.status, 0);
+assert.match(invalidApply.stderr, /apply_plan_invalid/);
+
+const rawContentApplyPlanPath = path.join(tmpDir, "plans", "raw-content-apply-plan.json");
+fs.writeFileSync(rawContentApplyPlanPath, `${JSON.stringify({
+  ...writtenPlan,
+  content: changedContent
+}, null, 2)}\n`);
+const rawContentApply = runCli([
+  "--apply-plan", rawContentApplyPlanPath,
+  "--out-dir", path.join(stagingRoot, "raw-content"),
+  "--json"
+]);
+assert.notEqual(rawContentApply.status, 0);
+assert.match(rawContentApply.stderr, /apply_plan_contains_raw_content/);
+assert.equal(`${rawContentApply.stdout}\n${rawContentApply.stderr}`.includes("sk-localfilerefresh"), false);
+assert.equal(`${rawContentApply.stdout}\n${rawContentApply.stderr}`.includes("Ignore previous instructions"), false);
+
+const promotionApplyPlanPath = path.join(tmpDir, "plans", "promotion-apply-plan.json");
+fs.writeFileSync(promotionApplyPlanPath, `${JSON.stringify({
+  ...writtenPlan,
+  promotion_payloads: [{ document_id: "doc-local-prd" }]
+}, null, 2)}\n`);
+const promotionApply = runCli([
+  "--apply-plan", promotionApplyPlanPath,
+  "--out-dir", path.join(stagingRoot, "promotion"),
+  "--json"
+]);
+assert.notEqual(promotionApply.status, 0);
+assert.match(promotionApply.stderr, /apply_plan_invalid/);
+
+const malformedLineagePlanPath = path.join(tmpDir, "plans", "malformed-lineage-plan.json");
+fs.writeFileSync(malformedLineagePlanPath, `${JSON.stringify({
+  ...writtenPlan,
+  snapshots: writtenPlan.snapshots.filter((item) => item.snapshot_id !== changedSnapshotId)
+}, null, 2)}\n`);
+const malformedLineageApply = runCli([
+  "--apply-plan", malformedLineagePlanPath,
+  "--out-dir", path.join(stagingRoot, "malformed-lineage"),
+  "--json"
+]);
+assert.notEqual(malformedLineageApply.status, 0);
+assert.match(malformedLineageApply.stderr, /apply_plan_malformed_lineage/);
+
+const nonEmptyStagingDir = path.join(stagingRoot, "non-empty");
+fs.mkdirSync(nonEmptyStagingDir);
+fs.writeFileSync(path.join(nonEmptyStagingDir, "existing.json"), "{}\n");
+const nonEmptyApply = runCli([
+  "--apply-plan", planPath,
+  "--out-dir", nonEmptyStagingDir,
+  "--json"
+]);
+assert.notEqual(nonEmptyApply.status, 0);
+assert.match(nonEmptyApply.stderr, /apply_plan_out_dir_not_empty/);
+
+const vaultApply = runCli([
+  "--apply-plan", planPath,
+  "--out-dir", path.join(process.cwd(), "identity-vault", "tmp-local-file-refresh-staging"),
+  "--json"
+]);
+assert.notEqual(vaultApply.status, 0);
+assert.match(vaultApply.stderr, /apply_plan_vault_write_forbidden/);
 
 const missingPlanParent = runCli([
   "--input", inputPath,
@@ -231,6 +369,16 @@ assert.equal(unavailable.connector_results[0].result, "unavailable");
 assert.equal(unavailable.refresh_plans[0].operation, "unavailable_last_known");
 assert.equal(unavailable.refresh_plans[0].freshness_after_check, "unavailable");
 assert.equal(unavailable.refresh_plans[0].created_snapshot_id, null);
+const unavailablePlanPath = path.join(tmpDir, "plans", "unavailable-refresh.json");
+fs.writeFileSync(unavailablePlanPath, `${JSON.stringify(unavailable, null, 2)}\n`);
+const unavailableApply = parseJson(runCli([
+  "--apply-plan", unavailablePlanPath,
+  "--out-dir", path.join(stagingRoot, "unavailable"),
+  "--json"
+]));
+const unavailableSnapshotCandidates = JSON.parse(fs.readFileSync(path.join(unavailableApply.out_dir, "snapshot-candidates.json"), "utf8"));
+assert.equal(unavailableApply.snapshot_candidate_count, 0);
+assert.equal(unavailableSnapshotCandidates.snapshots.length, 0);
 
 const forbidden = parseJson(runCli([
   "--input", inputPath,
@@ -242,6 +390,16 @@ assert.equal(forbidden.files_read, 0);
 assert.equal(forbidden.connector_results[0].result, "blocked");
 assert.equal(forbidden.refresh_plans[0].operation, "skip_do_not_use");
 assert.equal(JSON.stringify(forbidden).includes(forbiddenContent), false);
+const forbiddenPlanPath = path.join(tmpDir, "plans", "do-not-use-refresh.json");
+fs.writeFileSync(forbiddenPlanPath, `${JSON.stringify(forbidden, null, 2)}\n`);
+const forbiddenApply = parseJson(runCli([
+  "--apply-plan", forbiddenPlanPath,
+  "--out-dir", path.join(stagingRoot, "do-not-use"),
+  "--json"
+]));
+const forbiddenSnapshotCandidates = JSON.parse(fs.readFileSync(path.join(forbiddenApply.out_dir, "snapshot-candidates.json"), "utf8"));
+assert.equal(forbiddenApply.snapshot_candidate_count, 0);
+assert.equal(forbiddenSnapshotCandidates.snapshots.length, 0);
 
 const escapeInputPath = path.join(tmpDir, "escape.json");
 writeInput(escapeInputPath, {

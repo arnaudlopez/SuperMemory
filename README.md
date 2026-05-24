@@ -185,6 +185,22 @@ Run the full local operator workflow smoke without touching the real vault:
 node scripts/verify-local-manual-capture-workflow.mjs
 ```
 
+### Local File Source Refresh
+
+Registered mutable `local_file` sources can be refresh-checked through an explicit connector registry without scanning neighboring files or mutating the vault. The command reads only the selected source ref when it is active and available, emits changed/unchanged/unavailable/`do_not_use` plans, and keeps raw source text out of stdout and persisted artifacts.
+
+```bash
+node scripts/local-file-source-refresh.mjs --input /path/to/registry.json --source-id source:example --write-plan /path/to/refresh-plan.json --json
+```
+
+Apply a reviewed refresh plan to a staging directory, still outside the vault:
+
+```bash
+node scripts/local-file-source-refresh.mjs --apply-plan /path/to/refresh-plan.json --out-dir /path/to/staging --json
+```
+
+The staging step writes connector evidence, refresh candidates/plans, snapshot candidates, review items, and a manifest as JSON only. It refuses invalid plans, raw-content-like fields, malformed changed-source lineage, non-empty promotion payloads, non-empty staging directories, and direct writes under `identity-vault`.
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.

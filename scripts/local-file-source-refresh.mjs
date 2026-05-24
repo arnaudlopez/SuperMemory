@@ -9,6 +9,8 @@ function parseArgs(argv) {
     sourceId: null,
     checkedAt: new Date().toISOString(),
     writePlan: null,
+    applyPlan: null,
+    outDir: null,
     json: false
   };
 
@@ -28,6 +30,12 @@ function parseArgs(argv) {
     } else if (arg === "--write-plan") {
       options.writePlan = argv[index + 1];
       index += 1;
+    } else if (arg === "--apply-plan") {
+      options.applyPlan = argv[index + 1];
+      index += 1;
+    } else if (arg === "--out-dir") {
+      options.outDir = argv[index + 1];
+      index += 1;
     } else if (arg === "--json") {
       options.json = true;
     } else {
@@ -40,8 +48,10 @@ function parseArgs(argv) {
 function usage() {
   return [
     "Usage: node scripts/local-file-source-refresh.mjs --input <registry.json> --source-id <source-id> [--checked-at <iso>] [--write-plan <file>] [--json]",
+    "       node scripts/local-file-source-refresh.mjs --apply-plan <file> --out-dir <staging-dir> [--json]",
     "",
-    "Refresh-checks one registered local_file source through a bounded local file connector. Emits a dry-run refresh plan and never writes to the vault."
+    "Refresh-checks one registered local_file source through a bounded local file connector. Emits a dry-run refresh plan and never writes to the vault.",
+    "Applies a saved dry-run refresh plan only to a reviewable staging directory outside identity-vault."
   ].join("\n");
 }
 
@@ -93,6 +103,237 @@ function resolveWritablePlanPath(outputPath) {
 function writePlanFile(plan, outputPath) {
   if (!outputPath) return;
   fs.writeFileSync(outputPath, `${JSON.stringify(plan, null, 2)}\n`);
+}
+
+function readJsonFile(inputPath, errorCode) {
+  try {
+    return JSON.parse(fs.readFileSync(inputPath, "utf8"));
+  } catch {
+    throw new Error(errorCode);
+  }
+}
+
+function isPathInside(parent, child) {
+  const relative = path.relative(parent, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function resolveApplyPlanPath(inputPath) {
+  if (!hasValue(inputPath)) {
+    throw new Error("missing_apply_plan");
+  }
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) {
+    throw new Error("apply_plan_unreadable");
+  }
+  return fs.realpathSync(resolved);
+}
+
+function resolveApplyOutDir(outputDir) {
+  if (!hasValue(outputDir)) {
+    throw new Error("missing_apply_out_dir");
+  }
+
+  const requestedPath = path.resolve(outputDir);
+  const parent = path.dirname(requestedPath);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) {
+    throw new Error("apply_plan_parent_missing");
+  }
+  if (fs.existsSync(requestedPath) && !fs.statSync(requestedPath).isDirectory()) {
+    throw new Error("apply_plan_out_dir_is_file");
+  }
+
+  const vaultRoot = path.resolve("identity-vault");
+  if (isPathInside(vaultRoot, requestedPath)) {
+    throw new Error("apply_plan_vault_write_forbidden");
+  }
+
+  fs.mkdirSync(requestedPath, { recursive: true });
+  if (fs.readdirSync(requestedPath).length > 0) {
+    throw new Error("apply_plan_out_dir_not_empty");
+  }
+
+  return fs.realpathSync(requestedPath);
+}
+
+function planContainsRawContentField(value) {
+  if (!value || typeof value !== "object") return false;
+  if (Array.isArray(value)) {
+    return value.some((item) => planContainsRawContentField(item));
+  }
+  return Object.entries(value).some(([key, nestedValue]) => {
+    if (["body", "content", "raw_content", "source_text"].includes(key)) {
+      return true;
+    }
+    return planContainsRawContentField(nestedValue);
+  });
+}
+
+function validateBaseApplyPlan(plan) {
+  if (!plan || typeof plan !== "object" || Array.isArray(plan)) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (plan.generated_from !== "local_file_source_refresh" || plan.mode !== "dry-run") {
+    throw new Error("apply_plan_invalid");
+  }
+  if (plan.network_writes !== false || plan.writes_performed !== false) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (!plan.validation || !Array.isArray(plan.validation.errors) || plan.validation.errors.length > 0) {
+    throw new Error("apply_plan_invalid");
+  }
+  if (planContainsRawContentField(plan)) {
+    throw new Error("apply_plan_contains_raw_content");
+  }
+
+  const requiredArrays = [
+    "connector_registry",
+    "sources",
+    "snapshots",
+    "connector_runs",
+    "connector_results",
+    "refresh_candidates",
+    "refresh_plans",
+    "validated_memories",
+    "review_items",
+    "promotion_payloads"
+  ];
+  for (const key of requiredArrays) {
+    if (!Array.isArray(plan[key])) {
+      throw new Error("apply_plan_invalid");
+    }
+  }
+  if (
+    plan.connector_runs.length === 0 ||
+    plan.connector_results.length === 0 ||
+    plan.refresh_candidates.length === 0 ||
+    plan.refresh_plans.length === 0 ||
+    plan.promotion_payloads.length > 0
+  ) {
+    throw new Error("apply_plan_invalid");
+  }
+}
+
+function snapshotCandidatesFor(plan) {
+  const snapshotsById = byId(plan.snapshots, "snapshot_id");
+  return plan.refresh_plans
+    .filter((refreshPlan) => hasValue(refreshPlan.created_snapshot_id))
+    .map((refreshPlan) => {
+      const snapshot = snapshotsById.get(refreshPlan.created_snapshot_id);
+      if (!snapshot) {
+        throw new Error("apply_plan_malformed_lineage");
+      }
+      return snapshot;
+    });
+}
+
+function validateRefreshLineage(plan) {
+  const candidatesById = byId(plan.refresh_candidates, "candidate_id");
+  const resultsById = byId(plan.connector_results, "result_id");
+  const reviewItemsById = byId(plan.review_items, "review_id");
+  const snapshotCandidates = snapshotCandidatesFor(plan);
+  const snapshotCandidatesById = byId(snapshotCandidates, "snapshot_id");
+
+  for (const refreshPlan of plan.refresh_plans) {
+    if (!hasValue(refreshPlan.source_id) || !hasValue(refreshPlan.candidate_id) || !hasValue(refreshPlan.operation)) {
+      throw new Error("apply_plan_invalid");
+    }
+    const candidate = candidatesById.get(refreshPlan.candidate_id);
+    if (!candidate || candidate.source_id !== refreshPlan.source_id || !hasValue(candidate.connector_result_id)) {
+      throw new Error("apply_plan_malformed_lineage");
+    }
+    const result = resultsById.get(candidate.connector_result_id);
+    if (!result || result.source_id !== refreshPlan.source_id) {
+      throw new Error("apply_plan_malformed_lineage");
+    }
+
+    if (refreshPlan.operation === "create_snapshot") {
+      if (!hasValue(refreshPlan.created_snapshot_id) || !hasValue(refreshPlan.previous_snapshot_id)) {
+        throw new Error("apply_plan_malformed_lineage");
+      }
+      const snapshot = snapshotCandidatesById.get(refreshPlan.created_snapshot_id);
+      if (
+        !snapshot ||
+        snapshot.immutable !== true ||
+        snapshot.previous_snapshot_id !== refreshPlan.previous_snapshot_id ||
+        snapshot.connector_result_id !== result.result_id ||
+        snapshot.source_id !== refreshPlan.source_id
+      ) {
+        throw new Error("apply_plan_malformed_lineage");
+      }
+      if (hasValue(refreshPlan.review_id)) {
+        const review = reviewItemsById.get(refreshPlan.review_id);
+        if (
+          !review ||
+          review.old_snapshot_id !== refreshPlan.previous_snapshot_id ||
+          review.new_snapshot_id !== refreshPlan.created_snapshot_id ||
+          review.source_id !== refreshPlan.source_id
+        ) {
+          throw new Error("apply_plan_malformed_lineage");
+        }
+      }
+    } else if (hasValue(refreshPlan.created_snapshot_id)) {
+      throw new Error("apply_plan_malformed_lineage");
+    }
+  }
+}
+
+function validateApplyPlan(plan) {
+  validateBaseApplyPlan(plan);
+  validateRefreshLineage(plan);
+}
+
+function writeJsonFile(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function applyPlanFile(planPath, outDir) {
+  const resolvedPlanPath = resolveApplyPlanPath(planPath);
+  const plan = readJsonFile(resolvedPlanPath, "apply_plan_unreadable");
+  validateApplyPlan(plan);
+
+  const stagingDir = resolveApplyOutDir(outDir);
+  const snapshotCandidates = snapshotCandidatesFor(plan);
+  const stagedFiles = [
+    ["refresh-plan.json", plan],
+    ["connector-runs.json", { connector_runs: plan.connector_runs }],
+    ["connector-results.json", { connector_results: plan.connector_results }],
+    ["refresh-candidates.json", { refresh_candidates: plan.refresh_candidates }],
+    ["refresh-plans.json", { refresh_plans: plan.refresh_plans }],
+    ["snapshot-candidates.json", { snapshots: snapshotCandidates }],
+    ["review-items.json", { review_items: plan.review_items }]
+  ];
+
+  const writtenFiles = [];
+  for (const [fileName, payload] of stagedFiles) {
+    const filePath = path.join(stagingDir, fileName);
+    writeJsonFile(filePath, payload);
+    writtenFiles.push(filePath);
+  }
+
+  const result = {
+    mode: "apply-plan",
+    generated_from: "local_file_source_refresh",
+    source_plan: resolvedPlanPath,
+    out_dir: stagingDir,
+    network_writes: false,
+    writes_performed: true,
+    staging_only: true,
+    vault_writes_performed: false,
+    connector_run_count: plan.connector_runs.length,
+    connector_result_count: plan.connector_results.length,
+    refresh_candidate_count: plan.refresh_candidates.length,
+    refresh_plan_count: plan.refresh_plans.length,
+    snapshot_candidate_count: snapshotCandidates.length,
+    review_item_count: plan.review_items.length,
+    files_written: writtenFiles.length + 1,
+    written_files: [...writtenFiles, path.join(stagingDir, "manifest.json")],
+    validation: {
+      errors: []
+    }
+  };
+  writeJsonFile(path.join(stagingDir, "manifest.json"), result);
+  return result;
 }
 
 function realPathIfExists(value) {
@@ -435,11 +676,26 @@ function printPlan(plan, json) {
   if (refreshPlan.created_snapshot_id) process.stdout.write(`created_snapshot_id=${refreshPlan.created_snapshot_id}\n`);
 }
 
+function printApplyResult(result, json) {
+  if (json) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`mode=${result.mode} staging_only=${result.staging_only} writes_performed=${result.writes_performed}\n`);
+  process.stdout.write(`out_dir=${result.out_dir}\n`);
+  process.stdout.write(`files_written=${result.files_written}\n`);
+}
+
 function main() {
   try {
     const options = parseArgs(process.argv.slice(2));
     if (options.help) {
       process.stdout.write(`${usage()}\n`);
+      return;
+    }
+    if (options.applyPlan) {
+      const result = applyPlanFile(options.applyPlan, options.outDir);
+      printApplyResult(result, options.json);
       return;
     }
     const input = readInput(options.input);

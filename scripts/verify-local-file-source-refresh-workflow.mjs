@@ -71,9 +71,11 @@ const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "local-file-refresh-workflo
 const scopeDir = path.join(tmpDir, "selected-source-scope");
 const neighborDir = path.join(tmpDir, "neighbor-scope");
 const plansDir = path.join(tmpDir, "plans");
+const stagingDir = path.join(tmpDir, "staging", "workflow-prd-refresh");
 fs.mkdirSync(scopeDir, { recursive: true });
 fs.mkdirSync(neighborDir, { recursive: true });
 fs.mkdirSync(plansDir, { recursive: true });
+fs.mkdirSync(path.dirname(stagingDir), { recursive: true });
 
 const sourcePath = path.join(scopeDir, "prd.md");
 const missingPath = path.join(scopeDir, "missing.md");
@@ -196,6 +198,44 @@ const writtenPlan = JSON.parse(fs.readFileSync(planPath, "utf8"));
 requireEqual(writtenPlan.refresh_plans?.[0]?.operation, "create_snapshot", "written plan operation");
 requireEqual(writtenPlan.promotion_payloads?.length, 0, "written plan promotion count");
 requireNotLeaked(JSON.stringify(writtenPlan), "written refresh plan");
+
+const applyPlan = parseJsonResult(runRefresh([
+  "--apply-plan", planPath,
+  "--out-dir", stagingDir,
+  "--json"
+]), "apply-plan");
+requireEqual(applyPlan.mode, "apply-plan", "apply-plan mode");
+requireEqual(applyPlan.generated_from, "local_file_source_refresh", "apply-plan generated_from");
+requireEqual(applyPlan.staging_only, true, "apply-plan staging_only");
+requireEqual(applyPlan.vault_writes_performed, false, "apply-plan vault_writes_performed");
+requireEqual(applyPlan.snapshot_candidate_count, 1, "apply-plan snapshot candidate count");
+for (const fileName of [
+  "refresh-plan.json",
+  "connector-runs.json",
+  "connector-results.json",
+  "refresh-candidates.json",
+  "refresh-plans.json",
+  "snapshot-candidates.json",
+  "review-items.json",
+  "manifest.json"
+]) {
+  requireEqual(fs.existsSync(path.join(stagingDir, fileName)), true, `${fileName} exists`);
+}
+const stagedSnapshots = JSON.parse(fs.readFileSync(path.join(stagingDir, "snapshot-candidates.json"), "utf8"));
+const stagedReviews = JSON.parse(fs.readFileSync(path.join(stagingDir, "review-items.json"), "utf8"));
+requireEqual(stagedSnapshots.snapshots?.[0]?.previous_snapshot_id, "snap-workflow-prd-v1", "staged previous snapshot");
+requireEqual(stagedSnapshots.snapshots?.[0]?.connector_result_id, changed.connector_results?.[0]?.result_id, "staged connector result lineage");
+requireEqual(stagedReviews.review_items?.[0]?.new_snapshot_id, changed.refresh_plans?.[0]?.created_snapshot_id, "staged review new snapshot");
+requireNotLeaked([
+  "refresh-plan.json",
+  "connector-runs.json",
+  "connector-results.json",
+  "refresh-candidates.json",
+  "refresh-plans.json",
+  "snapshot-candidates.json",
+  "review-items.json",
+  "manifest.json"
+].map((fileName) => fs.readFileSync(path.join(stagingDir, fileName), "utf8")).join("\n"), "refresh staging");
 
 const unavailable = parseJsonResult(runRefresh([
   "--input", registryPath,

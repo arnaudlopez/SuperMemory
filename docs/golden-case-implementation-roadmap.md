@@ -417,12 +417,38 @@ Scenario :
 - il execute la CLI sur une source changed avec `--write-plan` ;
 - il verifie le snapshot planifie, le `previous_snapshot_id` et la route `needs_review` ;
 - il verifie que le plan persiste ne contient ni contenu brut, ni instruction source, ni secret ;
+- il applique le plan vers un dossier de staging reviewable, hors vault ;
+- il verifie les artefacts de staging et le manifest sans fuite de contenu brut ;
 - il verifie unavailable, `do_not_use` et scope escape ;
 - il ne modifie pas le vault et ne promeut rien dans Hindsight.
 
 Contrat executable :
 
 ```bash
+node scripts/verify-local-file-source-refresh-workflow.mjs
+```
+
+## Tranche 5c.3 - Local file source refresh staging gate
+
+Objectif :
+
+Permettre a l'operateur de rejouer un plan de refresh `local_file` deja revu vers un dossier de staging, sans ingestion finale.
+
+Scenario :
+
+- l'operateur fournit `--apply-plan <file>` et `--out-dir <staging-dir>` ;
+- la commande accepte uniquement un plan dry-run `generated_from: local_file_source_refresh` ;
+- elle refuse les plans invalides, les erreurs de validation, les champs de contenu brut, les payloads de promotion et les lineage changed-source incomplets ;
+- elle bloque les dossiers non vides et les destinations sous `identity-vault` ;
+- elle ecrit uniquement `refresh-plan.json`, `connector-runs.json`, `connector-results.json`, `refresh-candidates.json`, `refresh-plans.json`, `snapshot-candidates.json`, `review-items.json` et `manifest.json` ;
+- source changed : le staging conserve `previous_snapshot_id`, `connector_result_id`, `created_snapshot_id` et la route `needs_review` ;
+- source unavailable ou `do_not_use` : aucun nouveau snapshot candidat et aucune promotion active ;
+- elle ne compile pas la memoire active et ne promeut rien dans Hindsight.
+
+Contrat executable :
+
+```bash
+node --test tests/local-file-source-refresh-cli.test.mjs
 node scripts/verify-local-file-source-refresh-workflow.mjs
 ```
 
