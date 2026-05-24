@@ -22,5 +22,8 @@ jobs:
       - name: Verify SuperMemory specs
         run: node scripts/verify-supermemory-specs.mjs
 
+      - name: Verify release readiness
+        run: node scripts/verify-supermemory-release-readiness.mjs
+
       - name: Check whitespace
         run: git diff --check

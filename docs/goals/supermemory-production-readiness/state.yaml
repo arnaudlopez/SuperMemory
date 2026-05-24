@@ -1,0 +1,605 @@
+version: 2
+goal:
+  slug: "supermemory-production-readiness-notes"
+  title: "SuperMemory Production Readiness Notes"
+  status: active
+  created_at: "2026-05-24"
+  updated_at: "2026-05-24"
+  kind: specific
+  original_request: "# SuperMemory Production Readiness Notes\n\n## Intent\n\nEnchainer tout ce qu'il reste a faire jusqu'a une version prete a mettre en production, avec une approche TDD, sans revenir vers le owner avant que le produit soit pret ou qu'un vrai blocker de production exige une decision/credential.\n\n- Do not build a hosted SaaS UI.\n- Do not add Gmail, Drive, CRM, web crawler, or paid external source connectors.\n- Do not run real production customer data.\n- Do not require Hindsight Cloud for readiness.\n- Do not add database migrations, background workers, auth/RLS, billing, or multi-tenant web deployment.\n- Do not replace the existing deep scripts with a large framework.\n- Do not weaken existing T0-T14 contracts or bypass reviewed-plan/owner-confirmation gates.\n- Do not make live writes in CI.\n\nSuperMemory is considered ready to put in production when a maintainer can:\n\n1. run one release preflight command that proves the repository, docs, operator workflow, and critical TDD contracts are green;\n2. see a clear operator command surface for the supported local-first workflow;\n3. use the local Docker Hindsight target as the default live-smoke target, with cloud only as explicit opt-in;\n4. produce reviewed plans before applying capture, refresh, or Hindsight promotion;\n5. prove fail-closed behavior for secrets, unsafe writes, tampering, missing owner confirmation, broad scope, live env absence, and cloud fallback;\n6. read a production runbook with setup, preflight, smoke, release, rollback, observability, credential boundaries, and known non-goals;\n7. see CI enforce the production release verifier without live credentials.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nThe production readiness goal is complete when node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, git diff --check, and the GoalBuddy final quality check pass; CI contains the release readiness verifier; docs describe the production operator workflow and rollback; no secrets/live evidence are committed; and all changes are committed and pushed.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Required final evidence:\n- `node scripts/verify-supermemory-release-readiness.mjs` passes and emits a release-ready report.\n- `node scripts/verify-supermemory-specs.mjs` passes.\n- `git diff --check` passes.\n- The release readiness verifier is wired into `.github/workflows/supermemory-specs.yml`.\n- A production runbook exists and is referenced from `README.md`.\n- The runbook covers setup, release preflight, local Docker Hindsight, fake/live smoke separation, reviewed capture/refresh/promotion flow, rollback, observability, credential boundaries, and non-goals.\n- The release verifier proves no tracked release artifact contains obvious secret-like values or tracked live-smoke evidence from `tmp/`.\n- Tests/verifiers cover fail-closed behavior for owner confirmation, tampering, scope escape, unsafe vault writes, missing live env, and no implicit cloud fallback.\n- GoalBuddy T998 records commit SHA, remote branch, pushed files, and push result.\n- GoalBuddy T999 records final production-readiness audit decision.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- Keep the architecture LLM-first for interpretation and deterministic for governance.\n- Use TDD: write or extend failing tests/verifiers before implementation for each production slice.\n- Do not commit secrets, env files, live evidence, or production-like local logs.\n- Do not silently use Hindsight Cloud; local Docker/self-hosted remains the default runtime target.\n- CI remains mock-only and must not perform live Hindsight writes.\n- Live/local writes may only happen through explicit opt-in env and owner-confirmed local commands.\n- Keep `identity-vault` as source of truth.\n- Do not invent broad external connectors before the local operator release is coherent.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/supermemory-production-readiness/brief.md --mode implementation --oracle \"The production readiness goal is complete when node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, git diff --check, and the GoalBuddy final quality check pass; CI contains the release readiness verifier; docs describe the production operator workflow and rollback; no secrets/live evidence are committed; and all changes are committed and pushed.\" --out docs/goals/supermemory-production-readiness-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/supermemory-production-readiness-notes.md\n\n> # SuperMemory Production Readiness Notes\n> \n> ## Owner intent\n> \n> Enchainer tout ce qu'il reste a faire jusqu'a une version prete a mettre en production, avec une approche TDD, sans revenir vers le owner avant que le produit soit pret ou qu'un vrai blocker de production exige une decision/credential.\n> \n> ## Current known state\n> \n> - T0-T14 executable specification path is complete and covered by `node scripts/verify-supermemory-specs.mjs`.\n> - Local/manual capture has dry-run, write-plan, apply-plan, owner-confirmed vault commit, and workflow smoke.\n> - Local-file refresh has dry-run, write-plan, apply-plan, owner-confirmed vault commit, and workflow smoke.\n> - Hindsight local Docker compose exists and binds localhost-only.\n> - Hindsight transport is mockable and local live smoke with fake local credentials has passed against Docker.\n> - Hindsight promotion now supports reviewed `--write-plan` and owner-confirmed `--apply-plan`.\n> - Golden End State workflow verifier exists and is wired into the global specs.\n> - CI currently runs the CI regression verifier, global specs, and whitespace check.\n> \n> ## Production-readiness gap\n> \n> The repo is now operator-capable in slices, but not yet productized as a release surface. Remaining production work should focus on packaging the existing safe pieces into a coherent operator/release workflow instead of adding broad new concepts.\n> \n> Known gaps:\n> \n> - no single release preflight command that proves the repo is ready to ship;\n> - no single operator command surface that guides capture, refresh, Hindsight preflight, reviewed promotion, smoke, and audit commands;\n> - docs still require maintainers to stitch several scripts together manually;\n> - no explicit release readiness artifact or runbook that says what can be deployed, what remains local-only, what needs credentials, and how rollback works;\n> - no release gate proving no committed secret-like evidence/log paths are included in the shipping surface;\n> - no CI/release verifier that combines global specs, golden workflow, Hindsight local preflight expectations, reviewed promotion tests, capture/refresh workflow smokes, and release docs checks.\n> \n> ## Constraints\n> \n> - Keep the architecture LLM-first for interpretation and deterministic for governance.\n> - Use TDD: write or extend failing tests/verifiers before implementation for each production slice.\n> - Do not commit secrets, env files, live evidence, or production-like local logs.\n> - Do not silently use Hindsight Cloud; local Docker/self-hosted remains the default runtime target.\n> - CI remains mock-only and must not perform live Hindsight writes.\n> - Live/local writes may only happen through explicit opt-in env and owner-confirmed local commands.\n> - Keep `identity-vault` as source of truth.\n> - Do not invent broad external connectors before the local operator release is coherent.\n> \n> ## Non-Goals\n> \n> - Do not build a hosted SaaS UI.\n> - Do not add Gmail, Drive, CRM, web crawler, or paid external source connectors.\n> - Do not run real production customer data.\n> - Do not require Hindsight Cloud for readiness.\n> - Do not add database migrations, background workers, auth/RLS, billing, or multi-tenant web deployment.\n> - Do not replace the existing deep scripts with a large framework.\n> - Do not weaken existing T0-T14 contracts or bypass reviewed-plan/owner-confirmation gates.\n> - Do not make live writes in CI.\n> \n> ## Acceptance\n> \n> Required final evidence:\n> \n> - `node scripts/verify-supermemory-release-readiness.mjs` passes and emits a release-ready report.\n> - `node scripts/verify-supermemory-specs.mjs` passes.\n> - `git diff --check` passes.\n> - The release readiness verifier is wired into `.github/workflows/supermemory-specs.yml`.\n> - A production runbook exists and is referenced from `README.md`.\n> - The runbook covers setup, release preflight, local Docker Hindsight, fake/live smoke separation, reviewed capture/refresh/promotion flow, rollback, observability, credential boundaries, and non-goals.\n> - The release verifier proves no tracked release artifact contains obvious secret-like values or tracked live-smoke evidence from `tmp/`.\n> - Tests/verifiers cover fail-closed behavior for owner confirmation, tampering, scope escape, unsafe vault writes, missing live env, and no implicit cloud fallback.\n> - GoalBuddy T998 records commit SHA, remote branch, pushed files, and push result.\n> - GoalBuddy T999 records final production-readiness audit decision.\n> \n> ## Desired production-ready outcome\n> \n> SuperMemory is considered ready to put in production when a maintainer can:\n> \n> 1. run one release preflight command that proves the repository, docs, operator workflow, and critical TDD contracts are green;\n> 2. see a clear operator command surface for the supported local-first workflow;\n> 3. use the local Docker Hindsight target as the default live-smoke target, with cloud only as explicit opt-in;\n> 4. produce reviewed plans before applying capture, refresh, or Hindsight promotion;\n> 5. prove fail-closed behavior for secrets, unsafe writes, tampering, missing owner confirmation, broad scope, live env absence, and cloud fallback;\n> 6. read a production runbook with setup, preflight, smoke, release, rollback, observability, credential boundaries, and known non-goals;\n> 7. see CI enforce the production release verifier without live credentials.\n> \n> ## Suggested implementation slices\n> \n> ### Slice 1: Release readiness verifier\n> \n> Create a top-level verifier script that runs or checks the critical production gates and produces a compact machine-readable release report.\n> \n> Expected coverage:\n> \n> - global specs;\n> - golden end-state workflow;\n> - local manual capture CLI/workflow;\n> - local file refresh CLI/workflow;\n> - Hindsight promotion reviewed-plan tests;\n> - Hindsight transport/live-smoke mock and local preflight checks;\n> - Docker compose localhost binding;\n> - production runbook/doc presence;\n> - no committed secret-like evidence/log artifacts in tracked files.\n> \n> ### Slice 2: Operator workflow CLI or command index\n> \n> Add the smallest coherent operator surface, probably a Node script under `scripts/`, that prints or verifies the supported production workflow and refuses unsupported modes. It should not replace existing deep scripts prematurely; it can orchestrate/read them and expose a stable release/operator interface.\n> \n> ### Slice 3: Production runbook and README alignment\n> \n> Document:\n> \n> - local setup;\n> - release preflight;\n> - capture/refresh/promotion flow;\n> - local Hindsight Docker;\n> - fake credential smoke vs real local credentials;\n> - cloud opt-in boundary;\n> - rollback;\n> - observability/log evidence;\n> - what is not production-ready yet.\n> \n> ### Slice 4: CI release gate\n> \n> Wire the release verifier into CI while keeping it mock-only and live-write-free.\n> \n> ### Slice 5: Final production audit\n> \n> Run the full release verifier, global specs, whitespace check, GoalBuddy final check, commit and push. Final audit should say whether production readiness is satisfied or blocked by explicit owner credentials/infrastructure choices.\n> \n> ## Oracle\n> \n> The production readiness goal is complete when `node scripts/verify-supermemory-release-readiness.mjs`, `node scripts/verify-supermemory-specs.mjs`, `git diff --check`, and the GoalBuddy final quality check pass; CI contains the release readiness verifier; docs describe the production operator workflow and rollback; no secrets/live evidence are committed; and all changes are committed and pushed."
+  interpreted_outcome: "Run the prepared LLM-first workflow for SuperMemory Production Readiness Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "The production readiness goal is complete when node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, git diff --check, and the GoalBuddy final quality check pass; CI contains the release readiness verifier; docs describe the production operator workflow and rollback; no secrets/live evidence are committed; and all changes are committed and pushed."
+  oracle:
+    signal: "The production readiness goal is complete when node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, git diff --check, and the GoalBuddy final quality check pass; CI contains the release readiness verifier; docs describe the production operator workflow and rollback; no secrets/live evidence are committed; and all changes are committed and pushed."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped production readiness as a local-first operator release: consolidate existing safe scripts into one release verifier, one operator workflow surface, CI release gate, and production runbook without SaaS/cloud/connector expansion."
+      design_concept: "Production readiness here means the repository can be shipped as a local-first governed operator tool. The product is ready when maintainers can verify and operate capture, refresh, reviewed Hindsight promotion, local Hindsight preflight/smoke, rollback, and audit through documented commands and one release gate, while live credentials and Hindsight Cloud remain explicit opt-ins."
+      ubiquitous_language:
+        canonical:
+          - "production readiness"
+          - "release preflight"
+          - "operator workflow"
+          - "local-first release"
+          - "reviewed plan"
+          - "owner confirmation"
+          - "mock-only CI"
+          - "local Hindsight Docker"
+          - "cloud opt-in"
+          - "release verifier"
+          - "production runbook"
+        overloaded:
+          prod: "means local-first operator release in this pass, not hosted SaaS"
+          live: "means explicit local Hindsight live write outside CI, not CI/network default"
+          operator CLI: "may be a command index/orchestrator, not a framework rewrite"
+        forbidden_synonyms:
+          - "auto-cloud fallback"
+          - "unreviewed promotion"
+          - "implicit live write"
+          - "broad connector sweep"
+          - "SaaS launch"
+      module_map:
+        release_verifier: "scripts/verify-supermemory-release-readiness.mjs should become the top-level release gate"
+        global_oracle: "scripts/verify-supermemory-specs.mjs remains the complete spec oracle"
+        golden_workflow: "scripts/verify-golden-end-state-workflow.mjs proves end-state operator workflow coverage"
+        manual_capture: "scripts/local-manual-capture.mjs plus tests/local-manual-capture-cli.test.mjs and scripts/verify-local-manual-capture-workflow.mjs"
+        local_file_refresh: "scripts/local-file-source-refresh.mjs plus tests/local-file-source-refresh-cli.test.mjs and scripts/verify-local-file-source-refresh-workflow.mjs"
+        hindsight_promotion: "scripts/hindsight-promote.mjs plus tests/hindsight-promote.test.mjs"
+        hindsight_runtime: "compose.hindsight.yml, scripts/hindsight-local-live-smoke-preflight.mjs, scripts/hindsight-live-smoke-runner.mjs, scripts/hindsight-transport.mjs"
+        ci: .github/workflows/supermemory-specs.yml
+        docs: "README.md and a new docs/production-runbook.md"
+        goal_notes: "docs/supermemory-production-readiness-notes.md and docs/goals/supermemory-production-readiness/"
+      interface_contract:
+        release_command: "node scripts/verify-supermemory-release-readiness.mjs --json emits status, checks, commands, docs, ci, security, and no-live-write evidence"
+        default_release_behavior: "mock-only, no secrets required, no live network writes, no Hindsight Cloud fallback"
+        operator_surface: "a stable operator workflow script or command index must expose supported phases and point to existing deep commands without bypassing reviewed-plan gates"
+        docs_contract: "README links to production runbook; runbook covers setup, release preflight, capture/refresh/promotion, local Docker Hindsight, fake vs real smoke, cloud opt-in, rollback, observability, credentials, non-goals"
+        ci_contract: "CI runs the release readiness verifier after existing specs without live env"
+        security_contract: "tracked files must not include obvious secret-like values or tmp live-smoke evidence as release artifacts"
+      test_strategy:
+        red_first:
+          - "Add a release readiness test/verifier expectation before implementation so missing scripts/docs/CI wiring fail."
+          - "Add an operator workflow contract test before adding the operator surface."
+        green_commands:
+          - "node --test tests/supermemory-release-readiness.test.mjs"
+          - "node scripts/verify-supermemory-release-readiness.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+        integration_boundaries:
+          - "Use child process checks for existing Node verifiers."
+          - "Keep CI/live checks mock-only."
+          - "Inspect docs and workflow text for required command references."
+          - "Do not use real credentials or live writes in tests."
+        failure_modes:
+          - "missing runbook"
+          - "missing CI release gate"
+          - "tracked tmp evidence"
+          - "secret-like tracked artifact"
+          - "operator workflow omits reviewed plan gates"
+          - "implicit cloud fallback wording"
+          - "release verifier omits critical TDD commands"
+      feedback_policy: "Run focused release-readiness tests after each worker slice, then global specs and whitespace before Judge review. Full global release gate should run before T998 shipping."
+      acceptance_contract_updates:
+        final_evidence:
+          - "node scripts/verify-supermemory-release-readiness.mjs passes"
+          - "node scripts/verify-supermemory-specs.mjs passes"
+          - "git diff --check passes"
+          - "GoalBuddy final quality check passes"
+          - "CI includes release readiness verifier"
+          - "README links production runbook"
+          - "production runbook covers setup/preflight/smoke/rollback/observability/credentials/non-goals"
+          - "release verifier proves no tracked tmp live evidence or obvious secrets"
+          - "T998 commit SHA and push proof"
+          - "T999 final production-readiness audit"
+        first_slice: "Release readiness verifier plus tests and runbook skeleton should fail red before implementation, then pass green without credentials."
+        known_non_goals:
+          - "hosted SaaS UI"
+          - "external connectors"
+          - "real customer data"
+          - "database migrations"
+          - "background workers"
+          - auth/RLS
+          - billing
+          - "multi-tenant web deployment"
+          - "Hindsight Cloud requirement"
+          - "live writes in CI"
+      dirty_worktree_risk_map: "Current dirty files are the newly generated production-readiness notes and GoalBuddy board only. Future workers must not touch tmp live smoke evidence, unrelated historical goals, or identity-vault raw memory unless explicitly allowed."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: "env var names only; no secrets or env files"
+        auth_permissions: none
+        api_contract: "local CLI/verifier contract only, no hosted API"
+        ui_routes: none
+        background_jobs: none
+        external_services: "local Docker Hindsight is documented/preflighted but release tests remain mock-only"
+        deploy_rollback: "revert release verifier, operator workflow, docs, CI wiring, and board commits"
+        observability: "release verifier JSON/text report, existing smoke evidence paths, runbook audit trail"
+        docs: "README plus production runbook plus GoalBuddy receipts"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved the largest safe TDD slice: release readiness verifier, operator workflow contract, production runbook, README link, and CI release gate. This is enough to make the local-first operator product releasable without introducing hosted infra or live writes."
+      architecture_review: "Approved. The release surface should compose the existing deep scripts instead of replacing them. A top-level release verifier is the right shallow module: it depends on existing capture, refresh, Hindsight, golden workflow, CI, and docs contracts while keeping each deep module owned by its existing script/test. The operator surface may be a command index/verifier, not a new framework."
+      design_concept: "Production readiness means a local-first governed operator release with one release preflight, one documented operator path, mock-only CI, local Docker Hindsight as default runtime target, explicit credential boundaries, and rollback/observability guidance."
+      ubiquitous_language:
+        canonical:
+          - "release preflight"
+          - "release readiness verifier"
+          - "operator workflow"
+          - "production runbook"
+          - "reviewed plan"
+          - "owner confirmation"
+          - "local Hindsight Docker"
+          - "mock-only CI"
+          - "cloud opt-in"
+          - "no live write in CI"
+        forbidden:
+          - "implicit cloud fallback"
+          - "unreviewed promotion"
+          - "hosted SaaS launch"
+          - "automatic connector crawl"
+      feedback_policy: "Write red contract tests first, implement the verifier/docs/CI/operator surface, then run targeted tests followed by global specs and whitespace. Do not run live writes or require credentials."
+      test_strategy:
+        red: "Create tests/supermemory-release-readiness.test.mjs that fails because scripts/verify-supermemory-release-readiness.mjs, scripts/supermemory-operator.mjs, docs/production-runbook.md, README references, and CI release gate do not yet satisfy the contract."
+        green:
+          - "node --test tests/supermemory-release-readiness.test.mjs"
+          - "node scripts/verify-supermemory-release-readiness.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+        mocking: "Use filesystem and child_process checks only; CI/live Hindsight remain mock-only."
+      module_map:
+        red_test: tests/supermemory-release-readiness.test.mjs
+        release_verifier: scripts/verify-supermemory-release-readiness.mjs
+        operator_surface: scripts/supermemory-operator.mjs
+        runbook: docs/production-runbook.md
+        readme: README.md
+        ci: .github/workflows/supermemory-specs.yml
+        existing_oracles:
+          - scripts/verify-supermemory-specs.mjs
+          - scripts/verify-golden-end-state-workflow.mjs
+          - tests/hindsight-promote.test.mjs
+          - tests/local-manual-capture-cli.test.mjs
+          - tests/local-file-source-refresh-cli.test.mjs
+          - scripts/verify-hindsight-live-smoke-runner.mjs
+          - scripts/verify-hindsight-local-live-smoke-preflight.mjs
+      interface_contract:
+        release_verifier: "Must support default text output and --json. Must fail if required docs/CI/operator commands are missing, if tracked tmp live evidence is present, or if critical commands are absent. Must not require credentials or live writes."
+        operator_surface: "Must support --json and emit ordered phases for release-preflight, capture, refresh, Hindsight preflight, reviewed promotion, smoke, audit, rollback, with exact existing commands and safety flags."
+        runbook: "Must be production-facing and include setup, preflight, capture/refresh/promotion, local Docker, fake vs real smoke, cloud opt-in, rollback, observability, credentials, and non-goals."
+        ci: "Must run node scripts/verify-supermemory-release-readiness.mjs."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/supermemory-release-readiness.test.mjs
+          verify:
+            - "node --test tests/supermemory-release-readiness.test.mjs"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - tests/supermemory-release-readiness.test.mjs
+            - scripts/verify-supermemory-release-readiness.mjs
+            - scripts/supermemory-operator.mjs
+            - docs/production-runbook.md
+            - README.md
+            - .github/workflows/supermemory-specs.yml
+            - scripts/verify-supermemory-specs.mjs
+          verify:
+            - "node --test tests/supermemory-release-readiness.test.mjs"
+            - "node scripts/verify-supermemory-release-readiness.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Need live Hindsight credentials or live network writes."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - docs/goals/supermemory-production-readiness/state.yaml
+          verify:
+            - "node --test tests/supermemory-release-readiness.test.mjs"
+            - "node scripts/verify-supermemory-release-readiness.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "Need live Hindsight credentials or live network writes."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+      impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/supermemory-release-readiness.test.mjs
+    verify:
+      - "node --test tests/supermemory-release-readiness.test.mjs"
+    stop_if:
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Added the production release readiness acceptance test only. It fails before implementation because the release verifier, operator surface, and runbook are missing."
+      changed_files:
+        - tests/supermemory-release-readiness.test.mjs
+      red_evidence:
+        command: "node --test tests/supermemory-release-readiness.test.mjs"
+        result: "failed as expected"
+        failure: "AssertionError: missing production readiness file: scripts/verify-supermemory-release-readiness.mjs"
+      verify:
+        -
+          command: "node --test tests/supermemory-release-readiness.test.mjs"
+          status: expected_fail
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/supermemory-release-readiness.test.mjs
+      - scripts/verify-supermemory-release-readiness.mjs
+      - scripts/supermemory-operator.mjs
+      - docs/production-runbook.md
+      - README.md
+      - .github/workflows/supermemory-specs.yml
+      - scripts/verify-supermemory-specs.mjs
+    verify:
+      - "node --test tests/supermemory-release-readiness.test.mjs"
+      - "node scripts/verify-supermemory-release-readiness.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need live Hindsight credentials or live network writes."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented the production readiness release surface: operator workflow command, release readiness verifier, production runbook, README entry points, and CI release gate. The implementation composes existing deep scripts and keeps release checks mock-only and credential-free."
+      changed_files:
+        - tests/supermemory-release-readiness.test.mjs
+        - scripts/supermemory-operator.mjs
+        - scripts/verify-supermemory-release-readiness.mjs
+        - docs/production-runbook.md
+        - README.md
+        - .github/workflows/supermemory-specs.yml
+      green_test:
+        command: "node --test tests/supermemory-release-readiness.test.mjs"
+        result: pass
+      verify:
+        -
+          command: "node --test tests/supermemory-release-readiness.test.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-release-readiness.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+      design_delta: "SuperMemory now has a production-facing release layer: a top-level verifier, an operator workflow index, a production runbook, and CI enforcement. It does not replace the existing capture, refresh, Hindsight, or Golden End State modules; it binds them into one releasable local-first operator surface."
+      task_updates:
+        T005:
+          allowed_files:
+            - tests/supermemory-release-readiness.test.mjs
+            - docs/goals/supermemory-production-readiness/state.yaml
+          verify:
+            - "node --test tests/supermemory-release-readiness.test.mjs"
+            - "node scripts/verify-supermemory-release-readiness.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Need live Hindsight credentials or live network writes."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/supermemory-release-readiness.test.mjs
+      - docs/goals/supermemory-production-readiness/state.yaml
+    verify:
+      - "node --test tests/supermemory-release-readiness.test.mjs"
+      - "node scripts/verify-supermemory-release-readiness.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need live Hindsight credentials or live network writes."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran the approved production readiness verification package successfully. No credentials or live network writes were used."
+      changed_files:
+        []
+      green_test:
+        command: "node --test tests/supermemory-release-readiness.test.mjs"
+        result: pass
+      verify:
+        -
+          command: "node --test tests/supermemory-release-readiness.test.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-release-readiness.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+      live_writes_performed: false
+      credentials_required: false
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved for shipping. The implementation satisfies the original production-readiness oracle as a local-first operator release: one release verifier, one operator workflow surface, production runbook, README entry point, CI gate, TDD red-to-green evidence, and no live writes or credentials required."
+      design_delta: "SuperMemory moved from a collection of individually safe operator slices to a releaseable local-first operator product surface. The new top-level release verifier and operator workflow index compose existing deep scripts; they do not weaken capture, refresh, Hindsight promotion, Golden End State, or global spec contracts."
+      architecture_review: "Approved. The release layer is intentionally shallow and orchestration-oriented, while the existing deep modules continue owning business rules. The verifier checks docs, CI, operator workflow, release hygiene, local Hindsight boundaries, and existing TDD oracles. No external service, secret, database, UI, auth, background job, or connector expansion was introduced."
+      oracle_coverage:
+        - "Red test failed first on missing scripts/verify-supermemory-release-readiness.mjs."
+        - "node --test tests/supermemory-release-readiness.test.mjs passed."
+        - "node scripts/verify-supermemory-release-readiness.mjs passed."
+        - "node scripts/verify-supermemory-specs.mjs passed."
+        - "git diff --check passed."
+        - ".github/workflows/supermemory-specs.yml now runs the release readiness verifier."
+        - "README links docs/production-runbook.md and exposes release/operator commands."
+        - "Release verifier reports no tracked tmp evidence and no tracked secret-like values."
+        - "Operator workflow defaults to local_hindsight_docker and cloud_hindsight_default false."
+      remaining_risks:
+        - "This is a local-first operator production release, not a hosted SaaS deployment."
+        - "Real local Hindsight writes still require explicit owner-provided local credentials and SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 outside CI."
+        - "External source connectors remain future work and should only be added when a concrete source workflow requires them."
+      another_worker_slice_needed: false
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

@@ -274,6 +274,18 @@ Run the full spec verification:
 node scripts/verify-supermemory-specs.mjs
 ```
 
+Run the production release preflight:
+
+```bash
+node scripts/verify-supermemory-release-readiness.mjs
+```
+
+Print the supported operator workflow:
+
+```bash
+node scripts/supermemory-operator.mjs
+```
+
 Run the Golden End State operator workflow verifier:
 
 ```bash
@@ -380,6 +392,7 @@ See [`identity-vault/90_evals/cases/enterprise-living-memory-complete/`](identit
 Start here:
 
 - [`docs/README.md`](docs/README.md) - documentation map and current decision.
+- [`docs/production-runbook.md`](docs/production-runbook.md) - production operator runbook, release preflight, rollback, and credential boundaries.
 - [`docs/audit-memoire-agentique-v2.md`](docs/audit-memoire-agentique-v2.md) - V2 audit and rationale.
 - [`docs/prd-memoire-agentique-v2.md`](docs/prd-memoire-agentique-v2.md) - V2 product requirements.
 - [`identity-vault/AGENTS.md`](identity-vault/AGENTS.md) - operating rules for agents.
@@ -404,7 +417,7 @@ SuperMemory is not trying to be:
 
 ## Project Status
 
-This repository is currently a **specification-first prototype**.
+This repository is currently a **local-first operator release candidate**.
 
 The current Golden End State focus is the local operator workflow: capture, snapshot, LLM-first interpretation, staged review, governed promotion, local Hindsight preflight, recall, governed answer, refresh/change handling, and audit. See [`docs/golden-end-state-operator-workflow.md`](docs/golden-end-state-operator-workflow.md).
 
@@ -428,10 +441,10 @@ Implemented:
 - source refresh connector-boundary contract verifier;
 - first concrete local-file source refresh CLI and verifier;
 - Golden End State workflow verifier.
+- production release readiness verifier and operator workflow surface.
 
 Not yet implemented:
 
-- live Hindsight API integration after the local Docker preflight is ready;
 - automated external source capture connectors;
 - real external connector-backed change detection;
 - automated remote snapshot refresh;
@@ -440,14 +453,13 @@ Not yet implemented:
 
 ## Roadmap
 
-1. Keep the T0-T14 executable specification green in CI.
-2. Keep the local Docker Hindsight live-smoke preflight green and clear its runtime blockers before any live writes.
-3. Implement the real promotion script only after the local adapter, answer, and freshness contracts remain green.
-4. Promote the local/manual capture contract into an operator-facing dry-run command.
-5. Harden connector-backed snapshot refresh beyond the first local-file source type.
-6. Add the first automated external source connector only when a concrete source workflow requires it.
-7. Add promptfoo only as an optional reporting layer if the Node eval output becomes too hard to inspect.
-8. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.
+1. Keep the release readiness verifier and T0-T14 executable specification green in CI.
+2. Operate capture, local-file refresh, reviewed Hindsight promotion, and smoke through the production runbook.
+3. Keep local Docker Hindsight as the default live-smoke target; use Hindsight Cloud only through explicit opt-in.
+4. Harden connector-backed snapshot refresh beyond the first local-file source type.
+5. Add the first automated external source connector only when a concrete source workflow requires it.
+6. Add promptfoo only as an optional reporting layer if the Node eval output becomes too hard to inspect.
+7. Benchmark Graphiti/Memoria only if Hindsight or the vault snapshot layer fails relevant evals.
 
 ## Design Principles
 
