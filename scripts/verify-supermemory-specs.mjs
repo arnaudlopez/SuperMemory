@@ -22,6 +22,7 @@ const commands = [
   ["node", ["scripts/verify-source-snapshot-refresh-preflight.mjs"]],
   ["node", ["scripts/verify-source-refresh-connector-boundary.mjs"]],
   ["node", ["--test", "tests/local-file-source-refresh-cli.test.mjs"]],
+  ["node", ["scripts/verify-local-file-source-refresh-workflow.mjs"]],
   ["node", ["scripts/verify-source-change-t0-t1.mjs"]],
   ["node", ["scripts/verify-conflict-unavailable-arbitration.mjs"]],
   ["node", ["scripts/verify-adaptive-business-types.mjs"]],

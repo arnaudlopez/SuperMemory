@@ -244,6 +244,7 @@ node scripts/verify-local-manual-source-capture.mjs
 node scripts/verify-local-manual-capture-workflow.mjs
 node --test tests/local-manual-capture-cli.test.mjs
 node --test tests/local-file-source-refresh-cli.test.mjs
+node scripts/verify-local-file-source-refresh-workflow.mjs
 node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
 node scripts/verify-adaptive-business-types.mjs

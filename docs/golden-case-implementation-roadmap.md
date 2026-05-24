@@ -405,6 +405,27 @@ Contrat executable :
 node --test tests/local-file-source-refresh-cli.test.mjs
 ```
 
+## Tranche 5c.2 - Local file source refresh workflow smoke
+
+Objectif :
+
+Prouver la chaine operateur locale pour un refresh `local_file` avec plan persistable, sans mutation du vault.
+
+Scenario :
+
+- le smoke cree un registre, une source locale, une source manquante, une source `do_not_use` et un scope voisin ;
+- il execute la CLI sur une source changed avec `--write-plan` ;
+- il verifie le snapshot planifie, le `previous_snapshot_id` et la route `needs_review` ;
+- il verifie que le plan persiste ne contient ni contenu brut, ni instruction source, ni secret ;
+- il verifie unavailable, `do_not_use` et scope escape ;
+- il ne modifie pas le vault et ne promeut rien dans Hindsight.
+
+Contrat executable :
+
+```bash
+node scripts/verify-local-file-source-refresh-workflow.mjs
+```
+
 ## Tranche 5d - Local manual source capture
 
 Objectif :

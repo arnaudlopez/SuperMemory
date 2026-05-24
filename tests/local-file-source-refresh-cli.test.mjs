@@ -193,6 +193,33 @@ assert.equal(serializedChanged.includes("sk-localfilerefresh"), false);
 assert.equal(serializedChanged.includes("Ignore previous instructions"), false);
 assert.equal(serializedChanged.includes(neighborContent), false);
 
+const planPath = path.join(tmpDir, "plans", "local-prd-refresh.json");
+fs.mkdirSync(path.dirname(planPath), { recursive: true });
+const writePlan = parseJson(runCli([
+  "--input", inputPath,
+  "--source-id", "src-local-prd",
+  "--checked-at", checkedAt,
+  "--write-plan", planPath,
+  "--json"
+]));
+const writtenPlan = JSON.parse(fs.readFileSync(planPath, "utf8"));
+assert.equal(writePlan.plan_written_to, fs.realpathSync(planPath));
+assert.equal(writtenPlan.refresh_plans[0].operation, "create_snapshot");
+assert.equal(writtenPlan.refresh_plans[0].created_snapshot_id, changedSnapshotId);
+assert.equal(JSON.stringify(writtenPlan).includes("sk-localfilerefresh"), false);
+assert.equal(JSON.stringify(writtenPlan).includes("Ignore previous instructions"), false);
+assert.equal(JSON.stringify(writtenPlan).includes(neighborContent), false);
+
+const missingPlanParent = runCli([
+  "--input", inputPath,
+  "--source-id", "src-local-prd",
+  "--checked-at", checkedAt,
+  "--write-plan", path.join(tmpDir, "missing-parent", "plan.json"),
+  "--json"
+]);
+assert.notEqual(missingPlanParent.status, 0);
+assert.match(missingPlanParent.stderr, /write_plan_parent_missing/);
+
 const unavailable = parseJson(runCli([
   "--input", inputPath,
   "--source-id", "src-missing-contract",

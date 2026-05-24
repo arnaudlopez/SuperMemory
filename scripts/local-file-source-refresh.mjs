@@ -8,6 +8,7 @@ function parseArgs(argv) {
     input: null,
     sourceId: null,
     checkedAt: new Date().toISOString(),
+    writePlan: null,
     json: false
   };
 
@@ -24,6 +25,9 @@ function parseArgs(argv) {
     } else if (arg === "--checked-at") {
       options.checkedAt = argv[index + 1];
       index += 1;
+    } else if (arg === "--write-plan") {
+      options.writePlan = argv[index + 1];
+      index += 1;
     } else if (arg === "--json") {
       options.json = true;
     } else {
@@ -35,7 +39,7 @@ function parseArgs(argv) {
 
 function usage() {
   return [
-    "Usage: node scripts/local-file-source-refresh.mjs --input <registry.json> --source-id <source-id> [--checked-at <iso>] [--json]",
+    "Usage: node scripts/local-file-source-refresh.mjs --input <registry.json> --source-id <source-id> [--checked-at <iso>] [--write-plan <file>] [--json]",
     "",
     "Refresh-checks one registered local_file source through a bounded local file connector. Emits a dry-run refresh plan and never writes to the vault."
   ].join("\n");
@@ -71,6 +75,24 @@ function readInput(inputPath) {
     throw new Error("input_unreadable");
   }
   return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+}
+
+function resolveWritablePlanPath(outputPath) {
+  if (!hasValue(outputPath)) return null;
+  const requestedPath = path.resolve(outputPath);
+  const parent = path.dirname(requestedPath);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory()) {
+    throw new Error("write_plan_parent_missing");
+  }
+  if (fs.existsSync(requestedPath) && fs.statSync(requestedPath).isDirectory()) {
+    throw new Error("write_plan_target_is_directory");
+  }
+  return path.join(fs.realpathSync(parent), path.basename(requestedPath));
+}
+
+function writePlanFile(plan, outputPath) {
+  if (!outputPath) return;
+  fs.writeFileSync(outputPath, `${JSON.stringify(plan, null, 2)}\n`);
 }
 
 function realPathIfExists(value) {
@@ -422,6 +444,11 @@ function main() {
     }
     const input = readInput(options.input);
     const plan = buildRefreshPlan(input, options.sourceId, options.checkedAt);
+    const writtenPath = resolveWritablePlanPath(options.writePlan);
+    if (writtenPath) {
+      plan.plan_written_to = writtenPath;
+      writePlanFile(plan, writtenPath);
+    }
     printPlan(plan, options.json);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
