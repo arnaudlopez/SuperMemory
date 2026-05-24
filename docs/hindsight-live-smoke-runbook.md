@@ -120,7 +120,7 @@ The rehearsal exercises:
 
 - capture retain followed by strict recall;
 - source-change upsert followed by strict recall;
-- revocation delete.
+- revocation delete, with a setup retain of `doc-acme-pricing-note` before deleting that same document.
 
 ## Live Execution
 
@@ -134,7 +134,7 @@ The runner executes three governed fixtures:
 
 1. `capture-retain`: retain `doc-acme-contract-june-rollout`, then recall with `tags_match: "all_strict"`.
 2. `source-change-upsert`: upsert `doc-acme-prd`, then recall with `tags_match: "all_strict"`.
-3. `revocation-delete`: seed `doc-acme-pricing-note`, then delete it.
+3. `revocation-delete`: seed `doc-acme-pricing-note` via retain, then delete that same document to avoid a false `404` from deleting a never-created id.
 
 The runner writes one redacted JSON line to:
 
@@ -164,6 +164,7 @@ After a `pass`, inspect the JSON output or the evidence file for:
 - `secrets_redacted: true`;
 - all three cases present;
 - retain, upsert, delete, and recall operations present;
+- `revocation-delete.setup` retained `doc-acme-pricing-note` before the delete case;
 - recall requests include `tags_match: "all_strict"`;
 - response statuses are successful.
 

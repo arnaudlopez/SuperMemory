@@ -198,6 +198,7 @@ function runSetup(smokeCase, options) {
   return {
     id: `${smokeCase.id}-setup`,
     purpose: "seed document before delete verification",
+    target_document_id: smokeCase.setup_document.document_id,
     status: summary.ok ? "pass" : "fail",
     error: summary.error,
     mode: summary.mode,
@@ -247,6 +248,8 @@ function runCase(smokeCase, options) {
     fixture: smokeCase.fixture,
     status: missingOperations.length === 0 ? "pass" : "fail",
     expected_operations: smokeCase.expected_operations,
+    setup_required: Boolean(smokeCase.setup_document),
+    target_document_id: smokeCase.setup_document?.document_id,
     missing_operations: missingOperations,
     setup,
     mode: summary.mode,

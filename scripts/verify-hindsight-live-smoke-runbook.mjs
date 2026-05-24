@@ -24,7 +24,7 @@ const requiredSnippets = [
   "HINDSIGHT_API_LLM_PROVIDER=llamacpp",
   "curl http://127.0.0.1:8888/health",
   "node scripts/verify-hindsight-docker-compose.mjs",
-  "seed `doc-acme-pricing-note`, then delete it",
+  "seed `doc-acme-pricing-note` via retain, then delete that same document",
   "SUPERMEMORY_LIVE_SMOKE_EVIDENCE_PATH",
   "node scripts/hindsight-live-smoke-runner.mjs --mock-transport --json",
   "node scripts/hindsight-live-smoke-runner.mjs --execute-live --json",

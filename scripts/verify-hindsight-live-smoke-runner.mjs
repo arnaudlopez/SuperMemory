@@ -82,6 +82,30 @@ function verifyMockReport(assertions) {
   for (const operation of assertions.required_operations) {
     requireIncludes(requestOperations, operation, "request operation");
   }
+
+  for (const [caseId, setupAssertion] of Object.entries(assertions.required_setup_cases ?? {})) {
+    const smokeCase = report.cases.find((item) => item.id === caseId);
+    requireEqual(smokeCase?.setup_required, true, `${caseId} setup_required`);
+    requireEqual(smokeCase?.target_document_id, setupAssertion.target_document_id, `${caseId} target_document_id`);
+    requireEqual(smokeCase?.setup?.status, "pass", `${caseId} setup status`);
+    requireEqual(smokeCase?.setup?.target_document_id, setupAssertion.target_document_id, `${caseId} setup target_document_id`);
+    requireEqual(
+      smokeCase?.setup?.requests?.some((request) => (
+        request.operation === setupAssertion.setup_operation &&
+        request.document_id === setupAssertion.target_document_id
+      )),
+      true,
+      `${caseId} setup retain request`
+    );
+    requireEqual(
+      smokeCase?.requests?.some((request) => (
+        request.operation === setupAssertion.case_operation &&
+        request.document_id === setupAssertion.target_document_id
+      )),
+      true,
+      `${caseId} delete request`
+    );
+  }
 }
 
 function verifyLiveGuard(assertions) {

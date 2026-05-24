@@ -10,6 +10,13 @@
     "delete",
     "recall"
   ],
+  "required_setup_cases": {
+    "revocation-delete": {
+      "target_document_id": "doc-acme-pricing-note",
+      "setup_operation": "retain",
+      "case_operation": "delete"
+    }
+  },
   "required_missing_env": [
     "HINDSIGHT_API_KEY",
     "HINDSIGHT_BANK_ID",
