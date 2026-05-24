@@ -314,6 +314,27 @@ Contrat executable :
 node --test tests/local-manual-capture-cli.test.mjs
 ```
 
+## Tranche 5a.4 - Local manual capture operator workflow smoke
+
+Objectif :
+
+Prouver la chaine operateur complete sans toucher au vault reel.
+
+Scenario :
+
+- le smoke cree une source locale temporaire, un scope explicite, un staging et un vault temporaire ;
+- il execute `dry-run`, `--write-plan`, `--apply-plan` et `--commit-staging` via la CLI operateur ;
+- il verifie que le commit sans `--owner-confirmed` echoue ;
+- il verifie que le commit confirme ecrit uniquement les registres source/snapshot du vault temporaire ;
+- il verifie que les secrets, instructions source et fichiers voisins ne sortent pas dans les sorties ou registres ;
+- il verifie que le deuxieme commit du meme staging est refuse comme doublon.
+
+Contrat executable :
+
+```bash
+node scripts/verify-local-manual-capture-workflow.mjs
+```
+
 ## Tranche 5b - Source snapshot refresh preflight
 
 Objectif :

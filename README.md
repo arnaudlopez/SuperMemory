@@ -178,6 +178,12 @@ node scripts/local-manual-capture.mjs --commit-staging /path/to/staging --vault-
 
 The commit step updates only `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`, refuses duplicate source or snapshot ids, and does not create compiled memory or Hindsight promotions.
 
+Run the full local operator workflow smoke without touching the real vault:
+
+```bash
+node scripts/verify-local-manual-capture-workflow.mjs
+```
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.
@@ -234,6 +240,7 @@ node scripts/verify-enterprise-living-memory-target.mjs
 node scripts/verify-hindsight-adapter-minimal.mjs
 node scripts/verify-governed-answer-evidence.mjs
 node scripts/verify-local-manual-source-capture.mjs
+node scripts/verify-local-manual-capture-workflow.mjs
 node --test tests/local-manual-capture-cli.test.mjs
 node scripts/verify-source-change-t0-t1.mjs
 node scripts/verify-conflict-unavailable-arbitration.mjs
