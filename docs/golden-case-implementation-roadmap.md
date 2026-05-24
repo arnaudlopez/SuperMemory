@@ -452,6 +452,30 @@ node --test tests/local-file-source-refresh-cli.test.mjs
 node scripts/verify-local-file-source-refresh-workflow.mjs
 ```
 
+## Tranche 5c.4 - Local file source refresh commit gate
+
+Objectif :
+
+Permettre a l'operateur de valider un staging de refresh `local_file` deja relu et de l'inscrire dans les registres finaux du vault, sans compilation memoire ni promotion Hindsight.
+
+Scenario :
+
+- l'operateur fournit `--commit-staging <staging-dir>`, `--vault-root <identity-vault>` et `--owner-confirmed` ;
+- la commande relit `manifest.json`, `refresh-plan.json`, `snapshot-candidates.json`, `refresh-plans.json`, `connector-runs.json`, `connector-results.json`, `refresh-candidates.json` et `review-items.json` depuis le staging ;
+- elle verifie que le staging provient d'un `apply-plan` `local_file_source_refresh`, reste coherent avec le plan et ne contient pas de payload de promotion ;
+- elle accepte uniquement un staging changed-source avec un nouveau snapshot candidat ;
+- elle met a jour uniquement `00_inbox/source_registry.md` pour pointer vers le nouveau snapshot actif ;
+- elle ajoute uniquement une ligne immuable dans `00_inbox/snapshot_registry.md` avec `previous_snapshot_id`, `content_hash`, `capture_method` et `change_status` ;
+- elle refuse owner confirmation manquante, staging incomplet ou modifie, source absente du vault, snapshot deja present, unavailable et `do_not_use` ;
+- elle ne relit pas le fichier source, ne compile pas la memoire active et ne promeut rien dans Hindsight.
+
+Contrat executable :
+
+```bash
+node --test tests/local-file-source-refresh-cli.test.mjs
+node scripts/verify-local-file-source-refresh-workflow.mjs
+```
+
 ## Tranche 5d - Local manual source capture
 
 Objectif :

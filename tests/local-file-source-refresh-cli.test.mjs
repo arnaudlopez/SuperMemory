@@ -24,6 +24,33 @@ function writeInput(filePath, input) {
   fs.writeFileSync(filePath, `${JSON.stringify(input, null, 2)}\n`);
 }
 
+function writeVaultRegistries(vaultRoot, sourceRow, snapshotRows = []) {
+  const inboxDir = path.join(vaultRoot, "00_inbox");
+  fs.mkdirSync(inboxDir, { recursive: true });
+  fs.writeFileSync(path.join(inboxDir, "source_registry.md"), [
+    "# Source Registry",
+    "",
+    "| Source ID | Type | Connector | Original Ref | Mutability | Active Snapshot | Freshness | Status | Sensitivity | Compiled Targets |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    `| ${sourceRow} |`,
+    "",
+    "## Rules",
+    "",
+    "- Test source registry rules remain after refresh commits."
+  ].join("\n"));
+  fs.writeFileSync(path.join(inboxDir, "snapshot_registry.md"), [
+    "# Snapshot Registry",
+    "",
+    "| Snapshot ID | Source ID | Captured At | Capture Method | Content Hash | Previous Snapshot | Change Status | Freshness |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ...snapshotRows.map((row) => `| ${row} |`),
+    "",
+    "## Rules",
+    "",
+    "- Test snapshot registry rules remain after refresh commits."
+  ].join("\n"));
+}
+
 const help = runCli(["--help"]);
 assert.equal(help.status, 0);
 assert.match(help.stdout, /local-file-source-refresh\.mjs/);
@@ -348,6 +375,93 @@ const vaultApply = runCli([
 assert.notEqual(vaultApply.status, 0);
 assert.match(vaultApply.stderr, /apply_plan_vault_write_forbidden/);
 
+const vaultRoot = path.join(tmpDir, "vault", "identity-vault");
+const oldSourceRow = [
+  "`src-local-prd`",
+  "local_file",
+  "`local-file-fixture`",
+  `\`${changedPath}\``,
+  "mutable_external",
+  "`snap-local-prd-v2`",
+  "fresh",
+  "compiled",
+  "medium",
+  "none"
+].join(" | ");
+const oldSnapshotRow = [
+  "`snap-local-prd-v2`",
+  "`src-local-prd`",
+  "2026-05-22T14:00:00Z",
+  "connector_pull",
+  `\`${hash(previousChangedContent)}\``,
+  "none",
+  "initial_capture",
+  "fresh"
+].join(" | ");
+writeVaultRegistries(vaultRoot, oldSourceRow, [oldSnapshotRow]);
+
+const missingOwnerCommit = runCli([
+  "--commit-staging", changedStagingDir,
+  "--vault-root", vaultRoot,
+  "--json"
+]);
+assert.notEqual(missingOwnerCommit.status, 0);
+assert.match(missingOwnerCommit.stderr, /owner_confirmation_required/);
+
+const commitStaging = parseJson(runCli([
+  "--commit-staging", changedStagingDir,
+  "--vault-root", vaultRoot,
+  "--owner-confirmed",
+  "--json"
+]));
+assert.equal(commitStaging.mode, "commit-staging");
+assert.equal(commitStaging.generated_from, "local_file_source_refresh");
+assert.equal(commitStaging.owner_confirmed, true);
+assert.equal(commitStaging.vault_writes_performed, true);
+assert.equal(commitStaging.files_written, 2);
+
+const committedSourceRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "source_registry.md"), "utf8");
+const committedSnapshotRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "snapshot_registry.md"), "utf8");
+assert.equal(committedSourceRegistry.includes(changedSnapshotId), true);
+assert.equal(committedSourceRegistry.includes("snap-local-prd-v2"), false);
+assert.equal(committedSourceRegistry.includes("fresh"), true);
+assert.equal(committedSnapshotRegistry.includes(changedSnapshotId), true);
+assert.equal(committedSnapshotRegistry.includes("snap-local-prd-v2"), true);
+assert.equal(committedSnapshotRegistry.includes(hash(changedContent)), true);
+assert.equal(committedSnapshotRegistry.includes("connector_pull"), true);
+assert.equal(committedSnapshotRegistry.includes("changed"), true);
+assert.equal(`${commitStaging.stdout}\n${commitStaging.stderr}\n${committedSourceRegistry}\n${committedSnapshotRegistry}`.includes("sk-localfilerefresh"), false);
+assert.equal(`${committedSourceRegistry}\n${committedSnapshotRegistry}`.includes("Ignore previous instructions"), false);
+assert.equal(`${committedSourceRegistry}\n${committedSnapshotRegistry}`.includes(neighborContent), false);
+
+const duplicateCommit = runCli([
+  "--commit-staging", changedStagingDir,
+  "--vault-root", vaultRoot,
+  "--owner-confirmed",
+  "--json"
+]);
+assert.notEqual(duplicateCommit.status, 0);
+assert.match(duplicateCommit.stderr, /vault_snapshot_already_exists/);
+
+const tamperedStagingDir = path.join(stagingRoot, "tampered");
+fs.mkdirSync(tamperedStagingDir);
+for (const fileName of fs.readdirSync(changedStagingDir)) {
+  fs.copyFileSync(path.join(changedStagingDir, fileName), path.join(tamperedStagingDir, fileName));
+}
+const tamperedManifest = JSON.parse(fs.readFileSync(path.join(tamperedStagingDir, "manifest.json"), "utf8"));
+tamperedManifest.snapshot_candidate_count = 0;
+fs.writeFileSync(path.join(tamperedStagingDir, "manifest.json"), `${JSON.stringify(tamperedManifest, null, 2)}\n`);
+const tamperedVaultRoot = path.join(tmpDir, "tampered-vault", "identity-vault");
+writeVaultRegistries(tamperedVaultRoot, oldSourceRow, [oldSnapshotRow]);
+const tamperedCommit = runCli([
+  "--commit-staging", tamperedStagingDir,
+  "--vault-root", tamperedVaultRoot,
+  "--owner-confirmed",
+  "--json"
+]);
+assert.notEqual(tamperedCommit.status, 0);
+assert.match(tamperedCommit.stderr, /commit_staging_invalid/);
+
 const missingPlanParent = runCli([
   "--input", inputPath,
   "--source-id", "src-local-prd",
@@ -379,6 +493,16 @@ const unavailableApply = parseJson(runCli([
 const unavailableSnapshotCandidates = JSON.parse(fs.readFileSync(path.join(unavailableApply.out_dir, "snapshot-candidates.json"), "utf8"));
 assert.equal(unavailableApply.snapshot_candidate_count, 0);
 assert.equal(unavailableSnapshotCandidates.snapshots.length, 0);
+const unavailableVaultRoot = path.join(tmpDir, "unavailable-vault", "identity-vault");
+writeVaultRegistries(unavailableVaultRoot, oldSourceRow, [oldSnapshotRow]);
+const unavailableCommit = runCli([
+  "--commit-staging", unavailableApply.out_dir,
+  "--vault-root", unavailableVaultRoot,
+  "--owner-confirmed",
+  "--json"
+]);
+assert.notEqual(unavailableCommit.status, 0);
+assert.match(unavailableCommit.stderr, /commit_staging_not_changed_source/);
 
 const forbidden = parseJson(runCli([
   "--input", inputPath,
@@ -400,6 +524,16 @@ const forbiddenApply = parseJson(runCli([
 const forbiddenSnapshotCandidates = JSON.parse(fs.readFileSync(path.join(forbiddenApply.out_dir, "snapshot-candidates.json"), "utf8"));
 assert.equal(forbiddenApply.snapshot_candidate_count, 0);
 assert.equal(forbiddenSnapshotCandidates.snapshots.length, 0);
+const forbiddenVaultRoot = path.join(tmpDir, "forbidden-vault", "identity-vault");
+writeVaultRegistries(forbiddenVaultRoot, oldSourceRow, [oldSnapshotRow]);
+const forbiddenCommit = runCli([
+  "--commit-staging", forbiddenApply.out_dir,
+  "--vault-root", forbiddenVaultRoot,
+  "--owner-confirmed",
+  "--json"
+]);
+assert.notEqual(forbiddenCommit.status, 0);
+assert.match(forbiddenCommit.stderr, /commit_staging_not_changed_source/);
 
 const escapeInputPath = path.join(tmpDir, "escape.json");
 writeInput(escapeInputPath, {

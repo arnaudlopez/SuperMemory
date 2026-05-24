@@ -10,7 +10,10 @@ function parseArgs(argv) {
     checkedAt: new Date().toISOString(),
     writePlan: null,
     applyPlan: null,
+    commitStaging: null,
     outDir: null,
+    vaultRoot: null,
+    ownerConfirmed: false,
     json: false
   };
 
@@ -33,9 +36,17 @@ function parseArgs(argv) {
     } else if (arg === "--apply-plan") {
       options.applyPlan = argv[index + 1];
       index += 1;
+    } else if (arg === "--commit-staging") {
+      options.commitStaging = argv[index + 1];
+      index += 1;
     } else if (arg === "--out-dir") {
       options.outDir = argv[index + 1];
       index += 1;
+    } else if (arg === "--vault-root") {
+      options.vaultRoot = argv[index + 1];
+      index += 1;
+    } else if (arg === "--owner-confirmed") {
+      options.ownerConfirmed = true;
     } else if (arg === "--json") {
       options.json = true;
     } else {
@@ -49,9 +60,11 @@ function usage() {
   return [
     "Usage: node scripts/local-file-source-refresh.mjs --input <registry.json> --source-id <source-id> [--checked-at <iso>] [--write-plan <file>] [--json]",
     "       node scripts/local-file-source-refresh.mjs --apply-plan <file> --out-dir <staging-dir> [--json]",
+    "       node scripts/local-file-source-refresh.mjs --commit-staging <staging-dir> --vault-root <identity-vault> --owner-confirmed [--json]",
     "",
     "Refresh-checks one registered local_file source through a bounded local file connector. Emits a dry-run refresh plan and never writes to the vault.",
-    "Applies a saved dry-run refresh plan only to a reviewable staging directory outside identity-vault."
+    "Applies a saved dry-run refresh plan only to a reviewable staging directory outside identity-vault.",
+    "Commits reviewed refresh staging into the final vault source and snapshot registries only after explicit owner confirmation."
   ].join("\n");
 }
 
@@ -334,6 +347,217 @@ function applyPlanFile(planPath, outDir) {
   };
   writeJsonFile(path.join(stagingDir, "manifest.json"), result);
   return result;
+}
+
+function resolveStagingDir(inputPath) {
+  if (!hasValue(inputPath)) {
+    throw new Error("missing_commit_staging_dir");
+  }
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+    throw new Error("commit_staging_unreadable");
+  }
+  return fs.realpathSync(resolved);
+}
+
+function readRequiredStagingJson(stagingDir, fileName) {
+  const filePath = path.join(stagingDir, fileName);
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    throw new Error("commit_staging_incomplete");
+  }
+  return readJsonFile(filePath, "commit_staging_invalid");
+}
+
+function readRefreshStaging(stagingPath) {
+  const stagingDir = resolveStagingDir(stagingPath);
+  const manifest = readRequiredStagingJson(stagingDir, "manifest.json");
+  const plan = readRequiredStagingJson(stagingDir, "refresh-plan.json");
+  const stagedConnectorRuns = readRequiredStagingJson(stagingDir, "connector-runs.json");
+  const stagedConnectorResults = readRequiredStagingJson(stagingDir, "connector-results.json");
+  const stagedRefreshCandidates = readRequiredStagingJson(stagingDir, "refresh-candidates.json");
+  const stagedRefreshPlans = readRequiredStagingJson(stagingDir, "refresh-plans.json");
+  const stagedSnapshotCandidates = readRequiredStagingJson(stagingDir, "snapshot-candidates.json");
+  const stagedReviewItems = readRequiredStagingJson(stagingDir, "review-items.json");
+
+  if (
+    manifest.generated_from !== "local_file_source_refresh" ||
+    manifest.mode !== "apply-plan" ||
+    manifest.staging_only !== true ||
+    manifest.vault_writes_performed !== false ||
+    !Array.isArray(stagedConnectorRuns.connector_runs) ||
+    !Array.isArray(stagedConnectorResults.connector_results) ||
+    !Array.isArray(stagedRefreshCandidates.refresh_candidates) ||
+    !Array.isArray(stagedRefreshPlans.refresh_plans) ||
+    !Array.isArray(stagedSnapshotCandidates.snapshots) ||
+    !Array.isArray(stagedReviewItems.review_items)
+  ) {
+    throw new Error("commit_staging_invalid");
+  }
+
+  validateApplyPlan(plan);
+  const snapshotCandidates = snapshotCandidatesFor(plan);
+  if (
+    JSON.stringify(stagedConnectorRuns.connector_runs) !== JSON.stringify(plan.connector_runs) ||
+    JSON.stringify(stagedConnectorResults.connector_results) !== JSON.stringify(plan.connector_results) ||
+    JSON.stringify(stagedRefreshCandidates.refresh_candidates) !== JSON.stringify(plan.refresh_candidates) ||
+    JSON.stringify(stagedRefreshPlans.refresh_plans) !== JSON.stringify(plan.refresh_plans) ||
+    JSON.stringify(stagedSnapshotCandidates.snapshots) !== JSON.stringify(snapshotCandidates) ||
+    JSON.stringify(stagedReviewItems.review_items) !== JSON.stringify(plan.review_items) ||
+    manifest.snapshot_candidate_count !== snapshotCandidates.length ||
+    manifest.refresh_plan_count !== plan.refresh_plans.length
+  ) {
+    throw new Error("commit_staging_invalid");
+  }
+
+  return { stagingDir, manifest, plan, snapshotCandidates };
+}
+
+function resolveVaultRoot(inputPath) {
+  if (!hasValue(inputPath)) {
+    throw new Error("missing_vault_root");
+  }
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+    throw new Error("vault_root_unreadable");
+  }
+  return fs.realpathSync(resolved);
+}
+
+function registryPaths(vaultRoot) {
+  const paths = {
+    sourceRegistry: path.join(vaultRoot, "00_inbox", "source_registry.md"),
+    snapshotRegistry: path.join(vaultRoot, "00_inbox", "snapshot_registry.md")
+  };
+  if (!fs.existsSync(paths.sourceRegistry) || !fs.statSync(paths.sourceRegistry).isFile()) {
+    throw new Error("vault_registry_missing");
+  }
+  if (!fs.existsSync(paths.snapshotRegistry) || !fs.statSync(paths.snapshotRegistry).isFile()) {
+    throw new Error("vault_registry_missing");
+  }
+  return paths;
+}
+
+function markdownCell(value) {
+  if (value === null || value === undefined || value === "") return "none";
+  return String(value).replace(/\r?\n/g, " ").replace(/\|/g, "\\|");
+}
+
+function codeCell(value) {
+  const normalized = markdownCell(value);
+  return normalized === "none" ? normalized : `\`${normalized}\``;
+}
+
+function sourceRegistryRow(source, snapshotId) {
+  return [
+    codeCell(source.source_id),
+    markdownCell(source.source_kind),
+    codeCell(source.connector_id),
+    codeCell(source.original_ref),
+    markdownCell(source.mutability ?? "mutable_external"),
+    codeCell(snapshotId),
+    "fresh",
+    markdownCell(source.status === "do_not_use" ? "do_not_use" : "active"),
+    markdownCell(source.sensitivity ?? "medium"),
+    "none"
+  ].join(" | ");
+}
+
+function snapshotRegistryRow(snapshot) {
+  return [
+    codeCell(snapshot.snapshot_id),
+    codeCell(snapshot.source_id),
+    markdownCell(snapshot.captured_at),
+    markdownCell(snapshot.capture_method),
+    codeCell(snapshot.content_hash),
+    codeCell(snapshot.previous_snapshot_id),
+    markdownCell(snapshot.change_status ?? "changed"),
+    "fresh"
+  ].join(" | ");
+}
+
+function replaceSourceRegistryRow(existing, sourceId, nextRow) {
+  const lines = existing.split(/\r?\n/);
+  const sourceToken = `\`${sourceId}\``;
+  const index = lines.findIndex((line) => line.startsWith("|") && line.includes(sourceToken));
+  if (index === -1) {
+    throw new Error("vault_source_missing");
+  }
+  lines[index] = `| ${nextRow} |`;
+  return lines.join("\n");
+}
+
+function appendSnapshotRegistryRow(existing, snapshot, nextRow) {
+  if (existing.includes(`\`${snapshot.snapshot_id}\``)) {
+    throw new Error("vault_snapshot_already_exists");
+  }
+  const marker = "\n## Rules";
+  const markerIndex = existing.indexOf(marker);
+  if (markerIndex === -1) {
+    throw new Error("vault_registry_rules_marker_missing");
+  }
+  const prefix = existing.slice(0, markerIndex).replace(/\s*$/, "");
+  const suffix = existing.slice(markerIndex);
+  return `${prefix}\n| ${nextRow} |\n${suffix}`;
+}
+
+function commitStaging(stagingPath, vaultRootPath, ownerConfirmed) {
+  if (!ownerConfirmed) {
+    throw new Error("owner_confirmation_required");
+  }
+  const { stagingDir, manifest, plan, snapshotCandidates } = readRefreshStaging(stagingPath);
+  if (plan.refresh_plans.length !== 1 || snapshotCandidates.length !== 1 || plan.refresh_plans[0].operation !== "create_snapshot") {
+    throw new Error("commit_staging_not_changed_source");
+  }
+
+  const refreshPlan = plan.refresh_plans[0];
+  const snapshot = snapshotCandidates[0];
+  if (snapshot.snapshot_id !== refreshPlan.created_snapshot_id || snapshot.change_status !== "changed") {
+    throw new Error("commit_staging_invalid");
+  }
+  const source = byId(plan.sources, "source_id").get(refreshPlan.source_id);
+  if (!source || source.status === "do_not_use") {
+    throw new Error("commit_staging_not_changed_source");
+  }
+
+  const vaultRoot = resolveVaultRoot(vaultRootPath);
+  const paths = registryPaths(vaultRoot);
+  const sourceRegistry = fs.readFileSync(paths.sourceRegistry, "utf8");
+  const snapshotRegistry = fs.readFileSync(paths.snapshotRegistry, "utf8");
+  const nextSourceRegistry = replaceSourceRegistryRow(
+    sourceRegistry,
+    source.source_id,
+    sourceRegistryRow(source, snapshot.snapshot_id)
+  );
+  const nextSnapshotRegistry = appendSnapshotRegistryRow(
+    snapshotRegistry,
+    snapshot,
+    snapshotRegistryRow(snapshot)
+  );
+
+  fs.writeFileSync(paths.sourceRegistry, nextSourceRegistry);
+  fs.writeFileSync(paths.snapshotRegistry, nextSnapshotRegistry);
+
+  return {
+    mode: "commit-staging",
+    generated_from: "local_file_source_refresh",
+    source_staging: stagingDir,
+    source_plan: manifest.source_plan,
+    vault_root: vaultRoot,
+    network_writes: false,
+    writes_performed: true,
+    staging_only: false,
+    vault_writes_performed: true,
+    owner_confirmed: true,
+    source_id: source.source_id,
+    previous_snapshot_id: refreshPlan.previous_snapshot_id,
+    active_snapshot_id: snapshot.snapshot_id,
+    snapshot_count: 1,
+    files_written: 2,
+    destination_paths: [paths.sourceRegistry, paths.snapshotRegistry],
+    validation: {
+      errors: []
+    }
+  };
 }
 
 function realPathIfExists(value) {
@@ -686,11 +910,29 @@ function printApplyResult(result, json) {
   process.stdout.write(`files_written=${result.files_written}\n`);
 }
 
+function printCommitResult(result, json) {
+  if (json) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`mode=${result.mode} vault_writes_performed=${result.vault_writes_performed} owner_confirmed=${result.owner_confirmed}\n`);
+  process.stdout.write(`vault_root=${result.vault_root}\n`);
+  process.stdout.write(`files_written=${result.files_written}\n`);
+}
+
 function main() {
   try {
     const options = parseArgs(process.argv.slice(2));
     if (options.help) {
       process.stdout.write(`${usage()}\n`);
+      return;
+    }
+    if (options.applyPlan && options.commitStaging) {
+      throw new Error("refresh_mode_conflict");
+    }
+    if (options.commitStaging) {
+      const result = commitStaging(options.commitStaging, options.vaultRoot, options.ownerConfirmed);
+      printCommitResult(result, options.json);
       return;
     }
     if (options.applyPlan) {

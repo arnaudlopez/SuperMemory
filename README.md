@@ -201,6 +201,14 @@ node scripts/local-file-source-refresh.mjs --apply-plan /path/to/refresh-plan.js
 
 The staging step writes connector evidence, refresh candidates/plans, snapshot candidates, review items, and a manifest as JSON only. It refuses invalid plans, raw-content-like fields, malformed changed-source lineage, non-empty promotion payloads, non-empty staging directories, and direct writes under `identity-vault`.
 
+Commit reviewed changed-source refresh staging into the final vault registries only with explicit owner confirmation:
+
+```bash
+node scripts/local-file-source-refresh.mjs --commit-staging /path/to/staging --vault-root identity-vault --owner-confirmed --json
+```
+
+The commit step updates only `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`, refuses incomplete or tampered staging, duplicate snapshot ids, unavailable or `do_not_use` staging, and does not create compiled memory or Hindsight promotions.
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.

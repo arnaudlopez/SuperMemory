@@ -67,11 +67,39 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function writeVaultRegistries(vaultRoot, sourceRow, snapshotRows = []) {
+  const inboxDir = path.join(vaultRoot, "00_inbox");
+  fs.mkdirSync(inboxDir, { recursive: true });
+  fs.writeFileSync(path.join(inboxDir, "source_registry.md"), [
+    "# Source Registry",
+    "",
+    "| Source ID | Type | Connector | Original Ref | Mutability | Active Snapshot | Freshness | Status | Sensitivity | Compiled Targets |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    `| ${sourceRow} |`,
+    "",
+    "## Rules",
+    "",
+    "- Workflow source registry rules remain after refresh commits."
+  ].join("\n"));
+  fs.writeFileSync(path.join(inboxDir, "snapshot_registry.md"), [
+    "# Snapshot Registry",
+    "",
+    "| Snapshot ID | Source ID | Captured At | Capture Method | Content Hash | Previous Snapshot | Change Status | Freshness |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ...snapshotRows.map((row) => `| ${row} |`),
+    "",
+    "## Rules",
+    "",
+    "- Workflow snapshot registry rules remain after refresh commits."
+  ].join("\n"));
+}
+
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "local-file-refresh-workflow-"));
 const scopeDir = path.join(tmpDir, "selected-source-scope");
 const neighborDir = path.join(tmpDir, "neighbor-scope");
 const plansDir = path.join(tmpDir, "plans");
 const stagingDir = path.join(tmpDir, "staging", "workflow-prd-refresh");
+const vaultRoot = path.join(tmpDir, "vault", "identity-vault");
 fs.mkdirSync(scopeDir, { recursive: true });
 fs.mkdirSync(neighborDir, { recursive: true });
 fs.mkdirSync(plansDir, { recursive: true });
@@ -236,6 +264,70 @@ requireNotLeaked([
   "review-items.json",
   "manifest.json"
 ].map((fileName) => fs.readFileSync(path.join(stagingDir, fileName), "utf8")).join("\n"), "refresh staging");
+
+const oldSourceRow = [
+  "`src-workflow-prd`",
+  "local_file",
+  "`workflow-local-file`",
+  `\`${sourcePath}\``,
+  "mutable_external",
+  "`snap-workflow-prd-v1`",
+  "fresh",
+  "compiled",
+  "medium",
+  "none"
+].join(" | ");
+const oldSnapshotRow = [
+  "`snap-workflow-prd-v1`",
+  "`src-workflow-prd`",
+  "2026-05-23T09:00:00Z",
+  "connector_pull",
+  `\`${hash(previousContent)}\``,
+  "none",
+  "initial_capture",
+  "fresh"
+].join(" | ");
+writeVaultRegistries(vaultRoot, oldSourceRow, [oldSnapshotRow]);
+
+const missingConfirmation = runRefresh([
+  "--commit-staging", stagingDir,
+  "--vault-root", vaultRoot,
+  "--json"
+]);
+requireEqual(missingConfirmation.status, 1, "missing owner confirmation exit");
+requireIncludes(missingConfirmation.stderr, "owner_confirmation_required", "missing owner confirmation error");
+
+const commitStaging = parseJsonResult(runRefresh([
+  "--commit-staging", stagingDir,
+  "--vault-root", vaultRoot,
+  "--owner-confirmed",
+  "--json"
+]), "commit-staging");
+requireEqual(commitStaging.mode, "commit-staging", "commit-staging mode");
+requireEqual(commitStaging.generated_from, "local_file_source_refresh", "commit-staging generated_from");
+requireEqual(commitStaging.vault_writes_performed, true, "commit-staging vault_writes_performed");
+requireEqual(commitStaging.owner_confirmed, true, "commit-staging owner_confirmed");
+requireEqual(commitStaging.files_written, 2, "commit-staging files_written");
+
+const sourceRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "source_registry.md"), "utf8");
+const snapshotRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "snapshot_registry.md"), "utf8");
+requireIncludes(sourceRegistry, changed.refresh_plans?.[0]?.created_snapshot_id, "source registry active snapshot");
+requireIncludes(sourceRegistry, "## Rules", "source registry rules");
+requireIncludes(snapshotRegistry, changed.refresh_plans?.[0]?.created_snapshot_id, "snapshot registry new snapshot");
+requireIncludes(snapshotRegistry, "snap-workflow-prd-v1", "snapshot registry previous snapshot");
+requireIncludes(snapshotRegistry, hash(sourceContent), "snapshot registry content hash");
+requireIncludes(snapshotRegistry, "changed", "snapshot registry change status");
+requireIncludes(snapshotRegistry, "## Rules", "snapshot registry rules");
+requireNotLeaked(`${sourceRegistry}\n${snapshotRegistry}`, "temporary vault registries");
+
+const duplicateCommit = runRefresh([
+  "--commit-staging", stagingDir,
+  "--vault-root", vaultRoot,
+  "--owner-confirmed",
+  "--json"
+]);
+requireEqual(duplicateCommit.status, 1, "duplicate commit exit");
+requireIncludes(duplicateCommit.stderr, "vault_snapshot_already_exists", "duplicate snapshot error");
 
 const unavailable = parseJsonResult(runRefresh([
   "--input", registryPath,
