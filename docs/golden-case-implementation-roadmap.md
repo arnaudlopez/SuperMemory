@@ -292,6 +292,28 @@ Contrat executable :
 node --test tests/local-manual-capture-cli.test.mjs
 ```
 
+## Tranche 5a.3 - Local manual capture vault review gate
+
+Objectif :
+
+Permettre a l'operateur de valider un staging deja relu et de l'inscrire dans les registres finaux du vault, sans compilation memoire ni promotion Hindsight.
+
+Scenario :
+
+- l'operateur fournit `--commit-staging <staging-dir>`, `--vault-root <identity-vault>` et `--owner-confirmed` ;
+- la commande relit `manifest.json`, `capture-plan.json`, `source-registry.json` et `snapshots.json` depuis le staging ;
+- elle verifie que le staging provient d'un `apply-plan`, reste coherent avec le plan et ne contient pas de payload de promotion ;
+- elle refuse le commit sans confirmation owner explicite ;
+- elle ecrit uniquement dans `00_inbox/source_registry.md` et `00_inbox/snapshot_registry.md` ;
+- elle refuse les doublons de source ou de snapshot avant toute ecriture ;
+- elle ne compile pas de note active et n'appelle aucun service externe.
+
+Contrat executable :
+
+```bash
+node --test tests/local-manual-capture-cli.test.mjs
+```
+
 ## Tranche 5b - Source snapshot refresh preflight
 
 Objectif :

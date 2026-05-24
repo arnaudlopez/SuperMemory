@@ -18,7 +18,10 @@ function parseArgs(argv) {
     capturedAt: new Date().toISOString(),
     writePlan: null,
     applyPlan: null,
+    commitStaging: null,
     outDir: null,
+    vaultRoot: null,
+    ownerConfirmed: false,
     json: false
   };
 
@@ -65,9 +68,17 @@ function parseArgs(argv) {
     } else if (arg === "--apply-plan") {
       options.applyPlan = argv[index + 1];
       index += 1;
+    } else if (arg === "--commit-staging") {
+      options.commitStaging = argv[index + 1];
+      index += 1;
     } else if (arg === "--out-dir") {
       options.outDir = argv[index + 1];
       index += 1;
+    } else if (arg === "--vault-root") {
+      options.vaultRoot = argv[index + 1];
+      index += 1;
+    } else if (arg === "--owner-confirmed") {
+      options.ownerConfirmed = true;
     } else if (arg === "--json" || arg === "--dry-run") {
       options.json = options.json || arg === "--json";
     } else {
@@ -82,9 +93,11 @@ function usage() {
   return [
     "Usage: node scripts/local-manual-capture.mjs --file <path> --scope <dir> --workspace <id> --requested-by <owner> --capture-reason <reason> [--json] [--write-plan <file>]",
     "       node scripts/local-manual-capture.mjs --apply-plan <file> --out-dir <staging-dir> [--json]",
+    "       node scripts/local-manual-capture.mjs --commit-staging <staging-dir> --vault-root <identity-vault> --owner-confirmed [--json]",
     "",
     "Dry-runs one explicit local/manual source capture. Reads only --file, emits source registry and snapshot plan, and never writes to the vault.",
-    "Applies a saved dry-run plan only to a reviewable staging directory outside identity-vault."
+    "Applies a saved dry-run plan only to a reviewable staging directory outside identity-vault.",
+    "Commits reviewed staging into the final vault source and snapshot registries only after explicit owner confirmation."
   ].join("\n");
 }
 
@@ -360,6 +373,176 @@ function writeJsonFile(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function resolveStagingDir(inputPath) {
+  if (!hasValue(inputPath)) {
+    throw new Error("missing_commit_staging_dir");
+  }
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+    throw new Error("commit_staging_unreadable");
+  }
+  return fs.realpathSync(resolved);
+}
+
+function readStagingPlan(stagingDir) {
+  const manifestPath = path.join(stagingDir, "manifest.json");
+  const capturePlanPath = path.join(stagingDir, "capture-plan.json");
+  const sourceRegistryPath = path.join(stagingDir, "source-registry.json");
+  const snapshotsPath = path.join(stagingDir, "snapshots.json");
+  for (const requiredPath of [manifestPath, capturePlanPath, sourceRegistryPath, snapshotsPath]) {
+    if (!fs.existsSync(requiredPath) || !fs.statSync(requiredPath).isFile()) {
+      throw new Error("commit_staging_incomplete");
+    }
+  }
+
+  const manifest = readJsonFile(manifestPath);
+  const plan = readJsonFile(capturePlanPath);
+  const stagedSourceRegistry = readJsonFile(sourceRegistryPath);
+  const stagedSnapshots = readJsonFile(snapshotsPath);
+  if (
+    manifest.generated_from !== "local_manual_capture" ||
+    manifest.mode !== "apply-plan" ||
+    manifest.staging_only !== true ||
+    manifest.vault_writes_performed !== false ||
+    !Array.isArray(stagedSourceRegistry.source_registry_entries) ||
+    !Array.isArray(stagedSnapshots.snapshots)
+  ) {
+    throw new Error("commit_staging_invalid");
+  }
+  validateApplyPlan(plan);
+  if (
+    JSON.stringify(stagedSourceRegistry.source_registry_entries) !== JSON.stringify(plan.source_registry_entries) ||
+    JSON.stringify(stagedSnapshots.snapshots) !== JSON.stringify(plan.snapshots)
+  ) {
+    throw new Error("commit_staging_invalid");
+  }
+  return { manifest, plan };
+}
+
+function resolveVaultRoot(inputPath) {
+  if (!hasValue(inputPath)) {
+    throw new Error("missing_vault_root");
+  }
+  const resolved = path.resolve(inputPath);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+    throw new Error("vault_root_unreadable");
+  }
+  return fs.realpathSync(resolved);
+}
+
+function registryPaths(vaultRoot) {
+  const paths = {
+    sourceRegistry: path.join(vaultRoot, "00_inbox", "source_registry.md"),
+    snapshotRegistry: path.join(vaultRoot, "00_inbox", "snapshot_registry.md")
+  };
+  if (!fs.existsSync(paths.sourceRegistry) || !fs.existsSync(paths.snapshotRegistry)) {
+    throw new Error("vault_registry_missing");
+  }
+  return paths;
+}
+
+function markdownCell(value) {
+  if (value === null || value === undefined || value === "") return "none";
+  return String(value).replace(/\r?\n/g, " ").replace(/\|/g, "\\|");
+}
+
+function codeCell(value) {
+  const normalized = markdownCell(value);
+  return normalized === "none" ? normalized : `\`${normalized}\``;
+}
+
+function sourceRegistryRow(entry) {
+  return [
+    codeCell(entry.source_id),
+    markdownCell(entry.source_kind),
+    codeCell(entry.connector_id),
+    codeCell(entry.original_ref),
+    markdownCell(entry.mutability),
+    codeCell(entry.active_snapshot_id),
+    markdownCell(entry.freshness),
+    markdownCell(entry.status),
+    markdownCell(entry.sensitivity),
+    "none"
+  ].join(" | ");
+}
+
+function snapshotRegistryRow(snapshot) {
+  return [
+    codeCell(snapshot.snapshot_id),
+    codeCell(snapshot.source_id),
+    markdownCell(snapshot.captured_at),
+    markdownCell(snapshot.capture_method),
+    codeCell(snapshot.content_hash),
+    codeCell(snapshot.previous_snapshot_id),
+    "initial_capture",
+    "fresh"
+  ].join(" | ");
+}
+
+function prepareRegistryAppend(filePath, rows, duplicateValues, duplicateError) {
+  const existing = fs.readFileSync(filePath, "utf8");
+  for (const value of duplicateValues) {
+    if (existing.includes(`\`${value}\``)) {
+      throw new Error(duplicateError);
+    }
+  }
+  const marker = "\n## Rules";
+  const markerIndex = existing.indexOf(marker);
+  if (markerIndex === -1) {
+    throw new Error("vault_registry_rules_marker_missing");
+  }
+  const rowsText = rows.map((row) => `| ${row} |`).join("\n");
+  const prefix = existing.slice(0, markerIndex).replace(/\s*$/, "");
+  const suffix = existing.slice(markerIndex);
+  return `${prefix}\n${rowsText}\n${suffix}`;
+}
+
+function commitStaging(stagingPath, vaultRootPath, ownerConfirmed) {
+  if (!ownerConfirmed) {
+    throw new Error("owner_confirmation_required");
+  }
+  const stagingDir = resolveStagingDir(stagingPath);
+  const { manifest, plan } = readStagingPlan(stagingDir);
+  const vaultRoot = resolveVaultRoot(vaultRootPath);
+  const paths = registryPaths(vaultRoot);
+
+  const nextSourceRegistry = prepareRegistryAppend(
+    paths.sourceRegistry,
+    plan.source_registry_entries.map((entry) => sourceRegistryRow(entry)),
+    plan.source_registry_entries.map((entry) => entry.source_id),
+    "vault_source_already_exists"
+  );
+  const nextSnapshotRegistry = prepareRegistryAppend(
+    paths.snapshotRegistry,
+    plan.snapshots.map((snapshot) => snapshotRegistryRow(snapshot)),
+    plan.snapshots.map((snapshot) => snapshot.snapshot_id),
+    "vault_snapshot_already_exists"
+  );
+
+  fs.writeFileSync(paths.sourceRegistry, nextSourceRegistry);
+  fs.writeFileSync(paths.snapshotRegistry, nextSnapshotRegistry);
+
+  return {
+    mode: "commit-staging",
+    generated_from: "local_manual_capture",
+    source_staging: stagingDir,
+    source_plan: manifest.source_plan,
+    vault_root: vaultRoot,
+    network_writes: false,
+    writes_performed: true,
+    staging_only: false,
+    vault_writes_performed: true,
+    owner_confirmed: true,
+    source_count: plan.source_registry_entries.length,
+    snapshot_count: plan.snapshots.length,
+    files_written: 2,
+    destination_paths: [paths.sourceRegistry, paths.snapshotRegistry],
+    validation: {
+      errors: []
+    }
+  };
+}
+
 function applyPlanFile(planPath, outDir) {
   const resolvedPlanPath = resolveApplyPlanPath(planPath);
   const plan = readJsonFile(resolvedPlanPath);
@@ -412,6 +595,16 @@ function printApplyResult(result, json) {
   process.stdout.write(`files_written=${result.files_written}\n`);
 }
 
+function printCommitResult(result, json) {
+  if (json) {
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return;
+  }
+  process.stdout.write(`mode=${result.mode} vault_writes_performed=${result.vault_writes_performed} owner_confirmed=${result.owner_confirmed}\n`);
+  process.stdout.write(`vault_root=${result.vault_root}\n`);
+  process.stdout.write(`files_written=${result.files_written}\n`);
+}
+
 function printPlan(plan, json) {
   if (json) {
     process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
@@ -430,6 +623,14 @@ function main() {
     const options = parseArgs(process.argv.slice(2));
     if (options.help) {
       process.stdout.write(`${usage()}\n`);
+      return;
+    }
+    if (options.applyPlan && options.commitStaging) {
+      throw new Error("capture_mode_conflict");
+    }
+    if (options.commitStaging) {
+      const result = commitStaging(options.commitStaging, options.vaultRoot, options.ownerConfirmed);
+      printCommitResult(result, options.json);
       return;
     }
     if (options.applyPlan) {

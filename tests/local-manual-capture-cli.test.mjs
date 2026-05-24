@@ -187,6 +187,84 @@ const vaultApply = runCli([
 assert.notEqual(vaultApply.status, 0);
 assert.match(vaultApply.stderr, /apply_plan_vault_write_forbidden/);
 
+const vaultRoot = path.join(tmpDir, "vault", "identity-vault");
+const vaultInbox = path.join(vaultRoot, "00_inbox");
+fs.mkdirSync(vaultInbox, { recursive: true });
+const sourceRegistryPath = path.join(vaultInbox, "source_registry.md");
+const snapshotRegistryPath = path.join(vaultInbox, "snapshot_registry.md");
+fs.writeFileSync(sourceRegistryPath, [
+  "# Source Registry",
+  "",
+  "| Source ID | Type | Connector | Original Ref | Mutability | Active Snapshot | Freshness | Status | Sensitivity | Compiled Targets |",
+  "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+  "",
+  "## Rules",
+  "",
+  "- Test registry rules remain after appended rows."
+].join("\n"));
+fs.writeFileSync(snapshotRegistryPath, [
+  "# Snapshot Registry",
+  "",
+  "| Snapshot ID | Source ID | Captured At | Capture Method | Content Hash | Previous Snapshot | Change Status | Freshness |",
+  "| --- | --- | --- | --- | --- | --- | --- | --- |",
+  "",
+  "## Rules",
+  "",
+  "- Test snapshot rules remain after appended rows."
+].join("\n"));
+
+const missingOwnerCommit = runCli([
+  "--commit-staging", stagingDir,
+  "--vault-root", vaultRoot,
+  "--json"
+]);
+assert.notEqual(missingOwnerCommit.status, 0);
+assert.match(missingOwnerCommit.stderr, /owner_confirmation_required/);
+
+const commitStaging = parseJson(runCli([
+  "--commit-staging", stagingDir,
+  "--vault-root", vaultRoot,
+  "--owner-confirmed",
+  "--json"
+]));
+assert.equal(commitStaging.mode, "commit-staging");
+assert.equal(commitStaging.network_writes, false);
+assert.equal(commitStaging.writes_performed, true);
+assert.equal(commitStaging.staging_only, false);
+assert.equal(commitStaging.vault_writes_performed, true);
+assert.equal(commitStaging.owner_confirmed, true);
+assert.equal(commitStaging.source_count, 1);
+assert.equal(commitStaging.snapshot_count, 1);
+assert.equal(commitStaging.files_written, 2);
+assert.deepEqual(commitStaging.destination_paths, [
+  fs.realpathSync(sourceRegistryPath),
+  fs.realpathSync(snapshotRegistryPath)
+]);
+
+const committedSourceRegistry = fs.readFileSync(sourceRegistryPath, "utf8");
+const committedSnapshotRegistry = fs.readFileSync(snapshotRegistryPath, "utf8");
+assert.match(committedSourceRegistry, /source:local-manual:orion-prd-excerpt/);
+assert.match(committedSourceRegistry, /manual\.local_file/);
+assert.match(committedSourceRegistry, /mutable_external/);
+assert.match(committedSourceRegistry, /## Rules/);
+assert.match(committedSnapshotRegistry, /snap:source:local-manual:orion-prd-excerpt:20260523123000/);
+assert.match(committedSnapshotRegistry, new RegExp(expectedHash.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.match(committedSnapshotRegistry, /## Rules/);
+
+const serializedVault = `${committedSourceRegistry}\n${committedSnapshotRegistry}`;
+assert.equal(serializedVault.includes("sk-localmanualfixture"), false);
+assert.equal(serializedVault.includes("Ignore previous instructions"), false);
+assert.equal(serializedVault.includes(neighborContent), false);
+
+const duplicateCommit = runCli([
+  "--commit-staging", stagingDir,
+  "--vault-root", vaultRoot,
+  "--owner-confirmed",
+  "--json"
+]);
+assert.notEqual(duplicateCommit.status, 0);
+assert.match(duplicateCommit.stderr, /vault_source_already_exists/);
+
 const missingPlanParent = runCli([
   "--file", selectedPath,
   "--scope", `${scopeDir}${path.sep}`,

@@ -170,6 +170,14 @@ node scripts/local-manual-capture.mjs --apply-plan /path/to/plan.json --out-dir 
 
 The apply step writes reviewable JSON artifacts only, refuses plans with validation errors, and blocks direct writes under `identity-vault`.
 
+Commit reviewed staging into the final vault registries only with explicit owner confirmation:
+
+```bash
+node scripts/local-manual-capture.mjs --commit-staging /path/to/staging --vault-root identity-vault --owner-confirmed --json
+```
+
+The commit step updates only `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`, refuses duplicate source or snapshot ids, and does not create compiled memory or Hindsight promotions.
+
 ### Conflict And Unavailable Arbitration
 
 When sources disagree, SuperMemory preserves both facts instead of normalizing the conflict away. The local T6 contract verifies bidirectional `conflicts_with` links, blocks silent winner selection without an explicit reliability rule, requires rule and conflict citation when arbitration is allowed, treats unavailable checks as last-known/unverified, and opens `conflict_queue` for unresolved conflicts.
