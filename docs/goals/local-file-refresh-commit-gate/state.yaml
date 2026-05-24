@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: "local-file-refresh-commit-gate"
   title: "Local File Refresh Commit Gate"
-  status: active
+  status: complete
   created_at: "2026-05-24"
   updated_at: "2026-05-24"
   kind: specific
@@ -76,7 +76,7 @@ agents:
   worker: installed
   judge: installed
 
-active_task: T998
+active_task: null
 tasks:
   - id: T001
     type: scout
@@ -503,7 +503,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Commit all goal-related changes and push the current branch once verification is green."
     inputs:
       - "Approved implementation and verification receipts"
@@ -524,11 +524,33 @@ tasks:
       - "push_result"
       - "committed_files"
       - "unrelated_dirty_files_left_untouched"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Committed and pushed the local-file refresh commit gate changes to origin/main."
+      commit_sha: 4190b29d57404f71834c1c45e5c3f8368c7abf96
+      remote_branch: origin/main
+      push_result: "success: e29ac25..4190b29 main -> main"
+      committed_files:
+        - README.md
+        - docs/golden-case-implementation-roadmap.md
+        - docs/goals/local-file-refresh-commit-gate/acceptance-contract.md
+        - docs/goals/local-file-refresh-commit-gate/brief.md
+        - docs/goals/local-file-refresh-commit-gate/goal.md
+        - docs/goals/local-file-refresh-commit-gate/state.yaml
+        - docs/local-file-refresh-commit-gate-notes.md
+        - scripts/local-file-source-refresh.mjs
+        - scripts/verify-local-file-source-refresh-workflow.mjs
+        - tests/local-file-source-refresh-cli.test.mjs
+      unrelated_dirty_files_left_untouched:
+        []
+      verify:
+        - "git status before commit showed only goal-scoped files"
+        - "git push origin main: success"
+        - "git status after push: clean against origin/main before recording this receipt"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -554,4 +576,21 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: approved
+      summary: "Final audit approved. The original local-file refresh commit gate outcome is complete and shipped."
+      design_delta: "The goal added an owner-confirmed --commit-staging mode to local-file-source-refresh, red-to-green CLI and workflow coverage, and README/roadmap docs. It updates only final source/snapshot registries and does not compile memory, rerun connectors, scan broadly, or promote to Hindsight."
+      workflow_safeguards: "pass: design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, design_delta, impact assessment, red evidence, green verification, Judge review, and T998 shipping proof are present."
+      complete: complete
+      full_outcome_complete: true
+      architecture_review: "Approved. The implementation is a bounded local registry commit gate from reviewed staging to final vault registry records. It preserves the LLM-first approach by keeping unknown/future downstream effects as explicit later tranches instead of hidden deterministic automation."
+      oracle_coverage: "pass: changed-source commit, source registry update, snapshot append, owner confirmation, tampered staging refusal, duplicate snapshot refusal, unavailable/do_not_use refusal, leakage guards, connector boundary regression, snapshot preflight regression, global specs, and diff check all passed."
+      missing_evidence:
+        []
+      next_task_if_not_complete: null
+      shipping_evidence:
+        commit_sha: 4190b29d57404f71834c1c45e5c3f8368c7abf96
+        remote_branch: origin/main
+        push_result: "success: e29ac25..4190b29 main -> main"
+      remaining_risks: "The next useful tranche is to define how committed refresh registry changes feed review/compilation, still without automatic Hindsight promotion unless explicitly governed."
