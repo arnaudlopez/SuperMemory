@@ -380,6 +380,31 @@ node scripts/verify-source-refresh-connector-boundary.mjs
 
 Ce contrat reste local et deterministe. Il ne remplace pas un connecteur Gmail, Drive, Web ou CRM reel : il fixe l'interface que ces connecteurs devront respecter.
 
+## Tranche 5c.1 - Local file source refresh CLI
+
+Objectif :
+
+Transformer la frontiere connecteur en premier refresh concret pour une source `local_file` enregistree, sans scan large ni mutation du vault.
+
+Scenario :
+
+- l'operateur fournit un registre JSON explicite et un `source_id` ;
+- la commande utilise uniquement un connecteur `local_file` active et configure ;
+- elle valide `workspace_id`, `source_kind`, `connector_scope` et `allowed_scopes` par chemins reels ;
+- elle lit exactement `original_ref` si la source est active et disponible ;
+- source unchanged : aucun nouveau snapshot ;
+- source changed : plan de snapshot immuable avec `previous_snapshot_id` et item de revue pour les memoires derivees ;
+- source unavailable : last-known/unverified, jamais fresh ;
+- source `do_not_use` : bloque avant lecture de contenu ;
+- elle ne sort jamais le contenu brut, les instructions source ou les secrets ;
+- elle ne modifie pas le vault et ne promeut rien dans Hindsight.
+
+Contrat executable :
+
+```bash
+node --test tests/local-file-source-refresh-cli.test.mjs
+```
+
 ## Tranche 5d - Local manual source capture
 
 Objectif :
