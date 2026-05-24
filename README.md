@@ -265,6 +265,12 @@ Run the full spec verification:
 node scripts/verify-supermemory-specs.mjs
 ```
 
+Run the Golden End State operator workflow verifier:
+
+```bash
+node scripts/verify-golden-end-state-workflow.mjs
+```
+
 Run individual checks:
 
 ```bash
@@ -391,6 +397,8 @@ SuperMemory is not trying to be:
 
 This repository is currently a **specification-first prototype**.
 
+The current Golden End State focus is the local operator workflow: capture, snapshot, LLM-first interpretation, staged review, governed promotion, local Hindsight preflight, recall, governed answer, refresh/change handling, and audit. See [`docs/golden-end-state-operator-workflow.md`](docs/golden-end-state-operator-workflow.md).
+
 Implemented:
 
 - vault skeleton;
@@ -409,7 +417,8 @@ Implemented:
 - local manual source capture contract verifier;
 - source snapshot refresh preflight contract verifier;
 - source refresh connector-boundary contract verifier;
-- first concrete local-file source refresh CLI and verifier.
+- first concrete local-file source refresh CLI and verifier;
+- Golden End State workflow verifier.
 
 Not yet implemented:
 

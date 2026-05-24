@@ -1,0 +1,542 @@
+version: 2
+goal:
+  slug: "supermemory-golden-end-state-llm-first-notes"
+  title: "SuperMemory Golden End State LLM-First Notes"
+  status: active
+  created_at: "2026-05-24"
+  updated_at: "2026-05-24"
+  kind: specific
+  original_request: "# SuperMemory Golden End State LLM-First Notes\n\n## Intent\n\nBring SuperMemory to the Golden End State as a local-first, LLM-first memory tool that can run end to end:\n\n```text\ncapture source -> immutable snapshot -> LLM-first interpretation -> governed memory promotion -> local Hindsight retain/upsert/delete/recall -> governed answer with evidence -> source refresh/change handling -> audit trail\n```\n\nThe implementation should keep moving through bounded slices until the tool is operator-usable, tested, documented, and shippable.\n\n- Do not silently fall back to Hindsight Cloud.\n- Do not commit env files, API keys, bank ids, raw live response bodies, or live evidence under version control.\n- Do not perform live writes unless a task explicitly permits it and local preflight is `ready`.\n- Do not promote arbitrary vault content without an owner-approved staged plan.\n- Do not replace Hindsight with Graphiti/Memoria unless a specific eval proves Hindsight or the vault layer is insufficient.\n- Do not build a UI before the CLI/operator workflow is coherent.\n\n- No implicit Hindsight Cloud fallback.\n- No committed secrets, env files, live API keys, bank ids, raw live response bodies, or live evidence.\n- No live Hindsight writes unless a task explicitly permits local mutation and the local preflight reports `ready`.\n- No arbitrary vault-wide promotion without an owner-approved staged plan.\n- No broad connector platform before the first concrete operator workflow is coherent.\n- No Graphiti/Memoria activation unless a specific eval proves Hindsight or the vault snapshot layer is insufficient.\n- No UI before the CLI/operator path is complete and verified.\n\n- no implicit Hindsight Cloud fallback;\n- no committed secrets, env files, live API keys, bank ids, raw live response bodies, or live evidence;\n- no live Hindsight writes unless a task explicitly permits local mutation and the local preflight reports `ready`;\n- no arbitrary vault-wide promotion without an owner-approved staged plan;\n- no broad connector platform before the first concrete operator workflow is coherent;\n- no Graphiti/Memoria activation unless a specific eval proves Hindsight or the vault snapshot layer is insufficient;\n- no UI before the CLI/operator path is complete and verified.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nSuperMemory is operator-usable end to end locally: capture -> immutable snapshot -> LLM-first interpretation -> governed memory promotion -> local Hindsight retain/upsert/delete/recall -> governed answer with evidence -> source refresh/change handling -> audit trail, with a Golden End State verifier and node scripts/verify-supermemory-specs.mjs green, no implicit cloud fallback, no committed secrets, and shipped goal receipts.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Expected evidence should include:\n- design concept and module map for the final local operator workflow;\n- impact assessment for db schema, data backfill, env/secrets, auth, API contract, UI routes, background jobs, external services, deploy/rollback, observability, and docs;\n- green targeted tests for each implemented slice;\n- green global regression;\n- final audit explaining what is complete and what remains blocked, if anything is genuinely external.\n- First automated proof: add or maintain a Golden End State verifier that checks the local operator workflow contract and is included in `node scripts/verify-supermemory-specs.mjs`.\n- Edge case proof: the workflow must fail closed when live Hindsight env is missing, the endpoint is non-local, the Docker container is not localhost-only, a source is unavailable, memory is restricted, or a source is revoked.\n- Manual/external proof: live Hindsight writes require explicit local preflight `ready`, sacrificial bank env, redacted evidence outside committed files, and no cloud fallback.\n- Shipping proof: all goal-scoped changes are committed and pushed, with final GoalBuddy receipts and no unrelated dirty files.\n- Documentation proof: README/runbooks describe the actual operator sequence and current blockers.\n- a GoalBuddy board exists for the Golden End State with Scout/Judge/Worker receipts;\n- `node scripts/verify-supermemory-specs.mjs` passes after each shipped slice;\n- a new Golden End State verifier passes and covers the local end-to-end flow;\n- local Hindsight preflight either reports `ready` before live execution or records an explicit operational blocker;\n- any live smoke uses only local/self-hosted Hindsight, explicit live env, and a sacrificial bank;\n- redacted evidence proves live retain/upsert/delete/recall or documents the non-code blocker;\n- operator docs explain the current command sequence and failure modes;\n- final receipts include design concept, module map, interface contract, impact assessment, architecture review, shipping proof, and no-secret evidence;\n- all goal-scoped changes are committed and pushed.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/supermemory-golden-end-state-llm-first/brief.md --mode implementation --oracle \"SuperMemory is operator-usable end to end locally: capture -> immutable snapshot -> LLM-first interpretation -> governed memory promotion -> local Hindsight retain/upsert/delete/recall -> governed answer with evidence -> source refresh/change handling -> audit trail, with a Golden End State verifier and node scripts/verify-supermemory-specs.mjs green, no implicit cloud fallback, no committed secrets, and shipped goal receipts.\" --out docs/goals/supermemory-golden-end-state-llm-first-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/supermemory-golden-end-state-llm-first-notes.md\n\n> # SuperMemory Golden End State LLM-First Notes\n> \n> Date: 2026-05-24\n> \n> ## Intent\n> \n> Bring SuperMemory to the Golden End State as a local-first, LLM-first memory tool that can run end to end:\n> \n> ```text\n> capture source -> immutable snapshot -> LLM-first interpretation -> governed memory promotion -> local Hindsight retain/upsert/delete/recall -> governed answer with evidence -> source refresh/change handling -> audit trail\n> ```\n> \n> The implementation should keep moving through bounded slices until the tool is operator-usable, tested, documented, and shippable.\n> \n> ## Current Known State\n> \n> Completed and green contracts already exist for:\n> \n> - T0/T1 source change and memory contracts;\n> - T3 minimal Hindsight adapter;\n> - T4 governed answer evidence;\n> - T5 source change sync;\n> - T6 conflict/unavailable arbitration;\n> - T7 adaptive business types;\n> - T8 enterprise access, secrets, retention;\n> - T9 review queues/actions;\n> - T10 agent use patterns;\n> - T11 engine port evals;\n> - T12/T13 enterprise living memory partial/complete;\n> - T14 CI regression suite;\n> - local manual source capture;\n> - local file source refresh staging and commit gates;\n> - Hindsight mockable transport, API contract readiness, live-smoke readiness, Docker compose, and local live-smoke preflight.\n> \n> Most recent operational status:\n> \n> - `scripts/hindsight-local-live-smoke-preflight.mjs --json` reports local Hindsight `/health` is healthy.\n> - It correctly blocks live smoke because live env values are not set.\n> - It also blocks because the running `supermemory-hindsight-local` container is currently bound to all interfaces instead of localhost-only.\n> - No Hindsight live writes have been performed yet.\n> \n> ## Golden End State\n> \n> SuperMemory is complete when an operator can use one coherent local workflow to:\n> \n> 1. capture an owner-approved local or external source;\n> 2. create and verify immutable source snapshots;\n> 3. interpret source material with an LLM-first contract that adapts to unknown cases and produces auditable uncertainty;\n> 4. stage, review, and commit memory candidates;\n> 5. promote governed memory to local/self-hosted Hindsight with explicit live opt-in;\n> 6. recall from Hindsight with strict scope and evidence;\n> 7. answer with governed evidence and clear answer state;\n> 8. refresh mutable sources and route changes, conflicts, unavailable sources, and revocations correctly;\n> 9. inspect redacted logs, evidence, and receipts;\n> 10. run a single regression command proving the full local flow stays green.\n> \n> ## Non-Goals And Hard Boundaries\n> \n> - Do not silently fall back to Hindsight Cloud.\n> - Do not commit env files, API keys, bank ids, raw live response bodies, or live evidence under version control.\n> - Do not perform live writes unless a task explicitly permits it and local preflight is `ready`.\n> - Do not promote arbitrary vault content without an owner-approved staged plan.\n> - Do not replace Hindsight with Graphiti/Memoria unless a specific eval proves Hindsight or the vault layer is insufficient.\n> - Do not build a UI before the CLI/operator workflow is coherent.\n> \n> ## Non-Goals\n> \n> - No implicit Hindsight Cloud fallback.\n> - No committed secrets, env files, live API keys, bank ids, raw live response bodies, or live evidence.\n> - No live Hindsight writes unless a task explicitly permits local mutation and the local preflight reports `ready`.\n> - No arbitrary vault-wide promotion without an owner-approved staged plan.\n> - No broad connector platform before the first concrete operator workflow is coherent.\n> - No Graphiti/Memoria activation unless a specific eval proves Hindsight or the vault snapshot layer is insufficient.\n> - No UI before the CLI/operator path is complete and verified.\n> \n> ## non_goals\n> \n> - no implicit Hindsight Cloud fallback;\n> - no committed secrets, env files, live API keys, bank ids, raw live response bodies, or live evidence;\n> - no live Hindsight writes unless a task explicitly permits local mutation and the local preflight reports `ready`;\n> - no arbitrary vault-wide promotion without an owner-approved staged plan;\n> - no broad connector platform before the first concrete operator workflow is coherent;\n> - no Graphiti/Memoria activation unless a specific eval proves Hindsight or the vault snapshot layer is insufficient;\n> - no UI before the CLI/operator path is complete and verified.\n> \n> ## Preferred Implementation Order\n> \n> 1. Clear local Hindsight runtime blockers:\n>    - recreate `supermemory-hindsight-local` from `compose.hindsight.yml`;\n>    - verify ports bind to `127.0.0.1`;\n>    - keep env redacted and local-only.\n> 2. Execute the first owner-approved local Hindsight live smoke against a sacrificial bank:\n>    - only after preflight is `ready`;\n>    - capture redacted proof outside committed live data;\n>    - document cleanup/rollback.\n> 3. Promote the existing mock/fixture promotion path into an operator-facing dry-run/apply workflow:\n>    - select reviewed memory candidates;\n>    - emit plan;\n>    - apply explicit live promotion;\n>    - record redacted evidence.\n> 4. Consolidate the LLM-first interpretation layer:\n>    - reduce brittle deterministic case branching where an interpretation contract can carry uncertainty;\n>    - keep governed evidence, access, freshness, and revocation rules deterministic where safety requires it.\n> 5. Build the full source lifecycle:\n>    - local file remains the first concrete connector;\n>    - add external connector support only behind explicit source workflows;\n>    - refresh, unavailable, conflict, and revocation flows remain test-backed.\n> 6. Add operator-quality CLI commands and docs:\n>    - preflight, capture, stage, review, commit, promote, recall, answer, refresh, inspect;\n>    - no hidden mutation.\n> 7. Finish with a Golden End State regression:\n>    - one command covers the core local path;\n>    - all existing contract tests stay green.\n> \n> ## Observable Oracle\n> \n> The goal is complete when:\n> \n> - `node scripts/verify-supermemory-specs.mjs` passes;\n> - a Golden End State verifier passes and proves capture -> snapshot -> interpretation -> governed promotion -> local Hindsight recall -> governed answer -> refresh/change audit;\n> - the local Hindsight live-smoke path has either redacted live proof against a sacrificial local bank or a documented operational blocker that is outside code control;\n> - docs and roadmap reflect the current operator workflow;\n> - all changes are committed and pushed;\n> - no secrets or live evidence are committed.\n> \n> ## Acceptance Evidence\n> \n> Expected evidence should include:\n> \n> - design concept and module map for the final local operator workflow;\n> - impact assessment for db schema, data backfill, env/secrets, auth, API contract, UI routes, background jobs, external services, deploy/rollback, observability, and docs;\n> - green targeted tests for each implemented slice;\n> - green global regression;\n> - final audit explaining what is complete and what remains blocked, if anything is genuinely external.\n> \n> ## Acceptance\n> \n> - First automated proof: add or maintain a Golden End State verifier that checks the local operator workflow contract and is included in `node scripts/verify-supermemory-specs.mjs`.\n> - Edge case proof: the workflow must fail closed when live Hindsight env is missing, the endpoint is non-local, the Docker container is not localhost-only, a source is unavailable, memory is restricted, or a source is revoked.\n> - Manual/external proof: live Hindsight writes require explicit local preflight `ready`, sacrificial bank env, redacted evidence outside committed files, and no cloud fallback.\n> - Shipping proof: all goal-scoped changes are committed and pushed, with final GoalBuddy receipts and no unrelated dirty files.\n> - Documentation proof: README/runbooks describe the actual operator sequence and current blockers.\n> \n> ## acceptance_evidence\n> \n> - a GoalBuddy board exists for the Golden End State with Scout/Judge/Worker receipts;\n> - `node scripts/verify-supermemory-specs.mjs` passes after each shipped slice;\n> - a new Golden End State verifier passes and covers the local end-to-end flow;\n> - local Hindsight preflight either reports `ready` before live execution or records an explicit operational blocker;\n> - any live smoke uses only local/self-hosted Hindsight, explicit live env, and a sacrificial bank;\n> - redacted evidence proves live retain/upsert/delete/recall or documents the non-code blocker;\n> - operator docs explain the current command sequence and failure modes;\n> - final receipts include design concept, module map, interface contract, impact assessment, architecture review, shipping proof, and no-secret evidence;\n> - all goal-scoped changes are committed and pushed."
+  interpreted_outcome: "Run the prepared LLM-first workflow for SuperMemory Golden End State LLM-First Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "SuperMemory is operator-usable end to end locally: capture -> immutable snapshot -> LLM-first interpretation -> governed memory promotion -> local Hindsight retain/upsert/delete/recall -> governed answer with evidence -> source refresh/change handling -> audit trail, with a Golden End State verifier and node scripts/verify-supermemory-specs.mjs green, no implicit cloud fallback, no committed secrets, and shipped goal receipts."
+  oracle:
+    signal: "SuperMemory is operator-usable end to end locally: capture -> immutable snapshot -> LLM-first interpretation -> governed memory promotion -> local Hindsight retain/upsert/delete/recall -> governed answer with evidence -> source refresh/change handling -> audit trail, with a Golden End State verifier and node scripts/verify-supermemory-specs.mjs green, no implicit cloud fallback, no committed secrets, and shipped goal receipts."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Read-only Scout mapping completed. The repo already has strong executable contracts for governance, LLM-first interpretation, local capture, local file refresh, Hindsight transport, and full enterprise fixtures. The missing Golden End State layer is a coherent operator workflow contract/verifier that ties these pieces into capture -> snapshot -> interpretation -> staging/review -> promotion -> recall/answer -> refresh/change audit, while keeping live Hindsight behind local preflight readiness."
+      design_concept:
+        shared_understanding: "SuperMemory should become operator-usable locally, not merely fixture-complete. The next work should create an executable Golden End State workflow contract before adding more product behavior, so future slices are driven by observable local commands and no implicit cloud/live mutation."
+        non_goals:
+          - "No implicit Hindsight Cloud fallback"
+          - "No committed secrets, env files, bank ids, raw live responses, or live evidence"
+          - "No live Hindsight writes unless an active task explicitly permits local mutation and preflight is ready"
+          - "No arbitrary vault-wide promotion without an owner-approved staged plan"
+          - "No UI before the CLI/operator path is coherent"
+          - "No Graphiti/Memoria activation unless evals prove the need"
+        decision_dependencies:
+          - "Live Hindsight remains blocked until env is explicit and the container is localhost-only"
+          - "The first Golden verifier should be non-live and fixture/tmp based"
+          - "Operator commands should stay explicit dry-run/apply/commit/live rather than hidden mutation"
+      ubiquitous_language:
+        golden_end_state: "operator-usable local workflow across capture, snapshot, interpretation, promotion, recall, answer, refresh, and audit"
+        operator_workflow: "documented CLI sequence with explicit dry-run, staging, commit, preflight, and apply points"
+        llm_first_interpretation: "adaptive meaning extraction with evidence, confidence, uncertainty, assumptions, alternatives, use pattern, and review state"
+        deterministic_governance: "hard gates for access, freshness, review, revocation, secret redaction, and live mutation"
+        local_live_smoke: "owner-approved execution against self-hosted Hindsight on 127.0.0.1 with sacrificial bank env"
+        operational_blocker: "runtime/env/safety condition outside code behavior that prevents live writes"
+        forbidden_synonyms: "do not call mock rehearsal live proof; do not call cloud fallback local; do not call fixture completeness operator usability"
+      module_map:
+        README.md: "Current user-facing status, quickstart, implemented/not-yet-implemented roadmap, and operator command snippets"
+        docs/golden-case-tdd-matrix.md: "Historical T0-T14 matrix and Golden Case acceptance basis"
+        docs/llm-first-migration-plan.md: "LLM-first meaning plus deterministic governance rationale"
+        identity-vault/75_governance/interpretation_contract.md: "InterpretationCandidate contract and LLM-first boundaries"
+        identity-vault/90_evals/cases/enterprise-living-memory-complete: "Existing full Golden Case fixture proof"
+        scripts/verify-enterprise-living-memory-complete.mjs: "Fixture-level complete Golden Case verifier"
+        scripts/local-manual-capture.mjs: "Operator dry-run/apply/commit for local source capture"
+        scripts/local-file-source-refresh.mjs: "Operator dry-run/apply/commit for local-file refresh"
+        scripts/hindsight-promote.mjs: "Dry-run/mock/live guarded Hindsight promotion path"
+        scripts/hindsight-local-live-smoke-preflight.mjs: "Read-only local runtime readiness gate before live Hindsight writes"
+        scripts/hindsight-live-smoke-runner.mjs: "Mock/live smoke runner for retain/upsert/delete/recall cases"
+        scripts/verify-supermemory-specs.mjs: "Global regression orchestrator; should include any Golden End State verifier"
+        shallow_module_risk: "Adding many tiny verifiers that duplicate existing contracts instead of one coherent workflow contract"
+      interface_contract:
+        golden_verifier: "A new verifier should prove the non-live operator workflow contract end to end using temp dirs/fixtures: local capture plan, staging, vault commit, refresh plan, governed promotion dry-run/mock, answer evidence, and audit/report shape."
+        live_boundary: "Live Hindsight is never part of ordinary CI; the Golden verifier may require preflight reporting but must not require real credentials or perform live writes."
+        failure_modes:
+          - "missing live env fails closed"
+          - "non-local endpoint is blocked"
+          - "non-localhost Docker binding is visible"
+          - "unavailable source becomes unknown/review rather than fresh"
+          - "restricted or revoked memory cannot be active answer evidence"
+          - "mock transport is not treated as live proof"
+        operator_output: "Commands should emit JSON with writes_performed/network_writes, validation errors, files read/written, and redacted env status where relevant."
+      test_strategy:
+        first_red_test: "Add tests for a Golden End State verifier that currently does not exist, likely tests/golden-end-state-workflow.test.mjs calling scripts/verify-golden-end-state-workflow.mjs."
+        implementation_slice: "Implement the verifier as an orchestration/audit over existing commands and fixtures, not a new business engine."
+        targeted_verify:
+          - "node --test tests/golden-end-state-workflow.test.mjs"
+          - "node scripts/verify-golden-end-state-workflow.mjs"
+        global_verify:
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+        mocks: "Use temp dirs, existing fixtures, mock Hindsight transport, and preflight JSON; do not use live credentials."
+        browser_visual: "not relevant for CLI-only workflow"
+      feedback_policy: "Run the new targeted Golden verifier/test after every change in this goal, then run Hindsight/local capture/refresh targeted checks as needed, and run node scripts/verify-supermemory-specs.mjs plus git diff --check before review/shipping. Stop before credentials or live writes."
+      acceptance_contract_updates:
+        exact_end_state_evidence:
+          - "Golden End State verifier exists and is wired into verify-supermemory-specs"
+          - "Verifier proves a coherent operator CLI path using existing commands/fixtures without mutating real vault or Hindsight live"
+          - "README/docs describe the current operator path and remaining live blockers"
+          - "Preflight status is handled as readiness/blocker, not as failure of code completeness"
+        failure_modes:
+          - "secret leak"
+          - "implicit cloud fallback"
+          - "live write without explicit ready preflight"
+          - "treating fixture/mock proof as live evidence"
+          - "bypassing review/staging before vault commit or promotion"
+      dirty_worktree_risk_map:
+        current_dirty_files:
+          - docs/supermemory-golden-end-state-llm-first-notes.md
+          - docs/goals/supermemory-golden-end-state-llm-first/
+        risk: "Only goal setup artifacts are dirty now. Product files must remain untouched until T004 implementation boundaries are approved."
+        guard: "Future Worker tasks must use explicit allowed_files and leave unrelated dirty files untouched."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: "none for the first Golden verifier; live env remains external and redacted"
+        auth_permissions: none
+        api_contract: "local CLI/reporting contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: "local Docker Hindsight preflight may be read; live Hindsight writes remain blocked unless explicitly allowed"
+        deploy_rollback: none
+        observability: "Golden verifier should produce auditable PASS/FAIL and redacted runtime/blocker evidence"
+        docs: "README/runbook/roadmap may need updates after implementation"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approve the first safe vertical slice: add a non-live Golden End State workflow verifier and tests. This does not perform live writes or require credentials; it proves the operator workflow contract across existing local commands/fixtures and wires the proof into the global spec suite."
+      approved_design_concept: "SuperMemory moves from fixture-complete toward operator-usable by adding a Golden End State verifier that checks the full local workflow shape without mutating the real vault or live Hindsight."
+      approved_ubiquitous_language:
+        golden_end_state: "operator-usable local workflow, not merely a complete fixture"
+        operator_workflow: "explicit CLI sequence with dry-run, staging, commit, preflight, promotion, recall/answer, refresh, and audit evidence"
+        live_proof: "only local/self-hosted Hindsight with explicit env and preflight ready"
+        mock_proof: "non-live regression evidence, never a substitute for live proof"
+      feedback_policy: "Red test first. Run the new targeted test/verifier after each edit, then run node scripts/verify-supermemory-specs.mjs and git diff --check before review. Stop before credentials, live writes, or files outside the approved boundaries."
+      test_strategy: "T003 writes failing tests for scripts/verify-golden-end-state-workflow.mjs. T004 implements the verifier as orchestration/audit over existing commands and fixtures, not new product behavior. T005 runs targeted and global verification."
+      module_map:
+        new_verifier: scripts/verify-golden-end-state-workflow.mjs
+        new_test: tests/golden-end-state-workflow.test.mjs
+        global_suite: scripts/verify-supermemory-specs.mjs
+        operator_docs: "README.md and docs/golden-end-state-operator-workflow.md if needed"
+        existing_inputs: "local-manual-capture, local-file-source-refresh, hindsight-promote, Hindsight preflight, governed answer and enterprise complete verifiers"
+      interface_contract:
+        verifier: "Must pass only when the repo exposes a coherent non-live operator workflow contract from capture through audit."
+        required_checks:
+          - "local manual capture workflow verifier is present and callable"
+          - "local file refresh workflow verifier is present and callable"
+          - "Hindsight local preflight exists and reports non-live fields"
+          - "Hindsight promotion path has mock/live guarded proof"
+          - "governed answer evidence verifier exists"
+          - "enterprise complete Golden Case verifier exists"
+          - "global verifier wires Golden End State verifier"
+          - "README/docs mention the operator path and live blockers"
+        forbidden_checks:
+          - "No cloud fallback URL suggested as local default"
+          - "No token-like secrets in docs/verifier output"
+          - "No live writes or network writes required by verifier"
+      architecture_review: "Approved. The slice is valuable because it creates a durable acceptance harness for the long-range objective. It is safe because it is non-live, fixture/tmp based, and does not introduce new runtime mutation behavior."
+      exact_worker_objective: "Write red tests that expect a new Golden End State workflow verifier to exist, emit/pass the required workflow checks, be wired into scripts/verify-supermemory-specs.mjs, avoid secrets/cloud fallback, and document the operator path."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/golden-end-state-workflow.test.mjs
+          verify:
+            - "node --test tests/golden-end-state-workflow.test.mjs"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/verify-golden-end-state-workflow.mjs
+            - tests/golden-end-state-workflow.test.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - README.md
+            - docs/golden-end-state-operator-workflow.md
+          verify:
+            - "node --test tests/golden-end-state-workflow.test.mjs"
+            - "node scripts/verify-golden-end-state-workflow.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Verification fails twice without a clear bounded fix."
+            - "Implementation starts drifting outside the oracle."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - scripts/verify-golden-end-state-workflow.mjs
+            - tests/golden-end-state-workflow.test.mjs
+            - scripts/verify-supermemory-specs.mjs
+            - README.md
+            - docs/golden-end-state-operator-workflow.md
+          verify:
+            - "node --test tests/golden-end-state-workflow.test.mjs"
+            - "node scripts/verify-golden-end-state-workflow.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/golden-end-state-workflow.test.mjs
+    verify:
+      - "node --test tests/golden-end-state-workflow.test.mjs"
+    stop_if:
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Added the failing Golden End State workflow test. It expects a non-live verifier report covering the operator workflow phases, required commands, failure modes, docs, and global spec wiring."
+      changed_files:
+        - tests/golden-end-state-workflow.test.mjs
+      red_evidence:
+        command: "node --test tests/golden-end-state-workflow.test.mjs"
+        result: "failed as expected"
+        failure: "MODULE_NOT_FOUND for scripts/verify-golden-end-state-workflow.mjs"
+      verify:
+        - "node --test tests/golden-end-state-workflow.test.mjs (expected fail/red)"
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-golden-end-state-workflow.mjs
+      - tests/golden-end-state-workflow.test.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - README.md
+      - docs/golden-end-state-operator-workflow.md
+    verify:
+      - "node --test tests/golden-end-state-workflow.test.mjs"
+      - "node scripts/verify-golden-end-state-workflow.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Verification fails twice without a clear bounded fix."
+      - "Implementation starts drifting outside the oracle."
+    receipt:
+      result: done
+      summary: "Implemented the non-live Golden End State workflow verifier, wired it into the global spec suite, added operator workflow docs, and updated README status. The verifier proves the local operator workflow phases using existing commands/fixtures without live writes, network writes, credentials, or cloud fallback."
+      changed_files:
+        - scripts/verify-golden-end-state-workflow.mjs
+        - tests/golden-end-state-workflow.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - README.md
+        - docs/golden-end-state-operator-workflow.md
+      green_test:
+        command: "node --test tests/golden-end-state-workflow.test.mjs"
+        result: pass
+      verify:
+        - "node --test tests/golden-end-state-workflow.test.mjs"
+        - "node scripts/verify-golden-end-state-workflow.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      evidence:
+        - "Golden verifier reports pass for capture, snapshot, llm_first_interpretation, staging_review, governed_promotion, local_hindsight_preflight, recall, governed_answer, refresh_change, and audit."
+        - "Report sets live_writes_performed=false, network_writes=false, cloud_fallback_allowed=false."
+        - "Global verifier now runs scripts/verify-golden-end-state-workflow.mjs and tests/golden-end-state-workflow.test.mjs."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-golden-end-state-workflow.mjs
+      - tests/golden-end-state-workflow.test.mjs
+      - scripts/verify-supermemory-specs.mjs
+      - README.md
+      - docs/golden-end-state-operator-workflow.md
+    verify:
+      - "node --test tests/golden-end-state-workflow.test.mjs"
+      - "node scripts/verify-golden-end-state-workflow.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran the approved verification package. The Golden End State verifier and test pass, the verifier is included in the global specs, and whitespace checks pass."
+      changed_files:
+        - scripts/verify-golden-end-state-workflow.mjs
+        - tests/golden-end-state-workflow.test.mjs
+        - scripts/verify-supermemory-specs.mjs
+        - README.md
+        - docs/golden-end-state-operator-workflow.md
+      green_test:
+        command: "node scripts/verify-supermemory-specs.mjs"
+        result: pass
+      verify:
+        - "node --test tests/golden-end-state-workflow.test.mjs"
+        - "node scripts/verify-golden-end-state-workflow.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      evidence:
+        - "Golden verifier reports status=pass and all ten phases pass."
+        - "Global suite runs scripts/verify-golden-end-state-workflow.mjs and tests/golden-end-state-workflow.test.mjs."
+        - "No live writes, network writes, credentials, or cloud fallback required."
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approve shipping for the first Golden End State slice. The implementation adds a durable non-live workflow verifier and documentation, wired into the global suite, without live writes, credentials, network writes, or cloud fallback."
+      design_delta: "The repo now has a Golden End State acceptance harness that ties existing contracts into one operator workflow: capture, snapshot, LLM-first interpretation, staging/review, governed promotion, local Hindsight preflight, recall, governed answer, refresh/change, and audit."
+      architecture_review: "Approved. The verifier is an orchestration/audit layer over existing deep modules rather than a shallow replacement for them. It keeps deterministic governance gates around LLM-first meaning, avoids live mutation, and gives future goals a concrete end-to-end rail."
+      oracle_coverage:
+        - "Golden verifier reports all ten phases pass."
+        - "Targeted test passes and asserts no live writes, no network writes, no cloud fallback, and no secret leakage."
+        - "Global spec suite now runs the Golden verifier and its test."
+        - "Operator docs describe the current local sequence and live blockers."
+      remaining_risks:
+        - "This slice proves non-live operator usability, not live Hindsight writes."
+        - "The actual local Hindsight live smoke remains blocked by missing env and all-interface Docker binding until a later runtime-unblock goal."
+      another_worker_slice_needed: false
+      task_updates:
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
