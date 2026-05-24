@@ -1,0 +1,527 @@
+version: 2
+goal:
+  slug: "hindsight-local-runtime-unblock-notes"
+  title: "Hindsight Local Runtime Unblock Notes"
+  status: active
+  created_at: "2026-05-24"
+  updated_at: "2026-05-24"
+  kind: specific
+  original_request: "# Hindsight Local Runtime Unblock Notes\n\n## Intent\n\nClear the local Docker runtime blocker that prevents the Hindsight live-smoke preflight from reaching the next safe state.\n\nCurrent preflight status:\n\n- local Hindsight `/health` is healthy on `http://127.0.0.1:8888`;\n- required live env values are not set, which is expected until the owner provides a sacrificial bank;\n- `supermemory-hindsight-local` is running but exposes ports on all interfaces instead of localhost-only;\n- `compose.hindsight.yml` already declares localhost-only bindings.\n\n- No live Hindsight writes.\n- No API keys, bank ids, env files, or secrets.\n- No cloud fallback.\n- No source capture, vault mutation, promotion, recall, or answer behavior changes.\n- No data volume deletion.\n- No code changes unless verification exposes a bounded issue.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nThe local runtime unblock is complete when Hindsight is running from compose.hindsight.yml with localhost-only 127.0.0.1 bindings for 8888/9999, /health is healthy, node scripts/hindsight-local-live-smoke-preflight.mjs --json no longer reports hindsight_container_not_localhost_bound and only remains blocked on missing live env if credentials are absent, no live writes are performed, and targeted/global verification passes.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Recreate or replace the local `supermemory-hindsight-local` container from `compose.hindsight.yml` without deleting the persistent data volume.\n- `docker ps` and `docker inspect` show ports `8888` and `9999` bound to `127.0.0.1`.\n- `curl http://127.0.0.1:8888/health` returns healthy.\n- `node scripts/hindsight-local-live-smoke-preflight.mjs --json` no longer reports `hindsight_container_not_localhost_bound`.\n- The preflight may still report `missing_live_env`, and that is the expected next blocker.\n- `node scripts/verify-hindsight-local-live-smoke-preflight.mjs`, `node scripts/verify-hindsight-docker-compose.mjs`, `node scripts/verify-golden-end-state-workflow.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` pass.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/hindsight-local-runtime-unblock/brief.md --mode implementation --oracle \"The local runtime unblock is complete when Hindsight is running from compose.hindsight.yml with localhost-only 127.0.0.1 bindings for 8888/9999, /health is healthy, node scripts/hindsight-local-live-smoke-preflight.mjs --json no longer reports hindsight_container_not_localhost_bound and only remains blocked on missing live env if credentials are absent, no live writes are performed, and targeted/global verification passes.\" --out docs/goals/hindsight-local-runtime-unblock-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/hindsight-local-runtime-unblock-notes.md\n\n> # Hindsight Local Runtime Unblock Notes\n> \n> Date: 2026-05-24\n> \n> ## Intent\n> \n> Clear the local Docker runtime blocker that prevents the Hindsight live-smoke preflight from reaching the next safe state.\n> \n> Current preflight status:\n> \n> - local Hindsight `/health` is healthy on `http://127.0.0.1:8888`;\n> - required live env values are not set, which is expected until the owner provides a sacrificial bank;\n> - `supermemory-hindsight-local` is running but exposes ports on all interfaces instead of localhost-only;\n> - `compose.hindsight.yml` already declares localhost-only bindings.\n> \n> ## Non-Goals\n> \n> - No live Hindsight writes.\n> - No API keys, bank ids, env files, or secrets.\n> - No cloud fallback.\n> - No source capture, vault mutation, promotion, recall, or answer behavior changes.\n> - No data volume deletion.\n> - No code changes unless verification exposes a bounded issue.\n> \n> ## Acceptance\n> \n> - Recreate or replace the local `supermemory-hindsight-local` container from `compose.hindsight.yml` without deleting the persistent data volume.\n> - `docker ps` and `docker inspect` show ports `8888` and `9999` bound to `127.0.0.1`.\n> - `curl http://127.0.0.1:8888/health` returns healthy.\n> - `node scripts/hindsight-local-live-smoke-preflight.mjs --json` no longer reports `hindsight_container_not_localhost_bound`.\n> - The preflight may still report `missing_live_env`, and that is the expected next blocker.\n> - `node scripts/verify-hindsight-local-live-smoke-preflight.mjs`, `node scripts/verify-hindsight-docker-compose.mjs`, `node scripts/verify-golden-end-state-workflow.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` pass.\n> \n> ## Observable Oracle\n> \n> The local runtime unblock is complete when Hindsight is running from the repository compose file with localhost-only bindings, health is good, the live-smoke preflight blocker list is reduced to missing live env only, no live writes are performed, and all targeted/global verification stays green."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Hindsight Local Runtime Unblock Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "The local runtime unblock is complete when Hindsight is running from compose.hindsight.yml with localhost-only 127.0.0.1 bindings for 8888/9999, /health is healthy, node scripts/hindsight-local-live-smoke-preflight.mjs --json no longer reports hindsight_container_not_localhost_bound and only remains blocked on missing live env if credentials are absent, no live writes are performed, and targeted/global verification passes."
+  oracle:
+    signal: "The local runtime unblock is complete when Hindsight is running from compose.hindsight.yml with localhost-only 127.0.0.1 bindings for 8888/9999, /health is healthy, node scripts/hindsight-local-live-smoke-preflight.mjs --json no longer reports hindsight_container_not_localhost_bound and only remains blocked on missing live env if credentials are absent, no live writes are performed, and targeted/global verification passes."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Read-only Scout mapping completed. The current Hindsight container is healthy but was created with empty HostIp bindings for 8888/9999, exposing all interfaces. The repository compose file resolves to host_ip 127.0.0.1 for both ports and uses the same bind-mounted data directory, so the safe runtime action is container replacement from compose without deleting the data volume."
+      design_concept:
+        shared_understanding: "This goal clears only the local Docker binding blocker so the live-smoke preflight can advance to the next expected blocker: missing live env. It does not execute live Hindsight writes or touch secrets."
+        non_goals:
+          - "No live writes"
+          - "No credentials or env files"
+          - "No cloud fallback"
+          - "No code/product behavior changes unless verification exposes a bounded issue"
+          - "No data volume deletion"
+        decision_dependencies:
+          - "Container replacement may stop the local Hindsight API briefly"
+          - "Persistent data is a host bind mount at /Users/arnaud/.hindsight-docker-supermemory and must be preserved"
+          - "After compose up, health and preflight must be rechecked"
+      ubiquitous_language:
+        localhost_only_binding: "Docker HostIp must be 127.0.0.1 or ::1 for published ports"
+        all_interface_binding: "Docker HostIp empty/0.0.0.0, currently unsafe for release-grade local smoke"
+        runtime_unblock: "local operational fix, not product implementation"
+        missing_live_env: "expected remaining blocker until owner provides sacrificial bank credentials"
+      module_map:
+        compose.hindsight.yml: "Defines the desired localhost-only Hindsight runtime"
+        scripts/hindsight-local-live-smoke-preflight.mjs: "Reports runtime/env blockers without live writes"
+        scripts/verify-hindsight-local-live-smoke-preflight.mjs: "Regression guard for redacted preflight behavior"
+        scripts/verify-hindsight-docker-compose.mjs: "Static compose guard for localhost-only config"
+        docs/hindsight-live-smoke-runbook.md: "Operator guidance for compose lifecycle and live smoke boundaries"
+      interface_contract:
+        runtime_state: "supermemory-hindsight-local should run from compose with 8888/9999 bound to 127.0.0.1"
+        preflight_result: "hindsight_container_not_localhost_bound must disappear; missing_live_env may remain"
+        safety: "No live writes, no network writes to Hindsight API beyond /health, no secrets printed or committed"
+      test_strategy:
+        before_action:
+          - "docker inspect port bindings"
+          - "docker compose -f compose.hindsight.yml config"
+          - "curl /health"
+          - "preflight JSON"
+        runtime_action: "docker stop supermemory-hindsight-local; docker rm supermemory-hindsight-local; docker compose -f compose.hindsight.yml up -d"
+        after_action:
+          - "docker ps port display"
+          - "docker inspect port bindings"
+          - "curl /health"
+          - "node scripts/hindsight-local-live-smoke-preflight.mjs --json"
+          - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+          - "node scripts/verify-hindsight-docker-compose.mjs"
+          - "node scripts/verify-golden-end-state-workflow.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+      feedback_policy: "Run health/preflight immediately after container recreation; if health fails, inspect logs and stop. Do not set env or execute live smoke in this goal."
+      acceptance_contract_updates:
+        exact_end_state_evidence:
+          - "docker inspect shows HostIp 127.0.0.1 for 8888/9999"
+          - "preflight has no hindsight_container_not_localhost_bound blocker"
+          - "health is healthy"
+          - "verification commands pass"
+        failure_modes:
+          - "container does not start"
+          - "health unavailable"
+          - "port still all-interface"
+          - "data volume accidentally changed or removed"
+          - "live env or live writes attempted"
+      dirty_worktree_risk_map:
+        current_dirty_files:
+          - docs/hindsight-local-runtime-unblock-notes.md
+          - docs/goals/hindsight-local-runtime-unblock/
+        risk: "Only goal setup artifacts are dirty; no product files should change for runtime action."
+        guard: "Do not edit unrelated files; commit only goal receipts if shipping is required."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: none
+        auth_permissions: none
+        api_contract: none
+        ui_routes: none
+        background_jobs: "local Docker container restart only"
+        external_services: "local self-hosted Hindsight container only; no cloud"
+        deploy_rollback: "restart/rm current local container and recreate from compose; rollback is docker compose down/up or manual docker run, without deleting bind-mounted data"
+        observability: "docker ps/inspect, /health, preflight JSON, and verifier output"
+        docs: "no docs required unless runtime behavior differs from existing runbook"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approve the runtime unblock slice with a real red test file. T003 will write a test asserting the desired post-unblock preflight state; it should fail before Docker replacement because hindsight_container_not_localhost_bound is currently present. T004 will perform the local container replacement and make the same test pass."
+      approved_design_concept: "Clear the Docker binding blocker while preserving local-first/live-write safety. No secrets, no live writes, no data volume deletion."
+      approved_ubiquitous_language:
+        red_test: "assert desired preflight state before runtime action so it fails on current all-interface binding"
+        runtime_action: "stop/rm the container only, then recreate from compose.hindsight.yml"
+        success_state: "health is healthy, port bindings are localhost-only, and missing_live_env is the only expected preflight blocker"
+      feedback_policy: "Run the red test before Docker action, then run it again after compose recreation. Stop before credentials or live smoke."
+      test_strategy: "T003 writes tests/hindsight-local-runtime-unblock.test.mjs. T004 replaces the local container from compose and runs the test plus targeted verifiers. T005 runs global verification."
+      module_map:
+        compose.hindsight.yml: "desired runtime config"
+        scripts/hindsight-local-live-smoke-preflight.mjs: "runtime acceptance report"
+        tests/hindsight-local-runtime-unblock.test.mjs: "red/green runtime acceptance test"
+      interface_contract:
+        before: "test fails because preflight includes hindsight_container_not_localhost_bound"
+        after: "test passes because no binding blocker remains and missing_live_env remains without live writes"
+        forbidden: "No credentials, live writes, cloud fallback, product code changes, or data volume deletion"
+      architecture_review: "Approved. This keeps the operation bounded and test-driven despite being a runtime change. The only mutation is replacing a local Docker container from the existing compose definition."
+      exact_worker_objective: "Write a failing test that asserts the post-unblock preflight state: localhost-only Docker bindings, healthy endpoint, no hindsight_container_not_localhost_bound blocker, missing_live_env still present, and no live/network writes."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/hindsight-local-runtime-unblock.test.mjs
+          verify:
+            - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - tests/hindsight-local-runtime-unblock.test.mjs
+          verify:
+            - "docker stop supermemory-hindsight-local"
+            - "docker rm supermemory-hindsight-local"
+            - "docker compose -f compose.hindsight.yml up -d"
+            - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+            - "curl -fsS --max-time 10 http://127.0.0.1:8888/health"
+            - "node scripts/hindsight-local-live-smoke-preflight.mjs --json"
+            - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+            - "node scripts/verify-hindsight-docker-compose.mjs"
+            - "node scripts/verify-golden-end-state-workflow.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "docker compose tries to delete the bind-mounted data directory."
+            - "Health does not recover after bounded wait."
+            - "Need credentials or live writes."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - tests/hindsight-local-runtime-unblock.test.mjs
+          verify:
+            - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+            - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+            - "node scripts/verify-hindsight-docker-compose.mjs"
+            - "node scripts/verify-golden-end-state-workflow.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/hindsight-local-runtime-unblock.test.mjs
+    verify:
+      - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+    stop_if:
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Added the failing runtime unblock test. It asserts the desired post-unblock preflight state: healthy local endpoint, localhost-only Docker bindings, no binding blocker, missing live env still present, and no live/network writes."
+      changed_files:
+        - tests/hindsight-local-runtime-unblock.test.mjs
+      red_evidence:
+        command: "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+        result: "failed as expected"
+        failure: "Assertion failed because report.docker.localhost_only is false on the current all-interface container."
+      verify:
+        - "node --test tests/hindsight-local-runtime-unblock.test.mjs (expected fail/red)"
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/hindsight-local-runtime-unblock.test.mjs
+    verify:
+      - "docker stop supermemory-hindsight-local"
+      - "docker rm supermemory-hindsight-local"
+      - "docker compose -f compose.hindsight.yml up -d"
+      - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+      - "curl -fsS --max-time 10 http://127.0.0.1:8888/health"
+      - "node scripts/hindsight-local-live-smoke-preflight.mjs --json"
+      - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+      - "node scripts/verify-hindsight-docker-compose.mjs"
+      - "node scripts/verify-golden-end-state-workflow.mjs"
+      - "git diff --check"
+    stop_if:
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "docker compose tries to delete the bind-mounted data directory."
+      - "Health does not recover after bounded wait."
+      - "Need credentials or live writes."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Recreated the local Hindsight container from compose.hindsight.yml without deleting the bind-mounted data directory. The container now binds 8888 and 9999 to 127.0.0.1, health is healthy, and the preflight no longer reports hindsight_container_not_localhost_bound. The only remaining blocker is missing_live_env, as expected without credentials."
+      changed_files:
+        - tests/hindsight-local-runtime-unblock.test.mjs
+      green_test:
+        command: "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+        result: pass
+      verify:
+        - "docker stop supermemory-hindsight-local"
+        - "docker rm supermemory-hindsight-local"
+        - "docker compose -f compose.hindsight.yml up -d"
+        - "docker ps --filter name=supermemory-hindsight-local --format ports showed 127.0.0.1:8888 and 127.0.0.1:9999"
+        - "docker inspect supermemory-hindsight-local showed HostIp 127.0.0.1 for 8888/tcp and 9999/tcp"
+        - "curl -fsS --max-time 10 http://127.0.0.1:8888/health"
+        - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+        - "node scripts/hindsight-local-live-smoke-preflight.mjs --json"
+        - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+        - "node scripts/verify-hindsight-docker-compose.mjs"
+        - "node scripts/verify-golden-end-state-workflow.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      evidence:
+        - "Preflight status remains blocked only by missing_live_env."
+        - "live_writes_performed=false and network_writes=false."
+        - "No credentials were set and no live smoke was executed."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/hindsight-local-runtime-unblock.test.mjs
+    verify:
+      - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+      - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+      - "node scripts/verify-hindsight-docker-compose.mjs"
+      - "node scripts/verify-golden-end-state-workflow.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran the approved verification package after runtime unblock. The Hindsight container remains localhost-only and healthy, the new runtime unblock test passes, targeted Hindsight/Golden verifiers pass, global specs pass, and whitespace checks pass."
+      changed_files:
+        - tests/hindsight-local-runtime-unblock.test.mjs
+      green_test:
+        command: "node scripts/verify-supermemory-specs.mjs"
+        result: pass
+      verify:
+        - "node --test tests/hindsight-local-runtime-unblock.test.mjs"
+        - "node scripts/verify-hindsight-local-live-smoke-preflight.mjs"
+        - "node scripts/verify-hindsight-docker-compose.mjs"
+        - "node scripts/verify-golden-end-state-workflow.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
+      evidence:
+        - "Preflight blocker list contains missing_live_env only."
+        - "Docker bindings are localhost-only."
+        - "No credentials were set and no live writes were run."
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approve shipping. The runtime unblock achieved the oracle: Hindsight now runs from compose with localhost-only bindings, health is healthy, and the preflight blocker list is reduced to missing_live_env only. No credentials or live writes were used."
+      design_delta: "The local runtime state changed from an old all-interface container to the repository compose-managed localhost-only container. Product code behavior is unchanged; a regression test was added to keep the runtime acceptance observable."
+      architecture_review: "Approved. This is an operational safety improvement aligned with the existing local-first Hindsight boundary. The persistent bind-mounted data directory was preserved, no env or secrets were introduced, and live Hindsight execution remains gated by missing live env."
+      oracle_coverage:
+        - "docker ps shows 127.0.0.1:8888 and 127.0.0.1:9999"
+        - "docker inspect showed HostIp 127.0.0.1 for 8888/tcp and 9999/tcp"
+        - "curl /health returned healthy"
+        - "node --test tests/hindsight-local-runtime-unblock.test.mjs passed"
+        - "node scripts/hindsight-local-live-smoke-preflight.mjs --json reports only missing_live_env blocker"
+        - "node scripts/verify-supermemory-specs.mjs passed"
+        - "git diff --check passed"
+      remaining_risks:
+        - "Live smoke cannot run until sacrificial bank env is provided outside git."
+        - "The Hindsight container logs warned that the bind mount lacked PG_VERSION before startup, but health is currently healthy and no data volume deletion was performed."
+      another_worker_slice_needed: false
+      task_updates:
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null
