@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: "supermemory-client-onboarding-tool-notes"
   title: "SuperMemory Client Onboarding Tool Notes"
-  status: active
+  status: complete
   created_at: "2026-05-25"
   updated_at: "2026-05-25"
   kind: specific
@@ -76,7 +76,7 @@ agents:
   worker: installed
   judge: installed
 
-active_task: T998
+active_task: null
 tasks:
   - id: T001
     type: scout
@@ -530,7 +530,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Commit all goal-related changes and push the current branch once verification is green."
     inputs:
       - "Approved implementation and verification receipts"
@@ -551,11 +551,37 @@ tasks:
       - "push_result"
       - "committed_files"
       - "unrelated_dirty_files_left_untouched"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Committed and pushed the client onboarding tool after green verification."
+      commit_sha: faa42e8
+      remote_branch: origin/main
+      push_result: "pushed main to origin/main"
+      committed_files:
+        - README.md
+        - docs/goals/supermemory-client-onboarding-tool/acceptance-contract.md
+        - docs/goals/supermemory-client-onboarding-tool/brief.md
+        - docs/goals/supermemory-client-onboarding-tool/goal.md
+        - docs/goals/supermemory-client-onboarding-tool/state.yaml
+        - docs/production-runbook.md
+        - docs/supermemory-client-onboarding-tool-notes.md
+        - scripts/supermemory-onboard.mjs
+        - scripts/supermemory-operator.mjs
+        - scripts/verify-supermemory-onboarding.mjs
+        - scripts/verify-supermemory-release-readiness.mjs
+        - tests/supermemory-onboard.test.mjs
+      unrelated_dirty_files_left_untouched:
+        []
+      verify:
+        - "node --test tests/supermemory-onboard.test.mjs"
+        - "node scripts/verify-supermemory-onboarding.mjs"
+        - "node scripts/verify-supermemory-release-readiness.mjs"
+        - "node scripts/verify-supermemory-specs.mjs"
+        - "git diff --check"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -581,4 +607,38 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      decision: approved
+      summary: "The client onboarding tool outcome is complete. An operator can create a redacted reviewed onboarding plan from an explicit source folder, apply it to staging, commit staging into a vault only with owner confirmation, and the tool fails closed for the requested safety cases."
+      architecture_review: "Approved. The onboarding layer is bounded and local-first. It introduces no external connector, hidden scan, memory compilation, Hindsight promotion, network write, dependency, database, auth, or background job. Tests use temporary source roots and vaults only."
+      design_delta: "SuperMemory now has a client onboarding command that lowers time-to-first-governed-memory for enterprise pilots while preserving reviewable plan, staging, owner confirmation, and registry-only commit semantics."
+      workflow_safeguards:
+        design_concept: "present in T001/T002 and validated in T006"
+        ubiquitous_language: "present in T001/T002"
+        feedback_policy: "present in T001/T002 and followed in T003-T005"
+        test_strategy: "red-first in T003, implementation in T004, full verification in T005"
+        module_map: "present in T001/T002"
+        interface_contract: "dry-run/apply-plan/commit-staging implemented and tested"
+        architecture_review: "approved in T006 and T999"
+        design_delta: "recorded in T004/T006/T999"
+        impact_assessment: "T001 covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+        shipping: "T998 commit_sha faa42e8 pushed to origin/main"
+      complete: complete
+      full_outcome_complete: true
+      missing_evidence:
+        []
+      oracle_coverage:
+        - "node --test tests/supermemory-onboard.test.mjs passed"
+        - "node scripts/verify-supermemory-onboarding.mjs passed"
+        - "node scripts/verify-supermemory-release-readiness.mjs passed and includes client_onboarding"
+        - "node scripts/verify-supermemory-specs.mjs passed"
+        - "git diff --check passed"
+        - "README and docs/production-runbook.md mention onboarding commands"
+        - "T998 commit_sha faa42e8 pushed to origin/main"
+        - "Tests cover missing owner intent, scope escape, no matched files, secret-like warnings, tampered plans/staging, non-empty staging dirs, identity-vault apply destinations, duplicate vault entries, raw-content leakage, and no network/Hindsight writes"
+      remaining_risks:
+        - "MVP glob support is intentionally limited to safe patterns."
+        - "No interactive wizard UI yet; onboarding is CLI-first."
+        - "Onboarding commit creates source/snapshot registry entries only; memory compilation and Hindsight promotion remain separate reviewed workflows."
+      next_task: "Use scripts/supermemory-onboard.mjs for client pilot setup; future work can add an interactive wizard or richer folder glob support once a real client workflow needs it."
