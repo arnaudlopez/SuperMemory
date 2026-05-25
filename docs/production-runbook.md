@@ -34,6 +34,18 @@ node scripts/supermemory-operator.mjs
 node scripts/supermemory-operator.mjs --json
 ```
 
+### Client Onboarding
+
+Bootstrap a client or project from an explicit local folder. The onboarding tool inventories only the selected `--source-root`, applies include/exclude patterns, writes a redacted review plan, and commits source/snapshot registry entries only after owner confirmation:
+
+```bash
+node scripts/supermemory-onboard.mjs --client "Client ACME" --workspace workspace:acme --source-root /path/to/client-folder --include "**/*.md" --include "**/*.json" --exclude "**/.env*" --requested-by owner:name --capture-reason "client memory bootstrap" --write-plan /path/to/onboarding-plan.json --json
+node scripts/supermemory-onboard.mjs --apply-plan /path/to/onboarding-plan.json --out-dir /path/to/onboarding-staging --json
+node scripts/supermemory-onboard.mjs --commit-staging /path/to/onboarding-staging --vault-root identity-vault --owner-confirmed --json
+```
+
+The onboarding flow does not compile memory, promote to Hindsight, or call network services. Secret-like source files are kept review-gated and raw content is not persisted in the plan or staging artifacts.
+
 ### Manual Capture
 
 Create a reviewed capture plan, apply it to staging, then commit only after owner confirmation:

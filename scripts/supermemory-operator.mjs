@@ -18,6 +18,9 @@ const phases = [
     title: "Manual source capture",
     purpose: "Capture one owner-selected local source through reviewed plan gates.",
     commands: [
+      "node scripts/supermemory-onboard.mjs --client \"Client ACME\" --workspace workspace:acme --source-root /path/to/client-folder --include \"**/*.md\" --include \"**/*.json\" --requested-by owner:name --capture-reason \"client memory bootstrap\" --write-plan /path/to/onboarding-plan.json --json",
+      "node scripts/supermemory-onboard.mjs --apply-plan /path/to/onboarding-plan.json --out-dir /path/to/onboarding-staging --json",
+      "node scripts/supermemory-onboard.mjs --commit-staging /path/to/onboarding-staging --vault-root identity-vault --owner-confirmed --json",
       "node scripts/local-manual-capture.mjs --file /path/to/source.md --scope /path/to/scope --workspace workspace:example --requested-by owner:name --capture-reason \"manual evidence\" --write-plan /path/to/manual-capture-plan.json --json",
       "node scripts/local-manual-capture.mjs --apply-plan /path/to/manual-capture-plan.json --out-dir /path/to/manual-capture-staging --json",
       "node scripts/local-manual-capture.mjs --commit-staging /path/to/manual-capture-staging --vault-root identity-vault --owner-confirmed --json"

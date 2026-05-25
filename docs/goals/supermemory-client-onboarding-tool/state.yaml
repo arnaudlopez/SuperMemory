@@ -1,0 +1,584 @@
+version: 2
+goal:
+  slug: "supermemory-client-onboarding-tool-notes"
+  title: "SuperMemory Client Onboarding Tool Notes"
+  status: active
+  created_at: "2026-05-25"
+  updated_at: "2026-05-25"
+  kind: specific
+  original_request: "# SuperMemory Client Onboarding Tool Notes\n\n## Intent\n\nImplement a small local-first onboarding tool that helps an operator set up SuperMemory for a client or project without needing to manually stitch together lower-level scripts.\n\nThe tool should make the first enterprise setup safer and faster while preserving the existing SuperMemory operating model: explicit scope, reviewable plans, staging, owner confirmation, no live writes by default, and the vault as source of truth.\n\n- No hosted UI.\n- No interactive prompt UI in this slice.\n- No real external connectors.\n- No Hindsight live write.\n- No memory compilation.\n- No folder watching daemon.\n- No hidden scan outside the explicit source root.\n- No database, auth, billing, background worker, or SaaS deployment.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nThe client onboarding tool goal is complete when an operator can create a redacted reviewed onboarding plan from an explicit client source folder, apply it to staging, commit staging into a vault only with owner confirmation, and see fail-closed behavior for missing owner intent, scope escape, no matched files, secret-like source warnings, tampered plans/staging, non-empty staging dirs, identity-vault apply destinations, duplicate vault entries, raw-content leakage, and any network/Hindsight write attempt, while node --test tests/supermemory-onboard.test.mjs, node scripts/verify-supermemory-onboarding.mjs, node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Required evidence:\n- A red TDD test first proves the onboarding CLI is missing or incomplete.\n- `node --test tests/supermemory-onboard.test.mjs` passes.\n- `node scripts/verify-supermemory-onboarding.mjs` passes.\n- `node scripts/verify-supermemory-release-readiness.mjs` passes.\n- `node scripts/verify-supermemory-specs.mjs` passes.\n- `git diff --check` passes.\n- README and production runbook mention the onboarding command.\n- Release readiness includes onboarding verification.\n- GoalBuddy T998 records commit SHA and push proof.\n- GoalBuddy T999 records final outcome complete.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- TODO: Capture constraints, must-preserve behavior, boundaries, or forbidden changes.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/supermemory-client-onboarding-tool/brief.md --mode implementation --oracle \"The client onboarding tool goal is complete when an operator can create a redacted reviewed onboarding plan from an explicit client source folder, apply it to staging, commit staging into a vault only with owner confirmation, and see fail-closed behavior for missing owner intent, scope escape, no matched files, secret-like source warnings, tampered plans/staging, non-empty staging dirs, identity-vault apply destinations, duplicate vault entries, raw-content leakage, and any network/Hindsight write attempt, while node --test tests/supermemory-onboard.test.mjs, node scripts/verify-supermemory-onboarding.mjs, node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass.\" --out docs/goals/supermemory-client-onboarding-tool-notes\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/supermemory-client-onboarding-tool-notes.md\n\n> # SuperMemory Client Onboarding Tool Notes\n> \n> ## Intent\n> \n> Implement a small local-first onboarding tool that helps an operator set up SuperMemory for a client or project without needing to manually stitch together lower-level scripts.\n> \n> The tool should make the first enterprise setup safer and faster while preserving the existing SuperMemory operating model: explicit scope, reviewable plans, staging, owner confirmation, no live writes by default, and the vault as source of truth.\n> \n> ## Current context\n> \n> - SuperMemory is now a local-first operator release candidate.\n> - Local manual capture already supports dry-run, `--write-plan`, `--apply-plan`, staging, and owner-confirmed vault commit for one explicit file.\n> - Local file refresh already supports reviewed plans and owner-confirmed commit for registered `local_file` sources.\n> - Hindsight promotion already supports reviewed promotion plans and owner-confirmed apply.\n> - `scripts/supermemory-operator.mjs` and `docs/production-runbook.md` expose the production workflow.\n> - `scripts/verify-supermemory-release-readiness.mjs` is the release gate.\n> \n> ## Proposed feature\n> \n> Add a new onboarding CLI:\n> \n> ```bash\n> node scripts/supermemory-onboard.mjs\n> ```\n> \n> MVP modes:\n> \n> ```bash\n> node scripts/supermemory-onboard.mjs \\\n>   --client \"Client ACME\" \\\n>   --workspace workspace:acme \\\n>   --source-root /path/to/client-folder \\\n>   --include \"**/*.md\" \\\n>   --include \"**/*.json\" \\\n>   --exclude \"**/.env*\" \\\n>   --exclude \"node_modules/**\" \\\n>   --requested-by arnaud \\\n>   --capture-reason \"client memory bootstrap\" \\\n>   --write-plan tmp/acme-onboarding-plan.json \\\n>   --json\n> \n> node scripts/supermemory-onboard.mjs \\\n>   --apply-plan tmp/acme-onboarding-plan.json \\\n>   --out-dir tmp/acme-onboarding-staging \\\n>   --json\n> \n> node scripts/supermemory-onboard.mjs \\\n>   --commit-staging tmp/acme-onboarding-staging \\\n>   --vault-root identity-vault \\\n>   --owner-confirmed \\\n>   --json\n> ```\n> \n> ## Desired behavior\n> \n> Dry-run / write-plan:\n> \n> - Accept a client name, workspace id, requested-by, capture reason, source root, include patterns, and exclude patterns.\n> - Inventory only files under the explicit `source-root`.\n> - Support safe glob-like patterns for MVP:\n>   - `**/*.md`\n>   - `**/*.json`\n>   - `*.md`\n>   - exact relative file paths\n>   - directory excludes such as `node_modules/**`, `.git/**`, `tmp/**`\n>   - exact filename excludes such as `**/.env*`\n> - Default excludes must include `.git/**`, `node_modules/**`, `tmp/**`, `dist/**`, `build/**`, `.env*`, and `**/.env*`.\n> - Refuse missing owner intent, missing workspace, missing include patterns, missing/invalid source root, source-root outside filesystem, or patterns that match no files.\n> - Refuse scope escape attempts.\n> - Do not print or persist raw file content.\n> - Compute per-file hashes and create source registry / snapshot candidates.\n> - Mark files with secret-like text as warnings and default them to `needs_review`, not active capture.\n> - Produce a reviewable onboarding plan with `generated_from: supermemory_client_onboarding`, `network_writes: false`, `writes_performed: false`, `promotion_payloads: []`, and no raw content.\n> \n> Apply-plan:\n> \n> - Accept only valid onboarding plans with no validation errors.\n> - Refuse tampered plans by checking a stable plan hash.\n> - Refuse plans containing raw content fields.\n> - Refuse non-empty output directories.\n> - Refuse output inside `identity-vault`.\n> - Write reviewable JSON artifacts only:\n>   - `onboarding-plan.json`\n>   - `workspace.json`\n>   - `source-registry.json`\n>   - `snapshots.json`\n>   - `warnings.json`\n>   - `manifest.json`\n> \n> Commit-staging:\n> \n> - Require `--owner-confirmed`.\n> - Read only staging artifacts.\n> - Refuse tampered/incomplete staging.\n> - Refuse duplicate source ids or snapshot ids in the target vault.\n> - Create missing `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md` if needed with clear generated sections.\n> - Append only source registry rows and snapshot registry rows.\n> - Do not compile active memory, do not promote to Hindsight, and do not call network services.\n> \n> ## Non-Goals\n> \n> - No hosted UI.\n> - No interactive prompt UI in this slice.\n> - No real external connectors.\n> - No Hindsight live write.\n> - No memory compilation.\n> - No folder watching daemon.\n> - No hidden scan outside the explicit source root.\n> - No database, auth, billing, background worker, or SaaS deployment.\n> \n> ## Acceptance\n> \n> Required evidence:\n> \n> - A red TDD test first proves the onboarding CLI is missing or incomplete.\n> - `node --test tests/supermemory-onboard.test.mjs` passes.\n> - `node scripts/verify-supermemory-onboarding.mjs` passes.\n> - `node scripts/verify-supermemory-release-readiness.mjs` passes.\n> - `node scripts/verify-supermemory-specs.mjs` passes.\n> - `git diff --check` passes.\n> - README and production runbook mention the onboarding command.\n> - Release readiness includes onboarding verification.\n> - GoalBuddy T998 records commit SHA and push proof.\n> - GoalBuddy T999 records final outcome complete.\n> \n> ## Oracle\n> \n> The client onboarding tool goal is complete when an operator can create a redacted reviewed onboarding plan from an explicit client source folder, apply it to staging, commit staging into a vault only with owner confirmation, and see fail-closed behavior for missing owner intent, scope escape, no matched files, secret-like source warnings, tampered plans/staging, non-empty staging dirs, identity-vault apply destinations, duplicate vault entries, raw-content leakage, and any network/Hindsight write attempt, while `node --test tests/supermemory-onboard.test.mjs`, `node scripts/verify-supermemory-onboarding.mjs`, `node scripts/verify-supermemory-release-readiness.mjs`, `node scripts/verify-supermemory-specs.mjs`, and `git diff --check` all pass."
+  interpreted_outcome: "Run the prepared LLM-first workflow for SuperMemory Client Onboarding Tool Notes."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "The client onboarding tool goal is complete when an operator can create a redacted reviewed onboarding plan from an explicit client source folder, apply it to staging, commit staging into a vault only with owner confirmation, and see fail-closed behavior for missing owner intent, scope escape, no matched files, secret-like source warnings, tampered plans/staging, non-empty staging dirs, identity-vault apply destinations, duplicate vault entries, raw-content leakage, and any network/Hindsight write attempt, while node --test tests/supermemory-onboard.test.mjs, node scripts/verify-supermemory-onboarding.mjs, node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+  oracle:
+    signal: "The client onboarding tool goal is complete when an operator can create a redacted reviewed onboarding plan from an explicit client source folder, apply it to staging, commit staging into a vault only with owner confirmation, and see fail-closed behavior for missing owner intent, scope escape, no matched files, secret-like source warnings, tampered plans/staging, non-empty staging dirs, identity-vault apply destinations, duplicate vault entries, raw-content leakage, and any network/Hindsight write attempt, while node --test tests/supermemory-onboard.test.mjs, node scripts/verify-supermemory-onboarding.mjs, node scripts/verify-supermemory-release-readiness.mjs, node scripts/verify-supermemory-specs.mjs, and git diff --check all pass."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Mapped the onboarding tool as a thin local-first client setup layer on top of existing capture/refresh/release contracts. The safe slice is one CLI, one verifier, one test, docs/operator/release wiring, with no live writes or connector expansion."
+      design_concept: "Client onboarding should reduce setup friction without weakening SuperMemory governance: an operator explicitly chooses a folder, patterns, workspace, owner and reason; the tool produces a redacted reviewable plan, applies it to staging, and commits only source/snapshot registry entries with owner confirmation. It does not compile memory, promote to Hindsight, or call network services."
+      ubiquitous_language:
+        canonical:
+          - "client onboarding"
+          - "source root"
+          - "include pattern"
+          - "exclude pattern"
+          - "onboarding plan"
+          - staging
+          - "owner confirmation"
+          - "workspace setup"
+          - "source registry candidate"
+          - "snapshot candidate"
+          - "secret-like warning"
+        overloaded:
+          onboarding: "means local workspace/source setup, not SaaS account provisioning"
+          folder capture: "means explicit scoped inventory, not hidden crawling"
+          commit: "means append source/snapshot registry rows only"
+        forbidden_synonyms:
+          - "silent scan"
+          - auto-promote
+          - "live write"
+          - "connector crawl"
+          - "unreviewed bootstrap"
+      module_map:
+        cli: scripts/supermemory-onboard.mjs
+        verifier: scripts/verify-supermemory-onboarding.mjs
+        test: tests/supermemory-onboard.test.mjs
+        release_gate: scripts/verify-supermemory-release-readiness.mjs
+        operator_surface: scripts/supermemory-operator.mjs
+        docs: "README.md and docs/production-runbook.md"
+        vault_registries: "identity-vault/00_inbox/source_registry.md and snapshot_registry.md as target shape only, tested through temporary vaults"
+      interface_contract:
+        dry_run: "--client, --workspace, --source-root, --include, --exclude, --requested-by, --capture-reason, --write-plan, --json create a redacted plan with stable hash and no raw content"
+        apply_plan: "--apply-plan plus --out-dir validates hash/no raw content/no identity-vault destination/no non-empty dir and writes JSON staging artifacts"
+        commit_staging: "--commit-staging plus --vault-root plus --owner-confirmed validates manifest/hash/duplicates and appends only registry rows"
+        safety: "network_writes false, promotion_payloads empty, secrets become warnings/needs_review, scope escapes and no-match patterns fail closed"
+      test_strategy:
+        red: "Add tests/supermemory-onboard.test.mjs first; it should fail because scripts/supermemory-onboard.mjs is missing."
+        green:
+          - "node --test tests/supermemory-onboard.test.mjs"
+          - "node scripts/verify-supermemory-onboarding.mjs"
+          - "node scripts/verify-supermemory-release-readiness.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+        fixtures: "Use temp directories and temp vaults only; no real identity-vault mutation in tests."
+        failure_modes:
+          - "missing owner intent"
+          - "scope escape"
+          - "no matched files"
+          - "secret-like warning"
+          - "tampered plan"
+          - "tampered staging"
+          - "non-empty staging dir"
+          - "identity-vault apply destination"
+          - "duplicate vault entries"
+          - "raw content leakage"
+      feedback_policy: "Run the onboarding test after each implementation iteration, then the onboarding verifier, release verifier, global specs, and whitespace before shipping."
+      acceptance_contract_updates:
+        final_evidence:
+          - "node --test tests/supermemory-onboard.test.mjs passes"
+          - "node scripts/verify-supermemory-onboarding.mjs passes"
+          - "node scripts/verify-supermemory-release-readiness.mjs passes"
+          - "node scripts/verify-supermemory-specs.mjs passes"
+          - "git diff --check passes"
+          - "README and production runbook document onboarding"
+          - "Release readiness includes onboarding verification"
+          - "T998 push proof"
+          - "T999 final audit"
+        non_goals:
+          - "hosted UI"
+          - "interactive prompt UI"
+          - "external connectors"
+          - "Hindsight live write"
+          - "memory compilation"
+          - "folder daemon"
+          - "hidden scan"
+          - "database/auth/billing/background/SaaS work"
+      dirty_worktree_risk_map: "Current dirty files are the new onboarding notes and GoalBuddy board only. Do not touch real identity-vault registries except via temporary test vaults; leave unrelated prior tmp evidence ignored."
+      impact_assessment:
+        db_schema_migrations: none
+        data_backfill: none
+        env_secrets: "none; no env files or credentials"
+        auth_permissions: none
+        api_contract: "local CLI contract only"
+        ui_routes: none
+        background_jobs: none
+        external_services: "none; no Hindsight/network writes"
+        deploy_rollback: "revert onboarding CLI, verifier, tests, docs, release/operator wiring, and goal commits"
+        observability: "JSON onboarding reports, verifier output, GoalBuddy receipts"
+        docs: "README and production runbook onboarding section"
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved one vertical TDD slice for the full MVP onboarding tool: red acceptance test, CLI, verifier, docs, operator surface, and release readiness wiring."
+      architecture_review: "Approved. The onboarding tool should be a thin workflow module with its own plan/staging/commit contract, not a broad framework or connector system. It may inventory an explicit source root and write reviewable artifacts, but must not compile memory, promote to Hindsight, perform network writes, or mutate the real vault in tests."
+      design_concept: "Client onboarding packages first setup into a safe local workflow: explicit folder scope, patterns, owner intent, reviewable redacted plan, staging artifacts, and owner-confirmed registry commit."
+      ubiquitous_language:
+        canonical:
+          - "client onboarding"
+          - "source root"
+          - "include pattern"
+          - "exclude pattern"
+          - "onboarding plan"
+          - staging
+          - "owner confirmation"
+          - "workspace setup"
+          - "source registry candidate"
+          - "snapshot candidate"
+          - "secret-like warning"
+        forbidden:
+          - "silent scan"
+          - auto-promote
+          - "connector crawl"
+          - "live write"
+      feedback_policy: "Use one comprehensive red test first, then green implementation, then verifier/release/global/whitespace checks. Keep all file-system mutations in temp directories except docs/scripts/tests/goal files."
+      test_strategy:
+        red: "tests/supermemory-onboard.test.mjs fails because scripts/supermemory-onboard.mjs is missing."
+        green:
+          - "node --test tests/supermemory-onboard.test.mjs"
+          - "node scripts/verify-supermemory-onboarding.mjs"
+          - "node scripts/verify-supermemory-release-readiness.mjs"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "git diff --check"
+        boundaries: "No live env, no network, no real identity-vault mutation in tests."
+      module_map:
+        test: tests/supermemory-onboard.test.mjs
+        cli: scripts/supermemory-onboard.mjs
+        verifier: scripts/verify-supermemory-onboarding.mjs
+        release: scripts/verify-supermemory-release-readiness.mjs
+        operator: scripts/supermemory-operator.mjs
+        docs: "README.md and docs/production-runbook.md"
+      interface_contract:
+        dry_run: "Create redacted onboarding plan from explicit client folder with stable plan_hash."
+        apply_plan: "Validate plan hash and write JSON staging outside identity-vault."
+        commit_staging: "Require owner confirmation and append only source/snapshot registry rows to target vault."
+        safety: "Fail closed for missing owner intent, scope escape, no matches, tampering, non-empty staging, vault apply destination, duplicate vault entries, raw content leakage, and network/Hindsight writes."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/supermemory-onboard.test.mjs
+          verify:
+            - "node --test tests/supermemory-onboard.test.mjs"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - tests/supermemory-onboard.test.mjs
+            - scripts/supermemory-onboard.mjs
+            - scripts/verify-supermemory-onboarding.mjs
+            - scripts/verify-supermemory-release-readiness.mjs
+            - scripts/supermemory-operator.mjs
+            - README.md
+            - docs/production-runbook.md
+          verify:
+            - "node --test tests/supermemory-onboard.test.mjs"
+            - "node scripts/verify-supermemory-onboarding.mjs"
+            - "node scripts/verify-supermemory-release-readiness.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Need live Hindsight credentials or live network writes."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - tests/supermemory-onboard.test.mjs
+            - docs/goals/supermemory-client-onboarding-tool/state.yaml
+          verify:
+            - "node --test tests/supermemory-onboard.test.mjs"
+            - "node scripts/verify-supermemory-onboarding.mjs"
+            - "node scripts/verify-supermemory-release-readiness.mjs"
+            - "node scripts/verify-supermemory-specs.mjs"
+            - "git diff --check"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+            - "Need live Hindsight credentials or live network writes."
+            - "Verification fails twice without understood cause."
+          impact_assessment_ref: T001.receipt.impact_assessment
+      impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/supermemory-onboard.test.mjs
+    verify:
+      - "node --test tests/supermemory-onboard.test.mjs"
+    stop_if:
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Added the onboarding acceptance test only. It fails before implementation because scripts/supermemory-onboard.mjs is missing."
+      changed_files:
+        - tests/supermemory-onboard.test.mjs
+      red_evidence:
+        command: "node --test tests/supermemory-onboard.test.mjs"
+        result: "failed as expected"
+        failure: "MODULE_NOT_FOUND for scripts/supermemory-onboard.mjs"
+      verify:
+        -
+          command: "node --test tests/supermemory-onboard.test.mjs"
+          status: expected_fail
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/supermemory-onboard.test.mjs
+      - scripts/supermemory-onboard.mjs
+      - scripts/verify-supermemory-onboarding.mjs
+      - scripts/verify-supermemory-release-readiness.mjs
+      - scripts/supermemory-operator.mjs
+      - README.md
+      - docs/production-runbook.md
+    verify:
+      - "node --test tests/supermemory-onboard.test.mjs"
+      - "node scripts/verify-supermemory-onboarding.mjs"
+      - "node scripts/verify-supermemory-release-readiness.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need live Hindsight credentials or live network writes."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: done
+      summary: "Implemented the client onboarding MVP: folder-scoped redacted onboarding plans, staging artifacts, owner-confirmed vault registry commit, dedicated verifier, release readiness wiring, operator command surface, and docs."
+      changed_files:
+        - tests/supermemory-onboard.test.mjs
+        - scripts/supermemory-onboard.mjs
+        - scripts/verify-supermemory-onboarding.mjs
+        - scripts/verify-supermemory-release-readiness.mjs
+        - scripts/supermemory-operator.mjs
+        - README.md
+        - docs/production-runbook.md
+      green_test:
+        command: "node --test tests/supermemory-onboard.test.mjs"
+        result: pass
+      verify:
+        -
+          command: "node --test tests/supermemory-onboard.test.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-onboarding.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-release-readiness.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+      design_delta: "SuperMemory now has a client onboarding layer that turns a scoped folder into a governed setup plan and registry commit workflow. It remains local-first and review-gated, with no memory compilation or Hindsight/network writes."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/supermemory-onboard.test.mjs
+      - docs/goals/supermemory-client-onboarding-tool/state.yaml
+    verify:
+      - "node --test tests/supermemory-onboard.test.mjs"
+      - "node scripts/verify-supermemory-onboarding.mjs"
+      - "node scripts/verify-supermemory-release-readiness.mjs"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "git diff --check"
+    stop_if:
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need live Hindsight credentials or live network writes."
+      - "Verification fails twice without understood cause."
+    receipt:
+      result: done
+      summary: "Ran the full approved verification package for client onboarding. All checks passed without live credentials, network writes, or real vault mutation in tests."
+      changed_files:
+        []
+      green_test:
+        command: "node --test tests/supermemory-onboard.test.mjs"
+        result: pass
+      verify:
+        -
+          command: "node --test tests/supermemory-onboard.test.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-onboarding.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-release-readiness.mjs"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        -
+          command: "git diff --check"
+          status: pass
+      live_writes_performed: false
+      credentials_required: false
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Approved for shipping. The onboarding MVP satisfies the oracle with a thin local workflow: explicit source folder, include/exclude patterns, redacted plan, staging, owner-confirmed registry commit, fail-closed guards, release wiring, and docs."
+      design_delta: "SuperMemory now has a client onboarding tool that turns a client folder into a governed setup workflow. This shifts first-client setup from manual script stitching to one review-gated operator flow while preserving local-first governance and no live writes."
+      architecture_review: "Approved. The implementation adds a bounded CLI and verifier rather than a broad framework. It mutates only temporary test vaults during tests, appends only source/snapshot registry rows during real commit, and does not compile memory, promote to Hindsight, call network services, introduce dependencies, or change existing capture/refresh contracts."
+      oracle_coverage:
+        - "Red test failed first with MODULE_NOT_FOUND for scripts/supermemory-onboard.mjs."
+        - "node --test tests/supermemory-onboard.test.mjs passed."
+        - "node scripts/verify-supermemory-onboarding.mjs passed."
+        - "node scripts/verify-supermemory-release-readiness.mjs passed and includes client_onboarding."
+        - "node scripts/verify-supermemory-specs.mjs passed."
+        - "git diff --check passed."
+        - "README and docs/production-runbook.md document onboarding commands."
+      remaining_risks:
+        - "MVP glob support is intentionally limited to safe patterns, not a full glob engine."
+        - "No interactive wizard UI yet; this is CLI-first."
+        - "No external connectors or Hindsight promotion are included in onboarding commit by design."
+      another_worker_slice_needed: false
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

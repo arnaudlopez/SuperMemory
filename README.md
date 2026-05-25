@@ -286,6 +286,12 @@ Print the supported operator workflow:
 node scripts/supermemory-operator.mjs
 ```
 
+Run a client onboarding dry-run:
+
+```bash
+node scripts/supermemory-onboard.mjs --client "Client ACME" --workspace workspace:acme --source-root /path/to/client-folder --include "**/*.md" --include "**/*.json" --requested-by owner:name --capture-reason "client memory bootstrap" --write-plan /path/to/onboarding-plan.json --json
+```
+
 Run the Golden End State operator workflow verifier:
 
 ```bash

@@ -10,6 +10,7 @@ const options = {
 
 const requiredRunbookSnippets = [
   "node scripts/verify-supermemory-release-readiness.mjs",
+  "node scripts/supermemory-onboard.mjs",
   "compose.hindsight.yml",
   "SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1",
   "Hindsight Cloud",
@@ -152,6 +153,7 @@ function checkTrackedSecretHygiene() {
 }
 
 const checks = [
+  runCommand("client_onboarding", "node", ["scripts/verify-supermemory-onboarding.mjs"]),
   runCommand("global_specs", "node", ["scripts/verify-supermemory-specs.mjs"]),
   runCommand("golden_end_state_workflow", "node", ["scripts/verify-golden-end-state-workflow.mjs"]),
   runCommand("manual_capture_workflow", "node", ["scripts/verify-local-manual-capture-workflow.mjs"]),
