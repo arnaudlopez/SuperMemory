@@ -235,11 +235,18 @@ assert.equal(commitStaging.vault_writes_performed, true);
 assert.equal(commitStaging.owner_confirmed, true);
 assert.equal(commitStaging.source_count, 1);
 assert.equal(commitStaging.snapshot_count, 1);
-assert.equal(commitStaging.files_written, 2);
+assert.equal(commitStaging.files_written, 3);
+assert.equal(commitStaging.snapshot_artifacts.length, 1);
 assert.deepEqual(commitStaging.destination_paths, [
   fs.realpathSync(sourceRegistryPath),
   fs.realpathSync(snapshotRegistryPath)
 ]);
+
+const manualSnapshotArtifact = commitStaging.snapshot_artifacts[0];
+assert.equal(manualSnapshotArtifact.content_hash, expectedHash);
+assert.equal(fs.existsSync(manualSnapshotArtifact.path), true);
+assert.equal(fs.readFileSync(manualSnapshotArtifact.path, "utf8"), selectedContent);
+assert.equal((fs.statSync(manualSnapshotArtifact.path).mode & 0o777), 0o600);
 
 const committedSourceRegistry = fs.readFileSync(sourceRegistryPath, "utf8");
 const committedSnapshotRegistry = fs.readFileSync(snapshotRegistryPath, "utf8");

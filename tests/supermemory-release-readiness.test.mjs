@@ -22,6 +22,7 @@ function parseJson(result, label) {
 
 const requiredFiles = [
   "scripts/verify-supermemory-release-readiness.mjs",
+  "scripts/verify-supermemory-runtime-readiness.mjs",
   "scripts/supermemory-operator.mjs",
   "docs/production-runbook.md"
 ];
@@ -56,6 +57,7 @@ for (const requiredCommand of [
   "node scripts/local-manual-capture.mjs",
   "node scripts/local-file-source-refresh.mjs",
   "node scripts/hindsight-local-live-smoke-preflight.mjs --json",
+  "node scripts/verify-supermemory-runtime-readiness.mjs",
   "node scripts/hindsight-promote.mjs --input",
   "node scripts/hindsight-promote.mjs --apply-plan",
   "node scripts/hindsight-live-smoke-runner.mjs --mock-transport",
@@ -67,6 +69,10 @@ for (const requiredCommand of [
 const release = parseJson(runNode(["scripts/verify-supermemory-release-readiness.mjs", "--json"]), "release readiness");
 assert.equal(release.status, "pass");
 assert.equal(release.mode, "release-readiness");
+assert.equal(release.readiness_level, "contract-ready");
+assert.equal(release.contract_ready, true);
+assert.equal(release.runtime_ready, false);
+assert.equal(release.production_ready, false);
 assert.equal(release.live_writes_performed, false);
 assert.equal(release.credentials_required, false);
 assert.equal(release.ci_mock_only, true);
@@ -87,6 +93,7 @@ for (const checkId of [
   "operator_workflow",
   "production_runbook",
   "ci_release_gate",
+  "runtime_readiness_surface",
   "tracked_secret_hygiene"
 ]) {
   assert.equal(checkIds.has(checkId), true, `release verifier missing check: ${checkId}`);

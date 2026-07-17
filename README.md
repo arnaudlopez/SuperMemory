@@ -131,16 +131,16 @@ The executable T11 proof records `identity-vault/80_logs/engine_port_evals.jsonl
 node scripts/verify-engine-port-evals.mjs
 ```
 
-### Minimal Hindsight Adapter Contract
+### Governed Hindsight Adapter
 
-The current adapter proof is local and contractual. It verifies the SuperMemory -> Hindsight boundary before any real runtime integration: governed promotion payloads upsert by stable `document_id`, `do_not_use` deletes or excludes active recall, recall fails closed without scoped tags, raw LLM conclusions are not retained, and recall traces keep answer evidence auditable.
+The adapter supports mock verification and explicit live execution. Governed promotion payloads upsert by stable `document_id`, `do_not_use` deletes or excludes active recall, recall fails closed without the full scoped tag set, raw LLM conclusions are not retained, and recall traces keep answer evidence auditable.
 
 See [`identity-vault/90_evals/cases/hindsight-adapter-minimal`](identity-vault/90_evals/cases/hindsight-adapter-minimal).
 
 The first local live-smoke step remains read-only until the operator clears the runtime blockers:
 
 ```bash
-node scripts/hindsight-local-live-smoke-preflight.mjs --json
+node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready
 ```
 
 It reports redacted env readiness, local Hindsight health, Docker/container binding status, and the manual live-smoke command without performing Hindsight writes or falling back to cloud.
@@ -152,7 +152,7 @@ node scripts/hindsight-promote.mjs --input /path/to/governed-promotion.json --wr
 node scripts/hindsight-promote.mjs --apply-plan /path/to/reviewed-promotion-plan.json --owner-confirmed --mock-transport --json
 ```
 
-Live apply requires explicit local Hindsight env and `SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1`.
+Live apply requires explicit Hindsight env, `SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1`, an owner-confirmed reviewed plan, and an approved endpoint. The localhost runtime is the default. The official Hindsight Cloud endpoint additionally requires `SUPERMEMORY_ALLOW_HINDSIGHT_CLOUD=1`; arbitrary remote endpoints fail closed.
 
 ### Governed Answer Evidence
 
@@ -194,7 +194,7 @@ Commit reviewed staging into the final vault registries only with explicit owner
 node scripts/local-manual-capture.mjs --commit-staging /path/to/staging --vault-root identity-vault --owner-confirmed --json
 ```
 
-The commit step updates only `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`, refuses duplicate source or snapshot ids, and does not create compiled memory or Hindsight promotions.
+The commit step writes the verified source bytes to a content-addressed `00_inbox/snapshots/sha256/...` artifact, then updates only `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`. It refuses a source changed since plan review, duplicate ids, symlinks, and conflicting artifacts. A vault lock plus recoverable transaction journal protects the two registries from concurrent or partial commits.
 
 Run the full local operator workflow smoke without touching the real vault:
 
@@ -224,7 +224,7 @@ Commit reviewed changed-source refresh staging into the final vault registries o
 node scripts/local-file-source-refresh.mjs --commit-staging /path/to/staging --vault-root identity-vault --owner-confirmed --json
 ```
 
-The commit step updates only `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`, refuses incomplete or tampered staging, duplicate snapshot ids, unavailable or `do_not_use` staging, and does not create compiled memory or Hindsight promotions.
+The commit step materializes the verified content-addressed snapshot and transactionally updates `00_inbox/source_registry.md` and `00_inbox/snapshot_registry.md`. It refuses incomplete or tampered staging, source drift since review, duplicate snapshot ids, unavailable or `do_not_use` staging, and does not create compiled memory or Hindsight promotions.
 
 ### Conflict And Unavailable Arbitration
 
@@ -399,6 +399,7 @@ Start here:
 
 - [`docs/README.md`](docs/README.md) - documentation map and current decision.
 - [`docs/production-runbook.md`](docs/production-runbook.md) - production operator runbook, release preflight, rollback, and credential boundaries.
+- [`docs/improvement-plan-and-audit-2026-07-17.md`](docs/improvement-plan-and-audit-2026-07-17.md) - executed hardening plan, evidence, and residual risks.
 - [`docs/audit-memoire-agentique-v2.md`](docs/audit-memoire-agentique-v2.md) - V2 audit and rationale.
 - [`docs/prd-memoire-agentique-v2.md`](docs/prd-memoire-agentique-v2.md) - V2 product requirements.
 - [`identity-vault/AGENTS.md`](identity-vault/AGENTS.md) - operating rules for agents.
@@ -423,7 +424,18 @@ SuperMemory is not trying to be:
 
 ## Project Status
 
-This repository is currently a **local-first operator release candidate**.
+This repository is currently **contract-ready** for its local-first operator scope. It is not automatically runtime-ready or production-approved: those levels require a healthy local Hindsight preflight, fresh successful live-smoke evidence, and then an explicit operator decision.
+
+Check each level independently:
+
+```bash
+npm test
+npm run verify:release
+npm run verify:runtime -- --evidence-path tmp/hindsight-live-smoke-local.jsonl --json
+npm run verify:production -- --evidence-path tmp/hindsight-live-smoke-local.jsonl --deployment-scope local-first-operator --rollback-acknowledged --owner-approved --approval-reference <approval-reference> --json
+```
+
+The production command must be run only after reviewing the fresh runtime evidence. It records a decision time and refuses success unless the owner approval, non-secret approval reference, exact local-first scope, rollback acknowledgement, strict preflight, and live evidence are all valid.
 
 The current Golden End State focus is the local operator workflow: capture, snapshot, LLM-first interpretation, staged review, governed promotion, local Hindsight preflight, recall, governed answer, refresh/change handling, and audit. See [`docs/golden-end-state-operator-workflow.md`](docs/golden-end-state-operator-workflow.md).
 
@@ -447,7 +459,10 @@ Implemented:
 - source refresh connector-boundary contract verifier;
 - first concrete local-file source refresh CLI and verifier;
 - Golden End State workflow verifier.
-- production release readiness verifier and operator workflow surface.
+- production release readiness verifier and operator workflow surface;
+- immutable content-addressed source artifacts and recoverable registry transactions;
+- reviewed-plan-only live Hindsight writes, strict recall governance, transport timeouts, and partial-failure reporting;
+- pinned local Hindsight image, pinned CI actions, Node 18/22 CI, and secret hygiene gate.
 
 Not yet implemented:
 
@@ -460,7 +475,7 @@ Not yet implemented:
 ## Roadmap
 
 1. Keep the release readiness verifier and T0-T14 executable specification green in CI.
-2. Operate capture, local-file refresh, reviewed Hindsight promotion, and smoke through the production runbook.
+2. Keep live evidence fresh by rerunning the sacrificial-bank smoke before its 24-hour acceptance window expires.
 3. Keep local Docker Hindsight as the default live-smoke target; use Hindsight Cloud only through explicit opt-in.
 4. Harden connector-backed snapshot refresh beyond the first local-file source type.
 5. Add the first automated external source connector only when a concrete source workflow requires it.

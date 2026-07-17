@@ -12,7 +12,8 @@ function fail(message) {
 const text = fs.readFileSync(composePath, "utf8");
 
 const requiredSnippets = [
-  "ghcr.io/vectorize-io/hindsight:latest",
+  "ghcr.io/vectorize-io/hindsight@sha256:f0f9e9a73d6aedde9eaf4010ab604c3e015494e494318b26f1011144856b8112",
+  "pull_policy: if_not_present",
   "container_name: supermemory-hindsight-local",
   "\"127.0.0.1:8888:8888\"",
   "\"127.0.0.1:9999:9999\"",
@@ -27,7 +28,7 @@ for (const snippet of requiredSnippets) {
   }
 }
 
-for (const forbidden of ["HINDSIGHT_API_KEY", "api.hindsight.vectorize.io", "0.0.0.0:8888", "0.0.0.0:9999"]) {
+for (const forbidden of ["hindsight:latest", "pull_policy: always", "HINDSIGHT_API_KEY", "api.hindsight.vectorize.io", "0.0.0.0:8888", "0.0.0.0:9999"]) {
   if (text.includes(forbidden)) {
     fail(`compose file contains forbidden snippet: ${forbidden}`);
   }

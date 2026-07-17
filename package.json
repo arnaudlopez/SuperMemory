@@ -1,0 +1,18 @@
+{
+  "name": "supermemory-governed-vault",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "verify": "node scripts/verify-supermemory-specs.mjs",
+    "verify:release": "node scripts/verify-supermemory-release-readiness.mjs",
+    "verify:runtime": "node scripts/verify-supermemory-runtime-readiness.mjs",
+    "verify:production": "node scripts/verify-supermemory-production-readiness.mjs",
+    "verify:secrets": "node scripts/verify-secret-hygiene.mjs"
+  }
+}

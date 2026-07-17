@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import path from "node:path";
 
 const root = process.cwd();
 const options = {
@@ -123,32 +122,75 @@ function checkReadmeRunbookLink() {
   };
 }
 
-function gitLsFiles(args) {
-  const result = spawnSync("git", ["ls-files", ...args], {
-    cwd: root,
-    encoding: "utf8"
-  });
-  if (result.status !== 0) return [];
-  return result.stdout.split(/\r?\n/).filter(Boolean);
+function checkRuntimeReadinessSurface() {
+  const scriptCheck = textIncludes("scripts/verify-supermemory-runtime-readiness.mjs", [
+    "runtime-ready",
+    "production_ready",
+    "--require-ready",
+    "live_evidence_stale_or_invalid"
+  ]);
+  const preflightCheck = textIncludes("scripts/hindsight-local-live-smoke-preflight.mjs", ["--require-ready"]);
+  const missing = [...scriptCheck.missing, ...preflightCheck.missing];
+  return {
+    id: "runtime_readiness_surface",
+    status: missing.length === 0 ? "pass" : "fail",
+    files: [
+      "scripts/verify-supermemory-runtime-readiness.mjs",
+      "scripts/hindsight-local-live-smoke-preflight.mjs"
+    ],
+    missing
+  };
+}
+
+function checkProductionReadinessSurface() {
+  const scriptCheck = textIncludes("scripts/verify-supermemory-production-readiness.mjs", [
+    "production-ready",
+    "owner_approval",
+    "approval_reference",
+    "local-first-operator",
+    "rollback_acknowledgement",
+    "verify-supermemory-runtime-readiness.mjs"
+  ]);
+  const operatorCheck = textIncludes("scripts/supermemory-operator.mjs", [
+    "verify-supermemory-production-readiness.mjs"
+  ]);
+  const runbookCheck = textIncludes("docs/production-runbook.md", [
+    "Production Approval",
+    "--owner-approved",
+    "--approval-reference",
+    "--rollback-acknowledged"
+  ]);
+  const missing = [...scriptCheck.missing, ...operatorCheck.missing, ...runbookCheck.missing];
+  return {
+    id: "production_readiness_surface",
+    status: missing.length === 0 ? "pass" : "fail",
+    files: [
+      "scripts/verify-supermemory-production-readiness.mjs",
+      "scripts/supermemory-operator.mjs",
+      "docs/production-runbook.md"
+    ],
+    missing
+  };
 }
 
 function checkTrackedSecretHygiene() {
-  const tracked = gitLsFiles([]);
-  const trackedTmp = tracked.filter((filePath) => filePath.startsWith("tmp/"));
-  const secretPattern = /(sk-proj-[A-Za-z0-9_-]{12,}|sk-live-[A-Za-z0-9_-]{12,}|HINDSIGHT_API_KEY\s*=\s*["']?(?!<|\.{3}|fake|test)[A-Za-z0-9_-]{16,})/;
-  const offenders = [];
-  for (const filePath of tracked) {
-    if (!/\.(mjs|md|yml|yaml|json|jsonl|gitignore)$/.test(filePath)) continue;
-    const fullPath = path.join(root, filePath);
-    if (!fs.existsSync(fullPath)) continue;
-    const text = fs.readFileSync(fullPath, "utf8");
-    if (secretPattern.test(text)) offenders.push(filePath);
+  const result = spawnSync("node", ["scripts/verify-secret-hygiene.mjs", "--json"], {
+    cwd: root,
+    encoding: "utf8"
+  });
+  let report = null;
+  try {
+    report = JSON.parse(result.stdout);
+  } catch {
+    // Invalid output is a failed hygiene check.
   }
   return {
     id: "tracked_secret_hygiene",
-    status: trackedTmp.length === 0 && offenders.length === 0 ? "pass" : "fail",
-    tracked_tmp: trackedTmp,
-    secret_like_files: offenders
+    status: result.status === 0 && report?.status === "pass" ? "pass" : "fail",
+    tracked_tmp: report?.tracked_tmp ?? [],
+    secret_like_files: [...new Set((report?.findings ?? []).map((finding) => finding.file))],
+    findings: report?.findings ?? [],
+    error: report ? null : result.stderr.trim() || "invalid secret hygiene output"
   };
 }
 
@@ -166,6 +208,8 @@ const checks = [
   checkRunbook(),
   checkReadmeRunbookLink(),
   checkCiReleaseGate(),
+  checkRuntimeReadinessSurface(),
+  checkProductionReadinessSurface(),
   checkTrackedSecretHygiene()
 ];
 
@@ -173,12 +217,22 @@ const failed = checks.filter((check) => check.status !== "pass");
 const report = {
   status: failed.length === 0 ? "pass" : "fail",
   mode: "release-readiness",
+  readiness_level: failed.length === 0 ? "contract-ready" : "not-ready",
+  contract_ready: failed.length === 0,
+  runtime_ready: false,
+  production_ready: false,
+  production_decision: "requires_runtime_readiness_and_explicit_operator_approval",
   live_writes_performed: false,
   credentials_required: false,
   ci_mock_only: true,
   no_implicit_cloud_fallback: true,
   no_tracked_tmp_evidence: checks.find((check) => check.id === "tracked_secret_hygiene")?.tracked_tmp?.length === 0,
   no_tracked_secret_like_values: checks.find((check) => check.id === "tracked_secret_hygiene")?.secret_like_files?.length === 0,
+  limitations: [
+    "CI and this release gate are mock-only.",
+    "Run verify-supermemory-runtime-readiness.mjs with fresh live evidence before runtime approval.",
+    "Production approval remains an explicit operator decision."
+  ],
   checks
 };
 

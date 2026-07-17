@@ -2,6 +2,8 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { materializeSnapshotArtifact } from "./lib/snapshot-artifacts.mjs";
+import { withVaultMutationLock, writeRegistryPairRecoverable } from "./lib/registry-transaction.mjs";
 
 function parseArgs(argv) {
   const options = {
@@ -438,6 +440,10 @@ function registryPaths(vaultRoot) {
   if (!fs.existsSync(paths.sourceRegistry) || !fs.existsSync(paths.snapshotRegistry)) {
     throw new Error("vault_registry_missing");
   }
+  for (const registryPath of [paths.sourceRegistry, paths.snapshotRegistry]) {
+    const stat = fs.lstatSync(registryPath);
+    if (stat.isSymbolicLink() || !stat.isFile()) throw new Error("vault_registry_scope_invalid");
+  }
   return paths;
 }
 
@@ -504,43 +510,54 @@ function commitStaging(stagingPath, vaultRootPath, ownerConfirmed) {
   const stagingDir = resolveStagingDir(stagingPath);
   const { manifest, plan } = readStagingPlan(stagingDir);
   const vaultRoot = resolveVaultRoot(vaultRootPath);
-  const paths = registryPaths(vaultRoot);
-
-  const nextSourceRegistry = prepareRegistryAppend(
-    paths.sourceRegistry,
-    plan.source_registry_entries.map((entry) => sourceRegistryRow(entry)),
-    plan.source_registry_entries.map((entry) => entry.source_id),
-    "vault_source_already_exists"
-  );
-  const nextSnapshotRegistry = prepareRegistryAppend(
-    paths.snapshotRegistry,
-    plan.snapshots.map((snapshot) => snapshotRegistryRow(snapshot)),
-    plan.snapshots.map((snapshot) => snapshot.snapshot_id),
-    "vault_snapshot_already_exists"
-  );
-
-  fs.writeFileSync(paths.sourceRegistry, nextSourceRegistry);
-  fs.writeFileSync(paths.snapshotRegistry, nextSnapshotRegistry);
-
-  return {
-    mode: "commit-staging",
-    generated_from: "local_manual_capture",
-    source_staging: stagingDir,
-    source_plan: manifest.source_plan,
-    vault_root: vaultRoot,
-    network_writes: false,
-    writes_performed: true,
-    staging_only: false,
-    vault_writes_performed: true,
-    owner_confirmed: true,
-    source_count: plan.source_registry_entries.length,
-    snapshot_count: plan.snapshots.length,
-    files_written: 2,
-    destination_paths: [paths.sourceRegistry, paths.snapshotRegistry],
-    validation: {
-      errors: []
-    }
-  };
+  return withVaultMutationLock(vaultRoot, ({ recovery }) => {
+    const paths = registryPaths(vaultRoot);
+    const nextSourceRegistry = prepareRegistryAppend(
+      paths.sourceRegistry,
+      plan.source_registry_entries.map((entry) => sourceRegistryRow(entry)),
+      plan.source_registry_entries.map((entry) => entry.source_id),
+      "vault_source_already_exists"
+    );
+    const nextSnapshotRegistry = prepareRegistryAppend(
+      paths.snapshotRegistry,
+      plan.snapshots.map((snapshot) => snapshotRegistryRow(snapshot)),
+      plan.snapshots.map((snapshot) => snapshot.snapshot_id),
+      "vault_snapshot_already_exists"
+    );
+    const snapshotArtifacts = plan.snapshots.map((snapshot) => materializeSnapshotArtifact({
+      vaultRoot,
+      originalRef: snapshot.original_ref,
+      contentHash: snapshot.content_hash,
+      snapshotId: snapshot.snapshot_id
+    }));
+    const registryTransaction = writeRegistryPairRecoverable({
+      vaultRoot,
+      sourceRegistry: paths.sourceRegistry,
+      snapshotRegistry: paths.snapshotRegistry,
+      nextSourceRegistry,
+      nextSnapshotRegistry
+    });
+    return {
+      mode: "commit-staging",
+      generated_from: "local_manual_capture",
+      source_staging: stagingDir,
+      source_plan: manifest.source_plan,
+      vault_root: vaultRoot,
+      network_writes: false,
+      writes_performed: true,
+      staging_only: false,
+      vault_writes_performed: true,
+      owner_confirmed: true,
+      source_count: plan.source_registry_entries.length,
+      snapshot_count: plan.snapshots.length,
+      snapshot_artifacts: snapshotArtifacts,
+      registry_transaction: registryTransaction,
+      recovered_previous_transaction: recovery.recovered,
+      files_written: 2 + snapshotArtifacts.filter((artifact) => artifact.created).length,
+      destination_paths: [paths.sourceRegistry, paths.snapshotRegistry],
+      validation: { errors: [] }
+    };
+  });
 }
 
 function applyPlanFile(planPath, outDir) {

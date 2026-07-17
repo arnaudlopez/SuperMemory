@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -23,6 +24,18 @@ function runCli(args, env = {}) {
 function parseJson(result) {
   assert.equal(result.status, 0, `CLI failed\nSTDOUT:\n${result.stdout}\nSTDERR:\n${result.stderr}`);
   return JSON.parse(result.stdout);
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map((item) => canonicalJson(item)).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function planHash(plan) {
+  return `sha256:${crypto.createHash("sha256").update(canonicalJson(plan)).digest("hex")}`;
 }
 
 const dryRun = parseJson(runCli(["--input", fixturePath, "--json"]));
@@ -54,7 +67,7 @@ assert.match(missingInput.stderr, /missing input file/);
 
 const liveWithoutEnv = runCli(["--input", invalidFixture, "--live", "--json"]);
 assert.notEqual(liveWithoutEnv.status, 0);
-assert.match(liveWithoutEnv.stderr, /missing required live env/);
+assert.match(liveWithoutEnv.stderr, /live transport requires reviewed --apply-plan/);
 
 const mixedModes = runCli(["--input", fixturePath, "--dry-run", "--live", "--json"], {
   HINDSIGHT_API_KEY: "sk-test-secret",
@@ -69,7 +82,7 @@ const liveGuard = runCli(["--input", fixturePath, "--live", "--json"], {
   HINDSIGHT_BASE_URL: "https://example.invalid"
 });
 assert.notEqual(liveGuard.status, 0);
-assert.match(liveGuard.stderr, /live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport/);
+assert.match(liveGuard.stderr, /live transport requires reviewed --apply-plan/);
 assert.doesNotMatch(liveGuard.stderr, /sk-test-secret/);
 
 const liveMock = parseJson(runCli(["--input", fixturePath, "--live", "--mock-transport", "--json"], {
@@ -86,9 +99,23 @@ assert.equal(liveMock.transport.requests.length, 5);
 assert.equal(liveMock.transport.result.status, "mocked");
 assert.equal(liveMock.transport.result.requests_sent, 5);
 assert.ok(liveMock.transport.requests.some((request) => request.operation === "recall"));
-assert.equal(JSON.stringify(liveMock).includes("sk-test-secret"), false);
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "hindsight-promote-"));
+const unsafeDeleteFixture = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+const unsafeDelete = unsafeDeleteFixture.valid.promotion_payloads.find((payload) => payload.status === "do_not_use");
+unsafeDelete.metadata.allowed_consumers = [];
+const unsafeDeletePath = path.join(tmpDir, "unsafe-delete.json");
+fs.writeFileSync(unsafeDeletePath, JSON.stringify(unsafeDeleteFixture));
+const unsafeDeleteResult = spawnSync("node", [
+  "scripts/hindsight-promote.mjs",
+  "--input", unsafeDeletePath,
+  "--dry-run",
+  "--json"
+], { encoding: "utf8" });
+assert.notEqual(unsafeDeleteResult.status, 0);
+assert.match(unsafeDeleteResult.stderr, /adapter_delete_missing_governance/);
+assert.equal(JSON.stringify(liveMock).includes("sk-test-secret"), false);
+
 const invalidPromotionPath = path.join(tmpDir, "invalid-promotion.json");
 fs.writeFileSync(
   invalidPromotionPath,
@@ -109,6 +136,35 @@ const invalidPromotion = runCli(["--input", invalidPromotionPath, "--json"]);
 assert.notEqual(invalidPromotion.status, 0);
 assert.match(invalidPromotion.stderr, /adapter_promotion_missing_provenance/);
 
+const missingGovernancePath = path.join(tmpDir, "missing-governance.json");
+fs.writeFileSync(missingGovernancePath, JSON.stringify({
+  promotion_payloads: [{
+    document_id: "doc-governance-gap",
+    memory_id: "mem-governance-gap",
+    status: "active",
+    text: "Provenance is complete but governance tags are incomplete.",
+    tags: ["workspace:ws-acme", "access_policy:professional-default", "status:active"],
+    metadata: {
+      source_id: "src-governance-gap",
+      snapshot_id: "snap-governance-gap",
+      observation_id: "obs-governance-gap",
+      interpretation_id: "interp-governance-gap",
+      memory_id: "mem-governance-gap",
+      source_version: "snap-governance-gap",
+      freshness: "fresh",
+      derived_from: ["snap-governance-gap"],
+      workspace_id: "ws-acme",
+      access_policy: "professional-default",
+      data_owner: "team:acme",
+      allowed_consumers: ["email_agent"],
+      review_status: "approved"
+    }
+  }]
+}));
+const missingGovernance = runCli(["--input", missingGovernancePath, "--json"]);
+assert.notEqual(missingGovernance.status, 0);
+assert.match(missingGovernance.stderr, /adapter_promotion_missing_governance/);
+
 const broadRecallPath = path.join(tmpDir, "broad-recall.json");
 fs.writeFileSync(
   broadRecallPath,
@@ -126,6 +182,24 @@ fs.writeFileSync(
 const broadRecall = runCli(["--input", broadRecallPath, "--json"]);
 assert.notEqual(broadRecall.status, 0);
 assert.match(broadRecall.stderr, /unsafe_adapter_recall_policy/);
+
+const incompleteFailClosedRecallPath = path.join(tmpDir, "incomplete-fail-closed-recall.json");
+fs.writeFileSync(
+  incompleteFailClosedRecallPath,
+  JSON.stringify({
+    recall_policies: [
+      {
+        policy_id: "recall-incomplete",
+        query: "What do we know?",
+        fail_closed: true,
+        required_tags: ["workspace:ws-acme", "access_policy:professional-default", "status:active"]
+      }
+    ]
+  })
+);
+const incompleteFailClosedRecall = runCli(["--input", incompleteFailClosedRecallPath, "--json"]);
+assert.notEqual(incompleteFailClosedRecall.status, 0);
+assert.match(incompleteFailClosedRecall.stderr, /unsafe_adapter_recall_policy/);
 
 const candidateTypePath = path.join(tmpDir, "candidate-type.json");
 fs.writeFileSync(
@@ -178,11 +252,16 @@ fs.writeFileSync(
         status: "active",
         text: "Acme Project Y PRD was reviewed against the t1 snapshot.",
         tags: [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",
           "entity_type:project",
-          "schema_status:stable"
+          "schema_status:stable",
+          "consumer:email_agent",
+          "source_kind:compiled_view"
         ],
         metadata: {
           source_id: "src-acme-prd",
@@ -222,11 +301,16 @@ fs.writeFileSync(
         status: "active",
         text: "Acme Project Y PRD was reviewed against the t1 snapshot.",
         tags: [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",
           "entity_type:project",
-          "schema_status:stable"
+          "schema_status:stable",
+          "consumer:email_agent",
+          "source_kind:compiled_view"
         ],
         metadata: {
           source_id: "src-acme-prd",
@@ -237,6 +321,11 @@ fs.writeFileSync(
           source_version: "snap-acme-prd-2026-05-21",
           freshness: "fresh",
           derived_from: ["snap-acme-prd-2026-05-21"],
+          workspace_id: "ws-acme",
+          access_policy: "professional-default",
+          data_owner: "team:acme",
+          allowed_consumers: ["email_agent"],
+          review_status: "approved",
           evidence_refs: ["source_registry", "snapshot_registry"],
           reliability: {
             rule: "owner_reviewed_snapshot",
@@ -302,7 +391,13 @@ fs.writeFileSync(
         text: "Acme Project Y PRD was approved against the 2026-05-22 snapshot.",
         workspace_id: "ws-acme",
         access_policy: "professional-default",
+        visibility: "professional",
+        sensitivity: "medium",
+        domain: "client",
+        data_owner: "team:acme",
+        allowed_consumers: ["email_agent"],
         consumer: "email_agent",
+        source_kind: "compiled_view",
         entity_type: "project",
         schema_status: "stable",
         source_id: "src-acme-prd",
@@ -323,12 +418,16 @@ assert.equal(generatedFromValidated.operations[0].memory_id, "mem-acme-prd-t2");
 assert.equal(generatedFromValidated.operations[0].metadata.source_version, "snap-acme-prd-2026-05-22");
 assert.deepEqual(generatedFromValidated.operations[0].metadata.derived_from, ["snap-acme-prd-2026-05-22"]);
 assert.deepEqual(generatedFromValidated.operations[0].tags, [
+  "visibility:professional",
+  "sensitivity:medium",
+  "domain:client",
   "workspace:ws-acme",
   "access_policy:professional-default",
   "status:active",
   "entity_type:project",
   "schema_status:stable",
-  "consumer:email_agent"
+  "consumer:email_agent",
+  "source_kind:compiled_view"
 ]);
 
 const implicitGenerationPath = path.join(tmpDir, "implicit-generation.json");
@@ -402,11 +501,7 @@ const applyReviewedPlanMock = parseJson(runCli([
   "--owner-confirmed",
   "--mock-transport",
   "--json"
-], {
-  HINDSIGHT_API_KEY: "sk-test-secret",
-  HINDSIGHT_BANK_ID: "bank-test",
-  HINDSIGHT_BASE_URL: "http://127.0.0.1:8888"
-}));
+]));
 assert.equal(applyReviewedPlanMock.mode, "apply-plan");
 assert.equal(applyReviewedPlanMock.reviewed_plan, true);
 assert.equal(applyReviewedPlanMock.owner_confirmed, true);
@@ -431,6 +526,20 @@ const tamperedApply = runCli([
 });
 assert.notEqual(tamperedApply.status, 0);
 assert.match(tamperedApply.stderr, /apply_plan_tampered/);
+
+const forgedPlanPath = path.join(tmpDir, "reviewed-promotion-plan-forged.json");
+const forgedPlan = JSON.parse(fs.readFileSync(reviewedPlanPath, "utf8"));
+forgedPlan.plan.operations[0].tags = forgedPlan.plan.operations[0].tags.filter((tag) => !tag.startsWith("sensitivity:"));
+forgedPlan.plan_hash = planHash(forgedPlan.plan);
+fs.writeFileSync(forgedPlanPath, JSON.stringify(forgedPlan, null, 2));
+const forgedApply = runCli([
+  "--apply-plan", forgedPlanPath,
+  "--owner-confirmed",
+  "--mock-transport",
+  "--json"
+]);
+assert.notEqual(forgedApply.status, 0);
+assert.match(forgedApply.stderr, /apply_plan_governance_invalid/);
 
 const identityVaultPlan = runCli([
   "--input", generatedFromValidatedPath,

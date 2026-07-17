@@ -8,6 +8,9 @@
         "status": "active",
         "text": "Acme Project Y uses trust_score as the active customer scoring field.",
         "tags": [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",
@@ -15,7 +18,8 @@
           "snapshot:snap-acme-api-doc-2026-05-20",
           "entity_type:api_fact",
           "schema_status:stable",
-          "consumer:email_agent"
+          "consumer:email_agent",
+          "source_kind:compiled_view"
         ],
         "metadata": {
           "source_id": "src-acme-api-doc",
@@ -23,9 +27,14 @@
           "observation_id": "obs-acme-trust-score",
           "interpretation_id": "interp-acme-trust-score",
           "memory_id": "mem-acme-trust-score-v1",
+          "source_version": "snap-acme-api-doc-2026-05-20",
+          "derived_from": ["snap-acme-api-doc-2026-05-20"],
           "freshness": "fresh",
           "workspace_id": "ws-acme",
-          "access_policy": "professional-default"
+          "access_policy": "professional-default",
+          "data_owner": "team:acme",
+          "allowed_consumers": ["email_agent"],
+          "review_status": "approved"
         }
       },
       {
@@ -34,6 +43,9 @@
         "status": "active",
         "text": "Acme Project Y client communication should mention trust_score as the current customer scoring field.",
         "tags": [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",
@@ -41,7 +53,8 @@
           "snapshot:snap-acme-api-doc-2026-05-21",
           "entity_type:api_fact",
           "schema_status:stable",
-          "consumer:email_agent"
+          "consumer:email_agent",
+          "source_kind:compiled_view"
         ],
         "metadata": {
           "source_id": "src-acme-api-doc",
@@ -49,9 +62,14 @@
           "observation_id": "obs-acme-trust-score-current",
           "interpretation_id": "interp-acme-trust-score-current",
           "memory_id": "mem-acme-trust-score-v2",
+          "source_version": "snap-acme-api-doc-2026-05-21",
+          "derived_from": ["snap-acme-api-doc-2026-05-21"],
           "freshness": "fresh",
           "workspace_id": "ws-acme",
-          "access_policy": "professional-default"
+          "access_policy": "professional-default",
+          "data_owner": "team:acme",
+          "allowed_consumers": ["email_agent"],
+          "review_status": "approved"
         }
       },
       {
@@ -60,6 +78,9 @@
         "status": "do_not_use",
         "text": "Legacy risk_score wording must not be recalled for active Acme Project Y communication.",
         "tags": [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:do_not_use",
@@ -67,7 +88,8 @@
           "snapshot:snap-acme-api-doc-2026-05-19",
           "entity_type:api_fact",
           "schema_status:stable",
-          "consumer:email_agent"
+          "consumer:email_agent",
+          "source_kind:compiled_view"
         ],
         "metadata": {
           "source_id": "src-acme-api-doc",
@@ -75,9 +97,14 @@
           "observation_id": "obs-acme-risk-score-legacy",
           "interpretation_id": "interp-acme-risk-score-legacy",
           "memory_id": "mem-acme-risk-score-legacy",
+          "source_version": "snap-acme-api-doc-2026-05-19",
+          "derived_from": ["snap-acme-api-doc-2026-05-19"],
           "freshness": "stale",
           "workspace_id": "ws-acme",
           "access_policy": "professional-default",
+          "data_owner": "team:acme",
+          "allowed_consumers": ["email_agent"],
+          "review_status": "revoked",
           "revocation_reason": "superseded_by_trust_score"
         }
       }
@@ -97,6 +124,11 @@
         "query": "Which Acme Project Y field should the email agent mention?",
         "fail_closed": true,
         "required_tags": [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
+          "entity_type:api_fact",
+          "schema_status:stable",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",
@@ -108,6 +140,11 @@
         "query": "Which Acme Project Y field should the support agent mention?",
         "fail_closed": true,
         "required_tags": [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
+          "entity_type:api_fact",
+          "schema_status:stable",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",

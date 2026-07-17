@@ -156,22 +156,14 @@ identity-vault/
 
 ## Prochaine etape recommandee
 
-Creer un squelette de vault minimal avec :
+Le squelette, les contrats T0-T14 et l'outillage operateur local sont implementes. La prochaine preuve a produire est operationnelle :
 
-- `AGENTS.md`
-- `memory_map.md`
-- `00_inbox/`
-- `10_shared/`
-- `20_professional/`
-- `30_personal/`
-- `50_review/`
-- `60_signals/`
-- `70_agent_contracts/`
-- `75_governance/`
-- `80_logs/`
-- `90_evals/`
+1. garder le gate `contract-ready` vert ;
+2. lancer un smoke Hindsight reel sur une banque sacrificielle locale ;
+3. valider l'evidence recente avec `verify-supermemory-runtime-readiness.mjs` ;
+4. prendre ensuite une decision explicite d'approbation production.
 
-Puis prototyper Hindsight sur le scenario Acme existant avant d'automatiser davantage.
+Le plan de durcissement execute et l'audit courant sont dans `improvement-plan-and-audit-2026-07-17.md`.
 
 ## Verification
 

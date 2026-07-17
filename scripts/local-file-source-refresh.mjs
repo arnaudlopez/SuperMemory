@@ -2,6 +2,8 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { materializeSnapshotArtifact } from "./lib/snapshot-artifacts.mjs";
+import { withVaultMutationLock, writeRegistryPairRecoverable } from "./lib/registry-transaction.mjs";
 
 function parseArgs(argv) {
   const options = {
@@ -428,10 +430,10 @@ function registryPaths(vaultRoot) {
     sourceRegistry: path.join(vaultRoot, "00_inbox", "source_registry.md"),
     snapshotRegistry: path.join(vaultRoot, "00_inbox", "snapshot_registry.md")
   };
-  if (!fs.existsSync(paths.sourceRegistry) || !fs.statSync(paths.sourceRegistry).isFile()) {
+  if (!fs.existsSync(paths.sourceRegistry) || fs.lstatSync(paths.sourceRegistry).isSymbolicLink() || !fs.lstatSync(paths.sourceRegistry).isFile()) {
     throw new Error("vault_registry_missing");
   }
-  if (!fs.existsSync(paths.snapshotRegistry) || !fs.statSync(paths.snapshotRegistry).isFile()) {
+  if (!fs.existsSync(paths.snapshotRegistry) || fs.lstatSync(paths.snapshotRegistry).isSymbolicLink() || !fs.lstatSync(paths.snapshotRegistry).isFile()) {
     throw new Error("vault_registry_missing");
   }
   return paths;
@@ -520,24 +522,34 @@ function commitStaging(stagingPath, vaultRootPath, ownerConfirmed) {
   }
 
   const vaultRoot = resolveVaultRoot(vaultRootPath);
-  const paths = registryPaths(vaultRoot);
-  const sourceRegistry = fs.readFileSync(paths.sourceRegistry, "utf8");
-  const snapshotRegistry = fs.readFileSync(paths.snapshotRegistry, "utf8");
-  const nextSourceRegistry = replaceSourceRegistryRow(
-    sourceRegistry,
-    source.source_id,
-    sourceRegistryRow(source, snapshot.snapshot_id)
-  );
-  const nextSnapshotRegistry = appendSnapshotRegistryRow(
-    snapshotRegistry,
-    snapshot,
-    snapshotRegistryRow(snapshot)
-  );
-
-  fs.writeFileSync(paths.sourceRegistry, nextSourceRegistry);
-  fs.writeFileSync(paths.snapshotRegistry, nextSnapshotRegistry);
-
-  return {
+  return withVaultMutationLock(vaultRoot, ({ recovery }) => {
+    const paths = registryPaths(vaultRoot);
+    const sourceRegistry = fs.readFileSync(paths.sourceRegistry, "utf8");
+    const snapshotRegistry = fs.readFileSync(paths.snapshotRegistry, "utf8");
+    const nextSourceRegistry = replaceSourceRegistryRow(
+      sourceRegistry,
+      source.source_id,
+      sourceRegistryRow(source, snapshot.snapshot_id)
+    );
+    const nextSnapshotRegistry = appendSnapshotRegistryRow(
+      snapshotRegistry,
+      snapshot,
+      snapshotRegistryRow(snapshot)
+    );
+    const snapshotArtifacts = [materializeSnapshotArtifact({
+      vaultRoot,
+      originalRef: snapshot.original_ref ?? source.original_ref,
+      contentHash: snapshot.content_hash,
+      snapshotId: snapshot.snapshot_id
+    })];
+    const registryTransaction = writeRegistryPairRecoverable({
+      vaultRoot,
+      sourceRegistry: paths.sourceRegistry,
+      snapshotRegistry: paths.snapshotRegistry,
+      nextSourceRegistry,
+      nextSnapshotRegistry
+    });
+    return {
     mode: "commit-staging",
     generated_from: "local_file_source_refresh",
     source_staging: stagingDir,
@@ -552,12 +564,16 @@ function commitStaging(stagingPath, vaultRootPath, ownerConfirmed) {
     previous_snapshot_id: refreshPlan.previous_snapshot_id,
     active_snapshot_id: snapshot.snapshot_id,
     snapshot_count: 1,
-    files_written: 2,
+    snapshot_artifacts: snapshotArtifacts,
+    registry_transaction: registryTransaction,
+    recovered_previous_transaction: recovery.recovered,
+    files_written: 2 + snapshotArtifacts.filter((artifact) => artifact.created).length,
     destination_paths: [paths.sourceRegistry, paths.snapshotRegistry],
     validation: {
       errors: []
     }
-  };
+    };
+  });
 }
 
 function realPathIfExists(value) {
@@ -825,6 +841,7 @@ function buildRefreshPlan(input, sourceId, checkedAt) {
   const snapshot = {
     snapshot_id: plannedSnapshotId,
     source_id: source.source_id,
+    original_ref: scope.sourceRef,
     content_hash: hash,
     previous_snapshot_id: source.active_snapshot_id,
     captured_at: checkedAt,

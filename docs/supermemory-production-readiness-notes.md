@@ -1,5 +1,7 @@
 # SuperMemory Production Readiness Notes
 
+> Historical implementation brief. The executed hardening status and current three-level readiness model are recorded in `docs/improvement-plan-and-audit-2026-07-17.md`.
+
 ## Owner intent
 
 Enchainer tout ce qu'il reste a faire jusqu'a une version prete a mettre en production, avec une approche TDD, sans revenir vers le owner avant que le produit soit pret ou qu'un vrai blocker de production exige une decision/credential.

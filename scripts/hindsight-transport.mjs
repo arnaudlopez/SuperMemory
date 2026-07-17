@@ -83,6 +83,39 @@ export function buildHindsightRequests(plan, options = {}) {
   return requests;
 }
 
+async function responseData(response) {
+  if (response.status === 204 || response.status === 205) return null;
+  if (typeof response.text === "function") {
+    const text = await response.text();
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { non_json_body: true };
+    }
+  }
+  if (typeof response.json === "function") {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export class HindsightTransportError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = "HindsightTransportError";
+    this.code = details.code ?? "hindsight_transport_error";
+    this.completed_requests = details.completed_requests ?? 0;
+    this.pending_requests = details.pending_requests ?? 0;
+    this.operation = details.operation;
+    this.status = details.status;
+  }
+}
+
 export async function executeHindsightRequests(requests, options = {}) {
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
   if (typeof fetchImpl !== "function") {
@@ -92,28 +125,59 @@ export async function executeHindsightRequests(requests, options = {}) {
   if (!apiKey) {
     throw new Error("missing HINDSIGHT_API_KEY");
   }
+  const timeoutMs = options.timeoutMs ?? Number(process.env.HINDSIGHT_REQUEST_TIMEOUT_MS || 15000);
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new Error("invalid Hindsight request timeout");
 
   const responses = [];
-  for (const request of requests) {
-    const response = await fetchImpl(`${request.baseUrl}${request.path}`, {
-      method: request.method,
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: request.body ? JSON.stringify(request.body) : undefined
-    });
-    const data = typeof response.json === "function" ? await response.json() : null;
-    if (!response.ok) {
-      throw new Error(`Hindsight request failed: ${request.method} ${request.path} ${response.status}`);
+  for (let index = 0; index < requests.length; index += 1) {
+    const request = requests[index];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchImpl(`${request.baseUrl}${request.path}`, {
+        method: request.method,
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: request.body ? JSON.stringify(request.body) : undefined,
+        signal: controller.signal
+      });
+      const data = await responseData(response);
+      if (!response.ok) {
+        throw new HindsightTransportError(
+          `Hindsight request failed: ${request.method} ${request.path} ${response.status}; completed=${responses.length}; pending=${requests.length - index}`,
+          {
+            code: "hindsight_http_error",
+            completed_requests: responses.length,
+            pending_requests: requests.length - index,
+            operation: request.operation,
+            status: response.status
+          }
+        );
+      }
+      responses.push({
+        operation: request.operation,
+        document_id: request.document_id,
+        policy_id: request.policy_id,
+        status: response.status,
+        data
+      });
+    } catch (error) {
+      if (error instanceof HindsightTransportError) throw error;
+      const timedOut = controller.signal.aborted;
+      throw new HindsightTransportError(
+        `Hindsight request ${timedOut ? "timed out" : "failed"}: ${request.method} ${request.path}; completed=${responses.length}; pending=${requests.length - index}`,
+        {
+          code: timedOut ? "hindsight_timeout" : "hindsight_network_error",
+          completed_requests: responses.length,
+          pending_requests: requests.length - index,
+          operation: request.operation
+        }
+      );
+    } finally {
+      clearTimeout(timeout);
     }
-    responses.push({
-      operation: request.operation,
-      document_id: request.document_id,
-      policy_id: request.policy_id,
-      status: response.status,
-      data
-    });
   }
 
   return {

@@ -9,7 +9,33 @@ const requiredPromotionMetadata = [
   "snapshot_id",
   "observation_id",
   "interpretation_id",
-  "memory_id"
+  "memory_id",
+  "source_version",
+  "freshness",
+  "data_owner"
+];
+
+const requiredPromotionTagPrefixes = [
+  "visibility:",
+  "sensitivity:",
+  "domain:",
+  "source_kind:",
+  "entity_type:",
+  "schema_status:",
+  "workspace:",
+  "access_policy:",
+  "consumer:"
+];
+
+const requiredRecallTagPrefixes = [
+  "visibility:",
+  "sensitivity:",
+  "domain:",
+  "entity_type:",
+  "schema_status:",
+  "workspace:",
+  "access_policy:",
+  "consumer:"
 ];
 
 function list(input, key) {
@@ -34,15 +60,49 @@ function hasRequiredRecallScope(policy) {
   const requiredTags = Array.isArray(policy.required_tags) ? policy.required_tags : [];
   return (
     policy.fail_closed === true &&
-    hasTagWithPrefix(requiredTags, "workspace:") &&
-    hasTagWithPrefix(requiredTags, "access_policy:") &&
+    requiredRecallTagPrefixes.every((prefix) => hasTagWithPrefix(requiredTags, prefix)) &&
     requiredTags.includes("status:active")
   );
 }
 
 function promotionHasProvenance(payload) {
   const metadata = payload.metadata ?? {};
-  return requiredPromotionMetadata.every((key) => Boolean(metadata[key]));
+  return (
+    requiredPromotionMetadata.every((key) => Boolean(metadata[key])) &&
+    Array.isArray(metadata.derived_from) &&
+    metadata.derived_from.includes(metadata.snapshot_id)
+  );
+}
+
+function promotionHasGovernance(payload) {
+  const tags = Array.isArray(payload.tags) ? payload.tags : [];
+  const metadata = payload.metadata ?? {};
+  const consumer = tagValue(tags, "consumer:");
+  return (
+    requiredPromotionTagPrefixes.every((prefix) => hasTagWithPrefix(tags, prefix)) &&
+    tags.includes("status:active") &&
+    metadata.workspace_id === tagValue(tags, "workspace:") &&
+    metadata.access_policy === tagValue(tags, "access_policy:") &&
+    Array.isArray(metadata.allowed_consumers) &&
+    metadata.allowed_consumers.includes(consumer) &&
+    ["approved", "reviewed"].includes(metadata.review_status ?? metadata.review_state)
+  );
+}
+
+function deletionHasGovernance(payload) {
+  const tags = Array.isArray(payload.tags) ? payload.tags : [];
+  const metadata = payload.metadata ?? {};
+  const consumer = tagValue(tags, "consumer:");
+  return (
+    requiredPromotionTagPrefixes.every((prefix) => hasTagWithPrefix(tags, prefix)) &&
+    tags.includes("status:do_not_use") &&
+    metadata.workspace_id === tagValue(tags, "workspace:") &&
+    metadata.access_policy === tagValue(tags, "access_policy:") &&
+    Array.isArray(metadata.allowed_consumers) &&
+    metadata.allowed_consumers.includes(consumer) &&
+    metadata.review_status === "revoked" &&
+    Boolean(metadata.revocation_reason)
+  );
 }
 
 function isVaultSync(input) {
@@ -139,6 +199,9 @@ function parseArgs(argv) {
   if (options.live && options.dryRun) {
     throw new Error("--live and --dry-run are mutually exclusive");
   }
+  if (options.live && !options.mockTransport && !options.applyPlan) {
+    throw new Error("live transport requires reviewed --apply-plan and --owner-confirmed");
+  }
   if (!options.live && !options.applyPlan) {
     options.dryRun = true;
   }
@@ -191,6 +254,9 @@ function validatedMemoryIsRevocable(memory) {
 function validatedMemoryTags(memory) {
   return unique([
     ...(Array.isArray(memory.tags) ? memory.tags : []),
+    memory.visibility ? `visibility:${memory.visibility}` : null,
+    memory.sensitivity ? `sensitivity:${memory.sensitivity}` : null,
+    memory.domain ? `domain:${memory.domain}` : null,
     memory.workspace_id ? `workspace:${memory.workspace_id}` : null,
     memory.access_policy ? `access_policy:${memory.access_policy}` : null,
     memory.status ? `status:${memory.status}` : null,
@@ -202,7 +268,11 @@ function validatedMemoryTags(memory) {
 }
 
 function capturedSourceById(input) {
-  return new Map(list(input, "captured_sources").map((source) => [source.source_id, source]).filter(([sourceId]) => Boolean(sourceId)));
+  return new Map(
+    [...list(input, "captured_sources"), ...list(input, "sources")]
+      .map((source) => [source.source_id, source])
+      .filter(([sourceId]) => Boolean(sourceId))
+  );
 }
 
 function promotionPayloadFromValidatedMemory(memory, context = {}) {
@@ -210,7 +280,14 @@ function promotionPayloadFromValidatedMemory(memory, context = {}) {
   const capturedSource = context.capturedSources?.get(memory.source_id ?? memory.metadata?.source_id);
   const enrichedMemory = {
     ...memory,
-    source_kind: memory.source_kind ?? memory.metadata?.source_kind ?? capturedSource?.source_kind
+    source_kind: memory.source_kind ?? memory.metadata?.source_kind ?? capturedSource?.source_kind,
+    visibility: memory.visibility ?? memory.metadata?.visibility ?? capturedSource?.visibility,
+    sensitivity: memory.sensitivity ?? memory.metadata?.sensitivity ?? capturedSource?.sensitivity,
+    domain: memory.domain ?? memory.metadata?.domain ?? capturedSource?.domain,
+    workspace_id: memory.workspace_id ?? memory.metadata?.workspace_id ?? capturedSource?.workspace_id,
+    access_policy: memory.access_policy ?? memory.metadata?.access_policy ?? capturedSource?.access_policy,
+    data_owner: memory.data_owner ?? memory.metadata?.data_owner ?? capturedSource?.data_owner,
+    allowed_consumers: memory.allowed_consumers ?? memory.metadata?.allowed_consumers ?? capturedSource?.allowed_consumers
   };
   return {
     document_id: enrichedMemory.document_id,
@@ -232,6 +309,12 @@ function promotionPayloadFromValidatedMemory(memory, context = {}) {
       derived_from: derivedFrom.length > 0 ? derivedFrom : enrichedMemory.metadata?.derived_from,
       workspace_id: enrichedMemory.workspace_id ?? enrichedMemory.metadata?.workspace_id ?? capturedSource?.workspace_id,
       access_policy: enrichedMemory.access_policy ?? enrichedMemory.metadata?.access_policy ?? capturedSource?.access_policy,
+      data_owner: enrichedMemory.data_owner,
+      allowed_consumers: enrichedMemory.allowed_consumers,
+      review_status: enrichedMemory.review_status,
+      visibility: enrichedMemory.visibility,
+      sensitivity: enrichedMemory.sensitivity,
+      domain: enrichedMemory.domain,
       entity_type: enrichedMemory.entity_type ?? enrichedMemory.metadata?.entity_type,
       schema_status: enrichedMemory.schema_status ?? enrichedMemory.metadata?.schema_status,
       source_kind: enrichedMemory.source_kind,
@@ -274,22 +357,36 @@ function validate(input) {
   }
 
   for (const payload of list(input, "promotion_payloads")) {
-    if (payload.status !== "active") continue;
     const tags = Array.isArray(payload.tags) ? payload.tags : [];
     const metadata = payload.metadata ?? {};
+    if (isDoNotUse(payload)) {
+      if (!payload.document_id || !payload.memory_id || !promotionHasProvenance(payload)) {
+        errors.add("adapter_delete_missing_provenance");
+      }
+      if (!deletionHasGovernance(payload)) {
+        errors.add("adapter_delete_missing_governance");
+      }
+      if (isVaultSync(input)) {
+        if (!hasVaultSyncMetadata(payload)) errors.add("vault_sync_metadata_missing");
+        if (!snapshotIsRegistered(input, metadata)) errors.add("snapshot_registry_missing");
+      }
+      continue;
+    }
+    if (payload.status !== "active") continue;
     const entityType = metadata.entity_type ?? tagValue(tags, "entity_type:");
     const schemaStatus = metadata.schema_status ?? tagValue(tags, "schema_status:");
     if (schemaStatus === "candidate" || entityTypeRegistryStatus(input, entityType) === "candidate") {
       errors.add("candidate_type_not_promotable");
     }
-    const hasActiveTag = tags.includes("status:active");
-    const hasScopedTags = hasTagWithPrefix(tags, "workspace:") && hasTagWithPrefix(tags, "access_policy:");
-    if (!payload.document_id || !payload.memory_id || !payload.text || !hasActiveTag || !hasScopedTags) {
+    if (!payload.document_id || !payload.memory_id || !payload.text) {
       errors.add("adapter_promotion_missing_provenance");
       continue;
     }
     if (!promotionHasProvenance(payload)) {
       errors.add("adapter_promotion_missing_provenance");
+    }
+    if (!promotionHasGovernance(payload)) {
+      errors.add("adapter_promotion_missing_governance");
     }
     if (isVaultSync(input)) {
       if (!hasVaultSyncMetadata(payload)) {
@@ -434,11 +531,64 @@ function readReviewedPlan(inputPath) {
   if (reviewedPlan.plan.validation?.errors?.length > 0) {
     throw new Error(`governance validation failed: ${reviewedPlan.plan.validation.errors.join(", ")}`);
   }
+  const executableErrors = validateExecutablePlan(reviewedPlan.plan);
+  if (executableErrors.length > 0) {
+    throw new Error(`apply_plan_governance_invalid: ${executableErrors.join(", ")}`);
+  }
   return {
     source_plan: fs.realpathSync(resolved),
     reviewedPlan,
     plan: reviewedPlan.plan
   };
+}
+
+function validateExecutablePlan(plan) {
+  const errors = new Set();
+  for (const operation of list(plan, "operations")) {
+    if (["retain", "upsert"].includes(operation.operation)) {
+      const payload = {
+        document_id: operation.document_id,
+        memory_id: operation.memory_id,
+        status: "active",
+        text: operation.content,
+        tags: operation.tags,
+        metadata: operation.metadata
+      };
+      if (!payload.document_id || !payload.memory_id || !payload.text || !promotionHasProvenance(payload)) {
+        errors.add("adapter_promotion_missing_provenance");
+      }
+      if (!promotionHasGovernance(payload)) {
+        errors.add("adapter_promotion_missing_governance");
+      }
+    } else if (operation.operation === "delete") {
+      const payload = {
+        document_id: operation.document_id,
+        memory_id: operation.memory_id,
+        status: "do_not_use",
+        tags: operation.tags,
+        metadata: operation.metadata
+      };
+      if (!payload.document_id || !payload.memory_id || !promotionHasProvenance(payload)) {
+        errors.add("adapter_delete_missing_provenance");
+      }
+      if (!deletionHasGovernance(payload)) errors.add("adapter_delete_missing_governance");
+    }
+  }
+  for (const policy of list(plan, "recall_policies")) {
+    if (!hasRequiredRecallScope(policy)) errors.add("unsafe_adapter_recall_policy");
+  }
+  return [...errors];
+}
+
+function approvedLiveEndpoint(baseUrl, env = process.env) {
+  if (/^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(?::|\/|$)/.test(baseUrl)) return "local";
+  if (baseUrl === "https://api.hindsight.vectorize.io") {
+    if (env.SUPERMEMORY_ALLOW_HINDSIGHT_CLOUD !== "1") {
+      throw new Error("Hindsight Cloud requires SUPERMEMORY_ALLOW_HINDSIGHT_CLOUD=1");
+    }
+    return "cloud";
+  }
+  throw new Error("live reviewed plan requires an approved local or explicit Hindsight Cloud endpoint");
 }
 
 function requireLiveEnv(env = process.env) {
@@ -566,17 +716,14 @@ async function applyReviewedPlan(options) {
     throw new Error("apply-plan requires --mock-transport or --live");
   }
   const { source_plan, reviewedPlan, plan } = readReviewedPlan(options.applyPlan);
-  const missing = requireLiveEnv();
-  if (missing.length > 0) {
-    throw new Error(`missing required live env: ${missing.join(", ")}`);
-  }
-  const requests = buildHindsightRequests(plan, {
-    baseUrl: process.env.HINDSIGHT_BASE_URL,
-    apiKey: process.env.HINDSIGHT_API_KEY
-  });
   if (options.mockTransport) {
+    const mockApiKey = process.env.HINDSIGHT_API_KEY || "mock-transport-key";
+    const requests = buildHindsightRequests(plan, {
+      bankId: process.env.HINDSIGHT_BANK_ID || plan.bank_id || "mock-bank",
+      baseUrl: process.env.HINDSIGHT_BASE_URL || "http://127.0.0.1:8888"
+    });
     const transport = await executeHindsightRequests(requests, {
-      apiKey: process.env.HINDSIGHT_API_KEY,
+      apiKey: mockApiKey,
       fetchImpl: async () => ({
         ok: true,
         status: 200,
@@ -598,13 +745,19 @@ async function applyReviewedPlan(options) {
       }
     };
   }
+  const missing = requireLiveEnv();
+  if (missing.length > 0) {
+    throw new Error(`missing required live env: ${missing.join(", ")}`);
+  }
   if (process.env.SUPERMEMORY_ALLOW_LIVE_HINDSIGHT !== "1") {
     throw new Error("live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport");
   }
   const baseUrl = process.env.HINDSIGHT_BASE_URL ?? "";
-  if (!/^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(?::|\/|$)/.test(baseUrl)) {
-    throw new Error("live reviewed plan requires explicit local HINDSIGHT_BASE_URL");
-  }
+  const endpointMode = approvedLiveEndpoint(baseUrl);
+  const requests = buildHindsightRequests(plan, {
+    baseUrl,
+    bankId: process.env.HINDSIGHT_BANK_ID
+  });
   const transport = await executeHindsightRequests(requests, {
     apiKey: process.env.HINDSIGHT_API_KEY
   });
@@ -613,6 +766,7 @@ async function applyReviewedPlan(options) {
     mode: "apply-plan",
     reviewed_plan: true,
     owner_confirmed: true,
+    endpoint_mode: endpointMode,
     source_plan,
     plan_hash: reviewedPlan.plan_hash,
     network_writes: true,

@@ -13,10 +13,12 @@ const requiredEnv = [
 ];
 
 function parseArgs(argv) {
-  const options = { json: false };
+  const options = { json: false, requireReady: false };
   for (const arg of argv) {
     if (arg === "--json") {
       options.json = true;
+    } else if (arg === "--require-ready") {
+      options.requireReady = true;
     } else {
       throw new Error(`unknown argument: ${arg}`);
     }
@@ -239,6 +241,7 @@ try {
   } else {
     printText(report);
   }
+  if (options.requireReady && report.status !== "ready") process.exitCode = 2;
 } catch (error) {
   process.stderr.write(`${error.message}\n`);
   process.exitCode = 1;

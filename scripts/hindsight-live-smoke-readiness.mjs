@@ -60,8 +60,8 @@ function runCommand(command) {
   };
 }
 
-function manualLiveCommand(fixture) {
-  return `node scripts/hindsight-promote.mjs --input ${fixture} --live --json`;
+function manualLiveCommand() {
+  return "node scripts/hindsight-live-smoke-runner.mjs --execute-live --json";
 }
 
 function runGuardCheck(fixture) {
@@ -81,7 +81,7 @@ function runGuardCheck(fixture) {
       SUPERMEMORY_ALLOW_LIVE_HINDSIGHT: ""
     }
   });
-  const expectedError = "live transport requires SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 or --mock-transport";
+  const expectedError = "live transport requires reviewed --apply-plan and --owner-confirmed";
   return {
     passed: result.status !== 0 && result.stderr.includes(expectedError),
     exit_code: result.status,

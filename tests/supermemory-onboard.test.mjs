@@ -198,6 +198,17 @@ assert.equal(committed.network_writes, false);
 assert.equal(committed.writes_performed, true);
 assert.equal(committed.summary.sources_committed, 3);
 assert.equal(committed.summary.snapshots_committed, 3);
+assert.equal(committed.summary.snapshot_artifacts_committed, 3);
+assert.equal(committed.snapshot_artifacts.length, 3);
+assert.ok(committed.snapshot_artifacts.every((artifact) => fs.existsSync(artifact.path)));
+assert.deepEqual(
+  committed.snapshot_artifacts.map((artifact) => fs.readFileSync(artifact.path, "utf8")).sort(),
+  [
+    "# Strategy\nClient wants governed memory.\n",
+    JSON.stringify({ account: "ACME", status: "pilot" }),
+    "api_key: SHOULD_NOT_LEAK_TO_PLAN\n"
+  ].sort()
+);
 
 const sourceRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "source_registry.md"), "utf8");
 const snapshotRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "snapshot_registry.md"), "utf8");
@@ -206,6 +217,22 @@ assert.match(sourceRegistry, /Client ACME/);
 assert.match(snapshotRegistry, /sha256:/);
 assert.equal(sourceRegistry.includes("SHOULD_NOT_LEAK_TO_PLAN"), false);
 assert.equal(snapshotRegistry.includes("SHOULD_NOT_LEAK_TO_PLAN"), false);
+
+const collisionRoot = path.join(tmpRoot, "collision-source");
+writeFile(path.join(collisionRoot, "a-b.md"), "flat path\n");
+writeFile(path.join(collisionRoot, "a", "b.md"), "nested path\n");
+const collisionPlan = parseJson(runOnboard([
+  "--client", "Collision Test",
+  "--workspace", "workspace:collision",
+  "--source-root", collisionRoot,
+  "--include", "**/*.md",
+  "--requested-by", "arnaud",
+  "--capture-reason", "verify deterministic unique ids",
+  "--json"
+]), "collision-plan");
+assert.equal(collisionPlan.sources.length, 2);
+assert.equal(new Set(collisionPlan.sources.map((source) => source.source_id)).size, 2);
+assert.equal(new Set(collisionPlan.snapshots.map((snapshot) => snapshot.snapshot_id)).size, 2);
 
 const duplicateCommit = runOnboard([
   "--commit-staging", stagingDir,

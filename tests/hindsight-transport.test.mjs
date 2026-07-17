@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   buildHindsightRequests,
   executeHindsightRequests,
+  HindsightTransportError,
   serializeHindsightMetadata
 } from "../scripts/hindsight-transport.mjs";
 
@@ -122,3 +123,45 @@ assert.equal(result.requests_sent, 4);
 assert.equal(calls.length, 4);
 assert.equal(calls[0].url, "https://api.hindsight.vectorize.io/v1/default/banks/bank-test/memories");
 assert.equal(calls[0].request.headers.Authorization, "Bearer sk-test-secret");
+
+const noContent = await executeHindsightRequests([requests[2]], {
+  apiKey: "sk-test-secret",
+  fetchImpl: async () => ({ ok: true, status: 204 })
+});
+assert.equal(noContent.responses[0].data, null);
+
+await assert.rejects(
+  executeHindsightRequests(requests.slice(0, 2), {
+    apiKey: "sk-test-secret",
+    fetchImpl: async (_url, request) => {
+      if (request.body.includes("Retain A2")) {
+        return { ok: false, status: 503, text: async () => "temporarily unavailable" };
+      }
+      return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) };
+    }
+  }),
+  (error) => {
+    assert.equal(error instanceof HindsightTransportError, true);
+    assert.equal(error.code, "hindsight_http_error");
+    assert.equal(error.completed_requests, 1);
+    assert.equal(error.pending_requests, 1);
+    assert.equal(error.status, 503);
+    return true;
+  }
+);
+
+await assert.rejects(
+  executeHindsightRequests([requests[0]], {
+    apiKey: "sk-test-secret",
+    timeoutMs: 10,
+    fetchImpl: async (_url, request) => new Promise((_resolve, reject) => {
+      request.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+    })
+  }),
+  (error) => {
+    assert.equal(error.code, "hindsight_timeout");
+    assert.equal(error.completed_requests, 0);
+    assert.equal(error.pending_requests, 1);
+    return true;
+  }
+);

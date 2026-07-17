@@ -1,5 +1,7 @@
 # Release Readiness Consolidation Audit
 
+> Historical audit from 2026-05-22. Its runtime-gap statements have been superseded by `docs/improvement-plan-and-audit-2026-07-17.md`.
+
 Date: 2026-05-22
 
 ## Verdict

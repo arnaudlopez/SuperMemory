@@ -46,7 +46,8 @@ const phases = [
     purpose: "Check Docker/local Hindsight readiness without writes or cloud fallback.",
     commands: [
       "docker compose -f compose.hindsight.yml up -d",
-      "node scripts/hindsight-local-live-smoke-preflight.mjs --json"
+      "node scripts/hindsight-local-live-smoke-preflight.mjs --json",
+      "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-local.jsonl --json"
     ],
     network_writes: false,
     credentials_required: false
@@ -79,6 +80,7 @@ const phases = [
     purpose: "Verify specs, release readiness, and evidence hygiene after operator work.",
     commands: [
       "node scripts/verify-supermemory-release-readiness.mjs --json",
+      "node scripts/verify-supermemory-production-readiness.mjs --evidence-path tmp/hindsight-live-smoke-local.jsonl --deployment-scope local-first-operator --rollback-acknowledged --owner-approved --approval-reference <approval-reference> --json",
       "node scripts/verify-supermemory-specs.mjs",
       "git status --short",
       "git diff --check"

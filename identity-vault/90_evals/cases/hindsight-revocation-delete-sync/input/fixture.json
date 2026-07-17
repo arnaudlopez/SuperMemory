@@ -23,8 +23,11 @@
         "status": "do_not_use",
         "visibility": "professional",
         "sensitivity": "medium",
+        "domain": "client",
         "workspace_id": "ws-acme",
         "access_policy": "professional-default",
+        "data_owner": "team:acme",
+        "allowed_consumers": ["email_agent"],
         "active_snapshot_id": "snap-acme-pricing-note-2026-05-19",
         "revocation_reason": "source_owner_revoked"
       }

@@ -63,10 +63,10 @@ node scripts/local-file-source-refresh.mjs --commit-staging /path/to/staging --v
 Check the local Hindsight runtime before any live smoke:
 
 ```bash
-node scripts/hindsight-local-live-smoke-preflight.mjs --json
+node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready
 ```
 
-No implicit cloud fallback is allowed. If the preflight reports `blocked`, clear the blocker first.
+No implicit cloud fallback is allowed. With strict preflight, `blocked` exits non-zero. Clear the blocker first.
 
 Prepare a reviewed Hindsight promotion plan from an explicit governed input:
 
@@ -85,6 +85,8 @@ Run the live smoke only when a bounded task permits it, a sacrificial bank is se
 ```bash
 HINDSIGHT_API_KEY=<set> HINDSIGHT_BANK_ID=<set> HINDSIGHT_BASE_URL=http://127.0.0.1:8888 SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1 node scripts/hindsight-live-smoke-runner.mjs --execute-live --json
 ```
+
+Capture, refresh, and onboarding commits preserve the real reviewed bytes as content-addressed snapshot artifacts. Registry changes run under a vault lock and recoverable journal so concurrent and partial commits fail closed. Live Hindsight writes are accepted only from owner-confirmed reviewed plans.
 
 ## Failure Modes
 

@@ -1,6 +1,6 @@
 # Hindsight Live Smoke Runbook
 
-Date: 2026-05-23
+Date: 2026-07-17
 
 ## Purpose
 
@@ -46,13 +46,13 @@ docker compose -f compose.hindsight.yml up -d
 Manual equivalent:
 
 ```bash
-docker run -d --name supermemory-hindsight-local --pull always \
+docker run -d --name supermemory-hindsight-local --pull missing \
   -p 127.0.0.1:8888:8888 \
   -p 127.0.0.1:9999:9999 \
   -e HINDSIGHT_API_LLM_PROVIDER=llamacpp \
   -e HINDSIGHT_API_WORKER_ID=supermemory-local \
   -v "$HOME/.hindsight-docker-supermemory:/home/hindsight/.pg0" \
-  ghcr.io/vectorize-io/hindsight:latest
+  ghcr.io/vectorize-io/hindsight@sha256:f0f9e9a73d6aedde9eaf4010ab604c3e015494e494318b26f1011144856b8112
 ```
 
 First boot with `llamacpp` can download a local model. Watch readiness with:
@@ -82,10 +82,10 @@ export SUPERMEMORY_ALLOW_LIVE_HINDSIGHT=1
 Run the local preflight before any live write:
 
 ```bash
-node scripts/hindsight-local-live-smoke-preflight.mjs --json
+node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready
 ```
 
-The preflight is read-only. It checks redacted env status, the local `/health` endpoint, Docker availability, and whether `supermemory-hindsight-local` is bound to localhost-only ports. It reports `ready` or `blocked` and prints the live command to run manually after blockers are cleared.
+The preflight is read-only. It checks redacted env status, the local `/health` endpoint, Docker availability, and whether `supermemory-hindsight-local` is bound to localhost-only ports. With `--require-ready`, a blocked result exits non-zero so automation cannot mistake a diagnostic report for readiness.
 
 Optional environment:
 
@@ -97,6 +97,7 @@ Cloud alternative, explicit only:
 
 ```bash
 export HINDSIGHT_BASE_URL="https://api.hindsight.vectorize.io"
+export SUPERMEMORY_ALLOW_HINDSIGHT_CLOUD=1
 ```
 
 Rules:
@@ -144,6 +145,8 @@ The runner executes three governed fixtures:
 2. `source-change-upsert`: upsert `doc-acme-prd`, then recall with `tags_match: "all_strict"`.
 3. `revocation-delete`: seed `doc-acme-pricing-note` via retain, then delete that same document to avoid a false `404` from deleting a never-created id.
 
+For every real fixture operation, the runner first creates a reviewed temporary plan and applies that exact plan with owner confirmation. Direct live execution from an unreviewed `--input` is rejected by the promotion CLI.
+
 The runner writes one redacted JSON line to:
 
 ```text
@@ -188,6 +191,8 @@ If a live run fails after a retain or upsert:
 4. Do not point cleanup at another bank.
 5. Record the follow-up as a new bounded goal before changing runtime code.
 
+The transport reports how many requests completed and remain pending. Do not automatically replay a failed write batch until the state of completed requests has been checked.
+
 The expected cleanup document ids are:
 
 ```text
@@ -213,6 +218,7 @@ After live:
 
 ```bash
 node scripts/hindsight-live-smoke-runner.mjs --mock-transport --json
+node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-evidence.jsonl --json
 node scripts/verify-supermemory-specs.mjs
 git diff --check
 ```

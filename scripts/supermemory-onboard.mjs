@@ -2,6 +2,8 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { materializeSnapshotArtifact } from "./lib/snapshot-artifacts.mjs";
+import { withVaultMutationLock, writeRegistryPairRecoverable } from "./lib/registry-transaction.mjs";
 
 const defaultExcludes = [".git/**", "node_modules/**", "tmp/**", "dist/**", "build/**", ".env*", "**/.env*"];
 const rawContentKeys = new Set(["content", "body", "raw_content", "source_text"]);
@@ -228,7 +230,8 @@ function buildPlan(options) {
     const text = fs.readFileSync(file.fullPath, "utf8");
     const hash = `sha256:${crypto.createHash("sha256").update(text).digest("hex")}`;
     const sourceSlug = slug(file.relativePath);
-    const sourceId = `source:onboard:${workspaceSlug}:${sourceSlug}`;
+    const relativePathId = crypto.createHash("sha256").update(file.relativePath).digest("hex").slice(0, 12);
+    const sourceId = `source:onboard:${workspaceSlug}:${sourceSlug}-${relativePathId}`;
     const snapshotId = `snap:${sourceId}:${dateToken}`;
     const secretLike = isSecretLike(text);
     const reviewState = secretLike ? "needs_review" : "ready_for_review";
@@ -385,14 +388,25 @@ function applyPlan(options) {
 
 function ensureVaultRegistries(vaultRoot) {
   const inbox = path.join(vaultRoot, "00_inbox");
-  fs.mkdirSync(inbox, { recursive: true });
+  if (fs.existsSync(inbox)) {
+    const inboxStat = fs.lstatSync(inbox);
+    if (inboxStat.isSymbolicLink() || !inboxStat.isDirectory()) throw new Error("vault_registry_scope_invalid");
+  } else {
+    fs.mkdirSync(inbox, { mode: 0o700 });
+  }
   const sourceRegistry = path.join(inbox, "source_registry.md");
   const snapshotRegistry = path.join(inbox, "snapshot_registry.md");
   if (!fs.existsSync(sourceRegistry)) {
-    fs.writeFileSync(sourceRegistry, "# Source Registry\n\n| source_id | workspace_id | client_name | relative_path | active_snapshot_id | review_state | content_hash |\n| --- | --- | --- | --- | --- | --- | --- |\n");
+    fs.writeFileSync(sourceRegistry, "# Source Registry\n\n| source_id | workspace_id | client_name | relative_path | active_snapshot_id | review_state | content_hash |\n| --- | --- | --- | --- | --- | --- | --- |\n", { flag: "wx", mode: 0o600 });
+  } else {
+    const sourceStat = fs.lstatSync(sourceRegistry);
+    if (sourceStat.isSymbolicLink() || !sourceStat.isFile()) throw new Error("vault_registry_scope_invalid");
   }
   if (!fs.existsSync(snapshotRegistry)) {
-    fs.writeFileSync(snapshotRegistry, "# Snapshot Registry\n\n| snapshot_id | source_id | workspace_id | relative_path | content_hash | captured_at | review_state |\n| --- | --- | --- | --- | --- | --- | --- |\n");
+    fs.writeFileSync(snapshotRegistry, "# Snapshot Registry\n\n| snapshot_id | source_id | workspace_id | relative_path | content_hash | captured_at | review_state |\n| --- | --- | --- | --- | --- | --- | --- |\n", { flag: "wx", mode: 0o600 });
+  } else {
+    const snapshotStat = fs.lstatSync(snapshotRegistry);
+    if (snapshotStat.isSymbolicLink() || !snapshotStat.isFile()) throw new Error("vault_registry_scope_invalid");
   }
   return { sourceRegistry, snapshotRegistry };
 }
@@ -401,10 +415,9 @@ function md(value) {
   return String(value ?? "").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
 
-function appendRows(filePath, rows) {
-  const existing = fs.readFileSync(filePath, "utf8");
+function appendRowsText(existing, rows) {
   const suffix = existing.endsWith("\n") ? "" : "\n";
-  fs.writeFileSync(filePath, `${existing}${suffix}${rows.join("\n")}\n`);
+  return `${existing}${suffix}${rows.join("\n")}\n`;
 }
 
 function commitStaging(options) {
@@ -424,33 +437,59 @@ function commitStaging(options) {
   if (JSON.stringify(sources) !== JSON.stringify(plan.sources) || JSON.stringify(snapshots) !== JSON.stringify(plan.snapshots)) {
     throw new Error("staging_tampered");
   }
-  const vaultRoot = path.resolve(options.vaultRoot);
-  const { sourceRegistry, snapshotRegistry } = ensureVaultRegistries(vaultRoot);
-  const existingSource = fs.readFileSync(sourceRegistry, "utf8");
-  const existingSnapshot = fs.readFileSync(snapshotRegistry, "utf8");
-  for (const source of sources) {
-    if (existingSource.includes(source.source_id)) throw new Error("duplicate_vault_entry");
+  const requestedVaultRoot = path.resolve(options.vaultRoot);
+  if (!fs.existsSync(requestedVaultRoot)) {
+    fs.mkdirSync(requestedVaultRoot, { recursive: true, mode: 0o700 });
   }
-  for (const snapshot of snapshots) {
-    if (existingSnapshot.includes(snapshot.snapshot_id)) throw new Error("duplicate_vault_entry");
+  if (fs.lstatSync(requestedVaultRoot).isSymbolicLink() || !fs.lstatSync(requestedVaultRoot).isDirectory()) {
+    throw new Error("vault_root_unreadable");
   }
-  appendRows(sourceRegistry, sources.map((source) => (
-    `| ${md(source.source_id)} | ${md(source.workspace_id)} | ${md(source.client_name)} | ${md(source.relative_path)} | ${md(source.active_snapshot_id)} | ${md(source.review_state)} | ${md(source.content_hash)} |`
-  )));
-  appendRows(snapshotRegistry, snapshots.map((snapshot) => (
-    `| ${md(snapshot.snapshot_id)} | ${md(snapshot.source_id)} | ${md(snapshot.workspace_id)} | ${md(snapshot.relative_path)} | ${md(snapshot.content_hash)} | ${md(snapshot.captured_at)} | ${md(snapshot.review_state)} |`
-  )));
-  return {
-    status: "pass",
-    mode: "commit-staging",
-    network_writes: false,
-    writes_performed: true,
-    vault_root: vaultRoot,
-    summary: {
-      sources_committed: sources.length,
-      snapshots_committed: snapshots.length
+  const vaultRoot = fs.realpathSync(requestedVaultRoot);
+  return withVaultMutationLock(vaultRoot, ({ recovery }) => {
+    const { sourceRegistry, snapshotRegistry } = ensureVaultRegistries(vaultRoot);
+    const existingSource = fs.readFileSync(sourceRegistry, "utf8");
+    const existingSnapshot = fs.readFileSync(snapshotRegistry, "utf8");
+    for (const source of sources) {
+      if (existingSource.includes(source.source_id)) throw new Error("duplicate_vault_entry");
     }
-  };
+    for (const snapshot of snapshots) {
+      if (existingSnapshot.includes(snapshot.snapshot_id)) throw new Error("duplicate_vault_entry");
+    }
+    const snapshotArtifacts = snapshots.map((snapshot) => materializeSnapshotArtifact({
+      vaultRoot,
+      originalRef: snapshot.original_ref,
+      contentHash: snapshot.content_hash,
+      snapshotId: snapshot.snapshot_id
+    }));
+    const nextSourceRegistry = appendRowsText(existingSource, sources.map((source) => (
+      `| ${md(source.source_id)} | ${md(source.workspace_id)} | ${md(source.client_name)} | ${md(source.relative_path)} | ${md(source.active_snapshot_id)} | ${md(source.review_state)} | ${md(source.content_hash)} |`
+    )));
+    const nextSnapshotRegistry = appendRowsText(existingSnapshot, snapshots.map((snapshot) => (
+      `| ${md(snapshot.snapshot_id)} | ${md(snapshot.source_id)} | ${md(snapshot.workspace_id)} | ${md(snapshot.relative_path)} | ${md(snapshot.content_hash)} | ${md(snapshot.captured_at)} | ${md(snapshot.review_state)} |`
+    )));
+    const registryTransaction = writeRegistryPairRecoverable({
+      vaultRoot,
+      sourceRegistry,
+      snapshotRegistry,
+      nextSourceRegistry,
+      nextSnapshotRegistry
+    });
+    return {
+      status: "pass",
+      mode: "commit-staging",
+      network_writes: false,
+      writes_performed: true,
+      vault_root: vaultRoot,
+      snapshot_artifacts: snapshotArtifacts,
+      registry_transaction: registryTransaction,
+      recovered_previous_transaction: recovery.recovered,
+      summary: {
+        sources_committed: sources.length,
+        snapshots_committed: snapshots.length,
+        snapshot_artifacts_committed: snapshotArtifacts.length
+      }
+    };
+  });
 }
 
 function main() {

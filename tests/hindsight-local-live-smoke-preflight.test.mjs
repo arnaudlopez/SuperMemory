@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 
-function runPreflight(env = {}) {
-  return spawnSync("node", ["scripts/hindsight-local-live-smoke-preflight.mjs", "--json"], {
+function runPreflight(env = {}, args = []) {
+  return spawnSync("node", ["scripts/hindsight-local-live-smoke-preflight.mjs", "--json", ...args], {
     encoding: "utf8",
     env: {
       ...process.env,
@@ -37,6 +37,10 @@ assert.ok(blocked.live_command.includes("HINDSIGHT_BASE_URL=http://127.0.0.1:888
 assert.ok(blocked.live_command.includes("node scripts/hindsight-live-smoke-runner.mjs --execute-live --json"));
 assert.equal(JSON.stringify(blocked).includes("api.hindsight.vectorize.io"), false);
 assert.equal(JSON.stringify(blocked).includes("sk-test-secret"), false);
+
+const strictBlocked = runPreflight({}, ["--require-ready"]);
+assert.notEqual(strictBlocked.status, 0);
+assert.equal(JSON.parse(strictBlocked.stdout).status, "blocked");
 
 const readyEnv = parseJson(runPreflight({
   HINDSIGHT_API_KEY: "sk-test-secret",

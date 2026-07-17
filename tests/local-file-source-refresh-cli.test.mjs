@@ -418,7 +418,10 @@ assert.equal(commitStaging.mode, "commit-staging");
 assert.equal(commitStaging.generated_from, "local_file_source_refresh");
 assert.equal(commitStaging.owner_confirmed, true);
 assert.equal(commitStaging.vault_writes_performed, true);
-assert.equal(commitStaging.files_written, 2);
+assert.equal(commitStaging.files_written, 3);
+assert.equal(commitStaging.snapshot_artifacts.length, 1);
+assert.equal(fs.existsSync(commitStaging.snapshot_artifacts[0].path), true);
+assert.equal(fs.readFileSync(commitStaging.snapshot_artifacts[0].path, "utf8"), changedContent);
 
 const committedSourceRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "source_registry.md"), "utf8");
 const committedSnapshotRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "snapshot_registry.md"), "utf8");

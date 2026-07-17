@@ -307,7 +307,8 @@ requireEqual(commitStaging.mode, "commit-staging", "commit-staging mode");
 requireEqual(commitStaging.generated_from, "local_file_source_refresh", "commit-staging generated_from");
 requireEqual(commitStaging.vault_writes_performed, true, "commit-staging vault_writes_performed");
 requireEqual(commitStaging.owner_confirmed, true, "commit-staging owner_confirmed");
-requireEqual(commitStaging.files_written, 2, "commit-staging files_written");
+requireEqual(commitStaging.files_written, 3, "commit-staging files_written");
+requireEqual(commitStaging.snapshot_artifacts?.length, 1, "commit-staging snapshot artifact count");
 
 const sourceRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "source_registry.md"), "utf8");
 const snapshotRegistry = fs.readFileSync(path.join(vaultRoot, "00_inbox", "snapshot_registry.md"), "utf8");

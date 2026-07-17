@@ -113,6 +113,9 @@ function deleteSetupInput(setupDocument) {
         status: "active",
         text: "Temporary SuperMemory live smoke seed document for revocation delete verification.",
         tags: [
+          "visibility:professional",
+          "sensitivity:medium",
+          "domain:client",
           "workspace:ws-acme",
           "access_policy:professional-default",
           "status:active",
@@ -129,7 +132,12 @@ function deleteSetupInput(setupDocument) {
           memory_id: setupDocument.memory_id,
           source_version: "snap-live-smoke-delete-seed",
           freshness: "fresh",
-          derived_from: ["snap-live-smoke-delete-seed"]
+          derived_from: ["snap-live-smoke-delete-seed"],
+          workspace_id: "ws-acme",
+          access_policy: "professional-default",
+          data_owner: "team:acme",
+          allowed_consumers: ["email_agent"],
+          review_status: "approved"
         }
       }
     ]
@@ -137,6 +145,34 @@ function deleteSetupInput(setupDocument) {
 }
 
 function runPromote(input, options) {
+  if (!options.mockTransport) {
+    const planDir = fs.mkdtempSync(path.join(os.tmpdir(), "hindsight-live-smoke-plan-"));
+    const planPath = path.join(planDir, "reviewed-promotion-plan.json");
+    try {
+      const writePlan = spawnSync("node", [
+        "scripts/hindsight-promote.mjs",
+        "--input", input,
+        "--write-plan", planPath,
+        "--json"
+      ], {
+        encoding: "utf8",
+        env: process.env
+      });
+      if (writePlan.status !== 0) return writePlan;
+      return spawnSync("node", [
+        "scripts/hindsight-promote.mjs",
+        "--apply-plan", planPath,
+        "--owner-confirmed",
+        "--live",
+        "--json"
+      ], {
+        encoding: "utf8",
+        env: process.env
+      });
+    } finally {
+      fs.rmSync(planDir, { recursive: true, force: true });
+    }
+  }
   const [cmd, args] = commandForInput(input, options);
   return spawnSync(cmd, args, {
     encoding: "utf8",
