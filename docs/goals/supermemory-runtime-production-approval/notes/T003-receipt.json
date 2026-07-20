@@ -1,0 +1,56 @@
+{
+  "result": "done",
+  "task_id": "T003",
+  "board_path": "docs/goals/supermemory-runtime-production-approval/state.yaml",
+  "decision": "approved",
+  "full_outcome_complete": false,
+  "rationale": "Runtime-ready is proven for the local-first target. Fresh evidence is live, redacted, and complete: retain+recall, upsert+recall, and seeded delete all returned HTTP 200 with no failures. No ambiguous partial state remains. The next closure package must add a fail-closed production decision surface that reruns runtime readiness and requires an exact local-first scope, rollback acknowledgement, explicit owner approval, and a non-secret approval reference. It must never turn stale/mock/non-local evidence into production readiness.",
+  "worker_package": {
+    "objective": "Implement a fail-closed production approval verifier, tests, operator command, package command, and documentation that build on runtime readiness without weakening it.",
+    "allowed_files": [
+      "scripts/verify-supermemory-production-readiness.mjs",
+      "scripts/verify-supermemory-runtime-readiness.mjs",
+      "scripts/verify-supermemory-release-readiness.mjs",
+      "scripts/supermemory-operator.mjs",
+      "tests/supermemory-production-readiness.test.mjs",
+      "tests/supermemory-runtime-readiness.test.mjs",
+      "package.json",
+      "README.md",
+      "docs/production-runbook.md",
+      "docs/improvement-plan-and-audit-2026-07-17.md"
+    ],
+    "verify": [
+      "node --test tests/supermemory-production-readiness.test.mjs tests/supermemory-runtime-readiness.test.mjs",
+      "npm test",
+      "node scripts/verify-supermemory-release-readiness.mjs --json",
+      "node scripts/verify-secret-hygiene.mjs --json",
+      "git diff --check"
+    ],
+    "stop_if": [
+      "The verifier can report production-ready without rerunning or validating runtime readiness.",
+      "The verifier accepts mock, stale, failed, or non-local live evidence.",
+      "Owner approval, approval reference, exact scope, or rollback acknowledgement can be omitted on a successful decision.",
+      "The implementation persists credentials or live evidence in tracked files.",
+      "The fix needs files outside allowed_files."
+    ]
+  },
+  "evidence": [
+    "Live evidence generated_at 2026-07-17T16:22:21.046Z, status pass, mode live, live_writes_performed true, secrets_redacted true.",
+    "capture-retain: retain 200 and recall 200.",
+    "source-change-upsert: upsert 200 and recall 200.",
+    "revocation-delete: setup pass and delete 200.",
+    "Evidence hygiene scan passed with zero findings.",
+    "Runtime verifier returned contract_ready true and runtime_ready true."
+  ],
+  "subgoal_contract": null,
+  "parallel_safety": null,
+  "blocked_tasks": [],
+  "missing_evidence": [
+    "Fail-closed production decision verifier and tests.",
+    "Post-evidence owner approval.",
+    "Final full-oracle verification and audit."
+  ],
+  "required_board_updates": [
+    "Replace T004 objective with the approved worker package and activate T004."
+  ]
+}

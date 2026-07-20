@@ -1,0 +1,498 @@
+version: 2
+
+goal:
+  title: "SuperMemory Runtime Production Approval"
+  slug: "supermemory-runtime-production-approval"
+  kind: existing_plan
+  tranche: "Validate the existing hardening, produce fresh local live evidence, close runtime gaps, and reach an explicit production decision."
+  status: done
+  oracle:
+    signal: "Contract gate passes, strict local preflight is ready, fresh redacted live smoke evidence passes on a sacrificial local bank, runtime_ready is true, and post-evidence production approval is explicit."
+    cadence: "after the live-smoke package, after any runtime fix package, and at final audit"
+    final_proof: "T999 records full_outcome_complete: true and cites contract, live smoke, runtime, production decision, secret hygiene, and diff evidence."
+  intake:
+    original_request: "Ok va y. Objectif production ready"
+    interpreted_outcome: "Make the supported local-first SuperMemory operator surface genuinely production-ready with real Hindsight runtime proof and explicit approval."
+    input_shape: existing_plan
+    audience: "SuperMemory owner and operator"
+    authority: approved
+    proof_type: decision
+    completion_proof: "Fresh local live evidence and all three readiness levels are proven, followed by a final audit."
+    likely_misfire: "Calling mock-only contract readiness production readiness or writing to a non-sacrificial/cloud target."
+    blind_spots_considered:
+      - "Missing live environment values"
+      - "Stale prior evidence"
+      - "Container and localhost binding health"
+      - "Sacrificial bank isolation"
+      - "Secret leakage"
+      - "Rollback and partial writes"
+      - "Uncommitted existing changes"
+      - "Post-evidence owner approval"
+    existing_plan_facts:
+      - "33 Node tests passed after the hardening implementation."
+      - "The release verifier reports contract_ready true, runtime_ready false, production_ready false."
+      - "The last runtime check was blocked by missing live env and evidence about 1291 hours old."
+      - "The local-first production runbook and strict preflight already exist."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41737/supermemory-runtime-production-approval/"
+    command: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.4.0/skills/goal-prep/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal docs/goals/supermemory-runtime-production-approval"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Validate the existing production plan and current oracle before any new live write."
+    inputs:
+      - "README.md"
+      - "docs/improvement-plan-and-audit-2026-07-17.md"
+      - "docs/production-runbook.md"
+      - "scripts/verify-supermemory-release-readiness.mjs"
+      - "scripts/verify-supermemory-runtime-readiness.mjs"
+      - "Current git status and prior verification receipts"
+    constraints:
+      - "Read-only."
+      - "Do not run the live smoke."
+      - "Do not print credential values."
+    expected_output:
+      - "Validated or corrected oracle"
+      - "Exact sacrificial local-live execution package"
+      - "Production approval proof requirements"
+      - "Risks and stop conditions"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "The oracle is valid and intentionally stricter than contract readiness. Current evidence proves the pinned local Hindsight container is running, healthy, database-connected, and localhost-only. The strict preflight is blocked solely because live env values are absent. T002 may generate ephemeral local-only credentials and a unique sacrificial bank id in memory, execute reviewed-plan live fixtures, retain evidence only under ignored tmp/, and stop on any non-local target, partial failure, redaction failure, or ambiguous bank isolation."
+      worker_package:
+        objective: "Bring the pinned local Hindsight runtime to strict-ready state and execute the governed live smoke against a uniquely named sacrificial local bank."
+        allowed_files:
+          - "tmp/**"
+        verify:
+          - "node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready"
+          - "node scripts/hindsight-live-smoke-runner.mjs --execute-live --json --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl"
+          - "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json"
+        stop_if:
+          - "The resolved endpoint is not local."
+          - "The target bank cannot be proven sacrificial."
+          - "The container is not localhost-bound."
+          - "A real external credential is required but unavailable."
+          - "Any output exposes a credential or unredacted sensitive content."
+      evidence:
+        - "Preflight 2026-07-17T16:20:16.693Z: endpoint http://127.0.0.1:8888 healthy with database connected."
+        - "Docker container supermemory-hindsight-local is running with 8888 and 9999 bound to 127.0.0.1 only."
+        - "Compose resolves the immutable pinned Hindsight digest."
+        - "Live environment statuses are all not_set; no credential values were read or printed."
+        - "Current release and test receipts prove contract-ready but do not prove runtime-ready."
+      subgoal_contract: null
+      parallel_safety: null
+      blocked_tasks: []
+      missing_evidence:
+        - "Fresh successful local live-smoke evidence."
+        - "runtime_ready=true from the runtime verifier."
+        - "Explicit post-evidence production approval and production decision report."
+      required_board_updates:
+        - "Mark T001 done and activate T002."
+  - id: T002
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: high
+    objective: "Bring the pinned local Hindsight runtime to strict-ready state and execute the governed live smoke against a uniquely named sacrificial local bank."
+    inputs:
+      - "T001 receipt"
+      - "compose.hindsight.yml"
+      - "docs/hindsight-live-smoke-runbook.md"
+      - "scripts/hindsight-local-live-smoke-preflight.mjs"
+      - "scripts/hindsight-live-smoke-runner.mjs"
+    constraints:
+      - "Use only http://127.0.0.1:8888 or localhost."
+      - "Never use Hindsight Cloud or a pre-existing production bank."
+      - "Use a unique sacrificial bank id and non-secret local-only credential value when the local runtime permits it."
+      - "Do not print credential values."
+      - "Keep live evidence under ignored tmp/."
+      - "Do not edit product files in this task."
+    allowed_files:
+      - "tmp/**"
+    verify:
+      - "node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready"
+      - "node scripts/hindsight-live-smoke-runner.mjs --execute-live --json --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl"
+      - "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json"
+    stop_if:
+      - "The resolved endpoint is not local."
+      - "The target bank cannot be proven sacrificial."
+      - "The container is not localhost-bound."
+      - "A real external credential is required but unavailable."
+      - "Any output exposes a credential or unredacted sensitive content."
+    receipt:
+      result: done
+      changed_files:
+        - tmp/hindsight-live-smoke-production-readiness.jsonl
+      commands:
+        - cmd: "node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready (ephemeral local env)"
+          status: pass
+        - cmd: "node scripts/hindsight-live-smoke-runner.mjs --execute-live --json --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl (unique sacrificial local bank)"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json (same ephemeral local env)"
+          status: pass
+      summary: "A unique sacrificial bank was generated in memory and targeted only at http://127.0.0.1:8888. Strict preflight passed with healthy database, running container, and localhost-only bindings. The governed live smoke passed capture-retain, source-change-upsert, and revocation-delete with real writes and secrets_redacted=true. Runtime verification returned contract_ready=true, runtime_ready=true, fresh live evidence age about 0.01 hours, and production_ready=false pending the explicit production decision layer."
+      deviations: []
+      remaining_blockers:
+        - "No explicit post-evidence production approval gate or decision report exists yet."
+      verification_attempts: 1
+      stopped_because: null
+  - id: T003
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the live-smoke and runtime evidence, classify any partial state, and select the largest safe closure package."
+    inputs:
+      - "T002 receipt"
+      - "Redacted live evidence metadata"
+      - "Runtime readiness report"
+    constraints:
+      - "Read-only."
+      - "Do not repeat live writes."
+      - "Treat ambiguous partial writes as a runtime incident, not as success."
+    expected_output:
+      - "runtime-ready decision"
+      - "Partial-write assessment"
+      - "Exact fix package or production-gate package"
+      - "Approval requirements"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Runtime-ready is proven for the local-first target. Fresh evidence is live, redacted, and complete: retain+recall, upsert+recall, and seeded delete all returned HTTP 200 with no failures. No ambiguous partial state remains. The next closure package must add a fail-closed production decision surface that reruns runtime readiness and requires an exact local-first scope, rollback acknowledgement, explicit owner approval, and a non-secret approval reference. It must never turn stale/mock/non-local evidence into production readiness."
+      worker_package:
+        objective: "Implement a fail-closed production approval verifier, tests, operator command, package command, and documentation that build on runtime readiness without weakening it."
+        allowed_files:
+          - scripts/verify-supermemory-production-readiness.mjs
+          - scripts/verify-supermemory-runtime-readiness.mjs
+          - scripts/verify-supermemory-release-readiness.mjs
+          - scripts/supermemory-operator.mjs
+          - tests/supermemory-production-readiness.test.mjs
+          - tests/supermemory-runtime-readiness.test.mjs
+          - package.json
+          - README.md
+          - docs/production-runbook.md
+          - docs/improvement-plan-and-audit-2026-07-17.md
+        verify:
+          - "node --test tests/supermemory-production-readiness.test.mjs tests/supermemory-runtime-readiness.test.mjs"
+          - "npm test"
+          - "node scripts/verify-supermemory-release-readiness.mjs --json"
+          - "node scripts/verify-secret-hygiene.mjs --json"
+          - "git diff --check"
+        stop_if:
+          - "The verifier can report production-ready without rerunning or validating runtime readiness."
+          - "The verifier accepts mock, stale, failed, or non-local live evidence."
+          - "Owner approval, approval reference, exact scope, or rollback acknowledgement can be omitted on a successful decision."
+          - "The implementation persists credentials or live evidence in tracked files."
+          - "The fix needs files outside allowed_files."
+      evidence:
+        - "Live evidence generated_at 2026-07-17T16:22:21.046Z, status pass, mode live, live_writes_performed true, secrets_redacted true."
+        - "capture-retain: retain 200 and recall 200."
+        - "source-change-upsert: upsert 200 and recall 200."
+        - "revocation-delete: setup pass and delete 200."
+        - "Evidence hygiene scan passed with zero findings."
+        - "Runtime verifier returned contract_ready true and runtime_ready true."
+      subgoal_contract: null
+      parallel_safety: null
+      blocked_tasks: []
+      missing_evidence:
+        - "Fail-closed production decision verifier and tests."
+        - "Post-evidence owner approval."
+        - "Final full-oracle verification and audit."
+      required_board_updates:
+        - "Replace T004 objective with the approved worker package and activate T004."
+  - id: T004
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: high
+    objective: "Implement a fail-closed production approval verifier, tests, operator command, package command, and documentation that build on runtime readiness without weakening it."
+    allowed_files:
+      - "scripts/verify-supermemory-production-readiness.mjs"
+      - "scripts/verify-supermemory-runtime-readiness.mjs"
+      - "scripts/verify-supermemory-release-readiness.mjs"
+      - "scripts/supermemory-operator.mjs"
+      - "tests/supermemory-production-readiness.test.mjs"
+      - "tests/supermemory-runtime-readiness.test.mjs"
+      - "package.json"
+      - "README.md"
+      - "docs/production-runbook.md"
+      - "docs/improvement-plan-and-audit-2026-07-17.md"
+    verify:
+      - "node --test tests/supermemory-production-readiness.test.mjs tests/supermemory-runtime-readiness.test.mjs"
+      - "npm test"
+      - "node scripts/verify-supermemory-release-readiness.mjs --json"
+      - "node scripts/verify-secret-hygiene.mjs --json"
+      - "git diff --check"
+    stop_if:
+      - "The verifier can report production-ready without rerunning or validating runtime readiness."
+      - "The verifier accepts mock, stale, failed, or non-local live evidence."
+      - "Owner approval, approval reference, exact scope, or rollback acknowledgement can be omitted on a successful decision."
+      - "The implementation persists credentials or live evidence in tracked files."
+      - "The fix needs files outside allowed_files."
+    receipt:
+      result: done
+      changed_files:
+        - scripts/verify-supermemory-production-readiness.mjs
+        - scripts/verify-supermemory-release-readiness.mjs
+        - scripts/supermemory-operator.mjs
+        - tests/supermemory-production-readiness.test.mjs
+        - package.json
+        - README.md
+        - docs/production-runbook.md
+        - docs/improvement-plan-and-audit-2026-07-17.md
+      commands:
+        - cmd: "node --test tests/supermemory-production-readiness.test.mjs tests/supermemory-runtime-readiness.test.mjs"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-release-readiness.mjs --json"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs --json"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      summary: "Added a production decision verifier after first capturing a red missing-module test. The gate refuses missing approval, invalid scope, absent rollback acknowledgement, missing runtime evidence, stale evidence, and decisions that predate evidence. Success requires rerunning runtime readiness plus explicit owner approval and a non-secret approval reference. The operator surface, package scripts, README, runbook, release surface check, and audit are aligned. All 34 tests and every package verify command pass."
+      deviations: []
+      remaining_blockers:
+        - "The production gate still requires an explicit owner approval reference after evidence review."
+      verification_attempts: 1
+      stopped_because: null
+  - id: T005
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: high
+    objective: "Run the complete contract, runtime, production-decision, hygiene, and rollback evidence set without weakening live safeguards."
+    inputs:
+      - "T003 and T004 receipts"
+      - "Fresh live evidence path under tmp/"
+      - "Current working tree"
+    constraints:
+      - "Do not push or publish without explicit user request."
+      - "Do not mark production-ready before the post-evidence owner approval requirement is satisfied."
+      - "Do not commit live evidence or credentials."
+    expected_output:
+      - "Contract gate report"
+      - "Runtime gate report"
+      - "Production decision report"
+      - "Secret hygiene report"
+      - "Rollback readiness statement"
+    receipt:
+      result: done
+      summary: "All non-human production gates completed here. The initial production decision correctly failed closed while owner approval was absent; the exact approval was subsequently received and the successful production decision was recorded by T007. Secret hygiene, diff checks, ignored-evidence protection, and registry rollback evidence remain green."
+      evidence:
+        - "Release report: status pass, contract_ready true, all 16 checks pass including production_readiness_surface."
+        - "Runtime recheck: status pass, runtime_ready true, preflight ready, live evidence valid and about 0.19 hours old."
+        - "Production report: denied_approval_requirements; missing only owner_approval and approval_reference."
+        - "Secret hygiene: 384 files scanned, zero findings, no tracked tmp evidence."
+        - "tmp/hindsight-live-smoke-production-readiness.jsonl is ignored by .gitignore."
+        - "Registry transaction rollback/recovery test passes."
+        - "git diff --check passes."
+      facts:
+        - "The production verifier performs no live writes."
+        - "The local live smoke already completed successfully on a unique sacrificial bank."
+        - "The current changes remain uncommitted and have not been pushed."
+      contradictions: []
+      ambiguity_requiring_judge: []
+      commands:
+        - cmd: "node scripts/verify-supermemory-release-readiness.mjs --json"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json (ephemeral local env)"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-production-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --deployment-scope local-first-operator --rollback-acknowledged --json"
+          status: expected_denial
+        - cmd: "node scripts/verify-secret-hygiene.mjs --json"
+          status: pass
+        - cmd: "node --test tests/registry-transaction.test.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      note_needed: false
+      approval_resolved_by: T007
+  - id: T006
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: high
+    objective: "Create a local release commit for the already verified production-hardening diff and prove the code rollback anchor without pushing or tracking live evidence."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current product diff"
+      - "Ignored live evidence under tmp/"
+    constraints:
+      - "Do not modify product files unless a verification failure reveals a required in-scope repair."
+      - "Stage only the intended production-hardening code, tests, fixtures, workflow, and documentation."
+      - "Do not stage docs/goals/**, tmp/**, credentials, or live evidence."
+      - "Do not push, publish, tag, or create a remote artifact."
+      - "Abort the commit if tests, release verification, secret hygiene, staged diff checks, or scope review fail."
+    expected_output:
+      - "Passing full verification immediately before commit"
+      - "Explicit staged-file scope review"
+      - "Local release commit SHA"
+      - "Rollback command anchored to the release commit"
+    receipt:
+      result: done
+      summary: "Re-ran the complete contract test and release surface before staging. Reviewed and staged exactly 49 production-hardening files, excluding docs/goals/** and ignored tmp/** evidence, then created local release commit 7fa73cffbc73a7061e8c54dcacc4a634d816f026 without push, tag, or remote publication. Post-commit runtime readiness remains green on fresh redacted live evidence; the production gate still fails closed solely on owner approval and approval reference."
+      release_commit: "7fa73cffbc73a7061e8c54dcacc4a634d816f026"
+      rollback_command: "git revert 7fa73cffbc73a7061e8c54dcacc4a634d816f026"
+      evidence:
+        - "npm test: 34/34 pass."
+        - "Release verifier: status pass, contract_ready true, all 16 checks pass."
+        - "Secret hygiene: 385 files scanned, zero findings, no tracked tmp files."
+        - "Staged scope: 49 product files, no docs/goals/** or tmp/** paths, cached diff check pass."
+        - "Post-commit runtime verifier: runtime_ready true, strict preflight ready, live evidence valid and about 0.34 hours old."
+        - "Post-commit production verifier: denied_approval_requirements; only owner_approval and approval_reference are missing."
+        - "Git status after commit: main is ahead of origin/main by one commit; only the untracked GoalBuddy control board remains."
+      commands:
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-release-readiness.mjs --json"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs --json"
+          status: pass
+        - cmd: "git diff --cached --check"
+          status: pass
+        - cmd: "git commit -m 'Harden SuperMemory production readiness'"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json (ephemeral local env)"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-production-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --deployment-scope local-first-operator --rollback-acknowledged --json"
+          status: expected_denial
+      approval_resolved_by: T007
+  - id: T007
+    type: pm
+    assignee: PM
+    status: done
+    reasoning_hint: high
+    objective: "Execute the fail-closed production decision gate using the exact post-evidence owner approval and the local release rollback anchor."
+    inputs:
+      - "Owner reply: J’approuve la mise en production local-first de SuperMemory après revue de la preuve runtime du 17 juillet 2026."
+      - "Release commit 7fa73cffbc73a7061e8c54dcacc4a634d816f026"
+      - "Fresh ignored live evidence under tmp/hindsight-live-smoke-production-readiness.jsonl"
+    constraints:
+      - "Use deployment scope local-first-operator only."
+      - "Rerun runtime readiness with local ephemeral values and no new live write."
+      - "Use a non-secret approval reference."
+      - "Acknowledge rollback through the local release commit."
+      - "Do not push, publish, tag, or modify product files."
+    expected_output:
+      - "production_ready=true decision report"
+      - "Approval recorded after live evidence"
+      - "Runtime gate rerun and green"
+      - "Zero live writes by the decision check"
+    receipt:
+      result: done
+      summary: "The exact owner approval was applied to the fail-closed production decision gate. The gate reran contract and runtime readiness against the pinned local endpoint and fresh ignored evidence, returned production_ready=true, and performed no live write."
+      decision: approved
+      approval_reference: "owner-approval-2026-07-17-supermemory"
+      deployment_scope: "local-first-operator"
+      release_commit: "7fa73cffbc73a7061e8c54dcacc4a634d816f026"
+      rollback_command: "git revert 7fa73cffbc73a7061e8c54dcacc4a634d816f026"
+      evidence:
+        - "Decision time 2026-07-17T19:44:23.231Z is after live evidence time 2026-07-17T16:22:21.046Z."
+        - "Production report: status pass, readiness_level production-ready, contract_ready true, runtime_ready true, production_ready true."
+        - "Approval requirements met with no missing fields and exact local-first-operator scope."
+        - "Strict preflight ready; live evidence pass, live, redacted, about 3.38 hours old, max age 24 hours."
+        - "The production decision check performed zero live writes."
+      commands:
+        - cmd: "node scripts/verify-supermemory-production-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --owner-approved --approval-reference owner-approval-2026-07-17-supermemory --deployment-scope local-first-operator --rollback-acknowledged --json (ephemeral local env)"
+          status: pass
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: xhigh
+    objective: "Audit whether SuperMemory is genuinely production-ready for the supported local-first operator scope."
+    inputs:
+      - "All done task receipts"
+      - "Fresh live-smoke evidence metadata"
+      - "Final verification reports"
+      - "Current dirty diff"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if a required Worker or PM task remains queued, active, or blocked."
+      - "Reject mock-only, stale, non-local, non-sacrificial, unredacted, or partial live evidence."
+      - "Reject completion without an explicit post-evidence production decision."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Oracle coverage"
+      - "Residual risks"
+      - "Next task if not complete"
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      rationale: "The complete local-first oracle is satisfied on release commit 7fa73cf. Contract checks pass, strict local preflight is ready, fresh sacrificial-bank live evidence is complete and redacted, runtime readiness is true, and the explicit owner approval produced production_ready=true after the evidence with zero decision-check writes. Secret hygiene, tests, rollback anchoring, and product diff checks are green. Every required Worker and PM task is done; no required task remains queued, active, or blocked."
+      evidence:
+        - "Final npm test rerun: 34 tests pass, zero failures."
+        - "Release verification passes all 16 contract checks and remains mock-only in CI."
+        - "Live evidence generated 2026-07-17T16:22:21.046Z is mode live, secrets_redacted true, and within the 24-hour freshness limit."
+        - "capture-retain and recall both returned HTTP 200; source-change-upsert and recall both returned HTTP 200; revocation setup passed and delete returned HTTP 200."
+        - "T007 production report: production_ready true, contract_ready true, runtime_ready true, approval after evidence, exact local-first-operator scope, no missing approval fields, and no live write by the decision check."
+        - "Secret hygiene rerun: 385 files scanned, zero findings, no tracked tmp evidence."
+        - "Release commit 7fa73cffbc73a7061e8c54dcacc4a634d816f026 is the product HEAD and rollback is git revert 7fa73cffbc73a7061e8c54dcacc4a634d816f026."
+        - "Git status contains no product diff; only the local untracked GoalBuddy control board remains."
+      residual_risks:
+        - "Approval applies only to the supported local-first operator scope, not Hindsight Cloud or a multi-user hosted service."
+        - "Live evidence expires after 24 hours and must be regenerated before a later production decision."
+        - "The release commit is local and has not been pushed, tagged, or deployed."
+      worker_package: null
+      subgoal_contract: null
+      parallel_safety: null
+      blocked_tasks: []
+      missing_evidence: []
+      required_board_updates:
+        - "Mark T999 done, set active_task null, and set goal.status done."
+
+checks:
+  dirty_fingerprint: "product diff committed at 7fa73cffbc73a7061e8c54dcacc4a634d816f026; only the untracked GoalBuddy control board remains"
+  last_verification:
+    result: pass
+    task: T999
+    commands:
+      - "npm test (34/34 pass)"
+      - "node scripts/verify-supermemory-release-readiness.mjs --json (contract_ready=true; 16/16 checks pass)"
+      - "node scripts/verify-secret-hygiene.mjs --json (385 files; zero findings)"
+      - "git diff --cached --check (pass before commit)"
+      - "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json (runtime_ready=true; evidence age 0.34h)"
+      - "node scripts/verify-supermemory-production-readiness.mjs --owner-approved --approval-reference owner-approval-2026-07-17-supermemory --deployment-scope local-first-operator --rollback-acknowledged --json (production_ready=true; no live writes)"

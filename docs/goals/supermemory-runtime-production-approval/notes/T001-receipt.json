@@ -1,0 +1,44 @@
+{
+  "result": "done",
+  "task_id": "T001",
+  "board_path": "docs/goals/supermemory-runtime-production-approval/state.yaml",
+  "decision": "approved",
+  "full_outcome_complete": false,
+  "rationale": "The oracle is valid and intentionally stricter than contract readiness. Current evidence proves the pinned local Hindsight container is running, healthy, database-connected, and localhost-only. The strict preflight is blocked solely because live env values are absent. T002 may generate ephemeral local-only credentials and a unique sacrificial bank id in memory, execute reviewed-plan live fixtures, retain evidence only under ignored tmp/, and stop on any non-local target, partial failure, redaction failure, or ambiguous bank isolation.",
+  "worker_package": {
+    "objective": "Bring the pinned local Hindsight runtime to strict-ready state and execute the governed live smoke against a uniquely named sacrificial local bank.",
+    "allowed_files": [
+      "tmp/**"
+    ],
+    "verify": [
+      "node scripts/hindsight-local-live-smoke-preflight.mjs --json --require-ready",
+      "node scripts/hindsight-live-smoke-runner.mjs --execute-live --json --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl",
+      "node scripts/verify-supermemory-runtime-readiness.mjs --evidence-path tmp/hindsight-live-smoke-production-readiness.jsonl --json"
+    ],
+    "stop_if": [
+      "The resolved endpoint is not local.",
+      "The target bank cannot be proven sacrificial.",
+      "The container is not localhost-bound.",
+      "A real external credential is required but unavailable.",
+      "Any output exposes a credential or unredacted sensitive content."
+    ]
+  },
+  "evidence": [
+    "Preflight 2026-07-17T16:20:16.693Z: endpoint http://127.0.0.1:8888 healthy with database connected.",
+    "Docker container supermemory-hindsight-local is running with 8888 and 9999 bound to 127.0.0.1 only.",
+    "Compose resolves the immutable pinned Hindsight digest.",
+    "Live environment statuses are all not_set; no credential values were read or printed.",
+    "Current release and test receipts prove contract-ready but do not prove runtime-ready."
+  ],
+  "subgoal_contract": null,
+  "parallel_safety": null,
+  "blocked_tasks": [],
+  "missing_evidence": [
+    "Fresh successful local live-smoke evidence.",
+    "runtime_ready=true from the runtime verifier.",
+    "Explicit post-evidence production approval and production decision report."
+  ],
+  "required_board_updates": [
+    "Mark T001 done and activate T002."
+  ]
+}
