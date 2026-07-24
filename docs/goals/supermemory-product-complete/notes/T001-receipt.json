@@ -1,0 +1,77 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T001",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "harness": "codex",
+    "summary": "Audit complete: SuperMemory is a healthy contract-ready CLI/governance foundation, not yet the local web product. The vault, snapshots, recoverable registries, governed Hindsight transport and 34 tests are real. Missing runtime stages are the web UI/API, PDF/DOCX extraction, arbitrary-document semantic compilation, interactive review, cited end-user search, folder reconciliation, deletion UX and restart proof. The first recommended vertical slice is a persistent local web workflow for Markdown/TXT from folder selection through review and cited search.",
+    "note": "notes/T001-product-gap-map.md",
+    "evidence": [
+      "README.md:265",
+      "README.md:318",
+      "README.md:381",
+      "README.md:408",
+      "package.json:1",
+      "scripts/supermemory-onboard.mjs:193",
+      "scripts/supermemory-onboard.mjs:230",
+      "scripts/supermemory-onboard.mjs:311",
+      "scripts/hindsight-promote.mjs:227",
+      "scripts/hindsight-promote.mjs:711",
+      "scripts/local-file-source-refresh.mjs:768",
+      "docs/production-runbook.md:63",
+      "docs/production-runbook.md:73",
+      "docs/improvement-plan-and-audit-2026-07-17.md:35",
+      "notes/T001-product-gap-map.md"
+    ],
+    "facts": [
+      "npm test passes 34 of 34 existing tests.",
+      "The release gate passes at contract-ready and explicitly reports runtime_ready=false and production_ready=false.",
+      "The latest live evidence is stale at 97.81 hours against a 24-hour maximum, and runtime env is absent.",
+      "The pinned Hindsight container is currently running on localhost ports 8888 and 9999.",
+      "No web application, server, frontend dependency, PDF parser, DOCX parser, OCR adapter or chunker exists.",
+      "Onboarding reads selected files as UTF-8, records snapshots and emits no promotion payloads.",
+      "Hindsight promotion consumes already-structured governed input; it does not compile arbitrary documents."
+    ],
+    "contradictions": [
+      "The architectural lifecycle includes compiled memory and review, but the onboarding runtime deliberately stops after snapshot registration.",
+      "Existing production approval evidence applies to the operator deployment, not the new local web product oracle.",
+      "Green fixture contracts do not prove arbitrary folder documents are semantically processed."
+    ],
+    "ambiguity_requiring_judge": [
+      "Minimal local web stack and folder-selection boundary.",
+      "Deterministic versus optional LLM candidate generation in the first vertical slice.",
+      "Whether Hindsight is mandatory for the first product milestone or may degrade to deterministic local search."
+    ],
+    "commands": [
+      {
+        "cmd": "npm test",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:release -- --json",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:secrets",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:runtime -- --evidence-path tmp/hindsight-live-smoke-production-launch-2026-07-20.jsonl --json",
+        "status": "fail"
+      },
+      {
+        "cmd": "npm run verify:production",
+        "status": "fail"
+      },
+      {
+        "cmd": "docker compose -f compose.hindsight.yml ps --format json",
+        "status": "pass"
+      }
+    ],
+    "note_needed": true
+  }
+}

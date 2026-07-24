@@ -1,0 +1,55 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T005",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "changed_files": [
+      ".github/workflows/supermemory-specs.yml",
+      "README.md",
+      "package.json",
+      "package-lock.json",
+      "scripts/lib/document-extractors.mjs",
+      "scripts/lib/product-store.mjs",
+      "scripts/supermemory-app.mjs",
+      "web/index.html",
+      "web/app.js",
+      "web/styles.css",
+      "tests/document-extractors.test.mjs",
+      "tests/supermemory-app.test.mjs"
+    ],
+    "commands": [
+      {
+        "cmd": "npm ci --ignore-scripts",
+        "status": "pass"
+      },
+      {
+        "cmd": "node --test tests/document-extractors.test.mjs tests/supermemory-app.test.mjs",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm test",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:release",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:secrets",
+        "status": "pass"
+      },
+      {
+        "cmd": "git diff --check",
+        "status": "pass"
+      }
+    ],
+    "summary": "Added bounded local PDF/DOCX ingestion with exact binary snapshots, page/section citations, extracted/raw viewers, safe errors, pinned dependencies, reproducible CI installation, and generated binary regression tests. Corrected README to report the verified 39-test suite. All required verification passed; git diff --check passed after the correction.",
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

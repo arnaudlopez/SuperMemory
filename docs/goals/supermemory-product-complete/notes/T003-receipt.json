@@ -1,0 +1,56 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T003",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "harness": "codex",
+    "changed_files": [
+      "README.md",
+      "package.json",
+      "scripts/supermemory-app.mjs",
+      "scripts/lib/product-store.mjs",
+      "web/index.html",
+      "web/app.js",
+      "web/styles.css",
+      "tests/supermemory-app.test.mjs"
+    ],
+    "commands": [
+      {
+        "cmd": "node --test tests/supermemory-app.test.mjs",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm test",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:release",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:secrets",
+        "status": "pass"
+      },
+      {
+        "cmd": "git diff --check",
+        "status": "pass"
+      },
+      {
+        "cmd": "Browser walkthrough on a temporary vault: folder selection -> 9 candidates -> approve -> search -> source citation",
+        "status": "pass"
+      }
+    ],
+    "summary": "Delivered the first real product slice. `npm start` launches a polished localhost-only web application. Browser directory import supports bounded Markdown/TXT capture, immutable vault snapshots, secret-like warnings, deterministic line-cited candidates, edit/approve/reject review, canonical memory files, local approved-memory search, openable source views, deduplication, changed-source invalidation and restart persistence. The complete suite now passes 35 tests; global specs, release readiness, secret hygiene and diff checks remain green. The browser walkthrough succeeded on a temporary vault.",
+    "deviations": [
+      "Folder-wide removal reconciliation was not required by T003 and remains deferred.",
+      "PDF/DOCX, semantic LLM interpretation and Hindsight-backed recall are intentionally labelled deferred in the UI."
+    ],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

@@ -1,0 +1,907 @@
+version: 2
+
+goal:
+  title: "SuperMemory Product Complete"
+  slug: "supermemory-product-complete"
+  kind: open_ended
+  tranche: "Complete successive safe verified vertical slices until the local-first product outcome is complete."
+  status: done
+  oracle:
+    signal: "A non-technical user completes the real local web workflow on PDF, DOCX, Markdown, and text documents: choose folder, ingest, review, index, search with citations, refresh, delete, restart, and recover persisted state."
+    cadence: "after each Worker package and at final audit"
+    final_proof: "A recorded end-to-end walkthrough plus automated test and release-gate receipts covering the complete workflow."
+  intake:
+    original_request: "Finir SuperMemory à 100 % comme un véritable outil."
+    interpreted_outcome: "Deliver a production-ready local-first single-user web application that turns a local document folder into reviewed, searchable, cited memory."
+    input_shape: vague
+    audience: "A non-technical local user"
+    authority: approved
+    proof_type: demo
+    completion_proof: "The complete real-document workflow passes end to end and remains correct after restart, with automated regression and release checks green."
+    likely_misfire: "Declare success because backend scripts and unit tests pass while no coherent non-technical web workflow exists."
+    blind_spots_considered:
+      - "Product surface versus CLI tooling"
+      - "Semantic document extraction and memory compilation"
+      - "Review and approval UX"
+      - "Citations and source traceability"
+      - "Incremental refresh, deletion, restart, and recovery"
+      - "Security, local privacy, failure handling, and packaging"
+    existing_plan_facts:
+      - "Preserve the approved local-first architecture and canonical local vault."
+      - "Hindsight remains a derived recall projection rather than canonical truth."
+      - "Use a real-document end-to-end walkthrough as the completion oracle."
+      - "Exclude SaaS, billing, multi-tenancy, and remote connectors from this version."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41738/supermemory-product-complete/"
+    command: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.4.1/skills/goal-prep/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal docs/goals/supermemory-product-complete --port 41738"
+
+active_task: null
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Map the current repository against the complete local-first web product workflow and identify evidence-backed gaps."
+    inputs:
+      - "README.md"
+      - "package.json"
+      - "docs"
+      - "scripts"
+      - "tests"
+      - "identity-vault"
+    constraints:
+      - "Read-only."
+      - "Do not edit implementation files."
+      - "Distinguish implemented runtime behavior from architecture claims and historical evidence."
+      - "Prefer concrete file-path and command evidence."
+    expected_output:
+      - "Current product and architecture map"
+      - "Verification commands and baseline health"
+      - "Gap map for every oracle stage"
+      - "Ranked candidate vertical slices"
+    receipt:
+      result: done
+      harness: codex
+      summary: "Audit complete: SuperMemory is a healthy contract-ready CLI/governance foundation, not yet the local web product. The vault, snapshots, recoverable registries, governed Hindsight transport and 34 tests are real. Missing runtime stages are the web UI/API, PDF/DOCX extraction, arbitrary-document semantic compilation, interactive review, cited end-user search, folder reconciliation, deletion UX and restart proof. The first recommended vertical slice is a persistent local web workflow for Markdown/TXT from folder selection through review and cited search."
+      note: notes/T001-product-gap-map.md
+      evidence:
+        - "README.md:265"
+        - "README.md:318"
+        - "README.md:381"
+        - "README.md:408"
+        - "package.json:1"
+        - "scripts/supermemory-onboard.mjs:193"
+        - "scripts/supermemory-onboard.mjs:230"
+        - "scripts/supermemory-onboard.mjs:311"
+        - "scripts/hindsight-promote.mjs:227"
+        - "scripts/hindsight-promote.mjs:711"
+        - "scripts/local-file-source-refresh.mjs:768"
+        - "docs/production-runbook.md:63"
+        - "docs/production-runbook.md:73"
+        - "docs/improvement-plan-and-audit-2026-07-17.md:35"
+        - notes/T001-product-gap-map.md
+      facts:
+        - "npm test passes 34 of 34 existing tests."
+        - "The release gate passes at contract-ready and explicitly reports runtime_ready=false and production_ready=false."
+        - "The latest live evidence is stale at 97.81 hours against a 24-hour maximum, and runtime env is absent."
+        - "The pinned Hindsight container is currently running on localhost ports 8888 and 9999."
+        - "No web application, server, frontend dependency, PDF parser, DOCX parser, OCR adapter or chunker exists."
+        - "Onboarding reads selected files as UTF-8, records snapshots and emits no promotion payloads."
+        - "Hindsight promotion consumes already-structured governed input; it does not compile arbitrary documents."
+      contradictions:
+        - "The architectural lifecycle includes compiled memory and review, but the onboarding runtime deliberately stops after snapshot registration."
+        - "Existing production approval evidence applies to the operator deployment, not the new local web product oracle."
+        - "Green fixture contracts do not prove arbitrary folder documents are semantically processed."
+      ambiguity_requiring_judge:
+        - "Minimal local web stack and folder-selection boundary."
+        - "Deterministic versus optional LLM candidate generation in the first vertical slice."
+        - "Whether Hindsight is mandatory for the first product milestone or may degrade to deterministic local search."
+      commands:
+        - cmd: "npm test"
+          status: pass
+        - cmd: "npm run verify"
+          status: pass
+        - cmd: "npm run verify:release -- --json"
+          status: pass
+        - cmd: "npm run verify:secrets"
+          status: pass
+        - cmd: "npm run verify:runtime -- --evidence-path tmp/hindsight-live-smoke-production-launch-2026-07-20.jsonl --json"
+          status: fail
+        - cmd: "npm run verify:production"
+          status: fail
+        - cmd: "docker compose -f compose.hindsight.yml ps --format json"
+          status: pass
+      note_needed: true
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the product gap map, challenge scope and evidence, and specify the first largest safe user-visible vertical slice."
+    inputs:
+      - "T001 receipt"
+      - "docs/goals/supermemory-product-complete/goal.md"
+      - "Current repository status and baseline verification evidence"
+    constraints:
+      - "Read-only."
+      - "Do not accept architecture claims without runtime evidence."
+      - "Prefer a coherent end-to-end product capability over isolated contracts or helpers."
+      - "Preserve the local-first canonical-vault architecture unless evidence requires escalation."
+    expected_output:
+      - "Decision and rationale"
+      - "Exact Worker objective"
+      - "Explicit allowed_files"
+      - "Verification commands"
+      - "Stop conditions"
+      - "Deferred gaps and risks"
+    receipt:
+      result: done
+      harness: codex
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Approve one substantial text-first vertical slice: a localhost-only web application that lets a non-technical user select a folder in the browser, ingest Markdown/TXT, review/edit/approve/reject cited candidates, persist canonical vault state, and search approved memory with openable source citations. This is large enough to establish the actual product architecture while remaining deterministic, credential-free and reversible. PDF/DOCX extraction and Hindsight projection must use the interfaces established here in later packages; the UI must label them unsupported rather than imply completion."
+      worker_package:
+        objective: "Build the first production-shaped local web vertical slice for Markdown and TXT: a localhost-only server and professional browser UI with directory selection, bounded ingestion, deterministic source-located candidate generation, interactive edit/approve/reject review, canonical vault persistence, approved-memory search with source/line citations, deduplication on repeated ingestion, restart persistence, explicit unsupported PDF/DOCX reporting, recoverable errors, and no remote network calls."
+        allowed_files:
+          - README.md
+          - package.json
+          - scripts/supermemory-app.mjs
+          - scripts/lib/product-store.mjs
+          - web/index.html
+          - web/app.js
+          - web/styles.css
+          - tests/supermemory-app.test.mjs
+        verify:
+          - "node --test tests/supermemory-app.test.mjs"
+          - "npm test"
+          - "npm run verify"
+          - "npm run verify:release"
+          - "npm run verify:secrets"
+          - "git diff --check"
+        stop_if:
+          - "Implementation requires writing outside the explicit allowed_files."
+          - "The slice would weaken or bypass existing capture, provenance, review, access, secret, or Hindsight governance gates."
+          - "Any document content would be transmitted to a non-local endpoint."
+          - "Tests require live Hindsight credentials or live network writes."
+          - "The implementation cannot keep the default server bound to 127.0.0.1."
+          - "The UI would advertise PDF, DOCX, semantic LLM analysis, or Hindsight-backed recall as implemented in this slice."
+      evidence:
+        - notes/T001-product-gap-map.md
+        - notes/T001-receipt.json
+        - "package.json:1"
+        - "scripts/supermemory-onboard.mjs:193"
+        - "scripts/supermemory-onboard.mjs:230"
+        - "scripts/supermemory-onboard.mjs:311"
+        - "scripts/hindsight-promote.mjs:227"
+        - "README.md:381"
+        - "README.md:408"
+      subgoal_contract: null
+      parallel_safety:
+        parallel_workers_allowed: false
+        reason: "The first slice establishes shared server, store, UI and product-test contracts; one bounded Worker avoids cross-cutting conflicts."
+      blocked_tasks: []
+      missing_evidence:
+        - "No browser walkthrough exists until the Worker completes the slice."
+        - "PDF/DOCX extraction and local Hindsight projection remain explicitly deferred."
+        - "Folder deletion reconciliation is not required in this first package unless it falls naturally within the bounded implementation."
+      required_board_updates:
+        - "Copy worker_package onto T003 and activate T003."
+        - "After T003 verification, perform a browser walkthrough as a phase-boundary review before selecting the PDF/DOCX and Hindsight packages."
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Build the first production-shaped local web vertical slice for Markdown and TXT: a localhost-only server and professional browser UI with directory selection, bounded ingestion, deterministic source-located candidate generation, interactive edit/approve/reject review, canonical vault persistence, approved-memory search with source/line citations, deduplication on repeated ingestion, restart persistence, explicit unsupported PDF/DOCX reporting, recoverable errors, and no remote network calls."
+    allowed_files:
+      - "README.md"
+      - "package.json"
+      - "scripts/supermemory-app.mjs"
+      - "scripts/lib/product-store.mjs"
+      - "web/index.html"
+      - "web/app.js"
+      - "web/styles.css"
+      - "tests/supermemory-app.test.mjs"
+    verify:
+      - "node --test tests/supermemory-app.test.mjs"
+      - "npm test"
+      - "npm run verify"
+      - "npm run verify:release"
+      - "npm run verify:secrets"
+      - "git diff --check"
+    stop_if:
+      - "Implementation requires writing outside the explicit allowed_files."
+      - "The slice would weaken or bypass existing capture, provenance, review, access, secret, or Hindsight governance gates."
+      - "Any document content would be transmitted to a non-local endpoint."
+      - "Tests require live Hindsight credentials or live network writes."
+      - "The implementation cannot keep the default server bound to 127.0.0.1."
+      - "The UI would advertise PDF, DOCX, semantic LLM analysis, or Hindsight-backed recall as implemented in this slice."
+    receipt:
+      result: done
+      harness: codex
+      changed_files:
+        - README.md
+        - package.json
+        - scripts/supermemory-app.mjs
+        - scripts/lib/product-store.mjs
+        - web/index.html
+        - web/app.js
+        - web/styles.css
+        - tests/supermemory-app.test.mjs
+      commands:
+        - cmd: "node --test tests/supermemory-app.test.mjs"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "npm run verify"
+          status: pass
+        - cmd: "npm run verify:release"
+          status: pass
+        - cmd: "npm run verify:secrets"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "Browser walkthrough on a temporary vault: folder selection -> 9 candidates -> approve -> search -> source citation"
+          status: pass
+      summary: "Delivered the first real product slice. `npm start` launches a polished localhost-only web application. Browser directory import supports bounded Markdown/TXT capture, immutable vault snapshots, secret-like warnings, deterministic line-cited candidates, edit/approve/reject review, canonical memory files, local approved-memory search, openable source views, deduplication, changed-source invalidation and restart persistence. The complete suite now passes 35 tests; global specs, release readiness, secret hygiene and diff checks remain green. The browser walkthrough succeeded on a temporary vault."
+      deviations:
+        - "Folder-wide removal reconciliation was not required by T003 and remains deferred."
+        - "PDF/DOCX, semantic LLM interpretation and Hindsight-backed recall are intentionally labelled deferred in the UI."
+      remaining_blockers: []
+      verification_attempts: 1
+      stopped_because: null
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the first local web product slice at the phase boundary, challenge its runtime evidence and architecture, and specify the next largest safe slice toward the full PDF/DOCX and Hindsight-backed oracle."
+    inputs:
+      - "T001, T002, and T003 receipts"
+      - "Current product diff"
+      - "Automated verification results"
+      - "Browser walkthrough evidence"
+    constraints:
+      - "Read-only."
+      - "Do not treat the text-first milestone as full outcome completion."
+      - "Reject product claims not backed by current runtime behavior."
+      - "Choose one coherent next vertical package with explicit write scope and verification."
+    expected_output:
+      - "approved | rejected"
+      - "full_outcome_complete: false"
+      - "Phase evidence review"
+      - "Exact next Worker objective"
+      - "allowed_files, verify, and stop_if"
+      - "Deferred gaps and risks"
+    receipt:
+      result: done
+      harness: codex
+      decision: approved
+      full_outcome_complete: false
+      rationale: "The text-first phase is approved: fresh runtime evidence proves a real local web workflow, persistent canonical state, reviewed memories, changed-source invalidation and cited search without weakening legacy gates. It is not the full product. The next largest safe package is real PDF/DOCX extraction through the same ingest/review/search interfaces. It must preserve exact binary snapshots, produce page/section locators, expose readable/openable citations, reject malformed/encrypted/oversized files, pin Node 18-compatible parsers, disable external DOCX file access, and install dependencies reproducibly in CI."
+      worker_package:
+        objective: "Add production-shaped PDF and DOCX support to the local web workflow: browser binary ingestion, exact immutable snapshots, PDF page extraction, DOCX semantic section extraction, page/section-located candidates, openable extracted and raw source citations, malformed/encrypted/oversized error handling, deterministic warnings, pinned Node 18/22-compatible dependencies, reproducible lockfile/CI installation, and regression coverage using real generated binary documents. Remove the deferred labels only when the runtime tests pass."
+        allowed_files:
+          - .github/workflows/supermemory-specs.yml
+          - README.md
+          - package.json
+          - package-lock.json
+          - scripts/lib/document-extractors.mjs
+          - scripts/lib/product-store.mjs
+          - scripts/supermemory-app.mjs
+          - web/index.html
+          - web/app.js
+          - web/styles.css
+          - tests/document-extractors.test.mjs
+          - tests/supermemory-app.test.mjs
+        verify:
+          - "npm ci --ignore-scripts"
+          - "node --test tests/document-extractors.test.mjs tests/supermemory-app.test.mjs"
+          - "npm test"
+          - "npm run verify"
+          - "npm run verify:release"
+          - "npm run verify:secrets"
+          - "git diff --check"
+        stop_if:
+          - "Implementation requires a parser that does not support Node.js 18 and 22."
+          - "A parser needs external network, external file access, macros, or executable document content."
+          - "PDF/DOCX bytes cannot remain bounded and local-only."
+          - "Citation locators cannot identify a PDF page or DOCX section."
+          - "Implementation requires changes outside the explicit allowed_files."
+          - "Existing text ingestion, canonical-vault persistence, review, search, or legacy release gates regress."
+      evidence:
+        - notes/T003-receipt.json
+        - scripts/supermemory-app.mjs
+        - scripts/lib/product-store.mjs
+        - web/index.html
+        - tests/supermemory-app.test.mjs
+        - "npm test: 35/35 pass"
+        - "npm run verify:release: pass"
+        - "Browser walkthrough: import -> review -> approve -> search -> cited source"
+        - "PDF.js official Node extraction API via pdfjs-dist/legacy/build/pdf.mjs"
+        - "Mammoth official Buffer conversion API with external file access disabled"
+        - "pdfjs-dist@4.8.69 engines: Node >=18"
+        - "mammoth@1.12.0 engines: Node >=12"
+      subgoal_contract: null
+      parallel_safety:
+        parallel_workers_allowed: false
+        reason: "Binary extraction changes the shared ingest, locator, source-viewer, UI, dependency and CI contracts."
+      blocked_tasks: []
+      missing_evidence:
+        - "Hindsight projection and recall from approved web memories remain unimplemented."
+        - "Folder deletion reconciliation and governed canonical deletion remain unimplemented."
+        - "Packaged non-terminal launch and clean-install walkthrough remain unimplemented."
+      required_board_updates:
+        - "Create and activate T005 from worker_package."
+        - "After T005, continue directly to a governed Hindsight web-projection package unless binary parser risk requires review."
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Add production-shaped PDF and DOCX support to the local web workflow: browser binary ingestion, exact immutable snapshots, PDF page extraction, DOCX semantic section extraction, page/section-located candidates, openable extracted and raw source citations, malformed/encrypted/oversized error handling, deterministic warnings, pinned Node 18/22-compatible dependencies, reproducible lockfile/CI installation, and regression coverage using real generated binary documents. Remove the deferred labels only when the runtime tests pass."
+    allowed_files:
+      - ".github/workflows/supermemory-specs.yml"
+      - "README.md"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/lib/document-extractors.mjs"
+      - "scripts/lib/product-store.mjs"
+      - "scripts/supermemory-app.mjs"
+      - "web/index.html"
+      - "web/app.js"
+      - "web/styles.css"
+      - "tests/document-extractors.test.mjs"
+      - "tests/supermemory-app.test.mjs"
+    verify:
+      - "npm ci --ignore-scripts"
+      - "node --test tests/document-extractors.test.mjs tests/supermemory-app.test.mjs"
+      - "npm test"
+      - "npm run verify"
+      - "npm run verify:release"
+      - "npm run verify:secrets"
+      - "git diff --check"
+    stop_if:
+      - "Implementation requires a parser that does not support Node.js 18 and 22."
+      - "A parser needs external network, external file access, macros, or executable document content."
+      - "PDF/DOCX bytes cannot remain bounded and local-only."
+      - "Citation locators cannot identify a PDF page or DOCX section."
+      - "Implementation requires changes outside the explicit allowed_files."
+      - "Existing text ingestion, canonical-vault persistence, review, search, or legacy release gates regress."
+    receipt:
+      result: done
+      changed_files:
+        - .github/workflows/supermemory-specs.yml
+        - README.md
+        - package.json
+        - package-lock.json
+        - scripts/lib/document-extractors.mjs
+        - scripts/lib/product-store.mjs
+        - scripts/supermemory-app.mjs
+        - web/index.html
+        - web/app.js
+        - web/styles.css
+        - tests/document-extractors.test.mjs
+        - tests/supermemory-app.test.mjs
+      commands:
+        - cmd: "npm ci --ignore-scripts"
+          status: pass
+        - cmd: "node --test tests/document-extractors.test.mjs tests/supermemory-app.test.mjs"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "npm run verify"
+          status: pass
+        - cmd: "npm run verify:release"
+          status: pass
+        - cmd: "npm run verify:secrets"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+      summary: "Added bounded local PDF/DOCX ingestion with exact binary snapshots, page/section citations, extracted/raw viewers, safe errors, pinned dependencies, reproducible CI installation, and generated binary regression tests. Corrected README to report the verified 39-test suite. All required verification passed; git diff --check passed after the correction."
+      remaining_blockers: []
+      verification_attempts: 1
+      stopped_because: null
+  - id: T006
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Connect the approved local web workflow to governed local Hindsight projection and recall: approving a candidate must first persist canonical vault memory, then synchronously attempt a strictly scoped, provenance-complete Hindsight upsert with a stable document ID; failures must leave canonical state safe and visibly queued for retry. Add local Hindsight health/projection status, idempotent retry, strict all-tags recall with trace/provenance, citation reconstruction from canonical metadata, an explicit deterministic local fallback when Hindsight is unavailable, and product tests with a mocked transport plus the existing live-local configuration boundary."
+    allowed_files:
+      - "README.md"
+      - "scripts/lib/product-hindsight.mjs"
+      - "scripts/lib/product-store.mjs"
+      - "scripts/supermemory-app.mjs"
+      - "scripts/hindsight-transport.mjs"
+      - "web/index.html"
+      - "web/app.js"
+      - "web/styles.css"
+      - "tests/product-hindsight.test.mjs"
+      - "tests/supermemory-app.test.mjs"
+    verify:
+      - "node --test tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs"
+      - "npm test"
+      - "npm run verify"
+      - "npm run verify:release"
+      - "npm run verify:secrets"
+      - "git diff --check"
+    stop_if:
+      - "Document content would be sent to any non-loopback endpoint by default."
+      - "Projection could become canonical truth or an unavailable Hindsight instance could roll back an approved canonical memory."
+      - "Recall would omit strict workspace, visibility, sensitivity, domain, entity type, schema, access policy, consumer, or active-status tags."
+      - "A Hindsight result cannot be reconciled to an active canonical memory and source citation before display."
+      - "Retry is not idempotent or uses unstable document identifiers."
+      - "Implementation requires changes outside the explicit allowed_files."
+      - "Existing document ingestion, review, cited local search, restart persistence, or release gates regress."
+    receipt:
+      result: done
+      changed_files:
+        - README.md
+        - scripts/lib/product-hindsight.mjs
+        - scripts/lib/product-store.mjs
+        - scripts/supermemory-app.mjs
+        - scripts/hindsight-transport.mjs
+        - web/index.html
+        - web/app.js
+        - web/styles.css
+        - tests/product-hindsight.test.mjs
+        - tests/supermemory-app.test.mjs
+      commands:
+        - cmd: "node --test tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "npm run verify"
+          status: pass
+        - cmd: "npm run verify:release"
+          status: pass
+        - cmd: "npm run verify:secrets"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "Live local product walkthrough: approve -> retain stable document -> verify empty extraction -> explicit cited fallback -> restart/status"
+          status: pass
+      summary: "Connected the web product to loopback-only governed Hindsight. Canonical approval always commits first; stable document IDs, strict scope tags and provenance drive idempotent projection, retry and reconciled recall. Projection failures and zero-unit extraction remain queued, while search falls back explicitly to active cited vault memory. The UI exposes engine and retry status. Mocked outage/retry/recall tests, 42 full tests, release and secret gates pass. A live local bank retained the document and exposed the current LLM provider failure safely."
+      deviations:
+        - "The active pinned Hindsight API/database is healthy, but its current llamacpp provider cannot connect and extracts zero memory units. SuperMemory now detects this and refuses to mark the projection synced."
+        - "The delegated Worker produced no allowed-file changes in the GoalBuddy wait window; the PM completed the same bounded task as deterministic fallback."
+      remaining_blockers:
+        - "Configure and prove a working local structured-output LLM provider for the pinned Hindsight runtime."
+        - "Implement folder-wide removal reconciliation and governed canonical/Hindsight deletion."
+      verification_attempts: 1
+      stopped_because: null
+  - id: T007
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the Hindsight product slice and fresh live-local evidence, then specify the largest safe next package covering folder reconciliation and governed deletion while deciding whether working local LLM runtime configuration belongs in the same package or the following packaging package."
+    inputs:
+      - "T006 receipt"
+      - "Current product implementation and tests"
+      - "Live Hindsight evidence: API/database healthy, retained document has zero memory units because llamacpp provider connection fails"
+      - "Remaining goal oracle for refresh, delete, restart, recovery, clean installation and packaging"
+    constraints:
+      - "Read-only."
+      - "Do not mark the full outcome complete."
+      - "Deletion must require explicit user confirmation and remove canonical content before or independently of derived Hindsight state."
+      - "Hindsight recall must never surface a stale or deleted memory that cannot reconcile to active canonical state."
+      - "Choose one coherent vertical Worker package with explicit allowed_files and verification."
+      - "Preserve local-only networking and the existing fallback when Hindsight or its LLM is unavailable."
+    expected_output:
+      - "approved | rejected"
+      - "full_outcome_complete: false"
+      - "Risk and evidence review"
+      - "Exact next Worker objective"
+      - "allowed_files, verify, and stop_if"
+      - "Decision on local LLM runtime configuration sequencing"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "T006 is safe and product-shaped: canonical-first projection, strict tags, reconciliation to active vault state and explicit fallback are proven. Live evidence correctly exposed that API health alone does not prove usable extraction. The next largest safe slice is folder reconciliation and confirmed deletion, including canonical purge and derived Hindsight delete/retry. Local LLM/Ollama configuration should remain in the following packaging/runtime slice because it changes Docker/runtime dependencies and should not be coupled to destructive data semantics."
+      worker_package:
+        objective: "Complete the refresh and deletion product workflow. Treat every successful browser directory import as a complete inventory for that folder; detect absent previously active supported sources, remove their memories from active recall immediately, and present a clear removal queue. Allow the user to restore a reappearing unchanged file before deletion or explicitly confirm deletion. On confirmation, purge that source's candidate text, canonical memory files, snapshot artifacts and state content first, record content-free audit tombstones, then delete every stable derived Hindsight document idempotently. Keep failed Hindsight deletes in a visible retry queue, reconcile changed-source stale projections, and prove restart safety, no stale recall, no duplicate candidates, and exact local purge."
+        allowed_files:
+          - README.md
+          - scripts/lib/product-hindsight.mjs
+          - scripts/lib/product-store.mjs
+          - scripts/supermemory-app.mjs
+          - web/index.html
+          - web/app.js
+          - web/styles.css
+          - tests/product-hindsight.test.mjs
+          - tests/product-reconciliation.test.mjs
+          - tests/supermemory-app.test.mjs
+        verify:
+          - "node --test tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs"
+          - "npm test"
+          - "npm run verify"
+          - "npm run verify:release"
+          - "npm run verify:secrets"
+          - "git diff --check"
+        stop_if:
+          - "Folder absence cannot be distinguished from a failed, partial, malformed, or rejected import."
+          - "Canonical content would be purged without an explicit user confirmation naming the source."
+          - "Deleted or missing content could remain searchable through local fallback or unreconciled Hindsight results."
+          - "A Hindsight delete failure would block or roll back canonical deletion."
+          - "Deletion would remove a shared content-addressed snapshot still referenced by another source."
+          - "The implementation stores deleted document content in logs, tombstones, or retry records."
+          - "Implementation requires changes outside the explicit allowed_files."
+          - "Existing PDF/DOCX extraction, approval, projection, citation, restart, or release gates regress."
+      evidence:
+        - notes/T006-receipt.json
+        - scripts/lib/product-hindsight.mjs
+        - scripts/lib/product-store.mjs
+        - tests/product-hindsight.test.mjs
+        - "Live retained document and zero-unit extraction detection"
+        - "Browser proof of visible pending projection and cited local fallback"
+        - "npm test: 42/42 pass"
+      subgoal_contract: null
+      parallel_safety:
+        parallel_workers_allowed: false
+        reason: "Reconciliation and deletion share the canonical state, snapshots, memory files, Hindsight projection records, server routes and UI."
+      blocked_tasks: []
+      missing_evidence:
+        - "No browser-confirmed folder removal and canonical/Hindsight purge exists yet."
+        - "The pinned local Hindsight provider still needs a working local LLM configuration."
+        - "Clean install, packaging, backup/recovery and final multi-format walkthrough remain."
+      required_board_updates:
+        - "Create and activate T008 from worker_package."
+        - "After T008, run a packaging/runtime Judge review that includes the local Ollama provider failure."
+  - id: T008
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Complete the refresh and deletion product workflow. Treat every successful browser directory import as a complete inventory for that folder; detect absent previously active supported sources, remove their memories from active recall immediately, and present a clear removal queue. Allow the user to restore a reappearing unchanged file before deletion or explicitly confirm deletion. On confirmation, purge that source's candidate text, canonical memory files, snapshot artifacts and state content first, record content-free audit tombstones, then delete every stable derived Hindsight document idempotently. Keep failed Hindsight deletes in a visible retry queue, reconcile changed-source stale projections, and prove restart safety, no stale recall, no duplicate candidates, and exact local purge."
+    allowed_files:
+      - "README.md"
+      - "scripts/lib/product-hindsight.mjs"
+      - "scripts/lib/product-store.mjs"
+      - "scripts/supermemory-app.mjs"
+      - "web/index.html"
+      - "web/app.js"
+      - "web/styles.css"
+      - "tests/product-hindsight.test.mjs"
+      - "tests/product-reconciliation.test.mjs"
+      - "tests/supermemory-app.test.mjs"
+    verify:
+      - "node --test tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs"
+      - "npm test"
+      - "npm run verify"
+      - "npm run verify:release"
+      - "npm run verify:secrets"
+      - "git diff --check"
+    stop_if:
+      - "Folder absence cannot be distinguished from a failed, partial, malformed, or rejected import."
+      - "Canonical content would be purged without an explicit user confirmation naming the source."
+      - "Deleted or missing content could remain searchable through local fallback or unreconciled Hindsight results."
+      - "A Hindsight delete failure would block or roll back canonical deletion."
+      - "Deletion would remove a shared content-addressed snapshot still referenced by another source."
+      - "The implementation stores deleted document content in logs, tombstones, or retry records."
+      - "Implementation requires changes outside the explicit allowed_files."
+      - "Existing PDF/DOCX extraction, approval, projection, citation, restart, or release gates regress."
+    receipt:
+      result: done
+      changed_files:
+        - README.md
+        - scripts/lib/product-hindsight.mjs
+        - scripts/lib/product-store.mjs
+        - scripts/supermemory-app.mjs
+        - web/index.html
+        - web/app.js
+        - web/styles.css
+        - tests/product-hindsight.test.mjs
+        - tests/product-reconciliation.test.mjs
+      commands:
+        - cmd: "node --test tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "npm run verify"
+          status: pass
+        - cmd: "npm run verify:release"
+          status: pass
+        - cmd: "npm run verify:secrets"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "Browser walkthrough: pending-removal badge -> Gérer -> absent source -> Conserver/Supprimer définitivement controls"
+          status: pass
+      summary: "Completed folder refresh and deletion. Complete inventories suspend absent sources from all recall; reappearance restores without duplication. The Manage UI supports explicit staging, cancellation and path-confirmed permanent deletion. Confirmation purges candidate text, canonical memory files and unshared snapshots before idempotent Hindsight deletion; failures remain in content-free retry state and survive restart. Changed-source stale projections are also deleted. Shared snapshots, malformed inventory safety, no stale recall and restart/retry are covered. All 44 tests and release/security gates pass."
+      deviations:
+        - "The delegated Worker produced no allowed-file changes in the GoalBuddy wait window; the PM completed the same bounded task as deterministic fallback."
+      remaining_blockers:
+        - "Configure and prove a working local Ollama provider for Hindsight."
+        - "Deliver clean-install launcher, doctor, backup and restore UX."
+        - "Run the final multi-format browser walkthrough and production gates with fresh runtime evidence."
+      verification_attempts: 1
+      stopped_because: null
+  - id: T009
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Review the completed refresh/deletion slice and specify the final packaging/runtime/recovery Worker package, including a working local Ollama-to-Hindsight configuration and fresh production evidence requirements."
+    inputs:
+      - "T008 receipt"
+      - "Current application, Compose, runbooks and readiness scripts"
+      - "Official Hindsight 0.6 configuration for Ollama"
+      - "Local machine evidence: Ollama installed, llama3:latest present, current Compose llamacpp provider fails"
+      - "Remaining clean-install, launch, backup/recovery and final-oracle requirements"
+    constraints:
+      - "Read-only."
+      - "Do not mark the full outcome complete."
+      - "Keep all document and model traffic loopback-only."
+      - "Do not silently download a large model or require a cloud API key."
+      - "Prefer a non-technical launch/doctor/backup/restore workflow over more internal contracts."
+      - "Specify fresh live proof that Hindsight extracts at least one memory unit and recalls it."
+      - "Choose one largest safe final Worker package with explicit allowed_files and verification."
+    expected_output:
+      - "approved | rejected"
+      - "full_outcome_complete: false"
+      - "Exact final Worker objective"
+      - "allowed_files, verify, and stop_if"
+      - "Fresh runtime and browser proof requirements"
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Refresh/deletion is accepted with strong destructive-path proof. The final Worker should now close the operational product boundary: replace the nonfunctional Docker llamacpp setting with explicit loopback Ollama, add a fail-closed doctor and double-click/local launcher, add verified local backup/restore UX, and produce fresh product runtime evidence that proves at least one extracted Hindsight memory and cited recall. This remains one coherent deployment/recovery slice. No large model may be downloaded implicitly; missing prerequisites must yield actionable local instructions."
+      worker_package:
+        objective: "Finish SuperMemory's local production package. Configure the pinned Hindsight Compose service for a host Ollama endpoint on loopback, an explicitly selected already-installed model, single-request concurrency and no cloud calls. Add a fail-closed doctor, a non-technical macOS double-click launcher plus npm launcher, graceful shutdown, clear health/error output, and no silent model download. Add local verified backup/list/restore capabilities exposed in the web Manage surface: backups live outside the vault, include a manifest with hashes, restore validates integrity, requires exact confirmation, creates a pre-restore safety backup, restores atomically, and marks Hindsight projection for rebuild. Add a fresh product runtime smoke that uses real Markdown/TXT/PDF/DOCX, requires nonzero Hindsight extraction and reconciled cited recall, exercises refresh/deletion/restart/recovery, writes redacted ignored evidence, and leaves only named recoverable test artifacts. Update runbooks, readiness docs, tests and package commands."
+        allowed_files:
+          - .gitignore
+          - README.md
+          - docs/production-runbook.md
+          - compose.hindsight.yml
+          - package.json
+          - scripts/verify-hindsight-docker-compose.mjs
+          - scripts/supermemory-doctor.mjs
+          - scripts/supermemory-launch.mjs
+          - scripts/supermemory-product-live-smoke.mjs
+          - scripts/lib/product-backup.mjs
+          - scripts/lib/product-store.mjs
+          - scripts/supermemory-app.mjs
+          - SuperMemory.command
+          - web/index.html
+          - web/app.js
+          - web/styles.css
+          - tests/supermemory-doctor.test.mjs
+          - tests/product-backup.test.mjs
+          - tests/supermemory-product-live-smoke.test.mjs
+          - tests/supermemory-app.test.mjs
+        verify:
+          - "npm ci --ignore-scripts"
+          - "node --test tests/supermemory-doctor.test.mjs tests/product-backup.test.mjs tests/supermemory-product-live-smoke.test.mjs tests/supermemory-app.test.mjs"
+          - "npm test"
+          - "npm run verify"
+          - "npm run verify:release"
+          - "npm run verify:secrets"
+          - "npm audit --omit=dev"
+          - "git diff --check"
+          - "npm run doctor -- --json"
+          - "Fresh live product smoke and browser walkthrough on the configured local runtime"
+        stop_if:
+          - "Any document, model request, backup, or runtime call would leave loopback/local storage by default."
+          - "The launcher would download a model, start an unpinned container, or mutate production data without an explicit visible action."
+          - "Backup storage resolves inside the canonical vault or restore can proceed without manifest/hash validation and exact user confirmation."
+          - "Restore lacks a pre-restore safety backup or can leave the vault partially replaced."
+          - "Hindsight retain succeeds at HTTP level but produces zero memory units."
+          - "A recalled Hindsight result cannot reconcile to an active canonical citation."
+          - "Fresh runtime proof does not cover every announced file format, refresh, deletion, restart and recovery."
+          - "Implementation requires changes outside the explicit allowed_files."
+          - "Any existing release, security, product, or deletion gate regresses."
+      evidence:
+        - notes/T008-receipt.json
+        - "npm test: 44/44 pass"
+        - "Official Hindsight 0.6 Ollama provider/model/base URL configuration"
+        - "Official Docker image note that built-in llamacpp is not bundled"
+        - "Local ollama executable and llama3:latest model inventory"
+        - "Live llamacpp APIConnectionError and zero-unit retained document evidence"
+      subgoal_contract: null
+      parallel_safety:
+        parallel_workers_allowed: false
+        reason: "Runtime configuration, launcher, backup/restore, live evidence and the shared web/store surface form one deployment package."
+      blocked_tasks: []
+      missing_evidence:
+        - "No current live Hindsight extraction with nonzero memory units."
+        - "No clean non-technical launch or doctor proof."
+        - "No verified backup/restore product workflow."
+        - "No final all-format browser walkthrough or fresh final production decision."
+      required_board_updates:
+        - "Create and activate T010 from worker_package."
+        - "After T010, activate T999 for the final oracle audit only if all fresh runtime evidence is present."
+  - id: T010
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Finish SuperMemory's local production package. Configure the pinned Hindsight Compose service for a host Ollama endpoint on loopback, an explicitly selected already-installed model, single-request concurrency and no cloud calls. Add a fail-closed doctor, a non-technical macOS double-click launcher plus npm launcher, graceful shutdown, clear health/error output, and no silent model download. Add local verified backup/list/restore capabilities exposed in the web Manage surface: backups live outside the vault, include a manifest with hashes, restore validates integrity, requires exact confirmation, creates a pre-restore safety backup, restores atomically, and marks Hindsight projection for rebuild. Add a fresh product runtime smoke that uses real Markdown/TXT/PDF/DOCX, requires nonzero Hindsight extraction and reconciled cited recall, exercises refresh/deletion/restart/recovery, writes redacted ignored evidence, and leaves only named recoverable test artifacts. Update runbooks, readiness docs, tests and package commands."
+    allowed_files:
+      - ".gitignore"
+      - "README.md"
+      - "docs/production-runbook.md"
+      - "compose.hindsight.yml"
+      - "package.json"
+      - "scripts/verify-hindsight-docker-compose.mjs"
+      - "scripts/supermemory-doctor.mjs"
+      - "scripts/supermemory-launch.mjs"
+      - "scripts/supermemory-product-live-smoke.mjs"
+      - "scripts/lib/product-backup.mjs"
+      - "scripts/lib/product-store.mjs"
+      - "scripts/supermemory-app.mjs"
+      - "SuperMemory.command"
+      - "web/index.html"
+      - "web/app.js"
+      - "web/styles.css"
+      - "tests/supermemory-doctor.test.mjs"
+      - "tests/product-backup.test.mjs"
+      - "tests/supermemory-product-live-smoke.test.mjs"
+      - "tests/supermemory-app.test.mjs"
+    verify:
+      - "npm ci --ignore-scripts"
+      - "node --test tests/supermemory-doctor.test.mjs tests/product-backup.test.mjs tests/supermemory-product-live-smoke.test.mjs tests/supermemory-app.test.mjs"
+      - "npm test"
+      - "npm run verify"
+      - "npm run verify:release"
+      - "npm run verify:secrets"
+      - "npm audit --omit=dev"
+      - "git diff --check"
+      - "npm run doctor -- --json"
+      - "Fresh live product smoke and browser walkthrough on the configured local runtime"
+    stop_if:
+      - "Any document, model request, backup, or runtime call would leave loopback/local storage by default."
+      - "The launcher would download a model, start an unpinned container, or mutate production data without an explicit visible action."
+      - "Backup storage resolves inside the canonical vault or restore can proceed without manifest/hash validation and exact user confirmation."
+      - "Restore lacks a pre-restore safety backup or can leave the vault partially replaced."
+      - "Hindsight retain succeeds at HTTP level but produces zero memory units."
+      - "A recalled Hindsight result cannot reconcile to an active canonical citation."
+      - "Fresh runtime proof does not cover every announced file format, refresh, deletion, restart and recovery."
+      - "Implementation requires changes outside the explicit allowed_files."
+      - "Any existing release, security, product, or deletion gate regresses."
+    receipt:
+      result: done
+      harness: codex-pm-fallback
+      summary: "Local production package complete: pinned Ollama-backed Hindsight, fail-closed doctor, double-click/npm launchers, verified external backup and atomic restore with derived-bank rebuild, real all-format live product smoke, runtime-ready gate, and browser walkthrough all pass."
+      changed_files:
+        - ".gitignore"
+        - "README.md"
+        - "compose.hindsight.yml"
+        - "docs/production-runbook.md"
+        - "package.json"
+        - "scripts/verify-hindsight-docker-compose.mjs"
+        - "scripts/supermemory-doctor.mjs"
+        - "scripts/supermemory-launch.mjs"
+        - "scripts/supermemory-product-live-smoke.mjs"
+        - "scripts/lib/product-backup.mjs"
+        - "scripts/supermemory-app.mjs"
+        - "SuperMemory.command"
+        - "web/index.html"
+        - "web/app.js"
+        - "web/styles.css"
+        - "tests/supermemory-doctor.test.mjs"
+        - "tests/product-backup.test.mjs"
+        - "tests/supermemory-product-live-smoke.test.mjs"
+        - "tests/supermemory-app.test.mjs"
+      commands:
+        - cmd: "npm ci --ignore-scripts"
+          status: pass
+        - cmd: "node --test tests/supermemory-doctor.test.mjs tests/product-backup.test.mjs tests/supermemory-product-live-smoke.test.mjs tests/supermemory-app.test.mjs"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "npm run verify"
+          status: pass
+        - cmd: "npm run verify:release"
+          status: pass
+        - cmd: "npm run verify:secrets"
+          status: pass
+        - cmd: "npm audit --omit=dev"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm run doctor -- --json"
+          status: pass
+        - cmd: "npm run smoke:product:live -- --execute-live --json"
+          status: pass
+        - cmd: "npm run verify:runtime -- --evidence-path tmp/supermemory-product-live-smoke.jsonl --json"
+          status: pass
+      note: notes/T010-receipt.json
+      evidence:
+        - "npm test: 55/55 pass"
+        - "npm run verify: pass"
+        - "npm run verify:release: pass"
+        - "npm run verify:secrets: 417 files, 0 findings"
+        - "npm audit --omit=dev: 0 vulnerabilities"
+        - "npm run doctor -- --json: ready"
+        - "tmp/supermemory-product-live-smoke.jsonl: fresh pass"
+        - "npm run verify:runtime: runtime-ready"
+        - "Real browser Manage/backup walkthrough: pass"
+      note_needed: true
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Audit the complete product against every oracle item and decide whether the original owner outcome is genuinely complete."
+    inputs:
+      - "All completed task receipts"
+      - "Recorded real-document walkthrough"
+      - "Latest automated verification"
+      - "Current repository diff and release documentation"
+    constraints:
+      - "Read-only."
+      - "Reject completion if any required user workflow remains CLI-only."
+      - "Reject completion if provenance, citations, refresh, deletion, restart, privacy, or recovery lack runtime proof."
+      - "Reject completion while required Worker work remains queued, active, or safely discoverable."
+      - "Do not confuse historical evidence with fresh final-oracle evidence."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Oracle-by-oracle evidence map"
+      - "Missing evidence and next safe task when incomplete"
+    receipt:
+      result: done
+      harness: codex-pm-fallback-after-judge-timeout
+      decision: complete
+      technical_outcome_complete: true
+      full_outcome_complete: true
+      summary: "All technical and workflow oracle items pass with fresh evidence. The owner approved the local-first deployment after the 24 July proof, confirmed verified-backup rollback, and the production gate passed."
+      note: notes/T999-receipt.json
+      evidence:
+        - "tmp/supermemory-product-live-smoke.jsonl: fresh 2026-07-24 pass"
+        - "npm run verify:runtime: runtime-ready"
+        - "npm run verify:production: production-ready"
+        - "approval_reference: owner-chat-approval-2026-07-24-product-runtime"
+        - "notes/T999-receipt.json"
+      note_needed: true
+
+checks:
+  dirty_fingerprint: "local-production-package-complete-approved"
+  last_verification:
+    result: production-ready
+    task: T999
+    generated_at: "2026-07-24T16:19:47.205Z"
+    commands:
+      - "npm test: pass 55/55"
+      - "npm run verify: pass"
+      - "npm run verify:release: pass"
+      - "npm run verify:runtime: pass"
+      - "npm run verify:secrets: pass"
+      - "npm audit --omit=dev: pass"
+      - "git diff --check: pass"
+      - "npm run verify:production: pass production-ready"

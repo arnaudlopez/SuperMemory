@@ -122,7 +122,14 @@ export async function executeHindsightRequests(requests, options = {}) {
     throw new Error("missing fetch implementation");
   }
   const apiKey = options.apiKey ?? process.env.HINDSIGHT_API_KEY;
-  if (!apiKey) {
+  const loopbackOnly = requests.every((request) => {
+    try {
+      return ["127.0.0.1", "localhost", "::1", "[::1]"].includes(new URL(request.baseUrl).hostname);
+    } catch {
+      return false;
+    }
+  });
+  if (!apiKey && !loopbackOnly) {
     throw new Error("missing HINDSIGHT_API_KEY");
   }
   const timeoutMs = options.timeoutMs ?? Number(process.env.HINDSIGHT_REQUEST_TIMEOUT_MS || 15000);
@@ -137,8 +144,8 @@ export async function executeHindsightRequests(requests, options = {}) {
       const response = await fetchImpl(`${request.baseUrl}${request.path}`, {
         method: request.method,
         headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {})
         },
         body: request.body ? JSON.stringify(request.body) : undefined,
         signal: controller.signal

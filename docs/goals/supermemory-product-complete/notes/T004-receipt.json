@@ -1,0 +1,74 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T004",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "harness": "codex",
+    "decision": "approved",
+    "full_outcome_complete": false,
+    "rationale": "The text-first phase is approved: fresh runtime evidence proves a real local web workflow, persistent canonical state, reviewed memories, changed-source invalidation and cited search without weakening legacy gates. It is not the full product. The next largest safe package is real PDF/DOCX extraction through the same ingest/review/search interfaces. It must preserve exact binary snapshots, produce page/section locators, expose readable/openable citations, reject malformed/encrypted/oversized files, pin Node 18-compatible parsers, disable external DOCX file access, and install dependencies reproducibly in CI.",
+    "worker_package": {
+      "objective": "Add production-shaped PDF and DOCX support to the local web workflow: browser binary ingestion, exact immutable snapshots, PDF page extraction, DOCX semantic section extraction, page/section-located candidates, openable extracted and raw source citations, malformed/encrypted/oversized error handling, deterministic warnings, pinned Node 18/22-compatible dependencies, reproducible lockfile/CI installation, and regression coverage using real generated binary documents. Remove the deferred labels only when the runtime tests pass.",
+      "allowed_files": [
+        ".github/workflows/supermemory-specs.yml",
+        "README.md",
+        "package.json",
+        "package-lock.json",
+        "scripts/lib/document-extractors.mjs",
+        "scripts/lib/product-store.mjs",
+        "scripts/supermemory-app.mjs",
+        "web/index.html",
+        "web/app.js",
+        "web/styles.css",
+        "tests/document-extractors.test.mjs",
+        "tests/supermemory-app.test.mjs"
+      ],
+      "verify": [
+        "npm ci --ignore-scripts",
+        "node --test tests/document-extractors.test.mjs tests/supermemory-app.test.mjs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "npm run verify:secrets",
+        "git diff --check"
+      ],
+      "stop_if": [
+        "Implementation requires a parser that does not support Node.js 18 and 22.",
+        "A parser needs external network, external file access, macros, or executable document content.",
+        "PDF/DOCX bytes cannot remain bounded and local-only.",
+        "Citation locators cannot identify a PDF page or DOCX section.",
+        "Implementation requires changes outside the explicit allowed_files.",
+        "Existing text ingestion, canonical-vault persistence, review, search, or legacy release gates regress."
+      ]
+    },
+    "evidence": [
+      "notes/T003-receipt.json",
+      "scripts/supermemory-app.mjs",
+      "scripts/lib/product-store.mjs",
+      "web/index.html",
+      "tests/supermemory-app.test.mjs",
+      "npm test: 35/35 pass",
+      "npm run verify:release: pass",
+      "Browser walkthrough: import -> review -> approve -> search -> cited source",
+      "PDF.js official Node extraction API via pdfjs-dist/legacy/build/pdf.mjs",
+      "Mammoth official Buffer conversion API with external file access disabled",
+      "pdfjs-dist@4.8.69 engines: Node >=18",
+      "mammoth@1.12.0 engines: Node >=12"
+    ],
+    "subgoal_contract": null,
+    "parallel_safety": {
+      "parallel_workers_allowed": false,
+      "reason": "Binary extraction changes the shared ingest, locator, source-viewer, UI, dependency and CI contracts."
+    },
+    "blocked_tasks": [],
+    "missing_evidence": [
+      "Hindsight projection and recall from approved web memories remain unimplemented.",
+      "Folder deletion reconciliation and governed canonical deletion remain unimplemented.",
+      "Packaged non-terminal launch and clean-install walkthrough remain unimplemented."
+    ],
+    "required_board_updates": [
+      "Create and activate T005 from worker_package.",
+      "After T005, continue directly to a governed Hindsight web-projection package unless binary parser risk requires review."
+    ]
+  }
+}

@@ -10,3 +10,10 @@ docs/goals/**/.goalbuddy-board/
 # Runtime scratch
 *.log
 tmp/
+.supermemory/
+
+# Local web-product data (canonical on this machine, never repository content)
+identity-vault/00_inbox/supermemory-product/
+identity-vault/00_inbox/snapshots/
+identity-vault/20_professional/product-memories/
+identity-vault/80_logs/product-events.jsonl

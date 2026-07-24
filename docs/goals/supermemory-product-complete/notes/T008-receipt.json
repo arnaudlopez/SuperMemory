@@ -1,0 +1,59 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T008",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "changed_files": [
+      "README.md",
+      "scripts/lib/product-hindsight.mjs",
+      "scripts/lib/product-store.mjs",
+      "scripts/supermemory-app.mjs",
+      "web/index.html",
+      "web/app.js",
+      "web/styles.css",
+      "tests/product-hindsight.test.mjs",
+      "tests/product-reconciliation.test.mjs"
+    ],
+    "commands": [
+      {
+        "cmd": "node --test tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm test",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:release",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:secrets",
+        "status": "pass"
+      },
+      {
+        "cmd": "git diff --check",
+        "status": "pass"
+      },
+      {
+        "cmd": "Browser walkthrough: pending-removal badge -> Gérer -> absent source -> Conserver/Supprimer définitivement controls",
+        "status": "pass"
+      }
+    ],
+    "summary": "Completed folder refresh and deletion. Complete inventories suspend absent sources from all recall; reappearance restores without duplication. The Manage UI supports explicit staging, cancellation and path-confirmed permanent deletion. Confirmation purges candidate text, canonical memory files and unshared snapshots before idempotent Hindsight deletion; failures remain in content-free retry state and survive restart. Changed-source stale projections are also deleted. Shared snapshots, malformed inventory safety, no stale recall and restart/retry are covered. All 44 tests and release/security gates pass.",
+    "deviations": [
+      "The delegated Worker produced no allowed-file changes in the GoalBuddy wait window; the PM completed the same bounded task as deterministic fallback."
+    ],
+    "remaining_blockers": [
+      "Configure and prove a working local Ollama provider for Hindsight.",
+      "Deliver clean-install launcher, doctor, backup and restore UX.",
+      "Run the final multi-format browser walkthrough and production gates with fresh runtime evidence."
+    ],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T002",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "harness": "codex",
+    "decision": "approved",
+    "full_outcome_complete": false,
+    "rationale": "Approve one substantial text-first vertical slice: a localhost-only web application that lets a non-technical user select a folder in the browser, ingest Markdown/TXT, review/edit/approve/reject cited candidates, persist canonical vault state, and search approved memory with openable source citations. This is large enough to establish the actual product architecture while remaining deterministic, credential-free and reversible. PDF/DOCX extraction and Hindsight projection must use the interfaces established here in later packages; the UI must label them unsupported rather than imply completion.",
+    "worker_package": {
+      "objective": "Build the first production-shaped local web vertical slice for Markdown and TXT: a localhost-only server and professional browser UI with directory selection, bounded ingestion, deterministic source-located candidate generation, interactive edit/approve/reject review, canonical vault persistence, approved-memory search with source/line citations, deduplication on repeated ingestion, restart persistence, explicit unsupported PDF/DOCX reporting, recoverable errors, and no remote network calls.",
+      "allowed_files": [
+        "README.md",
+        "package.json",
+        "scripts/supermemory-app.mjs",
+        "scripts/lib/product-store.mjs",
+        "web/index.html",
+        "web/app.js",
+        "web/styles.css",
+        "tests/supermemory-app.test.mjs"
+      ],
+      "verify": [
+        "node --test tests/supermemory-app.test.mjs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "npm run verify:secrets",
+        "git diff --check"
+      ],
+      "stop_if": [
+        "Implementation requires writing outside the explicit allowed_files.",
+        "The slice would weaken or bypass existing capture, provenance, review, access, secret, or Hindsight governance gates.",
+        "Any document content would be transmitted to a non-local endpoint.",
+        "Tests require live Hindsight credentials or live network writes.",
+        "The implementation cannot keep the default server bound to 127.0.0.1.",
+        "The UI would advertise PDF, DOCX, semantic LLM analysis, or Hindsight-backed recall as implemented in this slice."
+      ]
+    },
+    "evidence": [
+      "notes/T001-product-gap-map.md",
+      "notes/T001-receipt.json",
+      "package.json:1",
+      "scripts/supermemory-onboard.mjs:193",
+      "scripts/supermemory-onboard.mjs:230",
+      "scripts/supermemory-onboard.mjs:311",
+      "scripts/hindsight-promote.mjs:227",
+      "README.md:381",
+      "README.md:408"
+    ],
+    "subgoal_contract": null,
+    "parallel_safety": {
+      "parallel_workers_allowed": false,
+      "reason": "The first slice establishes shared server, store, UI and product-test contracts; one bounded Worker avoids cross-cutting conflicts."
+    },
+    "blocked_tasks": [],
+    "missing_evidence": [
+      "No browser walkthrough exists until the Worker completes the slice.",
+      "PDF/DOCX extraction and local Hindsight projection remain explicitly deferred.",
+      "Folder deletion reconciliation is not required in this first package unless it falls naturally within the bounded implementation."
+    ],
+    "required_board_updates": [
+      "Copy worker_package onto T003 and activate T003.",
+      "After T003 verification, perform a browser walkthrough as a phase-boundary review before selecting the PDF/DOCX and Hindsight packages."
+    ]
+  }
+}

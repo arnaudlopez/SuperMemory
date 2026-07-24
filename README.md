@@ -7,7 +7,7 @@
 
 > Governed, living memory for personal, professional, and enterprise AI agents.
 
-SuperMemory is a local-first memory architecture that makes AI memory **traceable, reviewable, revocable, and safe to use**. It combines a Markdown/Obsidian-compatible vault, immutable source snapshots, deterministic governance, explicit operator approvals, and a Hindsight-backed recall layer.
+SuperMemory is a production-shaped, local-first memory product that makes AI memory **traceable, reviewable, revocable, recoverable, and safe to use**. It combines a local web application, a Markdown/Obsidian-compatible vault, immutable source snapshots, deterministic governance, explicit approvals, verified backups, and a Hindsight-backed recall layer.
 
 Most memory systems ask, “What can we retrieve?” SuperMemory asks the harder questions:
 
@@ -68,9 +68,17 @@ LLMs may interpret source-backed observations and adapt them to unfamiliar reque
 
 Hindsight promotion uses stable document identifiers, scoped tags, provenance metadata, and reviewed plans. Recall fails closed when required scope tags are absent or forbidden tags are present. Final answers must cite the memories and source snapshots that support them.
 
+### Local web product
+
+The product-shaped workflow is available on localhost. A user can select a folder in the browser, ingest Markdown, text, PDF, and DOCX documents, review or edit source-located memory candidates, approve or reject them, project approved memory into local Hindsight, and search with openable line, PDF-page, or DOCX-section citations. Product state and exact immutable binary snapshots remain inside the configured local vault.
+
+PDF extraction uses PDF.js, DOCX semantic extraction uses Mammoth with external file access disabled, and all processing remains local and bounded. The vault is always written first and remains canonical. Hindsight receives only approved memory through a stable document ID, strict scope tags, and complete provenance. If the local Hindsight service is unavailable, projection remains visibly queued and search falls back explicitly to the deterministic local index.
+
+The **Gérer** tab also creates SHA-256-manifested backups outside the canonical vault. Restore verifies every file, requires an exact confirmation, creates a pre-restore safety backup, swaps the vault atomically, then rebuilds the dedicated Hindsight bank from restored canonical memory.
+
 ### Executable specification
 
-The product contract is expressed through fixtures, Node.js verifiers, and 34 automated tests. CI runs the complete specification and release gates on Node.js 18 and 22 without live credentials or live network writes.
+The product contract is expressed through fixtures, Node.js verifiers, and 55 automated tests. CI runs the complete specification and release gates on Node.js 18 and 22 without live credentials or live network writes.
 
 ## Architecture
 
@@ -97,6 +105,11 @@ flowchart LR
         LOG["Audit logs and evals"]
     end
 
+    subgraph Recovery["Local recovery boundary"]
+        BACKUP["Verified backup outside vault"]
+        RESTORE["Atomic restore"]
+    end
+
     subgraph Engine["Replaceable memory engine"]
         ADAPTER["Governed Hindsight adapter"]
         HINDSIGHT["Local Hindsight runtime"]
@@ -120,6 +133,10 @@ flowchart LR
     HINDSIGHT --> RECALL
     RECALL --> ANSWER
     ANSWER --> ACTION
+    LOG --> BACKUP
+    BACKUP --> RESTORE
+    RESTORE --> MEM
+    RESTORE -. rebuild .-> HINDSIGHT
 
     GOV -.-> PLAN
     GOV -.-> QUEUE
@@ -138,6 +155,7 @@ flowchart LR
 | Snapshot layer | Preserve the exact reviewed bytes under a content-derived identity | Immutable evidence |
 | Source and snapshot registries | Track provenance, freshness, lineage, and source state | Recoverable transaction |
 | Markdown vault | Hold canonical memory, policies, queues, signals, logs, and evals | Source of truth |
+| Backup manager | Hash, verify, safety-copy, and atomically restore canonical state | Outside-vault recovery boundary |
 | Interpretation contract | Let LLMs derive meaning while declaring evidence and uncertainty | Review before activation |
 | Hindsight adapter | Translate governed memory into a recall-engine projection | Reviewed writes only |
 | Recall and answer contracts | Enforce scope, forbidden tags, freshness, and citations | Deny by default |
@@ -266,20 +284,26 @@ The production verifier performs no live writes. It refuses stale, failed, mock,
 
 ### Requirements
 
-- Node.js 18 or 22
+- Node.js 18 or newer
 - Git
-- Docker with Compose, only for the local Hindsight runtime
+- Docker Desktop with Compose
+- Ollama running locally with `llama3:latest` already installed
 
 ### Clone and verify
 
 ```bash
 git clone https://github.com/arnaudlopez/SuperMemory.git
 cd SuperMemory
+npm ci --ignore-scripts
 npm test
 npm run verify:release
 ```
 
-No application dependencies are required for the deterministic specification and governance checks.
+SuperMemory never downloads a model implicitly. Install the expected model yourself once if `ollama list` does not already show it:
+
+```bash
+ollama pull llama3:latest
+```
 
 ### Inspect the supported operator surface
 
@@ -288,13 +312,47 @@ node scripts/supermemory-operator.mjs
 node scripts/supermemory-operator.mjs --json
 ```
 
-### Start local Hindsight
+### Launch the complete local product
+
+On macOS, double-click `SuperMemory.command`. It checks every prerequisite, starts the pinned Hindsight container, waits for health, starts the loopback web application, and opens the browser.
+
+```bash
+npm run launch
+```
+
+Open [http://127.0.0.1:4310](http://127.0.0.1:4310), choose a folder, and complete the import → review → search workflow in the browser. The server binds to `127.0.0.1` and makes no remote document calls.
+
+Run the same fail-closed preflight without starting anything:
+
+```bash
+npm run doctor
+```
+
+By default, product state is stored inside `identity-vault` and backups under `~/.supermemory/backups`, outside the vault. Both locations are configurable:
+
+```bash
+SUPERMEMORY_VAULT_ROOT=/absolute/path/to/local-vault \
+SUPERMEMORY_BACKUPS_ROOT=/absolute/path/to/local-backups \
+npm run launch
+```
+
+Markdown (`.md`, `.markdown`), plain text (`.txt`), PDF, and DOCX are supported. PDF citations identify pages; DOCX citations identify semantic heading sections. Raw source downloads always return the exact captured bytes. Text files are limited to 2 MiB, binary files to 8 MiB, and each import to 20 MiB.
+
+The application connects only to loopback Hindsight and defaults to `http://127.0.0.1:8888` with bank `supermemory-local`. Start the pinned local engine with the Compose command below. `HINDSIGHT_BASE_URL` may select another loopback port, and `HINDSIGHT_BANK_ID` may select another local bank; non-loopback URLs are rejected. Approval remains successful in the canonical vault even when projection fails, and the interface exposes an idempotent **Resynchroniser** action.
+
+Each browser directory import is marked as a complete inventory. A previously active source that disappears is suspended from local and Hindsight-backed recall, then shown in **Gérer**. Reappearance restores it without duplicate candidates. Permanent deletion requires an explicit confirmation naming the source; SuperMemory then purges its candidate text, canonical memory files and unshared snapshots before attempting the derived Hindsight delete. A Hindsight outage never rolls back the canonical purge and leaves a content-free retry record.
+
+`npm start` starts only the web process and is intended for development when Hindsight and Ollama are already running.
+
+### Start local Hindsight manually
 
 ```bash
 docker compose -f compose.hindsight.yml up -d
 ```
 
-The image is pinned by digest and ports `8888` and `9999` are bound to `127.0.0.1` only. Hindsight Cloud is not used by default.
+The image is pinned by digest and ports `8888` and `9999` are bound to `127.0.0.1` only. The container connects to host Ollama at `host.docker.internal`, uses the explicit `llama3:latest` model, limits local LLM concurrency to one, and disables optional observations. Hindsight Cloud is not used.
+
+Hindsight also needs a reachable local LLM provider capable of structured output. If the API is healthy but extraction produces no memory units, SuperMemory marks the projection as pending, keeps the approved canonical memory safe, and uses the cited local fallback until resynchronization succeeds.
 
 Set explicit local runtime values before strict preflight or live smoke:
 
@@ -319,6 +377,10 @@ node scripts/verify-golden-end-state-workflow.mjs
 
 | Workflow | Entry point | Mutation model |
 |---|---|---|
+| Complete local product | `SuperMemory.command` or `npm run launch` | doctor → pinned local runtime → browser workflow → graceful shutdown |
+| Web process only | `npm start` | browser folder selection → candidates → human review → canonical vault memory → governed local Hindsight projection → cited recall or explicit local fallback |
+| Backup/recovery | **Gérer** tab | verified external backup → exact confirmation → safety backup → atomic restore → Hindsight rebuild |
+| Product live proof | `npm run smoke:product:live` | explicit temporary four-format writes, refresh, deletion, backup, restore, restart, and cleanup |
 | Client onboarding | `scripts/supermemory-onboard.mjs` | inventory → plan → staging → confirmed vault commit |
 | Manual capture | `scripts/local-manual-capture.mjs` | one selected source → plan → staging → confirmed vault commit |
 | Local-file refresh | `scripts/local-file-source-refresh.mjs` | connector result → refresh plan → staging → confirmed commit |
@@ -368,12 +430,14 @@ Fixtures live under [`identity-vault/90_evals/cases/`](identity-vault/90_evals/c
 ```text
 .
 ├── identity-vault/          # canonical governed memory and executable fixtures
+├── web/                     # localhost-only product interface
 ├── scripts/                 # operator CLIs, adapters, gates, and verifiers
 │   └── lib/                 # snapshot and recoverable-transaction primitives
 ├── tests/                   # Node.js regression tests
 ├── docs/                    # architecture, PRD, runbooks, audits, and goals
 ├── .github/workflows/       # pinned, read-only CI
 ├── compose.hindsight.yml    # pinned localhost-only Hindsight runtime
+├── SuperMemory.command      # macOS double-click launcher
 ├── SECURITY.md              # private vulnerability reporting policy
 └── package.json             # stable verification command surface
 ```
@@ -384,9 +448,11 @@ Fixtures live under [`identity-vault/90_evals/cases/`](identity-vault/90_evals/c
 
 The supported target is a **local-first operator deployment**:
 
-- SuperMemory operator and governance tools run from the repository.
+- The SuperMemory local web application, operator tools, and governance tools run from the repository.
 - The Markdown vault is canonical local state.
 - Hindsight runs locally through Docker Compose.
+- Ollama runs locally on the host with an explicitly installed model.
+- Verified backups are stored outside the canonical vault.
 - Live evidence is stored under ignored `tmp/`.
 - There is no hosted web application in this release.
 
@@ -401,7 +467,7 @@ git revert <release-commit-sha>
 npm run verify:release
 ```
 
-Interrupted registry transactions recover from their journal. Completed vault changes must be reversed through a new reviewed change; immutable snapshots are not deleted to conceal history.
+For user-data recovery, use **Gérer → Sauvegardes vérifiées**. SuperMemory validates the manifest, creates a safety backup, restores atomically, and rebuilds Hindsight. Code rollback with Git does not replace a vault backup.
 
 See [docs/production-runbook.md](docs/production-runbook.md) for the full release, smoke, approval, observability, and rollback procedure.
 
@@ -413,6 +479,8 @@ See [docs/production-runbook.md](docs/production-runbook.md) for the full releas
 - immutable content-addressed source artifacts;
 - recoverable source/snapshot registry transactions;
 - local onboarding, manual capture, and local-file refresh;
+- localhost web workflow for Markdown/TXT/PDF/DOCX ingestion, exact snapshots, page/section-located review, vault persistence, governed Hindsight projection/retry, strict cited recall with explicit local fallback, complete-folder reconciliation, confirmed canonical/Hindsight deletion, deduplication, and restart recovery;
+- fail-closed local doctor, macOS launcher, pinned Ollama-backed Hindsight runtime, graceful shutdown, external verified backups, atomic restore, safety backup, and derived-index rebuild;
 - LLM-first interpretation contract with deterministic governance;
 - reviewed Hindsight promotion, strict recall, revocation, and trace contracts;
 - local Docker Hindsight preflight and governed live smoke;
@@ -424,6 +492,7 @@ See [docs/production-runbook.md](docs/production-runbook.md) for the full releas
 ### Not implemented in this release
 
 - hosted SaaS UI or public API;
+- automatic unreviewed LLM interpretation or non-local Hindsight projection;
 - multi-tenant authentication, RLS, billing, or background workers;
 - automated Gmail, Drive, CRM, web-crawler, or paid external connectors;
 - automated remote source refresh;
@@ -431,7 +500,7 @@ See [docs/production-runbook.md](docs/production-runbook.md) for the full releas
 - Graphiti or Memoria engine ports;
 - unconfirmed external actions.
 
-Hindsight capabilities that depend on its internal LLM provider are outside the currently verified SuperMemory memory-operation scope.
+The production proof exercises real local LLM extraction, verifies nonzero Hindsight memory units, reconciles recall to active canonical memory, and confirms citations after backup restore and process restart.
 
 ## Documentation
 
@@ -446,13 +515,9 @@ Hindsight capabilities that depend on its internal LLM provider are outside the 
 | [Vault agent rules](identity-vault/AGENTS.md) | Agent operating constraints |
 | [Memory map](identity-vault/memory_map.md) | Vault entry points |
 
-## Roadmap
+## Future extensions
 
-1. Keep the executable specification and release gate green.
-2. Add connector-backed refresh only for concrete, approved source workflows.
-3. Improve local runtime packaging, health checks, backup, and recovery.
-4. Add optional reporting only when current Node.js eval output becomes insufficient.
-5. Benchmark alternative engine ports only when Hindsight or snapshot evals demonstrate a measurable gap.
+The current single-user local product is complete within its declared scope. Future work should remain opt-in: signed desktop packaging, OCR for scanned PDFs, and connector-backed refresh for concrete approved sources. Hosted SaaS, multi-tenancy, billing, and implicit cloud processing are not part of this release.
 
 ## Contributing, security, and license
 

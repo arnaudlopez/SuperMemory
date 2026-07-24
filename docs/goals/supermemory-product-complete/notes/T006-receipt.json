@@ -1,0 +1,60 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T006",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "changed_files": [
+      "README.md",
+      "scripts/lib/product-hindsight.mjs",
+      "scripts/lib/product-store.mjs",
+      "scripts/supermemory-app.mjs",
+      "scripts/hindsight-transport.mjs",
+      "web/index.html",
+      "web/app.js",
+      "web/styles.css",
+      "tests/product-hindsight.test.mjs",
+      "tests/supermemory-app.test.mjs"
+    ],
+    "commands": [
+      {
+        "cmd": "node --test tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm test",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:release",
+        "status": "pass"
+      },
+      {
+        "cmd": "npm run verify:secrets",
+        "status": "pass"
+      },
+      {
+        "cmd": "git diff --check",
+        "status": "pass"
+      },
+      {
+        "cmd": "Live local product walkthrough: approve -> retain stable document -> verify empty extraction -> explicit cited fallback -> restart/status",
+        "status": "pass"
+      }
+    ],
+    "summary": "Connected the web product to loopback-only governed Hindsight. Canonical approval always commits first; stable document IDs, strict scope tags and provenance drive idempotent projection, retry and reconciled recall. Projection failures and zero-unit extraction remain queued, while search falls back explicitly to active cited vault memory. The UI exposes engine and retry status. Mocked outage/retry/recall tests, 42 full tests, release and secret gates pass. A live local bank retained the document and exposed the current LLM provider failure safely.",
+    "deviations": [
+      "The active pinned Hindsight API/database is healthy, but its current llamacpp provider cannot connect and extracts zero memory units. SuperMemory now detects this and refuses to mark the projection synced.",
+      "The delegated Worker produced no allowed-file changes in the GoalBuddy wait window; the PM completed the same bounded task as deterministic fallback."
+    ],
+    "remaining_blockers": [
+      "Configure and prove a working local structured-output LLM provider for the pinned Hindsight runtime.",
+      "Implement folder-wide removal reconciliation and governed canonical/Hindsight deletion."
+    ],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

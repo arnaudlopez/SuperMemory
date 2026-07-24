@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#080d19">
+  <title>SuperMemory — Mémoire locale gouvernée</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="SuperMemory, accueil">
+      <span class="brand-mark" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+      <span>
+        <strong>SuperMemory</strong>
+        <small>Mémoire locale gouvernée</small>
+      </span>
+    </a>
+    <div class="runtime-pill" id="runtime-pill">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>Local uniquement</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Votre mémoire, sous votre contrôle</p>
+        <h1>Transformez vos documents en connaissances vérifiables.</h1>
+        <p class="hero-copy">
+          Importez un dossier, relisez chaque mémoire proposée, puis retrouvez
+          l’information avec un lien exact vers sa source. Rien ne quitte cette machine.
+        </p>
+      </div>
+      <div class="hero-seal" aria-label="Fonctionnement local-first">
+        <span>100%</span>
+        <strong>local-first</strong>
+        <small>aucun appel distant</small>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="État de la mémoire">
+      <article>
+        <span class="metric-icon sky">01</span>
+        <div><strong id="source-count">0</strong><small>Sources actives</small></div>
+      </article>
+      <article>
+        <span class="metric-icon amber">02</span>
+        <div><strong id="candidate-count">0</strong><small>À valider</small></div>
+      </article>
+      <article>
+        <span class="metric-icon mint">03</span>
+        <div><strong id="memory-count">0</strong><small>Mémoires approuvées</small></div>
+      </article>
+      <article>
+        <span class="metric-icon violet">04</span>
+        <div><strong id="stale-count">0</strong><small>À actualiser</small></div>
+      </article>
+    </section>
+
+    <section class="projection-status" aria-live="polite">
+      <div>
+        <span class="status-dot" id="hindsight-dot" aria-hidden="true"></span>
+        <div>
+          <strong id="hindsight-status">Vérification de Hindsight…</strong>
+          <small id="hindsight-details">Le vault reste la source canonique dans tous les cas.</small>
+        </div>
+      </div>
+      <button class="button ghost" id="retry-projections" type="button" hidden>
+        Resynchroniser
+      </button>
+    </section>
+
+    <nav class="workflow-tabs" aria-label="Workflow SuperMemory">
+      <button class="tab-button active" type="button" data-tab="ingest">
+        <span>1</span> Importer
+      </button>
+      <button class="tab-button" type="button" data-tab="review">
+        <span>2</span> Valider
+        <b id="review-badge" hidden>0</b>
+      </button>
+      <button class="tab-button" type="button" data-tab="search">
+        <span>3</span> Rechercher
+      </button>
+      <button class="tab-button" type="button" data-tab="manage">
+        <span>4</span> Gérer
+        <b id="removal-badge" hidden>0</b>
+      </button>
+    </nav>
+
+    <section class="panel active" id="panel-ingest" data-panel="ingest">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Étape 1</p>
+          <h2>Choisissez votre dossier</h2>
+          <p>Les fichiers restent dans ce navigateur jusqu’à votre confirmation.</p>
+        </div>
+        <div class="format-legend">
+          <span class="format-ready">MD</span>
+          <span class="format-ready">TXT</span>
+          <span class="format-ready">PDF</span>
+          <span class="format-ready">DOCX</span>
+        </div>
+      </div>
+
+      <label class="drop-zone" for="folder-input" id="drop-zone">
+        <input id="folder-input" type="file" webkitdirectory directory multiple
+          accept=".md,.markdown,.txt,.pdf,.docx">
+        <span class="folder-symbol" aria-hidden="true">
+          <span class="folder-tab"></span>
+          <span class="folder-body">+</span>
+        </span>
+        <strong>Sélectionner un dossier</strong>
+        <span>Markdown, texte, PDF et DOCX extraits localement</span>
+        <small>2 Mo par texte · 8 Mo par PDF/DOCX · 20 Mo par import</small>
+      </label>
+
+      <div class="selection-card" id="selection-card" hidden>
+        <div>
+          <span class="selection-icon" aria-hidden="true">✓</span>
+          <div>
+            <strong id="selection-title">Dossier sélectionné</strong>
+            <small id="selection-details"></small>
+          </div>
+        </div>
+        <button class="button primary" id="ingest-button" type="button">
+          Créer les mémoires candidates
+        </button>
+      </div>
+
+      <div class="privacy-note">
+        <span aria-hidden="true">◇</span>
+        <p><strong>Frontière de confidentialité.</strong> Le serveur écoute uniquement sur
+          <code>127.0.0.1</code>. Aucun document n’est transmis à un service distant.</p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-review" data-panel="review" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Étape 2</p>
+          <h2>Gardez uniquement ce qui compte</h2>
+          <p>Chaque proposition reste inactive jusqu’à votre décision.</p>
+        </div>
+        <button class="button ghost" id="refresh-candidates" type="button">Actualiser</button>
+      </div>
+      <div class="candidate-list" id="candidate-list"></div>
+    </section>
+
+    <section class="panel" id="panel-search" data-panel="search" hidden>
+      <div class="panel-heading search-heading">
+        <div>
+          <p class="eyebrow">Étape 3</p>
+          <h2>Retrouvez une information et sa preuve</h2>
+          <p>La recherche porte uniquement sur les mémoires que vous avez approuvées.</p>
+        </div>
+        <span class="engine-label" id="engine-label">Détection du moteur…</span>
+      </div>
+      <form class="search-form" id="search-form">
+        <label for="search-input">Votre question ou vos mots-clés</label>
+        <div>
+          <input id="search-input" name="query" type="search"
+            placeholder="Ex. Quelle est la priorité du projet ?" autocomplete="off">
+          <button class="button primary" type="submit">Rechercher</button>
+        </div>
+      </form>
+      <div class="search-results" id="search-results"></div>
+    </section>
+
+    <section class="panel" id="panel-manage" data-panel="manage" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Étape 4</p>
+          <h2>Actualisez ou supprimez une source</h2>
+          <p>Une source absente du prochain inventaire est suspendue immédiatement. La purge exige toujours votre confirmation explicite.</p>
+        </div>
+        <button class="button ghost" id="refresh-sources" type="button">Actualiser</button>
+      </div>
+      <div class="source-list" id="source-list"></div>
+      <div class="backup-section">
+        <div class="backup-heading">
+          <div>
+            <p class="eyebrow">Récupération</p>
+            <h3>Sauvegardes vérifiées</h3>
+            <p>Les sauvegardes restent hors du vault et chaque fichier est contrôlé par empreinte SHA-256 avant restauration.</p>
+          </div>
+          <button class="button primary" id="create-backup" type="button">Créer une sauvegarde</button>
+        </div>
+        <div class="backup-list" id="backup-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <footer>
+    <span>SuperMemory · source canonique locale</span>
+    <span>Hindsight · projection locale dérivée et reconstructible</span>
+  </footer>
+
+  <noscript>SuperMemory nécessite JavaScript pour son interface locale.</noscript>
+</body>
+</html>

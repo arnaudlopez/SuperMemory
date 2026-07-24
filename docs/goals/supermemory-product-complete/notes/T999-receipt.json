@@ -1,0 +1,118 @@
+{
+  "task_id": "T999",
+  "result": "done",
+  "harness": "codex-pm-fallback-after-judge-timeout",
+  "decision": "complete",
+  "technical_outcome_complete": true,
+  "full_outcome_complete": true,
+  "summary": "Every technical and user-workflow oracle item is proven by fresh runtime, browser and automated evidence. The repository is contract-ready, runtime-ready and production-ready. The owner explicitly approved the local-first deployment after reviewing the 24 July 2026 runtime proof and confirmed rollback through verified backup.",
+  "oracle_evidence": [
+    {
+      "item": "clean documented launch",
+      "status": "pass",
+      "evidence": "npm ci, ready doctor, npm launcher, macOS command launcher, real ready endpoint and verified shutdown"
+    },
+    {
+      "item": "browser folder workflow and announced formats",
+      "status": "pass",
+      "evidence": "real browser walkthrough plus live MD/TXT/PDF/DOCX product smoke"
+    },
+    {
+      "item": "local extraction and privacy",
+      "status": "pass",
+      "evidence": "bounded PDF.js/Mammoth/text extraction, loopback-only app/Hindsight/Ollama, remote endpoints fail closed"
+    },
+    {
+      "item": "source-located candidates and human governance",
+      "status": "pass",
+      "evidence": "line/page/section candidates, editable review UI, four approvals and one rejection in fresh smoke"
+    },
+    {
+      "item": "canonical commit then Hindsight projection",
+      "status": "pass",
+      "evidence": "vault-first regression test and four verified nonzero live Hindsight extractions"
+    },
+    {
+      "item": "reconciled cited search",
+      "status": "pass",
+      "evidence": "fresh hindsight-governed-recall result reconciled to active canonical ORION742 memory and source citation"
+    },
+    {
+      "item": "refresh, deduplication and stale revocation",
+      "status": "pass",
+      "evidence": "live source change, stale-memory exclusion, changed projection deletion and new approved projection"
+    },
+    {
+      "item": "explicit deletion",
+      "status": "pass",
+      "evidence": "complete inventory stages the missing DOCX; exact path confirmation purges canonical artifacts and deletes Hindsight projection"
+    },
+    {
+      "item": "restart and recovery",
+      "status": "pass",
+      "evidence": "verified external backup, hash validation, pre-restore safety copy, atomic restore, bank rebuild, restart and recovered cited recall"
+    },
+    {
+      "item": "recoverable failure",
+      "status": "pass",
+      "evidence": "tampered backup fails before restore; Hindsight outage/empty projection queues retry and exposes explicit cited fallback"
+    },
+    {
+      "item": "automated gates",
+      "status": "pass",
+      "evidence": "55 tests, specs, release, secret hygiene, audit, diff and runtime gates pass"
+    },
+    {
+      "item": "production decision",
+      "status": "pass",
+      "evidence": "verify:production passed at 2026-07-24T16:19:47.205Z with owner-chat-approval-2026-07-24-product-runtime, after the fresh live evidence"
+    }
+  ],
+  "commands": [
+    {
+      "cmd": "npm test",
+      "status": "pass",
+      "result": "55/55"
+    },
+    {
+      "cmd": "npm run verify",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:release",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:runtime -- --evidence-path tmp/supermemory-product-live-smoke.jsonl --json",
+      "status": "pass",
+      "result": "runtime-ready"
+    },
+    {
+      "cmd": "npm run verify:secrets",
+      "status": "pass",
+      "result": "417 files, 0 findings"
+    },
+    {
+      "cmd": "npm audit --omit=dev",
+      "status": "pass",
+      "result": "0 vulnerabilities"
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:production -- --evidence-path tmp/supermemory-product-live-smoke.jsonl --deployment-scope local-first-operator --rollback-acknowledged --owner-approved --approval-reference owner-chat-approval-2026-07-24-product-runtime --json",
+      "status": "pass",
+      "result": "production-ready"
+    }
+  ],
+  "approval": {
+    "owner_approved": true,
+    "approval_reference": "owner-chat-approval-2026-07-24-product-runtime",
+    "deployment_scope": "local-first-operator",
+    "rollback_acknowledged": true,
+    "after_live_evidence": true,
+    "decided_at": "2026-07-24T16:19:47.205Z"
+  }
+}

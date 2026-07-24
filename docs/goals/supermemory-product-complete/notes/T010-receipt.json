@@ -1,0 +1,116 @@
+{
+  "task_id": "T010",
+  "result": "done",
+  "harness": "codex-pm-fallback",
+  "summary": "Completed the local production package: pinned Hindsight now uses host Ollama with an explicitly installed llama3:latest model, loopback-only endpoints, concurrency one and no cloud fallback. Added a fail-closed doctor, macOS double-click and npm launchers, graceful shutdown, verified external backups, exact-confirmation atomic restore with a pre-restore safety backup, and full derived-bank rebuild. Added a real product live smoke and verified the complete MD/TXT/PDF/DOCX workflow, nonzero Hindsight extraction, canonical reconciliation and citations, refresh, deletion, backup, restore, restart and recovered recall. The browser Manage/backup surface was also walked through on the real runtime.",
+  "changed_files": [
+    ".gitignore",
+    "README.md",
+    "compose.hindsight.yml",
+    "docs/production-runbook.md",
+    "package.json",
+    "scripts/verify-hindsight-docker-compose.mjs",
+    "scripts/supermemory-doctor.mjs",
+    "scripts/supermemory-launch.mjs",
+    "scripts/supermemory-product-live-smoke.mjs",
+    "scripts/lib/product-backup.mjs",
+    "scripts/supermemory-app.mjs",
+    "SuperMemory.command",
+    "web/index.html",
+    "web/app.js",
+    "web/styles.css",
+    "tests/supermemory-doctor.test.mjs",
+    "tests/product-backup.test.mjs",
+    "tests/supermemory-product-live-smoke.test.mjs",
+    "tests/supermemory-app.test.mjs"
+  ],
+  "runtime_proof": {
+    "generated_at": "2026-07-24T15:31:54.769Z",
+    "evidence_path": "tmp/supermemory-product-live-smoke.jsonl",
+    "status": "pass",
+    "mode": "live",
+    "live_writes_performed": true,
+    "secrets_redacted": true,
+    "remote_calls_allowed": false,
+    "cases": [
+      "four-format-ingest-review",
+      "hindsight-reconciled-cited-recall",
+      "refresh-and-derived-revocation",
+      "explicit-source-deletion",
+      "verified-backup-atomic-restore",
+      "restart-and-hindsight-rebuild"
+    ],
+    "temporary_bank_cleaned": true,
+    "successful_artifacts_cleaned": true
+  },
+  "browser_proof": {
+    "status": "pass",
+    "url": "http://127.0.0.1:4322/",
+    "observed": [
+      "Hindsight local est prêt",
+      "four supported formats",
+      "Manage recovery section",
+      "verified backup creation",
+      "backup identifier and restore action"
+    ],
+    "temporary_vault_moved_to_trash": true,
+    "server_shutdown_verified": true
+  },
+  "commands": [
+    {
+      "cmd": "npm ci --ignore-scripts",
+      "status": "pass"
+    },
+    {
+      "cmd": "node --test tests/supermemory-doctor.test.mjs tests/product-backup.test.mjs tests/supermemory-product-live-smoke.test.mjs tests/supermemory-app.test.mjs",
+      "status": "pass",
+      "result": "13/13"
+    },
+    {
+      "cmd": "npm test",
+      "status": "pass",
+      "result": "55/55"
+    },
+    {
+      "cmd": "npm run verify",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:release",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:secrets",
+      "status": "pass",
+      "result": "417 files, 0 findings"
+    },
+    {
+      "cmd": "npm audit --omit=dev",
+      "status": "pass",
+      "result": "0 vulnerabilities"
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run doctor -- --json",
+      "status": "pass",
+      "result": "ready, no blockers"
+    },
+    {
+      "cmd": "SUPERMEMORY_ALLOW_PRODUCT_LIVE_SMOKE=1 npm run smoke:product:live -- --execute-live --json --evidence-path tmp/supermemory-product-live-smoke.jsonl",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:runtime -- --evidence-path tmp/supermemory-product-live-smoke.jsonl --json",
+      "status": "pass",
+      "result": "runtime-ready"
+    },
+    {
+      "cmd": "npm run launch -- --port 4321 --vault-root <temporary> --backups-root <temporary> --no-open --json",
+      "status": "pass",
+      "result": "ready endpoint and graceful shutdown verified"
+    }
+  ]
+}

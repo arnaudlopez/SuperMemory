@@ -1,0 +1,83 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T009",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "decision": "approved",
+    "full_outcome_complete": false,
+    "rationale": "Refresh/deletion is accepted with strong destructive-path proof. The final Worker should now close the operational product boundary: replace the nonfunctional Docker llamacpp setting with explicit loopback Ollama, add a fail-closed doctor and double-click/local launcher, add verified local backup/restore UX, and produce fresh product runtime evidence that proves at least one extracted Hindsight memory and cited recall. This remains one coherent deployment/recovery slice. No large model may be downloaded implicitly; missing prerequisites must yield actionable local instructions.",
+    "worker_package": {
+      "objective": "Finish SuperMemory's local production package. Configure the pinned Hindsight Compose service for a host Ollama endpoint on loopback, an explicitly selected already-installed model, single-request concurrency and no cloud calls. Add a fail-closed doctor, a non-technical macOS double-click launcher plus npm launcher, graceful shutdown, clear health/error output, and no silent model download. Add local verified backup/list/restore capabilities exposed in the web Manage surface: backups live outside the vault, include a manifest with hashes, restore validates integrity, requires exact confirmation, creates a pre-restore safety backup, restores atomically, and marks Hindsight projection for rebuild. Add a fresh product runtime smoke that uses real Markdown/TXT/PDF/DOCX, requires nonzero Hindsight extraction and reconciled cited recall, exercises refresh/deletion/restart/recovery, writes redacted ignored evidence, and leaves only named recoverable test artifacts. Update runbooks, readiness docs, tests and package commands."
+      ,
+      "allowed_files": [
+        ".gitignore",
+        "README.md",
+        "docs/production-runbook.md",
+        "compose.hindsight.yml",
+        "package.json",
+        "scripts/verify-hindsight-docker-compose.mjs",
+        "scripts/supermemory-doctor.mjs",
+        "scripts/supermemory-launch.mjs",
+        "scripts/supermemory-product-live-smoke.mjs",
+        "scripts/lib/product-backup.mjs",
+        "scripts/lib/product-store.mjs",
+        "scripts/supermemory-app.mjs",
+        "SuperMemory.command",
+        "web/index.html",
+        "web/app.js",
+        "web/styles.css",
+        "tests/supermemory-doctor.test.mjs",
+        "tests/product-backup.test.mjs",
+        "tests/supermemory-product-live-smoke.test.mjs",
+        "tests/supermemory-app.test.mjs"
+      ],
+      "verify": [
+        "npm ci --ignore-scripts",
+        "node --test tests/supermemory-doctor.test.mjs tests/product-backup.test.mjs tests/supermemory-product-live-smoke.test.mjs tests/supermemory-app.test.mjs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "npm run verify:secrets",
+        "npm audit --omit=dev",
+        "git diff --check",
+        "npm run doctor -- --json",
+        "Fresh live product smoke and browser walkthrough on the configured local runtime"
+      ],
+      "stop_if": [
+        "Any document, model request, backup, or runtime call would leave loopback/local storage by default.",
+        "The launcher would download a model, start an unpinned container, or mutate production data without an explicit visible action.",
+        "Backup storage resolves inside the canonical vault or restore can proceed without manifest/hash validation and exact user confirmation.",
+        "Restore lacks a pre-restore safety backup or can leave the vault partially replaced.",
+        "Hindsight retain succeeds at HTTP level but produces zero memory units.",
+        "A recalled Hindsight result cannot reconcile to an active canonical citation.",
+        "Fresh runtime proof does not cover every announced file format, refresh, deletion, restart and recovery.",
+        "Implementation requires changes outside the explicit allowed_files.",
+        "Any existing release, security, product, or deletion gate regresses."
+      ]
+    },
+    "evidence": [
+      "notes/T008-receipt.json",
+      "npm test: 44/44 pass",
+      "Official Hindsight 0.6 Ollama provider/model/base URL configuration",
+      "Official Docker image note that built-in llamacpp is not bundled",
+      "Local ollama executable and llama3:latest model inventory",
+      "Live llamacpp APIConnectionError and zero-unit retained document evidence"
+    ],
+    "subgoal_contract": null,
+    "parallel_safety": {
+      "parallel_workers_allowed": false,
+      "reason": "Runtime configuration, launcher, backup/restore, live evidence and the shared web/store surface form one deployment package."
+    },
+    "blocked_tasks": [],
+    "missing_evidence": [
+      "No current live Hindsight extraction with nonzero memory units.",
+      "No clean non-technical launch or doctor proof.",
+      "No verified backup/restore product workflow.",
+      "No final all-format browser walkthrough or fresh final production decision."
+    ],
+    "required_board_updates": [
+      "Create and activate T010 from worker_package.",
+      "After T010, activate T999 for the final oracle audit only if all fresh runtime evidence is present."
+    ]
+  }
+}

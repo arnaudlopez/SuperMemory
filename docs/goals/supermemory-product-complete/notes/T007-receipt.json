@@ -1,0 +1,67 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T007",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/supermemory-product-complete/state.yaml",
+    "decision": "approved",
+    "full_outcome_complete": false,
+    "rationale": "T006 is safe and product-shaped: canonical-first projection, strict tags, reconciliation to active vault state and explicit fallback are proven. Live evidence correctly exposed that API health alone does not prove usable extraction. The next largest safe slice is folder reconciliation and confirmed deletion, including canonical purge and derived Hindsight delete/retry. Local LLM/Ollama configuration should remain in the following packaging/runtime slice because it changes Docker/runtime dependencies and should not be coupled to destructive data semantics.",
+    "worker_package": {
+      "objective": "Complete the refresh and deletion product workflow. Treat every successful browser directory import as a complete inventory for that folder; detect absent previously active supported sources, remove their memories from active recall immediately, and present a clear removal queue. Allow the user to restore a reappearing unchanged file before deletion or explicitly confirm deletion. On confirmation, purge that source's candidate text, canonical memory files, snapshot artifacts and state content first, record content-free audit tombstones, then delete every stable derived Hindsight document idempotently. Keep failed Hindsight deletes in a visible retry queue, reconcile changed-source stale projections, and prove restart safety, no stale recall, no duplicate candidates, and exact local purge.",
+      "allowed_files": [
+        "README.md",
+        "scripts/lib/product-hindsight.mjs",
+        "scripts/lib/product-store.mjs",
+        "scripts/supermemory-app.mjs",
+        "web/index.html",
+        "web/app.js",
+        "web/styles.css",
+        "tests/product-hindsight.test.mjs",
+        "tests/product-reconciliation.test.mjs",
+        "tests/supermemory-app.test.mjs"
+      ],
+      "verify": [
+        "node --test tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-app.test.mjs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "npm run verify:secrets",
+        "git diff --check"
+      ],
+      "stop_if": [
+        "Folder absence cannot be distinguished from a failed, partial, malformed, or rejected import.",
+        "Canonical content would be purged without an explicit user confirmation naming the source.",
+        "Deleted or missing content could remain searchable through local fallback or unreconciled Hindsight results.",
+        "A Hindsight delete failure would block or roll back canonical deletion.",
+        "Deletion would remove a shared content-addressed snapshot still referenced by another source.",
+        "The implementation stores deleted document content in logs, tombstones, or retry records.",
+        "Implementation requires changes outside the explicit allowed_files.",
+        "Existing PDF/DOCX extraction, approval, projection, citation, restart, or release gates regress."
+      ]
+    },
+    "evidence": [
+      "notes/T006-receipt.json",
+      "scripts/lib/product-hindsight.mjs",
+      "scripts/lib/product-store.mjs",
+      "tests/product-hindsight.test.mjs",
+      "Live retained document and zero-unit extraction detection",
+      "Browser proof of visible pending projection and cited local fallback",
+      "npm test: 42/42 pass"
+    ],
+    "subgoal_contract": null,
+    "parallel_safety": {
+      "parallel_workers_allowed": false,
+      "reason": "Reconciliation and deletion share the canonical state, snapshots, memory files, Hindsight projection records, server routes and UI."
+    },
+    "blocked_tasks": [],
+    "missing_evidence": [
+      "No browser-confirmed folder removal and canonical/Hindsight purge exists yet.",
+      "The pinned local Hindsight provider still needs a working local LLM configuration.",
+      "Clean install, packaging, backup/recovery and final multi-format walkthrough remain."
+    ],
+    "required_board_updates": [
+      "Create and activate T008 from worker_package.",
+      "After T008, run a packaging/runtime Judge review that includes the local Ollama provider failure."
+    ]
+  }
+}

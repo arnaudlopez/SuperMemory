@@ -8,11 +8,20 @@
     "node": ">=18"
   },
   "scripts": {
+    "start": "node scripts/supermemory-app.mjs",
+    "launch": "node scripts/supermemory-launch.mjs",
+    "doctor": "node scripts/supermemory-doctor.mjs",
+    "smoke:product:live": "node scripts/supermemory-product-live-smoke.mjs",
     "test": "node --test",
+    "verify:product": "node --test tests/document-extractors.test.mjs tests/product-backup.test.mjs tests/supermemory-app.test.mjs tests/supermemory-doctor.test.mjs tests/supermemory-product-live-smoke.test.mjs",
     "verify": "node scripts/verify-supermemory-specs.mjs",
     "verify:release": "node scripts/verify-supermemory-release-readiness.mjs",
     "verify:runtime": "node scripts/verify-supermemory-runtime-readiness.mjs",
     "verify:production": "node scripts/verify-supermemory-production-readiness.mjs",
     "verify:secrets": "node scripts/verify-secret-hygiene.mjs"
+  },
+  "dependencies": {
+    "mammoth": "1.12.0",
+    "pdfjs-dist": "4.8.69"
   }
 }
