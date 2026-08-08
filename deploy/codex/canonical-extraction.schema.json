@@ -16,22 +16,17 @@
     "ttl_ms": { "type": ["integer", "null"], "minimum": 1 },
     "temporal_expression": { "type": "string" },
     "event_time": {
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["kind", "earliest", "latest", "granularity", "anchor_timestamp", "normalization"],
-          "properties": {
-            "kind": { "type": "string", "enum": ["instant", "interval", "uncertain"] },
-            "earliest": { "type": ["string", "null"] },
-            "latest": { "type": ["string", "null"] },
-            "granularity": { "type": "string", "enum": ["exact", "minute", "hour", "day", "week", "month", "year", "unknown"] },
-            "anchor_timestamp": { "type": "string" },
-            "normalization": { "type": "string", "enum": ["explicit", "relative_expression", "inferred"] }
-          }
-        }
-      ]
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["kind", "earliest", "latest", "granularity", "anchor_timestamp", "normalization"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["instant", "interval", "uncertain"] },
+        "earliest": { "type": ["string", "null"] },
+        "latest": { "type": ["string", "null"] },
+        "granularity": { "type": "string", "enum": ["exact", "minute", "hour", "day", "week", "month", "year", "unknown"] },
+        "anchor_timestamp": { "type": "string" },
+        "normalization": { "type": "string", "enum": ["explicit", "relative_expression", "inferred"] }
+      }
     },
     "entities": {
       "type": "array",
@@ -63,22 +58,17 @@
           "valid_to": { "type": ["string", "null"] },
           "temporal_expression": { "type": "string" },
           "event_time": {
-            "oneOf": [
-              { "type": "null" },
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["kind", "earliest", "latest", "granularity", "anchor_timestamp", "normalization"],
-                "properties": {
-                  "kind": { "type": "string", "enum": ["instant", "interval", "uncertain"] },
-                  "earliest": { "type": ["string", "null"] },
-                  "latest": { "type": ["string", "null"] },
-                  "granularity": { "type": "string", "enum": ["exact", "minute", "hour", "day", "week", "month", "year", "unknown"] },
-                  "anchor_timestamp": { "type": "string" },
-                  "normalization": { "type": "string", "enum": ["explicit", "relative_expression", "inferred"] }
-                }
-              }
-            ]
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "required": ["kind", "earliest", "latest", "granularity", "anchor_timestamp", "normalization"],
+            "properties": {
+              "kind": { "type": "string", "enum": ["instant", "interval", "uncertain"] },
+              "earliest": { "type": ["string", "null"] },
+              "latest": { "type": ["string", "null"] },
+              "granularity": { "type": "string", "enum": ["exact", "minute", "hour", "day", "week", "month", "year", "unknown"] },
+              "anchor_timestamp": { "type": "string" },
+              "normalization": { "type": "string", "enum": ["explicit", "relative_expression", "inferred"] }
+            }
           },
           "supersedes_relation_ids": { "type": "array", "items": { "type": "string" } },
           "contradicts_relation_ids": { "type": "array", "items": { "type": "string" } }

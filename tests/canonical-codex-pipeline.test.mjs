@@ -89,6 +89,10 @@ test("canonical extraction contract requires temporal and Quiet Authority signal
     assert.ok(schema.required.includes(field));
     assert.ok(schema.properties[field]);
   }
+  assert.deepEqual(schema.properties.event_time.type, ["object", "null"]);
+  assert.equal("oneOf" in schema.properties.event_time, false);
+  assert.deepEqual(schema.properties.relations.items.properties.event_time.type, ["object", "null"]);
+  assert.equal("oneOf" in schema.properties.relations.items.properties.event_time, false);
   assert.ok(schema.properties.relations.items.required.includes("event_time"));
   assert.ok(schema.properties.relations.items.required.includes("temporal_expression"));
 });
