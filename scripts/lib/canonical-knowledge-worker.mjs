@@ -260,7 +260,14 @@ export function createCanonicalKnowledgeWorker({
           candidate: { ...candidate, text: rawExtraction.text }, extraction: rawExtraction, verifier: verifierIdentity
         });
         if (verification?.status !== "verified") {
-          results.push({ episode_id: source.episode.episode_id, status: "pending_verification" });
+          results.push({
+            episode_id: source.episode.episode_id,
+            status: "pending_verification",
+            verification: {
+              status: verification?.status ?? "unavailable",
+              signals: verification?.signals ?? null
+            }
+          });
           break;
         }
         const extracted = normalizeExtraction(source, rawExtraction);
@@ -401,7 +408,8 @@ export function createCanonicalKnowledgeWorker({
       status: result.status,
       processed: result.processed,
       outcome: result.results.at(-1)?.status ?? "idle",
-      error: result.results.find((item) => item.error)?.error ?? null
+      error: result.results.find((item) => item.error)?.error ?? null,
+      verification: result.results.find((item) => item.verification)?.verification ?? null
     };
     return result;
   };
@@ -468,6 +476,7 @@ export function createCanonicalKnowledgeWorker({
       checkpoint: readCheckpoint()?.sequence ?? 0,
       last_outcome: lastRun?.outcome ?? null,
       last_error: lastRun?.error ?? null,
+      last_verification: lastRun?.verification ?? null,
       last_processed: lastRun?.processed ?? 0
     })
   });
