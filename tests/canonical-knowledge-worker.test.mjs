@@ -117,7 +117,10 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
     },
     clock: () => "2026-08-08T12:00:00.000Z"
   });
-  const first = await worker.process();
+  const firstRecovery = await worker.recover();
+  assert.equal(firstRecovery.status, "complete");
+  assert.equal(firstRecovery.sessions, 1);
+  const first = firstRecovery.results[0].canonical;
   assert.equal(first.status, "complete");
   assert.equal(first.processed, 1);
   assert.equal(first.results[0].learned.status, "degraded_retryable");

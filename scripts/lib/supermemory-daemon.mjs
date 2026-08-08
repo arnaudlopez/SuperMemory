@@ -201,6 +201,7 @@ export function createSuperMemoryDaemon({
   ) fail("daemon_compiler_invalid");
   if (worker && (
     typeof worker.notifySessionClosed !== "function" ||
+    typeof worker.recover !== "function" ||
     typeof worker.status !== "function"
   )) fail("daemon_canonical_worker_invalid");
   if (router && [
@@ -472,6 +473,7 @@ export function createSuperMemoryDaemon({
           }
         }
         compiler.recover();
+        if (worker) await worker.recover();
       })();
       const completeStart = () => resolve({
         host: address.address,

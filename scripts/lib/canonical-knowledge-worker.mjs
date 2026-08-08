@@ -92,6 +92,7 @@ export function createCanonicalKnowledgeWorker({
     workspaceId,
     root,
     process: async () => ({ status: "disabled", workspace_id: workspaceId, processed: 0 }),
+    recover: async () => ({ status: "disabled", workspace_id: workspaceId, sessions: 0 }),
     notifySessionClosed: async () => ({ status: "disabled", workspace_id: workspaceId }),
     readCheckpoint: () => null,
     status: () => ({ enabled: false, status: "disabled" })
@@ -421,11 +422,35 @@ export function createCanonicalKnowledgeWorker({
     };
   };
 
+  const recover = async () => {
+    const sessions = [...new Set(episodeSource.listCanonicalEvidence({ workspaceId })
+      .map((source) => source.episode?.session_id)
+      .filter(Boolean))].sort();
+    const results = [];
+    for (const sessionId of sessions) {
+      try {
+        episodeSource.readClosedSession({ workspaceId, sessionId });
+      } catch (error) {
+        if (error?.code === "working_session_not_closed") continue;
+        throw error;
+      }
+      results.push(await notifySessionClosed({ sessionId }));
+    }
+    return {
+      schema: "supermemory.canonical-worker-recovery.v1",
+      workspace_id: workspaceId,
+      status: results.some((result) => result.status === "degraded") ? "degraded" : "complete",
+      sessions: results.length,
+      results
+    };
+  };
+
   return Object.freeze({
     enabled: true,
     workspaceId,
     root,
     process,
+    recover,
     notifySessionClosed,
     readCheckpoint,
     status: () => ({ enabled: true, status: "ready", checkpoint: readCheckpoint()?.sequence ?? 0 })
