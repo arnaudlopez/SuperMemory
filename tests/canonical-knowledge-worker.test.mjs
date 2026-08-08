@@ -144,6 +144,7 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
     last_outcome: "auto_activate",
     last_error: null,
     last_verification: null,
+    last_extraction_shape: null,
     last_processed: 1
   });
   assert.equal((await worker.process()).processed, 0);

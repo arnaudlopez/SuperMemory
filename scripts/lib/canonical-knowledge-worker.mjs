@@ -263,6 +263,13 @@ export function createCanonicalKnowledgeWorker({
           results.push({
             episode_id: source.episode.episode_id,
             status: "pending_verification",
+            extraction_shape: {
+              fact_class: rawExtraction?.fact_class ?? null,
+              entity_types: [...new Set((rawExtraction?.entities ?? []).map((item) => item.entity_type))].sort(),
+              predicates: [...new Set((rawExtraction?.relations ?? []).map((item) => item.predicate))].sort(),
+              alias_count: (rawExtraction?.entities ?? []).reduce((sum, item) => sum + (item.aliases?.length ?? 0), 0),
+              ontology_proposal_kinds: [...new Set((rawExtraction?.ontology_proposals ?? []).map((item) => item.kind))].sort()
+            },
             verification: {
               status: verification?.status ?? "unavailable",
               signals: verification?.signals ?? null
@@ -409,7 +416,8 @@ export function createCanonicalKnowledgeWorker({
       processed: result.processed,
       outcome: result.results.at(-1)?.status ?? "idle",
       error: result.results.find((item) => item.error)?.error ?? null,
-      verification: result.results.find((item) => item.verification)?.verification ?? null
+      verification: result.results.find((item) => item.verification)?.verification ?? null,
+      extractionShape: result.results.find((item) => item.extraction_shape)?.extraction_shape ?? null
     };
     return result;
   };
@@ -477,6 +485,7 @@ export function createCanonicalKnowledgeWorker({
       last_outcome: lastRun?.outcome ?? null,
       last_error: lastRun?.error ?? null,
       last_verification: lastRun?.verification ?? null,
+      last_extraction_shape: lastRun?.extractionShape ?? null,
       last_processed: lastRun?.processed ?? 0
     })
   });
