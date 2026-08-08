@@ -29,11 +29,11 @@ function close(server) {
   return new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 }
 
-test("Portainer artifact is one complete six-service private server stack", () => {
+test("Portainer artifact is one complete six-service private brain stack", () => {
   const config = composeConfig();
-  const required = ["ollama", "qwen-model", "hindsight", "neo4j", "neo4j-migrate", "supermemory-graphd"];
+  const required = ["hindsight", "neo4j", "neo4j-migrate", "supermemory-graphd", "supermemory-daemon", "supermemory-web"];
   assert.deepEqual(Object.keys(config.services).sort(), required.sort());
-  for (const name of ["ollama", "hindsight", "neo4j", "supermemory-graphd"]) {
+  for (const name of ["hindsight", "neo4j", "supermemory-graphd", "supermemory-daemon", "supermemory-web"]) {
     const service = config.services[name];
     assert.ok(service.healthcheck, `${name} healthcheck`);
     assert.ok(service.mem_limit, `${name} memory limit`);
@@ -45,12 +45,14 @@ test("Portainer artifact is one complete six-service private server stack", () =
   assert.equal(config.services["supermemory-graphd"].ports[0].host_ip, "127.0.0.1");
   assert.equal(config.services["supermemory-graphd"].depends_on["neo4j-migrate"].condition, "service_completed_successfully");
   assert.equal(config.services["neo4j-migrate"].depends_on.neo4j.condition, "service_healthy");
-  assert.equal(config.services.hindsight.depends_on["qwen-model"].condition, "service_completed_successfully");
-  const gpu = config.services.ollama.deploy.resources.reservations.devices[0];
-  assert.equal(gpu.driver, "nvidia");
-  assert.equal(gpu.count, 1);
-  assert.deepEqual(gpu.capabilities, ["gpu"]);
-  assert.equal(config.services.ollama.environment.NVIDIA_VISIBLE_DEVICES, "all");
+  assert.equal(config.services["supermemory-daemon"].network_mode, "host");
+  assert.equal(config.services["supermemory-web"].network_mode, "host");
+  assert.equal(config.services["supermemory-daemon"].depends_on.hindsight.condition, "service_healthy");
+  assert.equal(config.services["supermemory-web"].depends_on["supermemory-daemon"].condition, "service_healthy");
+  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_PROVIDER, "openai-codex");
+  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_MODEL, "gpt-5.6-luna");
+  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_REASONING_EFFORT, "high");
+  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_MAX_CONCURRENT, "1");
 });
 
 test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0", () => {
@@ -67,7 +69,7 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
     assert.notEqual(service.privileged, true);
     if (service.image) assert.doesNotMatch(service.image, /:latest(?:@|$)/);
   }
-  for (const name of ["ollama_models", "hindsight_database_v090", "hindsight_cache_v090", "neo4j_data", "neo4j_logs", "neo4j_backups"]) {
+  for (const name of ["hindsight_database_v090", "hindsight_cache_v090", "neo4j_data", "neo4j_logs", "neo4j_backups"]) {
     assert.ok(config.volumes[name], `${name} volume`);
   }
   const env = fs.readFileSync(envPath, "utf8");
@@ -76,6 +78,22 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
   assert.match(env, /HINDSIGHT_IMAGE=ghcr\.io\/vectorize-io\/hindsight@sha256:6364c3c5/);
   assert.equal(config.services.hindsight.environment.HINDSIGHT_API_ENABLE_OBSERVATIONS, "true");
   assert.equal(config.services.hindsight.environment.HINDSIGHT_API_ENABLE_AUTO_CONSOLIDATION, "false");
+  const compose = fs.readFileSync(composePath, "utf8");
+  assert.doesNotMatch(compose, /\bollama\b|qwen-model|openrouter/i);
+  assert.match(compose, /gpt-5\.6-luna/);
+  const runtimeDockerfile = fs.readFileSync(path.join(root, "deploy/runtime/Dockerfile"), "utf8");
+  assert.match(runtimeDockerfile, /@openai\/codex@\$\{CODEX_CLI_VERSION\}/);
+  assert.match(runtimeDockerfile, /^USER node$/m);
+  const runtime = JSON.parse(fs.readFileSync(
+    path.join(root, "deploy/runtime/runtime-contract.production.json"),
+    "utf8"
+  ));
+  assert.equal(runtime.deployment.activation, "full");
+  assert.equal(runtime.deployment.canary, false);
+  assert.equal(runtime.deployment.progressive, false);
+  assert.equal(runtime.working_memory.capacity_tokens, 100_000);
+  assert.equal(runtime.working_memory.map_max_tokens, 8_000);
+  assert.equal(runtime.admission.mode, "automatic");
 });
 
 test("GraphD v2 is non-root and exposes only bounded authenticated Neo4j operations", () => {

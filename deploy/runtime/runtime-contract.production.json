@@ -1,0 +1,96 @@
+{
+  "schema": "supermemory.codex-runtime.v4",
+  "deployment": {
+    "strategy": "full",
+    "canary": false,
+    "progressive": false,
+    "activation": "full"
+  },
+  "working_memory": {
+    "enabled": true,
+    "capacity_tokens": 100000,
+    "retention_after_session_days": 7,
+    "map_target_tokens": 4000,
+    "map_max_tokens": 8000,
+    "startup_context_max_tokens": 2000,
+    "compact_context_max_tokens": 8000,
+    "open_default_tokens": 8000,
+    "open_max_tokens": 20000,
+    "max_complete_event_bytes": 524288,
+    "offload": {
+      "enabled": true,
+      "fail_open": true,
+      "threshold_tokens": 12000,
+      "allowed_tools": ["Bash"],
+      "require_reopen_verification": true
+    }
+  },
+  "memory_router": {
+    "enabled": true,
+    "default_strategy": "auto",
+    "working_timeout_ms": 150,
+    "graph_timeout_ms": 500,
+    "durable_timeout_ms": 1500,
+    "max_hops": 3,
+    "hard_max_hops": 5,
+    "max_results": 20
+  },
+  "knowledge_graph": {
+    "enabled": true,
+    "driver": "graphd-neo4j",
+    "endpoint": "http://127.0.0.1:8787",
+    "token_file": "/run/supermemory/graphd.token",
+    "ontology_mode": "core_plus_learned",
+    "ontology_shadow_min_support": 3
+  },
+  "hindsight": {
+    "enabled": true,
+    "minimum_version": "0.9.0",
+    "bank_strategy": "workspace",
+    "async_retain": true,
+    "observations": {
+      "enabled": true,
+      "auto_consolidation": false,
+      "require_source_facts": true
+    },
+    "recall": {
+      "temporal": true,
+      "graph": true,
+      "reranking": true
+    },
+    "reflect": {
+      "enabled": true,
+      "exclude_mental_models": true,
+      "fail_on_unvalidated_fact": true
+    },
+    "operations": {
+      "poll_interval_ms": 500,
+      "timeout_ms": 120000,
+      "max_retries": 3
+    }
+  },
+  "continuous_improvement": {
+    "enabled": true,
+    "canonical_worker": "local",
+    "learned_plane": "hindsight-native",
+    "on_session_end": true,
+    "extractor_profile": "server-default",
+    "verifier_profile": "server-independent"
+  },
+  "admission": {
+    "mode": "automatic",
+    "policy_version": "admission-v1.0.0",
+    "human_review_default": false,
+    "quarantine_categories": [
+      "active_conflict",
+      "restricted_permission",
+      "high_impact_fact",
+      "destructive_ontology_change"
+    ]
+  },
+  "migration": {
+    "source_schema": "explicit_owner_migration",
+    "compatibility_flags_off": false,
+    "immutable_vault_rewrite": false
+  }
+}

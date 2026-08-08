@@ -15,7 +15,18 @@ required backup, then deploy or roll back the full stack in one operator
 action. Repository verification never starts containers or contacts
 Portainer; the real deployment remains an explicit server operation.
 
-The Memory Fabric v2 workstation must not run Ollama, Hindsight or Neo4j.
+The Mac mini M4 Pro is the trusted workstation and must
+not run the production daemon, Hindsight or Neo4j. Z2 owns the encrypted
+canonical vault, runtime, backups, learned plane and temporal graph. The Mac
+mini runs Codex, the SuperMemory plugin/hooks, an encrypted offline spool, the
+browser and one persistent SSH tunnel.
+
+Generate its remote-only configs and tunnel LaunchAgent with
+`scripts/configure-z2-client.mjs`. In this mode hooks resolve the immutable Git
+project markers locally, send captures and recall through `127.0.0.1:8765`,
+keep only encrypted outage/equivalence state on the Mac, and drain the outage
+spool automatically when the Z2 tunnel returns. The MCP runtime has no local
+vault path.
 Before the single server deployment, run only the non-mutating local
 gates:
 
@@ -34,14 +45,24 @@ These commands do not pull an image or start a container. The operator then
 follows `deploy/portainer/README.md` for capacity, backup, the one full
 Portainer deployment, health validation and full rollback.
 
-This runbook operates the production-shaped, single-user, local-first SuperMemory product. It covers prerequisite diagnosis, launch, the browser workflow, verified backup and recovery, real product smoke, readiness gates, rollback, observability, and non-goals. It does not turn SuperMemory into a hosted SaaS product and never makes live writes in CI.
+This runbook operates the production-shaped, single-user, local-first
+SuperMemory product. The Z2 deployment uses exactly one generative provider:
+OpenAI through ChatGPT/Codex Pro, model `gpt-5.6-luna`, reasoning `high`. It has
+no local generative model, OpenRouter fallback, canary or progressive rollout.
+It covers prerequisite diagnosis, launch, the browser workflow, verified
+backup and recovery, real product smoke, readiness gates, rollback,
+observability, and non-goals. It does not turn SuperMemory into a hosted SaaS
+product and never makes live writes in CI.
 
 ## Legacy v1 product release preflight
 
-The remaining local-Hindsight procedures below are retained for the legacy v1
+The remaining local-Ollama/Hindsight procedures below are retained only for
+historical v1 compatibility and tests. They are superseded by the Z2 procedure
+for production and must not be started on the Mac mini.
+
+The legacy procedures below are retained for the legacy v1
 browser product and backward compatibility. They are not the Memory Fabric v2
-deployment procedure and must not be used to place the v2 models on the Codex
-workstation.
+deployment procedure.
 
 Run the release gate before shipping:
 
@@ -463,21 +484,12 @@ configuration and runtime observation as separate facts.
 
 ### Runtime Flow
 
-Start the local dependencies and the SuperMemory daemon before Codex:
-
-```bash
-docker compose -f compose.hindsight.yml up -d
-npm run daemon -- \
-  --vault-root /absolute/path/to/identity-vault \
-  --key-file /absolute/path/to/private-runtime/archive.key \
-  --token-file /absolute/path/to/private-runtime/daemon.token \
-  --port 8765
-```
-
-The daemon port must match `daemon_endpoint`. Standard trusted Codex clients
-use the project plugin, hooks and MCP tools. A host that consumes the Codex App
-Server protocol can opt into richer turn capture by starting the transparent
-wrapper with the generated private runtime configuration:
+In production, start the complete Z2 Compose stack and persistent Mac mini SSH
+tunnel before Codex. The daemon port forwarded to `127.0.0.1:8765` must match
+`daemon_endpoint`. Standard trusted Codex clients use the project plugin,
+hooks and MCP tools. The historical App Server wrapper below writes directly
+to a same-host vault and is therefore a compatibility/debug surface only; do
+not use it for the remote Z2 production path:
 
 ```bash
 npm run app-server -- \
@@ -487,23 +499,30 @@ npm run app-server -- \
 That wrapper is a JSON-RPC App Server transport, not an interactive terminal
 UI. If it is not the client transport, capture remains honestly `partial`.
 
-On session start, the plugin resolves the project binding and may inject only a
-small set of active, cited memories. During a session, visible supported events
-are redacted, deduplicated and persisted to the encrypted workspace journal.
+On session start, the plugin resolves the project binding from its Git markers
+and may inject only a small set of active, cited memories returned by Z2.
+During a session, visible supported events are redacted and deduplicated before
+being sent through the authenticated tunnel. If Z2 is unavailable, they are
+persisted only in the encrypted Mac outage spool and drained before the next
+online capture.
 An `assistant.completed` event is acknowledged immediately after durable
 capture; the daemon then compiles it asynchronously. It groups the redacted
 prompt, visible assistant answer and supported tool events into an immutable
-turn snapshot, writes an encrypted conversation archive, and asks the configured
-loopback Ollama model for at most one structured durable-memory proposal.
-Transient chat produces an archive without a candidate. Ollama failure never
+turn snapshot, writes an encrypted conversation archive, and asks the sole
+OpenAI Codex provider (`gpt-5.6-luna`, reasoning `high`) for at most one
+structured durable-memory proposal. Shell, web search, plugins and other agent
+tools are disabled for this constrained extraction. Transient chat produces an
+archive without a candidate. Provider failure never
 loses the capture: the archived turn remains retryable and startup recovery
 replays unfinished compilation. The same startup pass drains every encrypted
 outage spool before scheduling compilation, so a daemon restart preserves event
 ordering and never compiles a partial spooled turn. Compilation is idempotent
 per completed turn.
 
-Every extracted candidate remains pending. It is never injected into Codex or
-projected to Hindsight until the owner approves it explicitly. The daemon
+Every extracted candidate is independently verified and evaluated by the
+deterministic automatic admission policy. Standard evidence-backed candidates
+activate; conflicts, permission risks, high-impact facts and destructive
+ontology changes remain quarantined for human exception review. The daemon
 `/health` response exposes only content-free counters under `compiler`
 (`pending`, `compiled`, `candidates`, `archived_only`, `retryable`); the doctor
 blocks readiness when the compiler is missing or retryable work remains.
@@ -613,7 +632,10 @@ node scripts/verify-supermemory-release-readiness.mjs
 
 Interrupted registry transactions recover on the next commit, and failures detected during a commit restore both registry files immediately. If operator rollback is still needed after a completed transaction, restore reviewed prior registry entries with a new bounded change; never delete content-addressed snapshot evidence merely to hide history. Then rerun the release gate and the relevant capture or refresh workflow smoke.
 
-Do not use Git to roll back user data. Restore a verified vault backup through the web product. If reconstruction remains pending, canonical data is already restored safely: bring Ollama and Hindsight back to health, then use **Resynchroniser**.
+Do not use Git to roll back user data. Restore a verified vault backup through
+the web product. If reconstruction remains pending, canonical data is already
+restored safely: restore OpenAI/Codex authentication and Hindsight health, then
+use **Resynchroniser**.
 
 ## Credential Boundaries
 

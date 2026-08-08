@@ -1,7 +1,7 @@
 {
   "schema": "supermemory.hindsight-native-acceptance.v1",
   "criteria": [
-    { "id": "HN-AC01", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "six-service private server stack", "proof": "Compose has no Graphiti/improved service, secret or volume" },
+    { "id": "HN-AC01", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "six-service private brain stack", "proof": "Compose has no Graphiti/improved service, secret or volume" },
     { "id": "HN-AC02", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "talks directly to Neo4j", "proof": "GraphD v2 ready/query uses Neo4j only" },
     { "id": "HN-AC03", "test_file": "tests/hindsight-native-plane-acceptance.test.mjs", "test_pattern": "runtime source contains no removed Graphiti or improved call", "proof": "bounded source scan" },
     { "id": "HN-AC04", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "pinned Hindsight 0.9.0", "proof": "exact digest in target Compose" },

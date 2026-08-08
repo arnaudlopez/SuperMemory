@@ -276,6 +276,29 @@ test("crash after journal commit but before producer ack replays as one logical 
   assert.equal(store.stats().events, 1);
 });
 
+test("interactive spool replay drains one bounded entry per capture opportunity", async (t) => {
+  const { vault, runtime } = fixture(t);
+  const store = createCodexCaptureStore({ vaultRoot: vault, encryptionKey: KEY });
+  const spool = createCodexSpool({
+    runtimeRoot: runtime,
+    workspaceId: WORKSPACE_ID,
+    encryptionKey: KEY
+  });
+  for (let sequence = 0; sequence < 3; sequence += 1) {
+    spool.enqueue(captureInput({ sequence, externalEventId: `bounded-${sequence}` }));
+  }
+  const first = await spool.replay(
+    (prepared) => store.ingestPrepared(prepared),
+    { maxEntries: 1 }
+  );
+  assert.equal(first.replayed, 1);
+  assert.equal(spool.depth().entries, 2);
+  await assert.rejects(
+    spool.replay(() => {}, { maxEntries: 0 }),
+    /spool_replay_limit_invalid/
+  );
+});
+
 test("spool quota drops in bounded time and writes a payload-free capture gap", (t) => {
   const { runtime } = fixture(t);
   const spool = createCodexSpool({
@@ -365,6 +388,53 @@ test("daemon is loopback-only, authenticated and falls back to encrypted spool",
   assert.equal(replayed.replayed, 1);
   assert.equal(spool.depth().entries, 0);
   assert.equal(daemon.store.stats().events, 2);
+});
+
+test("Mac client drains its encrypted outage spool through the restored Z2 tunnel", async (t) => {
+  const { vault, runtime } = fixture(t);
+  const spool = createCodexSpool({
+    runtimeRoot: runtime,
+    workspaceId: WORKSPACE_ID,
+    encryptionKey: KEY
+  });
+  const unavailable = createSuperMemoryDaemon({
+    vaultRoot: vault,
+    encryptionKey: KEY,
+    authToken: TOKEN
+  });
+  const firstAddress = await unavailable.start();
+  await unavailable.stop();
+  const offlineClient = createSuperMemoryDaemonClient({
+    endpoint: firstAddress.url,
+    authToken: TOKEN,
+    spool,
+    timeoutMs: 100
+  });
+  const spooled = await offlineClient.capture(captureInput({ externalEventId: "offline-event" }));
+  assert.equal(spooled.status, "spooled");
+  assert.equal(spool.depth().entries, 1);
+
+  const restored = createSuperMemoryDaemon({
+    vaultRoot: vault,
+    encryptionKey: KEY,
+    authToken: TOKEN
+  });
+  const restoredAddress = await restored.start();
+  t.after(async () => restored.stop().catch(() => {}));
+  const onlineClient = createSuperMemoryDaemonClient({
+    endpoint: restoredAddress.url,
+    authToken: TOKEN,
+    spool,
+    timeoutMs: 500
+  });
+  const delivered = await onlineClient.capture(captureInput({
+    sequence: 1,
+    externalEventId: "online-event"
+  }));
+  assert.equal(delivered.status, "delivered");
+  assert.equal(delivered.spoolReplay.replayed, 1);
+  assert.equal(spool.depth().entries, 0);
+  assert.equal(restored.store.stats().events, 2);
 });
 
 test("daemon acknowledges a durable Stop without waiting for memory compilation", async (t) => {

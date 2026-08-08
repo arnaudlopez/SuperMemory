@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "signals"],
+  "properties": {
+    "status": { "type": "string", "enum": ["verified", "rejected"] },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_entailment", "source_trust", "extraction_agreement", "temporal_consistency", "contradiction_risk", "scope_valid", "ontology_compatible", "alias_binding_verified", "temporary", "duplicate", "fragment", "high_impact", "permission_risk", "destructive_ontology_change"],
+      "properties": {
+        "evidence_entailment": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source_trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "extraction_agreement": { "type": "number", "minimum": 0, "maximum": 1 },
+        "temporal_consistency": { "type": "number", "minimum": 0, "maximum": 1 },
+        "contradiction_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+        "scope_valid": { "type": "boolean" },
+        "ontology_compatible": { "type": "boolean" },
+        "alias_binding_verified": { "type": "boolean" },
+        "temporary": { "type": "boolean" },
+        "duplicate": { "type": "boolean" },
+        "fragment": { "type": "boolean" },
+        "high_impact": { "type": "boolean" },
+        "permission_risk": { "type": "boolean" },
+        "destructive_ontology_change": { "type": "boolean" }
+      }
+    }
+  }
+}

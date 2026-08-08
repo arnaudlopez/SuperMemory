@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["store", "title", "proposedText", "type", "confidence", "uncertainty", "sensitivity"],
+  "properties": {
+    "store": { "type": "boolean" },
+    "title": { "type": "string" },
+    "proposedText": { "type": "string" },
+    "type": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "uncertainty": { "type": "string" },
+    "sensitivity": { "type": "string", "enum": ["standard", "restricted", "restricted_review"] }
+  }
+}

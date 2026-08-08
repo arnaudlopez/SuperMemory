@@ -266,6 +266,21 @@ function readMarkers(layout) {
   return { project, checkout };
 }
 
+export function resolveProjectMarkerBinding(projectRoot) {
+  const layout = inspectProjectLayout(projectRoot);
+  const markers = readMarkers(layout);
+  if (!markers.project || !markers.checkout) {
+    return { status: "unbound", root: layout.root };
+  }
+  return {
+    status: "bound",
+    root: layout.root,
+    projectId: markers.project.project_id,
+    workspaceId: markers.project.workspace_id,
+    checkoutId: markers.checkout.checkout_id
+  };
+}
+
 function rootIdentity(root) {
   const stat = fs.statSync(root, { bigint: true });
   return {

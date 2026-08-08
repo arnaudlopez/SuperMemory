@@ -154,10 +154,14 @@ export function computeLogicalEventId({
 
 export function createEventEquivalenceStore({
   vaultRoot,
+  storageRoot = null,
   clock = () => new Date().toISOString()
 } = {}) {
-  const vault = realDirectory(vaultRoot);
-  const directory = ensureDirectory(vault, "00_inbox/supermemory-product");
+  const vault = realDirectory(storageRoot ?? vaultRoot);
+  const directory = ensureDirectory(
+    vault,
+    storageRoot ? "event-equivalence" : "00_inbox/supermemory-product"
+  );
   const filePath = path.join(directory, "event-equivalence.jsonl");
 
   const mutate = (build) => withVaultMutationLock(vault, () => {

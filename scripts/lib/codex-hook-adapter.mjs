@@ -499,7 +499,8 @@ export function createCodexHookAdapter({
       try {
         const provided = await memoryProvider({
           projectId: binding.projectId,
-          workspaceId: binding.workspaceId
+          workspaceId: binding.workspaceId,
+          workingSetId: captureResult?.working?.working_set_id ?? null
         });
         if (Array.isArray(provided)) memories = provided;
       } catch {

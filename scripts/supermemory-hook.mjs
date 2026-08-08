@@ -6,7 +6,7 @@ import process from "node:process";
 import { createCodexHookAdapter } from "./lib/codex-hook-adapter.mjs";
 import { createEventEquivalenceStore } from "./lib/codex-event-equivalence.mjs";
 import { createCodexWorkspaceStore } from "./lib/codex-workspace-store.mjs";
-import { createProjectRegistry } from "./lib/project-registry.mjs";
+import { createProjectRegistry, resolveProjectMarkerBinding } from "./lib/project-registry.mjs";
 import { normalizeCodexRuntimeConfig } from "./lib/codex-runtime-config.mjs";
 import { createCodexSpool } from "./lib/codex-spool.mjs";
 import { createSuperMemoryDaemonClient, createSuperMemoryRecallClient } from "./lib/supermemory-daemon.mjs";
@@ -56,11 +56,14 @@ function loadConfig(filePath) {
   }
   if (
     config?.schema !== "supermemory.hook-runtime.v1" ||
-    !config.vault_root ||
     !config.runtime_root ||
     !config.daemon_endpoint ||
     !config.key_file ||
-    !config.token_file
+    !config.token_file ||
+    (config.client_mode === "remote" && (
+      !config.expected_workspace_id || !config.expected_project_id || !config.expected_checkout_id
+    )) ||
+    (config.client_mode !== "remote" && !config.vault_root)
   ) {
     throw new Error("hook_config_invalid");
   }
@@ -128,11 +131,18 @@ try {
     const config = loadConfig(configPath);
     const stateKey = loadKey(config.key_file);
     const daemonBearer = loadBearer(config.token_file);
-    const registry = createProjectRegistry({ vaultRoot: config.vault_root });
-    const resolution = registry.status(input.cwd);
+    const remoteClient = config.client_mode === "remote";
+    const resolution = remoteClient
+      ? resolveProjectMarkerBinding(input.cwd)
+      : createProjectRegistry({ vaultRoot: config.vault_root }).status(input.cwd);
     if (resolution.status !== "bound") {
       throw new Error(`project_${resolution.status}`);
     }
+    if (remoteClient && (
+      resolution.workspaceId !== config.expected_workspace_id ||
+      resolution.projectId !== config.expected_project_id ||
+      resolution.checkoutId !== config.expected_checkout_id
+    )) throw new Error("project_binding_mismatch");
     const spool = createCodexSpool({
       runtimeRoot: config.runtime_root,
       workspaceId: resolution.workspaceId,
@@ -151,7 +161,7 @@ try {
       ["auth" + "Token"]: daemonBearer,
       timeoutMs: config.working_memory?.compact_context_timeout_ms ?? 750
     });
-    const workspaceStore = createCodexWorkspaceStore({
+    const workspaceStore = remoteClient ? null : createCodexWorkspaceStore({
       vaultRoot: config.vault_root,
       workspaceId: resolution.workspaceId,
       projectId: resolution.projectId
@@ -166,8 +176,27 @@ try {
       },
       captureMode: config.capture_mode ?? "hooks_primary",
       capture: client.capture,
-      equivalenceStore: createEventEquivalenceStore({ vaultRoot: config.vault_root }),
-      memoryProvider: async () => workspaceStore.listActiveMemories({ consumer: "codex" }),
+      equivalenceStore: remoteClient
+        ? createEventEquivalenceStore({ storageRoot: config.runtime_root })
+        : createEventEquivalenceStore({ vaultRoot: config.vault_root }),
+      memoryProvider: remoteClient
+        ? async ({ workingSetId }) => {
+          if (!workingSetId) return [];
+          const recalled = await recallClient.search({
+            working_set_id: workingSetId,
+            query: "active project decisions preferences constraints and durable context",
+            limit: config.context_max_memories ?? 5
+          });
+          return (recalled.results ?? []).map((memory) => ({
+            ...memory,
+            status: "active",
+            sensitivity: "standard",
+            allowed_consumers: ["codex"],
+            title: "Mémoire durable",
+            priority: memory.score ?? 0
+          }));
+        }
+        : async () => workspaceStore.listActiveMemories({ consumer: "codex" }),
       workingMapProvider: recallClient.workingMap,
       contextBudget: {
         maxChars: config.context_max_chars,

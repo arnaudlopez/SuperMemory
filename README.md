@@ -318,10 +318,11 @@ The production verifier performs no live writes. It refuses stale, failed, mock,
 
 ### Requirements
 
-- Node.js 18 or newer
-- Git
-- Docker Desktop with Compose
-- Ollama running locally with `qwen3.5:9b` already installed
+- Mac mini M4 Pro: Node.js 22, Git, Codex authenticated with the intended
+  ChatGPT Pro account, and SSH access to Z2.
+- Z2: Docker Engine with Compose, at least 16 GiB available RAM and 35 GiB free
+  disk.
+- No local generative model or GPU is required.
 
 ### Clone and verify
 
@@ -333,12 +334,6 @@ npm test
 npm run verify:release
 ```
 
-SuperMemory never downloads a model implicitly. Install the expected model yourself once if `ollama list` does not already show it:
-
-```bash
-ollama pull qwen3.5:9b
-```
-
 ### Inspect the supported operator surface
 
 ```bash
@@ -346,47 +341,49 @@ node scripts/supermemory-operator.mjs
 node scripts/supermemory-operator.mjs --json
 ```
 
-### Launch the complete local product
+### Connect to the production brain
 
-On macOS, double-click `SuperMemory.command`. It checks every prerequisite, starts the pinned Hindsight container, waits for health, starts the loopback web application, and opens the browser.
+Z2 owns the canonical vault, daemon, Hindsight 0.9.0, Neo4j/GraphD, web UI and
+backups. The Mac mini M4 Pro runs Codex, capture hooks, an encrypted offline
+spool, the browser and one persistent SSH tunnel. Follow
+[`deploy/portainer/README.md`](deploy/portainer/README.md) for migration,
+deployment, secrets, health checks and rollback.
 
-```bash
-npm run launch
-```
-
-Open [http://127.0.0.1:4310](http://127.0.0.1:4310), choose a folder, and complete the import → exceptions → search workflow in the browser. Start with `--automatic-admission` (or `SUPERMEMORY_ADMISSION_MODE=automatic`) only when an independent verifier is configured; otherwise proposals remain machine-pending. Without that flag the legacy import → review → search workflow is unchanged.
-
-Run the same fail-closed preflight without starting anything:
-
-```bash
-npm run doctor
-```
-
-By default, product state is stored inside `identity-vault` and backups under `~/.supermemory/backups`, outside the vault. Both locations are configurable:
-
-```bash
-SUPERMEMORY_VAULT_ROOT=/absolute/path/to/local-vault \
-SUPERMEMORY_BACKUPS_ROOT=/absolute/path/to/local-backups \
-npm run launch
-```
+With the tunnel active, open
+[http://127.0.0.1:4310](http://127.0.0.1:4310) for SuperMemory and
+[http://127.0.0.1:9999](http://127.0.0.1:9999) for the Hindsight Control Plane.
+The runtime has exactly one generative provider/model: OpenAI through the
+ChatGPT/Codex subscription, `gpt-5.6-luna`, reasoning `high`. It has no
+OpenRouter fallback, local generative model, canary or progressive rollout.
 
 Markdown (`.md`, `.markdown`), plain text (`.txt`), PDF, and DOCX are supported. PDF citations identify pages; DOCX citations identify semantic heading sections. Raw source downloads always return the exact captured bytes. Text files are limited to 2 MiB, binary files to 8 MiB, and each import to 20 MiB.
 
-The application connects only to loopback Hindsight and defaults to `http://127.0.0.1:8888` with bank `supermemory-local`. Start the pinned local engine with the Compose command below. `HINDSIGHT_BASE_URL` may select another loopback port, and `HINDSIGHT_BANK_ID` may select another local bank; non-loopback URLs are rejected. Approval remains successful in the canonical vault even when projection fails, and the interface exposes an idempotent **Resynchroniser** action.
+The application connects only to loopback services on Z2; the same addresses
+remain loopback from the Mac mini through SSH forwarding. Approval remains
+successful in the canonical vault even when a derived projection fails, and
+the interface exposes an idempotent **Resynchroniser** action.
 
 Each browser directory import is marked as a complete inventory. A previously active source that disappears is suspended from local and Hindsight-backed recall, then shown in **Gérer**. Reappearance restores it without duplicate candidates. Permanent deletion requires an explicit confirmation naming the source; SuperMemory then purges its candidate text, canonical memory files and unshared snapshots before attempting the derived Hindsight delete. A Hindsight outage never rolls back the canonical purge and leaves a content-free retry record.
 
-`npm start` starts only the web process and is intended for development when Hindsight and Ollama are already running.
+`npm start` starts only the web process and is intended for isolated legacy
+development, not for production.
 
-### Start local Hindsight manually
+### Legacy local compatibility runtime
+
+The old local Ollama/Hindsight flow below remains only for compatibility tests.
+It is superseded by the Z2 stack and must not be started as the production
+brain or on the Mac mini during normal operation.
 
 ```bash
 docker compose -f compose.hindsight.yml up -d
 ```
 
-The Hindsight 0.9.0 image is pinned by digest and ports `8888` and `9999` are bound to `127.0.0.1` only. The container connects to host Ollama at `host.docker.internal`, uses the explicit `qwen3.5:9b` model, limits local LLM concurrency to one, and enables native observations while keeping automatic consolidation under SuperMemory control. Hindsight Cloud is not used.
+The compatibility Compose file pins Hindsight 0.9.0 and its historical local
+provider. Hindsight Cloud is not an implicit fallback.
 
-Hindsight also needs a reachable local LLM provider capable of structured output. If the API is healthy but extraction produces no memory units, SuperMemory marks the projection as pending, keeps the approved canonical memory safe, and uses the cited local fallback until resynchronization succeeds.
+If a derived projection produces no memory units, SuperMemory marks it pending,
+keeps canonical memory safe and uses cited canonical fallback until
+resynchronization succeeds.
 
 Set explicit local runtime values before strict preflight or live smoke:
 
@@ -411,7 +408,8 @@ node scripts/verify-golden-end-state-workflow.mjs
 
 | Workflow | Entry point | Mutation model |
 |---|---|---|
-| Complete local product | `SuperMemory.command` or `npm run launch` | doctor → pinned local runtime → browser workflow → graceful shutdown |
+| Z2 production brain | `deploy/portainer/supermemory-ai-stack.yml` | atomic six-service stack → private SSH tunnel → browser workflow |
+| Legacy local product | `SuperMemory.command` or `npm run launch` | compatibility doctor → local runtime → browser workflow → graceful shutdown |
 | Web process only | `npm start` | legacy browser candidates → human review → canonical memory; explicit automatic mode → independent verification → deterministic admission → Exceptions only |
 | Backup/recovery | **Gérer** tab | verified external backup → exact confirmation → safety backup → atomic restore → Hindsight rebuild |
 | Product live proof | `npm run smoke:product:live` | explicit temporary four-format writes, refresh, deletion, backup, restore, restart, and cleanup |
@@ -480,15 +478,16 @@ Fixtures live under [`identity-vault/90_evals/cases/`](identity-vault/90_evals/c
 
 ### Deployment target
 
-The supported target is a **local-first operator deployment**:
+The supported target is a **single-user, local-first Z2 deployment**:
 
-- The SuperMemory local web application, operator tools, and governance tools run from the repository.
-- The Markdown vault is canonical local state.
-- Hindsight runs locally through Docker Compose.
-- Ollama runs locally on the host with an explicitly installed model.
-- Verified backups are stored outside the canonical vault.
+- Z2 owns the encrypted canonical vault, daemon, Hindsight, Neo4j/GraphD, UI
+  and verified backups.
+- The Mac mini M4 Pro is the Codex and browser client through a persistent SSH
+  tunnel, with an encrypted outage spool only.
+- OpenAI via ChatGPT/Codex Pro is the sole generative provider;
+  `gpt-5.6-luna` with reasoning `high` is the sole generative model.
+- There is no local generative model, provider fallback or hosted public UI.
 - Live evidence is stored under ignored `tmp/`.
-- There is no hosted web application in this release.
 
 ### Observability
 
@@ -514,7 +513,9 @@ See [docs/production-runbook.md](docs/production-runbook.md) for the full releas
 - recoverable source/snapshot registry transactions;
 - local onboarding, manual capture, and local-file refresh;
 - localhost web workflow for Markdown/TXT/PDF/DOCX ingestion, exact snapshots, page/section-located review, vault persistence, governed Hindsight projection/retry, strict cited recall with explicit local fallback, complete-folder reconciliation, confirmed canonical/Hindsight deletion, deduplication, and restart recovery;
-- fail-closed local doctor, macOS launcher, pinned Ollama-backed Hindsight runtime, graceful shutdown, external verified backups, atomic restore, safety backup, and derived-index rebuild;
+- fail-closed runtime contracts, Mac client tunnel, pinned Hindsight 0.9.0,
+  single-provider Codex runtime, graceful shutdown, external verified backups,
+  atomic restore, safety backup and derived-index rebuild;
 - LLM-first interpretation contract with deterministic governance;
 - reviewed Hindsight promotion, strict recall, revocation, and trace contracts;
 - local Docker Hindsight preflight and governed live smoke;
@@ -539,8 +540,7 @@ See [docs/production-runbook.md](docs/production-runbook.md) for the full releas
 - automated Gmail, Drive, CRM, web-crawler, or paid external connectors;
 - automated remote source refresh;
 - Hindsight Cloud as a default dependency;
-- a completed live Memory Fabric v2 server deployment (the checked-in artifact
-  is ready for the operator, but this repository task starts no container);
+- multi-user or public deployment of the Memory Fabric v2 server;
 - unconfirmed external actions.
 - guaranteed capture of hidden reasoning, unsupported Codex events, or
   Codex web/cloud conversations; hook-only clients have partial coverage.

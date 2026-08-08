@@ -498,6 +498,7 @@ export function createCodexMemoryCompiler({
           uncertainty: extracted.uncertainty,
           sensitivity: extracted.sensitivity,
           extractor: {
+            provider: selectedExtractor.provider ?? "configured",
             model: selectedExtractor.model ?? "local-extractor",
             prompt_version: selectedExtractor.promptVersion ?? PROMPT_VERSION
           },
@@ -629,7 +630,9 @@ export function createCodexMemoryCompiler({
     const compiled = states.filter((state) => state.status === "compiled").length;
     return {
       status: retryable > 0 ? "degraded" : "ready",
+      provider: selectedExtractor.provider ?? "legacy-local",
       model: selectedExtractor.model ?? "local-extractor",
+      reasoning_effort: selectedExtractor.reasoningEffort ?? null,
       pending: pending.size + processing,
       compiled,
       candidates: states.filter((state) => state.outcome === "candidate").length,

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#080d19">
-  <title>SuperMemory — Mémoire locale gouvernée</title>
+  <title>SuperMemory — Brain personnel gouverné</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" type="module"></script>
@@ -21,29 +21,32 @@
       </span>
       <span>
         <strong>SuperMemory</strong>
-        <small>Mémoire locale gouvernée</small>
+        <small>Brain personnel gouverné</small>
       </span>
     </a>
-    <div class="runtime-pill" id="runtime-pill">
-      <span class="status-dot" aria-hidden="true"></span>
-      <span>Local uniquement</span>
+    <div class="topbar-actions">
+      <a class="button ghost" href="http://127.0.0.1:9999" target="_blank" rel="noreferrer">Explorer la mémoire</a>
+      <div class="runtime-pill" id="runtime-pill">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Z2 · tunnel privé</span>
+      </div>
     </div>
   </header>
 
   <main>
     <section class="hero">
       <div>
-        <p class="eyebrow">Votre mémoire, sous votre contrôle</p>
+        <p class="eyebrow">Votre brain, sous votre contrôle</p>
         <h1>Transformez vos documents en connaissances vérifiables.</h1>
         <p class="hero-copy">
-          Importez un dossier, relisez chaque mémoire proposée, puis retrouvez
-          l’information avec un lien exact vers sa source. Rien ne quitte cette machine.
+          Importez un dossier, contrôlez les exceptions, puis retrouvez l’information
+          avec un lien exact vers sa source. Le vault canonique reste sur votre serveur privé Z2.
         </p>
       </div>
-      <div class="hero-seal" aria-label="Fonctionnement local-first">
-        <span>100%</span>
-        <strong>local-first</strong>
-        <small>aucun appel distant</small>
+      <div class="hero-seal" aria-label="Fonctionnement serveur privé">
+        <span>SSH</span>
+        <strong>serveur privé</strong>
+        <small>accès par tunnel</small>
       </div>
     </section>
 
@@ -152,8 +155,9 @@
 
       <div class="privacy-note">
         <span aria-hidden="true">◇</span>
-        <p><strong>Frontière de confidentialité.</strong> Le serveur écoute uniquement sur
-          <code>127.0.0.1</code>. Aucun document n’est transmis à un service distant.</p>
+        <p><strong>Frontière de confidentialité.</strong> L’interface écoute uniquement sur
+          <code>127.0.0.1</code> via le tunnel SSH. Les documents rejoignent le vault privé Z2 ;
+          seules les données gouvernées nécessaires sont traitées par le provider LLM configuré.</p>
       </div>
     </section>
 
@@ -216,8 +220,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <footer>
-    <span>SuperMemory · source canonique locale</span>
-    <span>Hindsight · projection locale dérivée et reconstructible</span>
+    <span>SuperMemory · source canonique privée sur Z2</span>
+    <span>Hindsight · projection dérivée et reconstructible</span>
   </footer>
 
   <noscript>SuperMemory nécessite JavaScript pour son interface locale.</noscript>

@@ -1,72 +1,16 @@
 services:
-  ollama:
-    image: ${OLLAMA_IMAGE:-docker.io/ollama/ollama@sha256:4dea9fb511947e24a84237bb636b0203abcb2ff0d3fbc7b4ff865deb91362131}
-    pull_policy: if_not_present
-    restart: unless-stopped
-    ports:
-      - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:11434:11434"
-    environment:
-      OLLAMA_HOST: "0.0.0.0:11434"
-      OLLAMA_KEEP_ALIVE: "${OLLAMA_KEEP_ALIVE:-5m}"
-      OLLAMA_NUM_PARALLEL: "1"
-      OLLAMA_MAX_LOADED_MODELS: "1"
-      OLLAMA_CONTEXT_LENGTH: "${OLLAMA_CONTEXT_LENGTH:-8192}"
-      OLLAMA_FLASH_ATTENTION: "1"
-      OLLAMA_KV_CACHE_TYPE: "q8_0"
-      NVIDIA_VISIBLE_DEVICES: "${OLLAMA_NVIDIA_VISIBLE_DEVICES:-all}"
-      NVIDIA_DRIVER_CAPABILITIES: "compute,utility"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    volumes:
-      - ollama_models:/root/.ollama
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 20s
-    mem_limit: "${OLLAMA_MEMORY_LIMIT:-10g}"
-    cpus: "${OLLAMA_CPUS:-3.0}"
-    pids_limit: 512
-    stop_grace_period: 30s
-    networks: [supermemory_ai]
-    security_opt: [no-new-privileges:true]
-    logging: &default_logging
-      driver: json-file
-      options: { max-size: "20m", max-file: "3" }
-
-  qwen-model:
-    image: ${OLLAMA_IMAGE:-docker.io/ollama/ollama@sha256:4dea9fb511947e24a84237bb636b0203abcb2ff0d3fbc7b4ff865deb91362131}
-    pull_policy: if_not_present
-    restart: "no"
-    depends_on:
-      ollama: { condition: service_healthy }
-    environment:
-      OLLAMA_HOST: "http://ollama:11434"
-    command: ["pull", "${OLLAMA_MODEL:-qwen3.5:9b}"]
-    networks: [supermemory_ai]
-    security_opt: [no-new-privileges:true]
-    logging: *default_logging
-
   hindsight:
     image: ${HINDSIGHT_IMAGE:-ghcr.io/vectorize-io/hindsight@sha256:6364c3c5f1e551447976d6c3ab369040d0237c0980f10f911d76d981290913b6}
     pull_policy: if_not_present
     restart: unless-stopped
-    depends_on:
-      qwen-model: { condition: service_completed_successfully }
     ports:
       - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:8888:8888"
       - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:9999:9999"
     environment:
-      HINDSIGHT_API_LLM_PROVIDER: "ollama"
-      HINDSIGHT_API_LLM_BASE_URL: "http://ollama:11434/v1"
-      HINDSIGHT_API_LLM_MODEL: "${OLLAMA_MODEL:-qwen3.5:9b}"
-      HINDSIGHT_API_LLM_OLLAMA_NUM_CTX: "${OLLAMA_CONTEXT_LENGTH:-8192}"
+      CODEX_HOME: "/var/lib/supermemory-codex"
+      HINDSIGHT_API_LLM_PROVIDER: "openai-codex"
+      HINDSIGHT_API_LLM_MODEL: "gpt-5.6-luna"
+      HINDSIGHT_API_LLM_REASONING_EFFORT: "high"
       HINDSIGHT_API_LLM_MAX_CONCURRENT: "1"
       HINDSIGHT_API_ENABLE_OBSERVATIONS: "true"
       HINDSIGHT_API_ENABLE_AUTO_CONSOLIDATION: "false"
@@ -77,6 +21,7 @@ services:
     volumes:
       - hindsight_database_v090:/home/hindsight/.pg0
       - hindsight_cache_v090:/home/hindsight/.cache
+      - ${SUPERMEMORY_CODEX_AUTH_DIR:-/opt/supermemory/codex-auth}:/var/lib/supermemory-codex
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/health', timeout=5).read()"]
       interval: 15s
@@ -89,7 +34,9 @@ services:
     stop_grace_period: 60s
     networks: [supermemory_ai]
     security_opt: [no-new-privileges:true]
-    logging: *default_logging
+    logging: &default_logging
+      driver: json-file
+      options: { max-size: "20m", max-file: "3" }
 
   neo4j:
     image: ${NEO4J_IMAGE:-neo4j:5.26.28}
@@ -177,6 +124,112 @@ services:
     security_opt: [no-new-privileges:true]
     logging: *default_logging
 
+  supermemory-daemon:
+    image: ${SUPERMEMORY_RUNTIME_IMAGE:-supermemory-runtime:4.0.0}
+    build:
+      context: ../..
+      dockerfile: deploy/runtime/Dockerfile
+      args:
+        CODEX_CLI_VERSION: "${CODEX_CLI_VERSION:-0.146.1}"
+    pull_policy: build
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      CODEX_HOME: "/var/lib/supermemory-codex"
+    command:
+      - node
+      - scripts/supermemoryd.mjs
+      - --host
+      - 127.0.0.1
+      - --port
+      - "8765"
+      - --vault-root
+      - /data/vault
+      - --runtime-root
+      - /data/runtime
+      - --key-file
+      - /run/supermemory/archive.key
+      - --token-file
+      - /run/supermemory/daemon.token
+      - --runtime-contract
+      - /run/supermemory/runtime-contract.json
+      - --workspace-id
+      - "${SUPERMEMORY_WORKSPACE_ID}"
+      - --project-id
+      - "${SUPERMEMORY_PROJECT_ID}"
+      - --hindsight-url
+      - http://127.0.0.1:8888
+      - --codex-executable
+      - /usr/local/bin/codex
+      - --codex-model
+      - gpt-5.6-luna
+      - --codex-reasoning-effort
+      - high
+      - --compiler-timeout-ms
+      - "${SUPERMEMORY_CODEX_TIMEOUT_MS:-120000}"
+    volumes:
+      - ${SUPERMEMORY_VAULT_DIR:-/opt/supermemory/vault}:/data/vault
+      - ${SUPERMEMORY_RUNTIME_DIR:-/opt/supermemory/runtime}:/data/runtime
+      - ${SUPERMEMORY_CODEX_AUTH_DIR:-/opt/supermemory/codex-auth}:/var/lib/supermemory-codex
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/archive_key:/run/supermemory/archive.key:ro
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/daemon_token:/run/supermemory/daemon.token:ro
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/graphd_token:/run/supermemory/graphd.token:ro
+      - ${SUPERMEMORY_CONFIG_DIR:-/opt/supermemory/config}/runtime-contract.json:/run/supermemory/runtime-contract.json:ro
+    depends_on:
+      hindsight: { condition: service_healthy }
+      supermemory-graphd: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs=require('fs');const t=fs.readFileSync('/run/supermemory/daemon.token','utf8').trim();fetch('http://127.0.0.1:8765/health',{headers:{authorization:'Bearer '+t}}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 8s
+      retries: 20
+      start_period: 30s
+    mem_limit: "${SUPERMEMORY_DAEMON_MEMORY_LIMIT:-2g}"
+    cpus: "${SUPERMEMORY_DAEMON_CPUS:-2.0}"
+    pids_limit: 256
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    stop_grace_period: 120s
+    security_opt: [no-new-privileges:true]
+    logging: *default_logging
+
+  supermemory-web:
+    image: ${SUPERMEMORY_RUNTIME_IMAGE:-supermemory-runtime:4.0.0}
+    build:
+      context: ../..
+      dockerfile: deploy/runtime/Dockerfile
+      args:
+        CODEX_CLI_VERSION: "${CODEX_CLI_VERSION:-0.146.1}"
+    pull_policy: build
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      HINDSIGHT_BASE_URL: "http://127.0.0.1:8888"
+      HINDSIGHT_BANK_ID: "${HINDSIGHT_BANK_ID:-supermemory-local}"
+    command: ["node", "scripts/supermemory-app.mjs", "--port", "4310", "--vault-root", "/data/vault", "--backups-root", "/data/backups", "--automatic-admission"]
+    volumes:
+      - ${SUPERMEMORY_VAULT_DIR:-/opt/supermemory/vault}:/data/vault
+      - ${SUPERMEMORY_BACKUPS_DIR:-/opt/supermemory/backups}:/data/backups
+    depends_on:
+      hindsight: { condition: service_healthy }
+      supermemory-daemon: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4310/api/status').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 8s
+      retries: 12
+      start_period: 20s
+    mem_limit: "${SUPERMEMORY_WEB_MEMORY_LIMIT:-1g}"
+    cpus: "${SUPERMEMORY_WEB_CPUS:-1.0}"
+    pids_limit: 128
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    stop_grace_period: 30s
+    security_opt: [no-new-privileges:true]
+    logging: *default_logging
+
 secrets:
   neo4j_auth:
     file: ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/neo4j_auth
@@ -184,7 +237,6 @@ secrets:
     file: ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/graphd_token
 
 volumes:
-  ollama_models: { name: supermemory-ollama-models }
   hindsight_database_v090: { name: supermemory-hindsight-v090-database }
   hindsight_cache_v090: { name: supermemory-hindsight-v090-cache }
   neo4j_data: { name: supermemory-neo4j-data }

@@ -9,7 +9,7 @@ import { createCodexWorkingRecall } from "./lib/codex-working-recall.mjs";
 import { createCodexWorkingSetStore } from "./lib/codex-working-set-store.mjs";
 import { createCodexWorkspaceStore } from "./lib/codex-workspace-store.mjs";
 import { createCanonicalKnowledgeWorker, createCanonicalWorkingEpisodeSource } from "./lib/canonical-knowledge-worker.mjs";
-import { createCanonicalOllamaPipeline } from "./lib/canonical-ollama-pipeline.mjs";
+import { createCanonicalCodexPipeline } from "./lib/canonical-codex-pipeline.mjs";
 import { createGraphdHttpBackend } from "./lib/graphd-http-backend.mjs";
 import { createHindsightAuthorityGateway } from "./lib/hindsight-authority-gateway.mjs";
 import { createHindsightClientV2 } from "./lib/hindsight-client-v2.mjs";
@@ -27,9 +27,10 @@ function parseArguments(argv) {
     port: 0,
     json: false,
     check: false,
-    ollama_url: process.env.SUPERMEMORY_OLLAMA_URL || "http://127.0.0.1:11434",
-    ollama_model: process.env.HINDSIGHT_OLLAMA_MODEL || "qwen3.5:9b",
-    compiler_timeout_ms: 20_000,
+    codex_executable: process.env.SUPERMEMORY_CODEX_EXECUTABLE || "/usr/local/bin/codex",
+    codex_model: process.env.SUPERMEMORY_CODEX_MODEL || "gpt-5.6-luna",
+    codex_reasoning_effort: process.env.SUPERMEMORY_CODEX_REASONING_EFFORT || "high",
+    compiler_timeout_ms: 120_000,
     working_memory: process.env.SUPERMEMORY_WORKING_MEMORY_ENABLED === "1",
     working_offload: process.env.SUPERMEMORY_WORKING_OFFLOAD_ENABLED === "1",
     graphd_endpoint: process.env.SUPERMEMORY_GRAPHD_ENDPOINT || null,
@@ -42,8 +43,9 @@ function parseArguments(argv) {
   const values = new Set([
     "--host",
     "--key-file",
-    "--ollama-model",
-    "--ollama-url",
+    "--codex-executable",
+    "--codex-model",
+    "--codex-reasoning-effort",
     "--compiler-timeout-ms",
     "--graphd-endpoint",
     "--graphd-token-file",
@@ -89,7 +91,7 @@ function parseArguments(argv) {
 function readSecretFile(filePath, label) {
   const resolved = path.resolve(filePath);
   const stat = fs.lstatSync(resolved);
-  if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o077) !== 0) {
+  if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o027) !== 0) {
     throw new Error(`${label}_file_insecure`);
   }
   return fs.readFileSync(resolved);
@@ -145,15 +147,24 @@ try {
     vaultRoot: options.vault_root,
     encryptionKey
   }) : null;
+  const codexPipeline = createCanonicalCodexPipeline({
+    executable: options.codex_executable,
+    model: options.codex_model,
+    reasoningEffort: options.codex_reasoning_effort,
+    timeoutMs: options.compiler_timeout_ms,
+    runner: options.check ? async () => ({}) : null
+  });
+  const admissionPolicy = createMemoryAdmissionPolicy();
   daemon = createSuperMemoryDaemon({
     vaultRoot: options.vault_root,
     encryptionKey,
     ["auth" + "Token"]: daemonBearer,
     host: options.host,
     port: options.port,
-    ollamaBaseUrl: options.ollama_url,
-    ollamaModel: options.ollama_model,
-    ollamaTimeoutMs: options.compiler_timeout_ms,
+    compilerExtractor: codexPipeline.compilerExtractor,
+    compilerVerifier: codexPipeline.compilerVerifier,
+    compilerAdmissionMode: "automatic",
+    compilerAdmissionPolicy: admissionPolicy,
     runtimeRoot: options.runtime_root,
     workingMemory: {
       enabled: options.working_memory === true,
@@ -280,11 +291,6 @@ try {
       });
     } : null,
     canonicalWorkerFactory: recallEnabled && options.continuous_improvement ? ({ captureStore, memoryRouter }) => {
-      const pipeline = createCanonicalOllamaPipeline({
-        baseUrl: options.ollama_url,
-        model: options.ollama_model,
-        timeoutMs: options.compiler_timeout_ms
-      });
       return createCanonicalKnowledgeWorker({
         vaultRoot: options.vault_root,
         encryptionKey,
@@ -293,9 +299,9 @@ try {
         episodeSource: createCanonicalWorkingEpisodeSource({ workingStore: workingSetStore, captureStore }),
         graphAdapter: memoryRouter.graphAdapter,
         ontologyRegistry: memoryRouter.ontologyRegistry,
-        admissionPolicy: createMemoryAdmissionPolicy(),
-        extractor: pipeline.extractor,
-        verifier: pipeline.verifier,
+        admissionPolicy,
+        extractor: codexPipeline.extractor,
+        verifier: codexPipeline.verifier,
         learnedPlane: memoryRouter.learnedPlane
       });
     } : null

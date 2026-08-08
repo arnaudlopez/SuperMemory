@@ -166,8 +166,11 @@ export function createCodexSpool({
     observedAt: clock()
   }));
 
-  const replay = async (ingestPrepared) => {
+  const replay = async (ingestPrepared, { maxEntries = Number.POSITIVE_INFINITY } = {}) => {
     if (typeof ingestPrepared !== "function") fail("spool_ingest_callback_required");
+    if (!(maxEntries === Number.POSITIVE_INFINITY || (Number.isSafeInteger(maxEntries) && maxEntries > 0))) {
+      fail("spool_replay_limit_invalid");
+    }
     const summary = {
       replayed: 0,
       duplicates: 0,
@@ -175,11 +178,14 @@ export function createCodexSpool({
       retained: 0,
       failed: 0
     };
+    let attempted = 0;
     for (const initialPath of entryFiles(directory)) {
       let leasePath = initialPath;
       const initialStat = fs.statSync(initialPath);
       const alreadyLeased = initialPath.includes(".event.aead.lease.");
       if (alreadyLeased && Date.now() - initialStat.mtimeMs < leaseMs) continue;
+      if (attempted >= maxEntries) break;
+      attempted += 1;
       if (!alreadyLeased) {
         leasePath = `${initialPath}.lease.${process.pid}.${crypto.randomUUID()}`;
         try {

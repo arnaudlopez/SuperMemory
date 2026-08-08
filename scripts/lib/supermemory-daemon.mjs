@@ -150,6 +150,10 @@ export function createSuperMemoryDaemon({
   ollamaTimeoutMs = 20_000,
   fetchImpl = globalThis.fetch,
   memoryCompiler = null,
+  compilerExtractor = null,
+  compilerVerifier = null,
+  compilerAdmissionMode = "legacy_manual",
+  compilerAdmissionPolicy = null,
   runtimeRoot = null,
   workingMemory = null,
   workingSetStore = null,
@@ -179,6 +183,10 @@ export function createSuperMemoryDaemon({
     vaultRoot,
     encryptionKey,
     captureStore: store,
+    extractor: compilerExtractor,
+    verifier: compilerVerifier,
+    admissionMode: compilerAdmissionMode,
+    admissionPolicy: compilerAdmissionPolicy,
     ollamaBaseUrl,
     ollamaModel,
     ollamaTimeoutMs,
@@ -314,6 +322,36 @@ export function createSuperMemoryDaemon({
         sendJson(response, errorStatus(error), {
           ok: false,
           error: error?.code ?? error?.message ?? "capture_ingest_failed"
+        });
+      }
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/events/prepared") {
+      try {
+        const prepared = await readJsonBody(request, maxBodyBytes);
+        const result = store.ingestPrepared(prepared);
+        const envelope = prepared.envelope;
+        if (result.status === "duplicate") counters.duplicates += 1;
+        else counters.applied += 1;
+        compiler.notifyCapture(envelope);
+        if (envelope?.event_type === "assistant.completed" && worker) {
+          if (result.working?.working_set_id && store.workingStore?.closeSession) {
+            store.workingStore.closeSession({
+              workspaceId: envelope.workspace_id,
+              projectId: envelope.project_id,
+              sessionId: envelope.session_id,
+              workingSetId: result.working.working_set_id,
+              closedAt: envelope.occurred_at
+            });
+          }
+          Promise.resolve(worker.notifySessionClosed({ sessionId: envelope.session_id })).catch(() => {});
+        }
+        sendJson(response, 202, { ok: true, ...result });
+      } catch (error) {
+        counters.rejected += 1;
+        sendJson(response, errorStatus(error), {
+          ok: false,
+          error: error?.code ?? error?.message ?? "capture_replay_failed"
         });
       }
       return;
@@ -527,12 +565,28 @@ export function createSuperMemoryDaemonClient({
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10) fail("daemon_timeout_invalid");
 
   const capture = async (input) => {
+    let spoolReplay = null;
+    try {
+      spoolReplay = await spool.replay(async (prepared) => {
+        const response = await postJson(
+          parsed,
+          "/v1/events/prepared",
+          prepared,
+          authToken,
+          timeoutMs
+        );
+        return response;
+      }, { maxEntries: 1 });
+    } catch {
+      spoolReplay = { status: "degraded" };
+    }
     try {
       const response = await postJson(parsed, "/v1/events", input, authToken, timeoutMs);
       return {
         ...response,
         status: "delivered",
-        eventId: response.eventId
+        eventId: response.eventId,
+        spoolReplay
       };
     } catch (daemonError) {
       try {

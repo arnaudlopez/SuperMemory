@@ -59,6 +59,9 @@ a { color: inherit; }
   justify-content: space-between;
 }
 
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.topbar-actions .button { display: inline-flex; align-items: center; text-decoration: none; }
+
 .brand {
   display: inline-flex;
   align-items: center;
