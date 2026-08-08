@@ -242,10 +242,11 @@ export function createCanonicalKnowledgeWorker({
     for (const source of pending) {
       try {
         validateSource(source);
-        const extracted = normalizeExtraction(source, await extractor.extract({
+        const rawExtraction = await extractor.extract({
           workspaceId, episode: source.episode, evidence: source.evidence,
           payload: source.payload, extractor: extractorIdentity
-        }));
+        });
+        const extracted = normalizeExtraction(source, rawExtraction);
         const graphClaimKey = `${extracted.claim_key}@${source.episode.episode_id}`;
         const claimId = canonicalGraphClaimId({ workspaceId, claimKey: graphClaimKey });
         const candidate = {
@@ -257,7 +258,7 @@ export function createCanonicalKnowledgeWorker({
         };
         const verification = await verifier.verify({
           workspaceId, episode: source.episode, evidence: source.evidence, payload: source.payload,
-          candidate: { ...candidate, text: extracted.text }, extraction: extracted, verifier: verifierIdentity
+          candidate: { ...candidate, text: extracted.text }, extraction: rawExtraction, verifier: verifierIdentity
         });
         if (verification?.status !== "verified") {
           results.push({ episode_id: source.episode.episode_id, status: "pending_verification" });

@@ -95,19 +95,23 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
     },
     verifier: {
       identity: { provider: "fixture", model: "verifier", prompt_version: "v2", independent: true },
-      verify: async () => ({
-        status: "verified",
-        signals: {
-          evidence_entailment: 0.99,
-          source_trust: 0.99,
-          extraction_agreement: 0.99,
-          temporal_consistency: 0.99,
-          contradiction_risk: 0,
-          scope_valid: true,
-          ontology_compatible: true,
-          alias_binding_verified: true
-        }
-      })
+      verify: async ({ extraction }) => {
+        assert.equal("entity_id" in extraction.entities[0], false);
+        assert.equal("relation_id" in extraction.relations[0], false);
+        return {
+          status: "verified",
+          signals: {
+            evidence_entailment: 0.99,
+            source_trust: 0.99,
+            extraction_agreement: 0.99,
+            temporal_consistency: 0.99,
+            contradiction_risk: 0,
+            scope_valid: true,
+            ontology_compatible: true,
+            alias_binding_verified: true
+          }
+        };
+      }
     },
     learnedPlane: {
       async projectCanonicalClaim() {
