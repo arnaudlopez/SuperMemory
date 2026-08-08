@@ -64,7 +64,7 @@ test("canonical Codex pipeline enforces the single Luna High provider", async ()
   assert.equal(pipeline.compilerExtractor.provider, "openai-codex");
   assert.equal(pipeline.compilerExtractor.reasoningEffort, "high");
   assert.equal(pipeline.extractor.identity.provider, "openai-codex");
-  assert.equal(pipeline.extractor.identity.prompt_version, "canonical-extract-v4");
+  assert.equal(pipeline.extractor.identity.prompt_version, "canonical-extract-v5");
   assert.equal(pipeline.verifier.identity.independent, true);
 
   const candidate = await pipeline.compilerExtractor.extract({
