@@ -38,7 +38,10 @@
         "properties": {
           "binding_id": { "type": "string", "minLength": 1 },
           "canonical_name": { "type": "string", "minLength": 1 },
-          "entity_type": { "type": "string", "minLength": 1 },
+          "entity_type": {
+            "type": "string",
+            "enum": ["Person", "Organization", "Project", "Workspace", "Session", "Agent", "Document", "File", "Tool", "Requirement", "Decision", "Preference", "Procedure", "Event", "Error", "Topic", "Claim", "Evidence"]
+          },
           "aliases": { "type": "array", "items": { "type": "string" } }
         }
       }
@@ -52,7 +55,10 @@
         "properties": {
           "relation_key": { "type": "string", "minLength": 1 },
           "subject_binding_id": { "type": "string", "minLength": 1 },
-          "predicate": { "type": "string", "minLength": 1 },
+          "predicate": {
+            "type": "string",
+            "enum": ["MENTIONS", "ABOUT", "ASSERTS", "SUPPORTS", "CONTRADICTS", "SUPERSEDES", "DERIVED_FROM", "OCCURRED_IN", "DEPENDS_ON", "CAUSES", "MODIFIES", "DECIDED_BY", "PREFERS", "AFFECTS", "PART_OF", "RELATED_TO"]
+          },
           "object_binding_id": { "type": "string", "minLength": 1 },
           "valid_from": { "type": ["string", "null"] },
           "valid_to": { "type": ["string", "null"] },

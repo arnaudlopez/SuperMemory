@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { createCanonicalCodexPipeline } from "../scripts/lib/canonical-codex-pipeline.mjs";
+import { CORE_ONTOLOGY_V1 } from "../scripts/lib/ontology-registry.mjs";
 
 test("canonical Codex pipeline enforces the single Luna High provider", async () => {
   const calls = [];
@@ -63,7 +64,7 @@ test("canonical Codex pipeline enforces the single Luna High provider", async ()
   assert.equal(pipeline.compilerExtractor.provider, "openai-codex");
   assert.equal(pipeline.compilerExtractor.reasoningEffort, "high");
   assert.equal(pipeline.extractor.identity.provider, "openai-codex");
-  assert.equal(pipeline.extractor.identity.prompt_version, "canonical-extract-v3");
+  assert.equal(pipeline.extractor.identity.prompt_version, "canonical-extract-v4");
   assert.equal(pipeline.verifier.identity.independent, true);
 
   const candidate = await pipeline.compilerExtractor.extract({
@@ -101,6 +102,8 @@ test("canonical extraction contract requires temporal and Quiet Authority signal
   assert.equal("oneOf" in schema.properties.event_time, false);
   assert.deepEqual(schema.properties.relations.items.properties.event_time.type, ["object", "null"]);
   assert.equal("oneOf" in schema.properties.relations.items.properties.event_time, false);
+  assert.deepEqual(schema.properties.entities.items.properties.entity_type.enum, CORE_ONTOLOGY_V1.entity_types);
+  assert.deepEqual(schema.properties.relations.items.properties.predicate.enum, CORE_ONTOLOGY_V1.relation_types);
   assert.ok(schema.properties.relations.items.required.includes("event_time"));
   assert.ok(schema.properties.relations.items.required.includes("temporal_expression"));
 });

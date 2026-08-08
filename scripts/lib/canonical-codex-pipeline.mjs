@@ -107,7 +107,7 @@ export function createCanonicalCodexPipeline({
   });
 
   const extractor = Object.freeze({
-    identity: { provider: "openai-codex", model, prompt_version: "canonical-extract-v3" },
+    identity: { provider: "openai-codex", model, prompt_version: "canonical-extract-v4" },
     extract: ({ episode, payload }) => invoke({
       schemaPath: path.join(schemasRoot, "canonical-extraction.schema.json"),
       system: [
@@ -116,6 +116,7 @@ export function createCanonicalCodexPipeline({
         "Mark explicit only for an explicit owner statement, authenticated only for a verified machine/source observation, and inferred whenever interpretation exceeds direct evidence.",
         "Preserve uncertainty, contradiction and temporal qualifiers; separate the evidence observed_at from event_time, normalize explicit or relative time only when supported, otherwise return null event_time and the original temporal expression.",
         "Use ttl_ms only for genuinely temporary claims; otherwise return null.",
+        "Use only entity types and relation predicates allowed by the response schema; represent unsupported concepts with the closest faithful core type and a separate additive ontology proposal when needed.",
         "Use stable semantic keys; never invent an entity, relation or ontology proposal."
       ].join(" "),
       payload: { observed_at: episode.observed_at, payload }
