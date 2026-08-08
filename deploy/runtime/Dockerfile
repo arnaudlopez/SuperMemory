@@ -2,7 +2,10 @@ FROM node:22.22.0-bookworm-slim
 
 ARG CODEX_CLI_VERSION=0.146.1
 
-RUN npm install --global "@openai/codex@${CODEX_CLI_VERSION}" \
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/* \
+  && npm install --global "@openai/codex@${CODEX_CLI_VERSION}" \
   && npm cache clean --force
 
 WORKDIR /app

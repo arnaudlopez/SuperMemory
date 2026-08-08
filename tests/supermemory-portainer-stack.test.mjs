@@ -86,6 +86,7 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
   assert.doesNotMatch(compose, /\bollama\b|qwen-model|openrouter/i);
   assert.match(compose, /gpt-5\.6-luna/);
   const runtimeDockerfile = fs.readFileSync(path.join(root, "deploy/runtime/Dockerfile"), "utf8");
+  assert.match(runtimeDockerfile, /apt-get install --yes --no-install-recommends ca-certificates/);
   assert.match(runtimeDockerfile, /@openai\/codex@\$\{CODEX_CLI_VERSION\}/);
   assert.match(runtimeDockerfile, /^USER node$/m);
   const runtime = JSON.parse(fs.readFileSync(
