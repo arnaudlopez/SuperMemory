@@ -77,7 +77,7 @@ export async function runDoctor({
   );
   const baseUrl = env.HINDSIGHT_BASE_URL || "http://127.0.0.1:8888";
   const ollamaUrl = env.SUPERMEMORY_OLLAMA_URL || "http://127.0.0.1:11434";
-  const model = env.HINDSIGHT_OLLAMA_MODEL || "llama3:latest";
+  const model = env.HINDSIGHT_OLLAMA_MODEL || "qwen3.5:9b";
   const checks = [];
 
   const major = Number.parseInt(String(nodeVersion).split(".")[0], 10);
@@ -159,6 +159,37 @@ export async function runDoctor({
     ok: hindsight.ok && hindsight.data?.status === "healthy",
     detail: hindsight.ok ? JSON.stringify(hindsight.data) : `unavailable at ${baseUrl}`
   });
+  const hindsightVersion = await fetchJson(fetchImpl, `${baseUrl.replace(/\/+$/, "")}/version`);
+  const actualHindsightVersion = hindsightVersion.data?.version ?? hindsightVersion.data?.api_version ?? null;
+  checks.push({
+    id: "hindsight_version",
+    ok: hindsightVersion.ok && actualHindsightVersion === "0.9.0",
+    detail: actualHindsightVersion ?? "unavailable"
+  });
+  const hindsightOpenApi = await fetchJson(fetchImpl, `${baseUrl.replace(/\/+$/, "")}/openapi.json`);
+  const capabilityContract = JSON.stringify(hindsightOpenApi.data ?? {});
+  const requiredCapabilities = [
+    "prefer_observations", "observation_scopes", "source_fact_ids", "source_facts",
+    "tag_groups", "query_timestamp", "response_schema", "operation_id",
+    "enable_temporal_retrieval", "enable_graph_retrieval", "enable_reranking", "last_write_at"
+  ];
+  const missingCapabilities = requiredCapabilities.filter((item) => !capabilityContract.includes(item));
+  checks.push({
+    id: "hindsight_native_capabilities",
+    ok: hindsightOpenApi.ok && missingCapabilities.length === 0,
+    detail: missingCapabilities.length === 0 ? "hindsight_0.9_native_contract" : `missing:${missingCapabilities.join(",")}`
+  });
+  const graphdUrl = env.SUPERMEMORY_GRAPHD_ENDPOINT;
+  if (graphdUrl) {
+    const graphd = loopbackHttpUrl(graphdUrl)
+      ? await fetchJson(fetchImpl, `${graphdUrl.replace(/\/+$/, "")}/ready`)
+      : { ok: false, data: null };
+    checks.push({
+      id: "graphd_v2",
+      ok: graphd.ok && graphd.data?.contract_version === "2.0.0" && graphd.data?.neo4j === "ready",
+      detail: graphd.ok ? JSON.stringify(graphd.data) : "unavailable_or_non_loopback"
+    });
+  }
 
   let codexReport = null;
   if (codex) {

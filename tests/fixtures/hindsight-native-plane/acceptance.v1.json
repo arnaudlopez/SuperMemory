@@ -1,0 +1,29 @@
+{
+  "schema": "supermemory.hindsight-native-acceptance.v1",
+  "criteria": [
+    { "id": "HN-AC01", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "six-service private server stack", "proof": "Compose has no Graphiti/improved service, secret or volume" },
+    { "id": "HN-AC02", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "talks directly to Neo4j", "proof": "GraphD v2 ready/query uses Neo4j only" },
+    { "id": "HN-AC03", "test_file": "tests/hindsight-native-plane-acceptance.test.mjs", "test_pattern": "runtime source contains no removed Graphiti or improved call", "proof": "bounded source scan" },
+    { "id": "HN-AC04", "test_file": "tests/supermemory-portainer-stack.test.mjs", "test_pattern": "pinned Hindsight 0.9.0", "proof": "exact digest in target Compose" },
+    { "id": "HN-AC05", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "live preflight checks digest", "proof": "version and required capabilities" },
+    { "id": "HN-AC06", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "template dry-run/import and drift", "proof": "template lifecycle and retrieval stages" },
+    { "id": "HN-AC07", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "bank and retain identities are opaque", "proof": "workspace bank isolation" },
+    { "id": "HN-AC08", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "replay-safe", "proof": "deterministic native operation id" },
+    { "id": "HN-AC09", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "stable, rich", "proof": "retain timestamps/entities/tags/metadata/scopes" },
+    { "id": "HN-AC10", "test_file": "tests/memory-fabric-v2-e2e.test.mjs", "test_pattern": "retain → consolidation", "proof": "session-scoped native consolidation" },
+    { "id": "HN-AC11", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "observations are all-or-nothing", "proof": "source facts retained" },
+    { "id": "HN-AC12", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "observations are all-or-nothing", "proof": "one revoked source rejects full observation" },
+    { "id": "HN-AC13", "test_file": "tests/knowledge-graph-adapter.test.mjs", "test_pattern": "remove authority before stale projection cleanup", "proof": "local authority removed first" },
+    { "id": "HN-AC14", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "historical recall excludes them", "proof": "no observations plus query timestamp" },
+    { "id": "HN-AC15", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "observations are all-or-nothing", "proof": "observation source citations preserved" },
+    { "id": "HN-AC16", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "HN-AC11/12/14/15/16", "proof": "scores never cross authority resolver" },
+    { "id": "HN-AC17", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "Reflect is structured", "proof": "local schema and full grounding" },
+    { "id": "HN-AC18", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "fails closed", "proof": "invalid based_on fact suppresses output" },
+    { "id": "HN-AC19", "test_file": "tests/codex-mcp-server.test.mjs", "test_pattern": "excessive", "proof": "MCP rejects scope/schema/as_of/excess budget" },
+    { "id": "HN-AC20", "test_file": "tests/codex-memory-router.test.mjs", "test_pattern": "HN-AC20/21", "proof": "Hindsight outage keeps working and graph tiers" },
+    { "id": "HN-AC21", "test_file": "tests/codex-memory-router.test.mjs", "test_pattern": "HN-AC20/21", "proof": "Neo4j outage keeps working and Hindsight tiers" },
+    { "id": "HN-AC22", "test_file": "tests/hindsight-native-migration.test.mjs", "test_pattern": "fresh-volume migration reproduces", "proof": "GraphD hash and active memory count" },
+    { "id": "HN-AC23", "test_file": "tests/memory-fabric-v2-e2e.test.mjs", "test_pattern": "Hindsight-native E2E", "proof": "full cited ingest to Reflect flow" },
+    { "id": "HN-AC24", "test_file": "tests/supermemory-release-readiness.test.mjs", "test_pattern": "release", "proof": "release/spec/secrets/Compose/runtime/Codex gates" }
+  ]
+}

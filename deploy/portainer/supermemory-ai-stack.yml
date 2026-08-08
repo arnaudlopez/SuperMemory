@@ -44,21 +44,8 @@ services:
     security_opt: [no-new-privileges:true]
     logging: *default_logging
 
-  embedding-model:
-    image: ${OLLAMA_IMAGE:-docker.io/ollama/ollama@sha256:4dea9fb511947e24a84237bb636b0203abcb2ff0d3fbc7b4ff865deb91362131}
-    pull_policy: if_not_present
-    restart: "no"
-    depends_on:
-      qwen-model: { condition: service_completed_successfully }
-    environment:
-      OLLAMA_HOST: "http://ollama:11434"
-    command: ["pull", "${GRAPHITI_EMBEDDING_MODEL:-nomic-embed-text}"]
-    networks: [supermemory_ai]
-    security_opt: [no-new-privileges:true]
-    logging: *default_logging
-
   hindsight:
-    image: ${HINDSIGHT_IMAGE:-ghcr.io/vectorize-io/hindsight@sha256:f0f9e9a73d6aedde9eaf4010ab604c3e015494e494318b26f1011144856b8112}
+    image: ${HINDSIGHT_IMAGE:-ghcr.io/vectorize-io/hindsight@sha256:6364c3c5f1e551447976d6c3ab369040d0237c0980f10f911d76d981290913b6}
     pull_policy: if_not_present
     restart: unless-stopped
     depends_on:
@@ -72,11 +59,15 @@ services:
       HINDSIGHT_API_LLM_MODEL: "${OLLAMA_MODEL:-qwen3.5:9b}"
       HINDSIGHT_API_LLM_OLLAMA_NUM_CTX: "${OLLAMA_CONTEXT_LENGTH:-8192}"
       HINDSIGHT_API_LLM_MAX_CONCURRENT: "1"
-      HINDSIGHT_API_ENABLE_OBSERVATIONS: "false"
+      HINDSIGHT_API_ENABLE_OBSERVATIONS: "true"
+      HINDSIGHT_API_ENABLE_AUTO_CONSOLIDATION: "false"
+      HINDSIGHT_API_ENABLE_BANK_CONFIG_API: "true"
+      HINDSIGHT_API_AUDIT_LOG_ENABLED: "true"
+      HINDSIGHT_API_AUDIT_LOG_RETENTION_DAYS: "30"
       HINDSIGHT_API_WORKER_ID: "supermemory-portainer"
     volumes:
-      - hindsight_database:/home/hindsight/.pg0
-      - hindsight_cache:/home/hindsight/.cache
+      - hindsight_database_v090:/home/hindsight/.pg0
+      - hindsight_cache_v090:/home/hindsight/.cache
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/health', timeout=5).read()"]
       interval: 15s
@@ -123,7 +114,7 @@ services:
     logging: *default_logging
 
   neo4j-migrate:
-    image: ${GRAPHD_IMAGE:-supermemory-graphd:1.0.0}
+    image: ${GRAPHD_IMAGE:-supermemory-graphd:2.0.0}
     build:
       context: ../..
       dockerfile: services/supermemory-graphd/Dockerfile
@@ -132,12 +123,9 @@ services:
     command: ["node", "server.mjs", "--migrate"]
     environment: &graphd_environment
       NEO4J_HTTP_URL: "http://neo4j:7474"
-      GRAPHITI_URL: "http://graphiti:8000"
-      IMPROVED_URL: "http://supermemory-improved:8081"
       GRAPHD_TOKEN_FILE: /run/secrets/graphd_token
-      IMPROVED_TOKEN_FILE: /run/secrets/improved_token
       NEO4J_AUTH_FILE: /run/secrets/neo4j_auth
-    secrets: [graphd_token, improved_token, neo4j_auth]
+    secrets: [graphd_token, neo4j_auth]
     depends_on:
       neo4j: { condition: service_healthy }
     read_only: true
@@ -148,43 +136,8 @@ services:
     security_opt: [no-new-privileges:true]
     logging: *default_logging
 
-  graphiti:
-    image: ${GRAPHITI_IMAGE:-zepai/graphiti:0.22.0}
-    pull_policy: if_not_present
-    restart: unless-stopped
-    entrypoint: ["/bin/sh", "-ec"]
-    command:
-      - >-
-        export NEO4J_PASSWORD="$$(cut -d/ -f2- /run/secrets/neo4j_auth)";
-        exec uv run uvicorn graph_service.main:app --host 0.0.0.0 --port 8000
-    environment:
-      OPENAI_API_KEY: "ollama-private-runtime"
-      OPENAI_BASE_URL: "http://ollama:11434/v1"
-      MODEL_NAME: "${OLLAMA_MODEL:-qwen3.5:9b}"
-      EMBEDDING_MODEL_NAME: "${GRAPHITI_EMBEDDING_MODEL:-nomic-embed-text}"
-      NEO4J_URI: "bolt://neo4j:7687"
-      NEO4J_USER: "neo4j"
-    secrets: [neo4j_auth]
-    depends_on:
-      qwen-model: { condition: service_completed_successfully }
-      embedding-model: { condition: service_completed_successfully }
-      neo4j-migrate: { condition: service_completed_successfully }
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthcheck', timeout=5).read()"]
-      interval: 15s
-      timeout: 8s
-      retries: 20
-      start_period: 120s
-    mem_limit: "${GRAPHITI_MEMORY_LIMIT:-3g}"
-    cpus: "${GRAPHITI_CPUS:-1.5}"
-    pids_limit: 512
-    stop_grace_period: 60s
-    networks: [supermemory_ai, supermemory_graph]
-    security_opt: [no-new-privileges:true]
-    logging: *default_logging
-
   supermemory-graphd:
-    image: ${GRAPHD_IMAGE:-supermemory-graphd:1.0.0}
+    image: ${GRAPHD_IMAGE:-supermemory-graphd:2.0.0}
     build:
       context: ../..
       dockerfile: services/supermemory-graphd/Dockerfile
@@ -193,10 +146,9 @@ services:
     ports:
       - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:${GRAPHD_PORT:-8787}:8080"
     environment: *graphd_environment
-    secrets: [graphd_token, improved_token, neo4j_auth]
+    secrets: [graphd_token, neo4j_auth]
     depends_on:
       neo4j-migrate: { condition: service_completed_successfully }
-      graphiti: { condition: service_healthy }
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 15s
@@ -214,58 +166,19 @@ services:
     security_opt: [no-new-privileges:true]
     logging: *default_logging
 
-  supermemory-improved:
-    image: ${IMPROVED_IMAGE:-supermemory-improved:1.0.0}
-    build:
-      context: ../..
-      dockerfile: services/supermemory-improved/Dockerfile
-    pull_policy: build
-    restart: unless-stopped
-    environment:
-      GRAPHITI_URL: "http://graphiti:8000"
-      IMPROVED_TOKEN_FILE: /run/secrets/improved_token
-      IMPROVED_STATE_KEY_FILE: /run/secrets/improved_state_key
-      IMPROVED_STATE_FILE: /var/lib/supermemory-improved/state.json
-    secrets: [improved_token, improved_state_key]
-    volumes:
-      - improved_state:/var/lib/supermemory-improved
-    depends_on:
-      neo4j-migrate: { condition: service_completed_successfully }
-      graphiti: { condition: service_healthy }
-      supermemory-graphd: { condition: service_healthy }
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 8s
-      retries: 12
-      start_period: 30s
-    mem_limit: "${IMPROVED_MEMORY_LIMIT:-512m}"
-    cpus: "${IMPROVED_CPUS:-0.5}"
-    pids_limit: 128
-    cap_drop: [ALL]
-    stop_grace_period: 30s
-    networks: [supermemory_graph]
-    security_opt: [no-new-privileges:true]
-    logging: *default_logging
-
 secrets:
   neo4j_auth:
     file: ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/neo4j_auth
   graphd_token:
     file: ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/graphd_token
-  improved_token:
-    file: ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/improved_token
-  improved_state_key:
-    file: ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/improved_state_key
 
 volumes:
   ollama_models: { name: supermemory-ollama-models }
-  hindsight_database: { name: supermemory-hindsight-database }
-  hindsight_cache: { name: supermemory-hindsight-cache }
+  hindsight_database_v090: { name: supermemory-hindsight-v090-database }
+  hindsight_cache_v090: { name: supermemory-hindsight-v090-cache }
   neo4j_data: { name: supermemory-neo4j-data }
   neo4j_logs: { name: supermemory-neo4j-logs }
   neo4j_backups: { name: supermemory-neo4j-backups }
-  improved_state: { name: supermemory-improved-state }
 
 networks:
   supermemory_ai: { driver: bridge }

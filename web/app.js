@@ -31,6 +31,7 @@ const elements = {
   hindsightDot: document.querySelector("#hindsight-dot"),
   hindsightStatus: document.querySelector("#hindsight-status"),
   hindsightDetails: document.querySelector("#hindsight-details"),
+  derivedMemoryPlanes: [...document.querySelectorAll(".memory-plane.derived")],
   retryProjections: document.querySelector("#retry-projections"),
   engineLabel: document.querySelector("#engine-label"),
   toast: document.querySelector("#toast")
@@ -125,6 +126,9 @@ async function loadStatus() {
   const pending = status.counts.pendingProjections;
   const pendingDeletions = status.counts.pendingHindsightDeletions;
   const ready = status.hindsight.status === "ready";
+  for (const plane of elements.derivedMemoryPlanes) {
+    plane.dataset.state = ready ? "ready" : "degraded";
+  }
   elements.hindsightDot.classList.toggle("unavailable", !ready);
   elements.hindsightStatus.textContent = ready
     ? pending

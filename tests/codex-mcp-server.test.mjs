@@ -58,6 +58,7 @@ test("bound MCP advertises only scope-free read tools and returns tool errors sa
       return { results: [], query: args.query };
     },
     async recall(args) { return { results: [], query: args.query }; },
+    async reflect(args) { return { status: "grounded", format: args.format ?? "summary" }; },
     workingMap: () => ({}),
     workingSearch: () => ({ results: [] }),
     workingOpen: () => ({}),
@@ -83,6 +84,7 @@ test("bound MCP advertises only scope-free read tools and returns tool errors sa
   assert.deepEqual(listed.result.tools.map((entry) => entry.name), [
     "supermemory_status",
     "supermemory_recall",
+    "supermemory_reflect",
     "supermemory_search",
     "supermemory_get",
     "supermemory_explain_citation",
@@ -111,6 +113,17 @@ test("bound MCP advertises only scope-free read tools and returns tool errors sa
   }));
   assert.equal(unbound.result.isError, true);
   assert.equal(unbound.result.structuredContent.error, "not_found_or_not_authorized");
+  const excessive = await server.handle(request(5, "tools/call", {
+    name: "supermemory_reflect",
+    arguments: { working_set_id: workingSetId, query: "résume", max_tokens: 4097 }
+  }));
+  assert.equal(excessive.result.isError, true);
+  assert.equal(excessive.result.structuredContent.error, "arguments_invalid");
+  const arbitrarySchema = await server.handle(request(6, "tools/call", {
+    name: "supermemory_reflect",
+    arguments: { working_set_id: workingSetId, query: "résume", response_schema: {} }
+  }));
+  assert.equal(arbitrarySchema.result.isError, true);
 });
 
 test("global MCP is diagnostic-only and cannot invoke content tools", async () => {

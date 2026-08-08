@@ -170,3 +170,61 @@ test("cross-tier dedup retains every tier, admission, temporal window and citati
   assert.equal(result.results[0].citations.length, 3);
   assert.deepEqual(result.results[0].evidence_ids, ["wev-1", "wev-2"]);
 });
+
+test("HN-AC20/21: Hindsight and Neo4j failures degrade independently without stopping capture-facing recall", async () => {
+  const workingRecall = {
+    assertBound: () => ({ manifest: { working_set_id: WORKING_SET_ID } }),
+    search: async () => workingResult(), map: () => ({}), open: () => ({}), neighbors: () => ({})
+  };
+  let hindsightOffline = true;
+  let graphOffline = false;
+  const hindsightGateway = {
+    recall: async () => {
+      if (hindsightOffline) throw Object.assign(new Error("offline"), { code: "backend_unavailable" });
+      return { results: [{ id: "fact_1", fact_type: "world", memory_id: "mem_1", text: "Durable fact", score: 0.8, citation: { memory_id: "mem_1" } }] };
+    },
+    status: async () => ({ available: !hindsightOffline })
+  };
+  const graphAdapter = {
+    readAuthorizedState: () => ({
+      entities: [{ entity_id: "ent-a", canonical_name: "A", aliases: [] }],
+      relations: [{ predicate: "RELATED_TO" }]
+    }),
+    queryAsync: async () => {
+      if (graphOffline) throw Object.assign(new Error("offline"), { code: "backend_unavailable" });
+      return { paths: [] };
+    },
+    query: () => ({ paths: [] })
+  };
+  const router = createCodexMemoryRouter({
+    workspaceId: WORKSPACE_ID,
+    projectId: PROJECT_ID,
+    workingRecall,
+    hindsightGateway,
+    graphAdapter
+  });
+  const withoutHindsight = await router.recall({
+    working_set_id: WORKING_SET_ID,
+    query: "A relation",
+    strategy: "hybrid",
+    entity_ids: ["ent-a"],
+    relation_types: ["RELATED_TO"]
+  });
+  assert.equal(withoutHindsight.coverage.working, "complete");
+  assert.equal(withoutHindsight.coverage.graph, "complete");
+  assert.equal(withoutHindsight.coverage.durable, "unavailable");
+  assert.equal(withoutHindsight.partial, true);
+  hindsightOffline = false;
+  graphOffline = true;
+  const withoutNeo4j = await router.recall({
+    working_set_id: WORKING_SET_ID,
+    query: "A relation",
+    strategy: "hybrid",
+    entity_ids: ["ent-a"],
+    relation_types: ["RELATED_TO"]
+  });
+  assert.equal(withoutNeo4j.coverage.working, "complete");
+  assert.equal(withoutNeo4j.coverage.durable, "complete");
+  assert.equal(withoutNeo4j.coverage.graph, "unavailable");
+  assert.ok(withoutNeo4j.results.some((item) => item.memory_tiers.includes("durable")));
+});

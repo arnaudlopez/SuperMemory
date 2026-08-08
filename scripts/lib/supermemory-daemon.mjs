@@ -146,13 +146,15 @@ export function createSuperMemoryDaemon({
   clock = () => new Date().toISOString(),
   maxBodyBytes = 1024 * 1024,
   ollamaBaseUrl = "http://127.0.0.1:11434",
-  ollamaModel = "llama3:latest",
+  ollamaModel = "qwen3.5:9b",
   ollamaTimeoutMs = 20_000,
   fetchImpl = globalThis.fetch,
   memoryCompiler = null,
   runtimeRoot = null,
   workingMemory = null,
   workingSetStore = null,
+  canonicalWorker = null,
+  canonicalWorkerFactory = null,
   memoryRouter = null,
   memoryRouterFactory = null
 } = {}) {
@@ -170,6 +172,9 @@ export function createSuperMemoryDaemon({
   const router = memoryRouter ?? (typeof memoryRouterFactory === "function"
     ? memoryRouterFactory({ captureStore: store })
     : null);
+  const worker = canonicalWorker ?? (typeof canonicalWorkerFactory === "function"
+    ? canonicalWorkerFactory({ captureStore: store, memoryRouter: router })
+    : null);
   const compiler = memoryCompiler ?? createCodexMemoryCompiler({
     vaultRoot,
     encryptionKey,
@@ -186,12 +191,17 @@ export function createSuperMemoryDaemon({
     typeof compiler.stop !== "function" ||
     typeof compiler.stats !== "function"
   ) fail("daemon_compiler_invalid");
+  if (worker && (
+    typeof worker.notifySessionClosed !== "function" ||
+    typeof worker.status !== "function"
+  )) fail("daemon_canonical_worker_invalid");
   if (router && [
     "recall", "workingSearch", "workingOpen", "workingNeighbors", "workingMap",
     "graphQuery", "explainPath", "search", "get", "explainCitation", "status"
   ].some((method) => typeof router[method] !== "function")) fail("daemon_memory_router_invalid");
   const recallRoutes = new Map([
     ["/v1/recall", "recall"],
+    ["/v1/reflect", "reflect"],
     ["/v1/working/search", "workingSearch"],
     ["/v1/working/open", "workingOpen"],
     ["/v1/working/neighbors", "workingNeighbors"],
@@ -246,6 +256,7 @@ export function createSuperMemoryDaemon({
         started_at: startedAt,
         capture: store.stats(),
         compiler: compiler.stats(),
+        canonical_worker: worker?.status() ?? { enabled: false, status: "disabled" },
         spool_replay: { ...spoolReplay },
         counters: { ...counters }
       });
@@ -285,6 +296,18 @@ export function createSuperMemoryDaemon({
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
         compiler.notifyCapture(input);
+        if (input?.event_type === "assistant.completed" && worker) {
+          if (result.working?.working_set_id && store.workingStore?.closeSession) {
+            store.workingStore.closeSession({
+              workspaceId: input.workspace_id,
+              projectId: input.project_id,
+              sessionId: input.session_id,
+              workingSetId: result.working.working_set_id,
+              closedAt: input.occurred_at
+            });
+          }
+          Promise.resolve(worker.notifySessionClosed({ sessionId: input.session_id })).catch(() => {});
+        }
         sendJson(response, 202, { ok: true, ...result });
       } catch (error) {
         counters.rejected += 1;
@@ -378,6 +401,15 @@ export function createSuperMemoryDaemon({
     const result = await spool.replay((prepared) => {
       const ingest = store.ingestPrepared(prepared);
       if (prepared.envelope.event_type === "assistant.completed") {
+        if (ingest.working?.working_set_id && store.workingStore?.closeSession) {
+          store.workingStore.closeSession({
+            workspaceId: prepared.envelope.workspace_id,
+            projectId: prepared.envelope.project_id,
+            sessionId: prepared.envelope.session_id,
+            workingSetId: ingest.working.working_set_id,
+            closedAt: prepared.envelope.occurred_at
+          });
+        }
         const scope = {
           workspaceId: prepared.envelope.workspace_id,
           sessionId: prepared.envelope.session_id
@@ -386,7 +418,12 @@ export function createSuperMemoryDaemon({
       }
       return ingest;
     });
-    for (const scope of completedScopes.values()) compiler.schedule(scope);
+    for (const scope of completedScopes.values()) {
+      compiler.schedule(scope);
+      if (worker && worker.workspaceId === scope.workspaceId) {
+        Promise.resolve(worker.notifySessionClosed({ sessionId: scope.sessionId })).catch(() => {});
+      }
+    }
     return result;
   };
 
@@ -419,6 +456,7 @@ export function createSuperMemoryDaemon({
     host,
     store,
     compiler,
+    canonicalWorker: worker,
     memoryRouter: router,
     start,
     stop,
@@ -529,8 +567,8 @@ export function createSuperMemoryRecallClient({
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10 || timeoutMs > 30_000) {
     fail("daemon_timeout_invalid");
   }
-  const invoke = async (route, input = {}) => {
-    const { ok, ...result } = await postJson(parsed, route, input, authToken, timeoutMs);
+  const invoke = async (route, input = {}, requestTimeoutMs = timeoutMs) => {
+    const { ok, ...result } = await postJson(parsed, route, input, authToken, requestTimeoutMs);
     return result;
   };
   const workingSetPattern = /^wset_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -543,6 +581,7 @@ export function createSuperMemoryRecallClient({
   return Object.freeze({
     assertBound,
     recall: (input) => invoke("/v1/recall", input),
+    reflect: (input) => invoke("/v1/reflect", input, Math.max(timeoutMs, 30_000)),
     search: (input) => invoke("/v1/memory/search", input),
     get: (input) => invoke("/v1/memory/get", input),
     explainCitation: (input) => invoke("/v1/memory/explain-citation", input),

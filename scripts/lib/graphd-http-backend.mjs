@@ -37,9 +37,9 @@ export function workspaceGraphdBearer(secret, workspaceId) {
     fail("graphd_token_invalid");
   }
   const signature = crypto.createHmac("sha256", secret)
-    .update(`supermemory.graphd.workspace.v1\0${workspaceId}`)
+    .update(`supermemory.graphd.workspace.v2\0${workspaceId}`)
     .digest("base64url");
-  return `smg1.${Buffer.from(workspaceId).toString("base64url")}.${signature}`;
+  return `smg2.${Buffer.from(workspaceId).toString("base64url")}.${signature}`;
 }
 
 export function createGraphdHttpBackend({
@@ -77,8 +77,7 @@ export function createGraphdHttpBackend({
   return Object.freeze({
     workspaceId,
     endpoint: base.toString(),
-    project: (request) => invoke("/v1/project", request),
-    query: (request) => invoke("/v1/query", request),
-    notifyImprove: (request) => invoke("/v1/improve/notify", request)
+    project: (request) => invoke("/v2/project", request),
+    query: (request) => invoke("/v2/query", request)
   });
 }

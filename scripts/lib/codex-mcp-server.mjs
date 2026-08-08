@@ -35,6 +35,12 @@ const BOUND_TOOLS = Object.freeze([
     direction: { enum: ["outbound", "inbound", "both"] },
     max_hops: { type: "integer", minimum: 1, maximum: 5 }
   }, ["working_set_id", "query"]),
+  tool("supermemory_reflect", "Create a bounded current-state synthesis grounded in authorized memory facts.", {
+    working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
+    query: { type: "string", minLength: 1, maxLength: 4000 },
+    format: { enum: ["summary", "decision", "risks", "timeline"] },
+    max_tokens: { type: "integer", minimum: 256, maximum: 4096 }
+  }, ["working_set_id", "query"]),
   tool("supermemory_search", "Search approved durable memory for the exact working set.", {
     working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     query: { type: "string", minLength: 1, maxLength: 4000 },
@@ -126,6 +132,31 @@ function assertPlainArguments(value) {
   return value;
 }
 
+function argumentMatches(value, schema) {
+  if (schema.enum && !schema.enum.includes(value)) return false;
+  const types = Array.isArray(schema.type) ? schema.type : [schema.type].filter(Boolean);
+  if (value === null) return types.includes("null");
+  if (types.includes("string") && typeof value === "string") {
+    return value.length >= (schema.minLength ?? 0) && value.length <= (schema.maxLength ?? Infinity) &&
+      (!schema.pattern || new RegExp(schema.pattern, "u").test(value));
+  }
+  if (types.includes("integer") && Number.isSafeInteger(value)) {
+    return value >= (schema.minimum ?? -Infinity) && value <= (schema.maximum ?? Infinity);
+  }
+  if (types.includes("array") && Array.isArray(value)) {
+    return value.length <= (schema.maxItems ?? Infinity) && value.every((item) => argumentMatches(item, schema.items ?? {}));
+  }
+  return types.length === 0 || schema.enum?.includes(value) === true;
+}
+
+function validateToolArguments(descriptor, args) {
+  if (
+    Object.keys(args).some((key) => !Object.hasOwn(descriptor.inputSchema.properties, key)) ||
+    descriptor.inputSchema.required.some((key) => !Object.hasOwn(args, key)) ||
+    Object.entries(args).some(([key, value]) => !argumentMatches(value, descriptor.inputSchema.properties[key]))
+  ) throw Object.assign(new Error("arguments_invalid"), { code: "arguments_invalid" });
+}
+
 export function createCodexMcpServer({
   mode = "bound",
   recall = null,
@@ -161,10 +192,7 @@ export function createCodexMcpServer({
       ["workspace_id", "workspaceId", "project_id", "projectId", "cwd", "session_id", "sessionId"]
         .some((key) => Object.hasOwn(args, key))
     ) throw Object.assign(new Error("scope_argument_forbidden"), { code: "scope_argument_forbidden" });
-    if (
-      Object.keys(args).some((key) => !Object.hasOwn(descriptor.inputSchema.properties, key)) ||
-      descriptor.inputSchema.required.some((key) => !Object.hasOwn(args, key))
-    ) throw Object.assign(new Error("arguments_invalid"), { code: "arguments_invalid" });
+    validateToolArguments(descriptor, args);
     if (mode === "diagnostic") {
       if (name === "supermemory_status") {
         if (Object.keys(args).length > 0) throw Object.assign(new Error("arguments_invalid"), {
@@ -186,6 +214,7 @@ export function createCodexMcpServer({
       return recall.status();
     }
     if (name === "supermemory_recall") return callBound("recall", args);
+    if (name === "supermemory_reflect") return callBound("reflect", args);
     if (name === "supermemory_search") return callBound("search", args);
     if (name === "supermemory_get") return callBound("get", args);
     if (name === "supermemory_explain_citation") return callBound("explainCitation", args);

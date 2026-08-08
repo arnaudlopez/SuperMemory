@@ -20,7 +20,7 @@ restart_full_stack() {
 }
 
 trap restart_full_stack EXIT INT TERM
-compose stop supermemory-improved supermemory-graphd graphiti neo4j
+compose stop supermemory-graphd neo4j
 compose run --rm --no-deps neo4j neo4j-admin database dump neo4j \
   --to-path=/backups --overwrite-destination
 compose run --rm --no-deps neo4j sh -ec \

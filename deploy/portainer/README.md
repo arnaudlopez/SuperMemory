@@ -1,56 +1,46 @@
-# SuperMemory full server stack — Docker/Portainer
+# SuperMemory six-service server stack — Docker/Portainer
 
-This directory defines one atomic server deployment for every replaceable or
-resource-heavy SuperMemory component:
+This directory defines the complete Hindsight-native server plane:
 
-- Ollama with `qwen3.5:9b` and Hindsight;
-- Neo4j 5.26 LTS and Graphiti;
-- the authenticated `supermemory-graphd` gateway;
-- the idempotent `supermemory-improved` queue.
+- Ollama with `qwen3.5:9b`;
+- Hindsight 0.9.0 with observations, bank configuration and audit enabled;
+- Neo4j 5.26 LTS;
+- the authenticated `supermemory-graphd` v2 gateway and its one-shot migration.
 
-The encrypted canonical vault and `supermemoryd` remain on the trusted Codex
-workstation. The server receives only authorized, redacted projections. It
-never receives the vault key. Neo4j, Graphiti and the improvement worker have
-no published host port; the workstation reaches graph and improvement routes
-through `supermemory-graphd` only.
+The six Compose services are `ollama`, `qwen-model`, `hindsight`, `neo4j`,
+`neo4j-migrate` and `supermemory-graphd`. Graphiti and
+`supermemory-improved` are deliberately absent. Hindsight owns learned memory
+and Neo4j/GraphD owns exact temporal graph projection; the encrypted canonical
+vault on the trusted workstation remains the authority.
 
-This is a full-stack deployment. There is no canary or progressive rollout.
-Prepare and validate the complete artifact first, then deploy or roll back the
-complete stack as one operator action.
+There is no canary or progressive rollout. Validate and deploy or roll back the
+whole stack as one operator action.
 
 ## Capacity gate
 
-The default hard limits total roughly 22 GiB before Docker and operating-system
-overhead. Require at least 28 GiB genuinely available RAM and 35 GiB free disk
-before first deployment; a 40–64 GiB server and an NVIDIA GPU with at least
-12 GiB VRAM are recommended. Do not compensate for insufficient capacity by
-running part of the stack on the workstation.
+The default hard limits total roughly 18.5 GiB before Docker and operating
+system overhead. Require at least 24 GiB genuinely available RAM and 35 GiB
+free disk. A 32–64 GiB server and a GPU with at least 12 GiB VRAM are
+recommended. Do not compensate for insufficient capacity by moving server
+components onto the workstation.
 
-## Secret preparation on Docker Standalone
+## Secret preparation
 
-Portainer exposes managed Docker Secrets only for Swarm environments. This
-stack targets the existing Docker Standalone workflow and uses Compose secret
-files mounted read-only under `/run/secrets`. On the server, outside the Git
-checkout:
+Docker Standalone uses Compose secret files mounted read-only under
+`/run/secrets`. Create the two secrets outside Git:
 
 ```bash
 sudo install -d -m 0700 /opt/supermemory/secrets
 NEO4J_PASSWORD_VALUE=$(openssl rand -base64 36 | tr -d '\n')
 printf 'neo4j/%s\n' "$NEO4J_PASSWORD_VALUE" | sudo tee /opt/supermemory/secrets/neo4j_auth >/dev/null
 openssl rand -hex 32 | sudo tee /opt/supermemory/secrets/graphd_token >/dev/null
-openssl rand -hex 32 | sudo tee /opt/supermemory/secrets/improved_token >/dev/null
-openssl rand -hex 32 | sudo tee /opt/supermemory/secrets/improved_state_key >/dev/null
 sudo chmod 0600 /opt/supermemory/secrets/*
 unset NEO4J_PASSWORD_VALUE
 ```
 
-Do not put these values in Portainer environment variables, `.env`, Git, logs
-or tickets. `supermemory-ai.env.example` contains names and limits only.
+Never put those values in Portainer variables, `.env`, Git, logs or tickets.
 
 ## Full preflight
-
-Copy the example environment file to a private server path and adjust resource
-limits only after measuring capacity:
 
 ```bash
 cp deploy/portainer/supermemory-ai.env.example deploy/portainer/supermemory-ai.env
@@ -64,39 +54,33 @@ docker compose \
   build --pull
 ```
 
-`config` is the offline structural gate. `build --pull` is an explicit
-operator pre-deployment action and contacts the configured registries. The
-implementation and CI checks never execute `pull`, `build`, `up`, Portainer
+`config` is the offline structural gate. `build --pull` is an explicit operator
+action. Implementation and CI never execute `pull`, `build`, `up`, Portainer
 webhooks or a remote Docker API.
 
-Before replacing an existing graph database, create and verify a backup:
+Before replacing Neo4j, create and verify a backup:
 
 ```bash
 SUPERMEMORY_ENV_FILE=/private/path/supermemory-ai.env \
   deploy/portainer/neo4j-backup.sh
 ```
 
-The backup script performs an offline Neo4j Community dump, writes a SHA-256
-sidecar inside the dedicated backup volume and restarts the entire stack.
+## Atomic deployment
 
-## One full Portainer deployment
-
-Use a Portainer **Docker Standalone → Stacks → Add stack → Git repository**
-deployment so the two local Docker build contexts are available. Select the
-repository and `deploy/portainer/supermemory-ai-stack.yml`, load the non-secret
-variables from the private environment file, verify the capacity gate, then
-choose **Deploy the stack** once.
+Use Portainer **Docker Standalone → Stacks → Add stack → Git repository** so the
+GraphD build context is available. Select
+`deploy/portainer/supermemory-ai-stack.yml`, load non-secret variables from the
+private environment file, verify capacity, then deploy once.
 
 The dependency chain is deterministic:
 
-1. Ollama becomes healthy and downloads the pinned Qwen and embedding models;
-2. Neo4j becomes healthy;
-3. `neo4j-migrate` creates idempotent constraints and exits successfully;
-4. Graphiti becomes healthy;
-5. `supermemory-graphd` becomes ready;
-6. `supermemory-improved` starts its persisted retry queue.
+1. Ollama becomes healthy and `qwen-model` downloads the pinned model.
+2. Hindsight starts after the model is available.
+3. Neo4j becomes healthy.
+4. `neo4j-migrate` creates idempotent constraints and exits successfully.
+5. `supermemory-graphd` starts only after migration.
 
-The equivalent full deployment outside Portainer is:
+Equivalent command outside Portainer:
 
 ```bash
 docker compose \
@@ -121,17 +105,10 @@ ssh -N \
   user@server
 ```
 
-The daemon derives a workspace-scoped HMAC bearer from the graph gateway root
-token kept in its own private local secret file. The gateway proxies
-improvement notifications internally; the worker and databases stay
-unreachable from the workstation and LAN. The persisted improvement queue is
-sealed with AES-256-GCM using `improved_state_key`; plaintext episode content
-is never written to its volume.
+The daemon derives a workspace-scoped HMAC bearer from the private GraphD root
+token. Neo4j remains unreachable from both workstation and LAN.
 
 ## Post-deployment verification
-
-After the one full deployment, verify every dependency before pointing
-`supermemoryd` at it:
 
 ```bash
 curl -fsS http://127.0.0.1:11434/api/tags
@@ -143,18 +120,20 @@ docker compose \
   ps --format json
 ```
 
-The graph gateway accepts only the versioned typed statements
-`replace_workspace_projection_v1` and `bounded_path_v1`; it never accepts raw
-Cypher. It scopes every node and relationship to a workspace, caps traversals
-at five hops, and uses parameterized direct Neo4j queries when Graphiti cannot
-provide a verified projection.
+GraphD v2 accepts only `replace_workspace_projection_v2` and
+`bounded_path_v2`; it never accepts raw Cypher. It scopes every record to one
+workspace, caps traversal at five hops and returns only a candidate projection
+that the local authority revalidates.
+
+The runtime preflight must additionally prove the exact Hindsight 0.9.0 image
+digest, required OpenAPI capabilities, bank-template schema and behavioral
+redaction before activation.
 
 ## Backup, restore and rollback
 
-List the named `supermemory-neo4j-backups` volume before restoration. Restore
-requires the exact phrase `RESTORE neo4j`, verifies the selected SHA-256 file,
-creates another safety backup, stops graph consumers, loads the database, and
-starts the full stack:
+Restore requires the exact phrase `RESTORE neo4j`, verifies the selected
+SHA-256 file, creates a safety backup, stops GraphD and Neo4j, loads the
+database, then starts the full stack:
 
 ```bash
 SUPERMEMORY_ENV_FILE=/private/path/supermemory-ai.env \
@@ -163,18 +142,16 @@ SUPERMEMORY_ENV_FILE=/private/path/supermemory-ai.env \
   'RESTORE neo4j'
 ```
 
-For an application-only rollback, select the previous reviewed Git revision
-in Portainer and redeploy the complete stack. For a data-format rollback, use
-the exact restore procedure above. Never delete the named volumes during a
-rollback, never use `docker compose down -v`, and never treat Git rollback as a
-database restore.
+For application rollback, redeploy the previous reviewed Git revision. For a
+data-format rollback, use the exact restore procedure. Never delete named
+volumes, use `docker compose down -v`, or treat Git rollback as database
+restore.
 
 ## Image and migration policy
 
-- Ollama and Hindsight are digest-pinned.
-- Neo4j is pinned to the Graphiti-compatible 5.26 LTS line.
-- Graphiti and both SuperMemory services use explicit version tags.
-- Any image/version change requires a fresh complete backup, offline Compose
-  validation, full-stack deployment and all-service health verification.
-- `neo4j-migrate` is idempotent; failed migration prevents graph services from
-  starting.
+- Ollama and Hindsight are digest-pinned; Hindsight must remain exactly 0.9.0.
+- Neo4j is pinned to the 5.26 LTS line.
+- GraphD uses an explicit major version tag and contract.
+- Any image change requires backup, offline Compose validation, full-stack
+  deployment and all-service health verification.
+- `neo4j-migrate` is idempotent; migration failure prevents GraphD startup.

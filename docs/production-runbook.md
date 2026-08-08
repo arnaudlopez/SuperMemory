@@ -15,8 +15,8 @@ required backup, then deploy or roll back the full stack in one operator
 action. Repository verification never starts containers or contacts
 Portainer; the real deployment remains an explicit server operation.
 
-The Memory Fabric v2 workstation must not run Ollama, Hindsight, Neo4j or
-Graphiti. Before the single server deployment, run only the non-mutating local
+The Memory Fabric v2 workstation must not run Ollama, Hindsight or Neo4j.
+Before the single server deployment, run only the non-mutating local
 gates:
 
 ```bash
@@ -87,12 +87,12 @@ The approval reference is a non-secret audit label, not a credential. This verif
 
 ## Legacy v1 local Hindsight setup
 
-The supported runtime is local Ollama plus local/self-hosted Hindsight through `compose.hindsight.yml`. SuperMemory expects `llama3:latest` to be installed explicitly; it never pulls models itself.
+The supported compatibility runtime is local Ollama plus local/self-hosted Hindsight 0.9.0 through `compose.hindsight.yml`. SuperMemory expects `qwen3.5:9b` to be installed explicitly; it never pulls models itself.
 
 ```bash
 ollama list
 # Only when the model is absent:
-ollama pull llama3:latest
+ollama pull qwen3.5:9b
 ```
 
 Start and diagnose the complete dependency chain:
@@ -102,7 +102,7 @@ docker compose -f compose.hindsight.yml up -d
 npm run doctor -- --json
 ```
 
-The compose file pins Hindsight by digest, binds its ports to localhost, connects only to host Ollama, uses one local LLM request at a time, and disables optional observations. The product doctor rejects remote Hindsight, remote Ollama, missing model, unsafe vaults, backup paths inside the vault, missing dependencies, and unhealthy services. Hindsight Cloud is never an implicit product fallback.
+The compose file pins Hindsight 0.9.0 by digest, binds its ports to localhost, connects only to host Ollama, uses one local LLM request at a time, enables native observations, and leaves automatic consolidation disabled so the canonical worker controls closure boundaries. The product doctor rejects remote Hindsight, remote Ollama, missing model, unsafe vaults, backup paths inside the vault, missing dependencies, and unhealthy services. Hindsight Cloud is never an implicit product fallback.
 
 To upgrade Hindsight, resolve and review a new immutable image digest, update both `compose.hindsight.yml` and its verifier, then rerun the full contract gate and a fresh live smoke. Do not replace the digest with `latest`.
 

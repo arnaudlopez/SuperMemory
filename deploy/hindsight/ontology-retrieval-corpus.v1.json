@@ -1,0 +1,11 @@
+{
+  "schema": "supermemory.memory-improve-corpus.v1",
+  "version": 2,
+  "cases": [
+    { "id": "KG-AC10", "scenario": "gated_additive_ontology_promotion", "evaluation": { "operation": "candidate_type_retrieval" } },
+    { "id": "KG-AC11", "scenario": "destructive_ontology_quarantine", "evaluation": { "operation": "core_entity_retrieval", "query": "Project" } },
+    { "id": "HN-CANONICAL", "scenario": "canonical_claim_retrieval", "evaluation": { "operation": "core_relation_retrieval", "query": "RELATED_TO" } },
+    { "id": "HN-SESSION", "scenario": "session_close_native_consolidation", "evaluation": { "operation": "core_entity_retrieval", "query": "Session" } },
+    { "id": "HN-TEMPORAL", "scenario": "historical_current_state_separation", "evaluation": { "operation": "core_relation_retrieval", "query": "HAS_EVIDENCE" } }
+  ]
+}

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-const LEGACY_SCHEMA = /^supermemory\.(?:codex|hook|mcp|app-server)-runtime\.v[12]$/;
+const LEGACY_SCHEMA = /^supermemory\.(?:codex|hook|mcp|app-server)-runtime\.v[123]$/;
 
 function fail(code) {
   const error = new Error(code);
@@ -10,7 +10,7 @@ function fail(code) {
 
 function defaults() {
   return {
-    schema: "supermemory.codex-runtime.v3",
+    schema: "supermemory.codex-runtime.v4",
     deployment: {
       strategy: "full",
       canary: false,
@@ -48,19 +48,45 @@ function defaults() {
     },
     knowledge_graph: {
       enabled: false,
-      driver: "graphiti-neo4j",
+      driver: "graphd-neo4j",
       endpoint: null,
       token_file: null,
       ontology_mode: "core_plus_learned",
       ontology_shadow_min_support: 3
     },
+    hindsight: {
+      enabled: false,
+      minimum_version: "0.9.0",
+      bank_strategy: "workspace",
+      async_retain: true,
+      observations: {
+        enabled: true,
+        auto_consolidation: false,
+        require_source_facts: true
+      },
+      recall: {
+        temporal: true,
+        graph: true,
+        reranking: true
+      },
+      reflect: {
+        enabled: false,
+        exclude_mental_models: true,
+        fail_on_unvalidated_fact: true
+      },
+      operations: {
+        poll_interval_ms: 500,
+        timeout_ms: 120_000,
+        max_retries: 3
+      }
+    },
     continuous_improvement: {
       enabled: false,
+      canonical_worker: "local",
+      learned_plane: "hindsight-native",
       on_session_end: true,
-      event_batch_size: 25,
       extractor_profile: "server-default",
-      verifier_profile: "server-independent",
-      community_refresh_threshold: 100
+      verifier_profile: "server-independent"
     },
     admission: {
       mode: "legacy_manual",
@@ -106,7 +132,7 @@ function safeGraphEndpoint(value) {
 }
 
 function validate(config) {
-  if (config.schema !== "supermemory.codex-runtime.v3") fail("runtime_config_schema_invalid");
+  if (config.schema !== "supermemory.codex-runtime.v4") fail("runtime_config_schema_invalid");
   if (
     config.deployment?.strategy !== "full" || config.deployment.canary !== false ||
     config.deployment.progressive !== false
@@ -126,18 +152,38 @@ function validate(config) {
   ) fail("runtime_graph_hops_invalid");
   if (config.knowledge_graph?.enabled) {
     if (
+      config.knowledge_graph.driver !== "graphd-neo4j" ||
       !safeGraphEndpoint(config.knowledge_graph.endpoint) ||
       typeof config.knowledge_graph.token_file !== "string" ||
       !path.isAbsolute(config.knowledge_graph.token_file)
     ) fail("runtime_graph_binding_invalid");
   }
+  if (
+    config.hindsight?.minimum_version !== "0.9.0" ||
+    config.hindsight?.bank_strategy !== "workspace" ||
+    config.hindsight?.async_retain !== true ||
+    config.hindsight?.observations?.enabled !== true ||
+    config.hindsight?.observations?.auto_consolidation !== false ||
+    config.hindsight?.observations?.require_source_facts !== true ||
+    config.hindsight?.recall?.temporal !== true ||
+    config.hindsight?.recall?.graph !== true ||
+    config.hindsight?.recall?.reranking !== true ||
+    config.hindsight?.reflect?.exclude_mental_models !== true ||
+    config.hindsight?.reflect?.fail_on_unvalidated_fact !== true
+  ) fail("runtime_hindsight_contract_invalid");
   if (config.deployment.activation === "full") {
     if (
       !config.working_memory.enabled || !config.memory_router.enabled ||
-      !config.knowledge_graph.enabled || !config.continuous_improvement.enabled ||
+      !config.knowledge_graph.enabled || !config.hindsight.enabled ||
+      !config.hindsight.reflect.enabled || !config.continuous_improvement.enabled ||
       config.admission.mode !== "automatic" || config.admission.human_review_default !== false
     ) fail("runtime_full_activation_incomplete");
   }
+  if (
+    config.continuous_improvement?.canonical_worker !== "local" ||
+    config.continuous_improvement?.learned_plane !== "hindsight-native" ||
+    config.continuous_improvement?.on_session_end !== true
+  ) fail("runtime_continuous_improvement_invalid");
   return Object.freeze(config);
 }
 
@@ -148,17 +194,17 @@ export function normalizeCodexRuntimeConfig(input = {}) {
     compatible.migration.source_schema = input.schema;
     return validate(compatible);
   }
-  if (input.schema !== "supermemory.codex-runtime.v3") fail("runtime_config_schema_invalid");
+  if (input.schema !== "supermemory.codex-runtime.v4") fail("runtime_config_schema_invalid");
   return validate(merge(defaults(), input));
 }
 
-export function createDisabledCodexRuntimeV3() {
+export function createDisabledCodexRuntimeV4() {
   return validate(defaults());
 }
 
-export function createFullDeploymentRuntimeV3({ graphEndpoint, graphTokenFile } = {}) {
+export function createFullDeploymentRuntimeV4({ graphEndpoint, graphTokenFile } = {}) {
   return normalizeCodexRuntimeConfig({
-    schema: "supermemory.codex-runtime.v3",
+    schema: "supermemory.codex-runtime.v4",
     deployment: { activation: "full" },
     working_memory: { enabled: true, offload: { enabled: true } },
     memory_router: { enabled: true },
@@ -167,6 +213,7 @@ export function createFullDeploymentRuntimeV3({ graphEndpoint, graphTokenFile } 
       endpoint: graphEndpoint,
       token_file: graphTokenFile
     },
+    hindsight: { enabled: true, reflect: { enabled: true } },
     continuous_improvement: { enabled: true },
     admission: { mode: "automatic", human_review_default: false },
     migration: {

@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { createCodexInstaller } from "../scripts/lib/codex-installer.mjs";
 import {
-  createFullDeploymentRuntimeV3,
+  createFullDeploymentRuntimeV4,
   normalizeCodexRuntimeConfig
 } from "../scripts/lib/codex-runtime-config.mjs";
 
@@ -66,7 +66,7 @@ test("install plan is redacted/read-only and apply requires its exact hash", (t)
     path.join(project, ".codex", "supermemory", "runtime-contract.json"),
     "utf8"
   ));
-  assert.equal(runtimeContract.schema, "supermemory.codex-runtime.v3");
+  assert.equal(runtimeContract.schema, "supermemory.codex-runtime.v4");
   assert.equal(runtimeContract.deployment.strategy, "full");
   assert.equal(runtimeContract.deployment.canary, false);
   assert.equal(runtimeContract.deployment.progressive, false);
@@ -82,10 +82,10 @@ test("install plan is redacted/read-only and apply requires its exact hash", (t)
   assert.equal(fs.existsSync(path.join(codexHome, "config.toml")), false);
 });
 
-test("v1/v2 migrate flags-off and explicit v3 activation is one complete deployment contract", () => {
-  for (const schema of ["supermemory.hook-runtime.v1", "supermemory.codex-runtime.v2"]) {
+test("v1/v2/v3 migrate flags-off and explicit v4 activation is one complete deployment contract", () => {
+  for (const schema of ["supermemory.hook-runtime.v1", "supermemory.codex-runtime.v2", "supermemory.codex-runtime.v3"]) {
     const migrated = normalizeCodexRuntimeConfig({ schema });
-    assert.equal(migrated.schema, "supermemory.codex-runtime.v3");
+    assert.equal(migrated.schema, "supermemory.codex-runtime.v4");
     assert.equal(migrated.migration.source_schema, schema);
     assert.equal(migrated.migration.compatibility_flags_off, true);
     assert.equal(migrated.working_memory.enabled, false);
@@ -94,7 +94,7 @@ test("v1/v2 migrate flags-off and explicit v3 activation is one complete deploym
     assert.equal(migrated.continuous_improvement.enabled, false);
     assert.equal(migrated.admission.mode, "legacy_manual");
   }
-  const full = createFullDeploymentRuntimeV3({
+  const full = createFullDeploymentRuntimeV4({
     graphEndpoint: "http://127.0.0.1:8787",
     graphTokenFile: "/secure/graphd_token"
   });
@@ -105,6 +105,10 @@ test("v1/v2 migrate flags-off and explicit v3 activation is one complete deploym
   assert.equal(full.working_memory.offload.enabled, true);
   assert.equal(full.memory_router.enabled, true);
   assert.equal(full.knowledge_graph.enabled, true);
+  assert.equal(full.knowledge_graph.driver, "graphd-neo4j");
+  assert.equal(full.hindsight.enabled, true);
+  assert.equal(full.hindsight.minimum_version, "0.9.0");
+  assert.equal(full.hindsight.reflect.enabled, true);
   assert.equal(full.continuous_improvement.enabled, true);
   assert.equal(full.admission.human_review_default, false);
   assert.equal(full.migration.immutable_vault_rewrite, false);

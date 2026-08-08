@@ -8,10 +8,7 @@ const PORT = Number(process.env.PORT ?? 8080);
 const HOST = process.env.HOST ?? "0.0.0.0";
 const MAX_BODY_BYTES = Number(process.env.MAX_BODY_BYTES ?? 4 * 1024 * 1024);
 const NEO4J_HTTP_URL = process.env.NEO4J_HTTP_URL ?? "http://neo4j:7474";
-const GRAPHITI_URL = process.env.GRAPHITI_URL ?? "http://graphiti:8000";
-const IMPROVED_URL = process.env.IMPROVED_URL ?? "http://supermemory-improved:8081";
 const TOKEN_FILE = process.env.GRAPHD_TOKEN_FILE ?? "/run/secrets/graphd_token";
-const IMPROVED_TOKEN_FILE = process.env.IMPROVED_TOKEN_FILE ?? "/run/secrets/improved_token";
 const NEO4J_AUTH_FILE = process.env.NEO4J_AUTH_FILE ?? "/run/secrets/neo4j_auth";
 const WORKSPACE = /^ws_[0-9a-f-]{36}$/i;
 const ENTITY = /^ent_[A-Za-z0-9:_-]{8,}$/;
@@ -32,7 +29,6 @@ function readSecret(filePath, code) {
 }
 
 const apiToken = readSecret(TOKEN_FILE, "graphd_token_invalid");
-const improvedToken = readSecret(IMPROVED_TOKEN_FILE, "improved_token_invalid");
 const neo4jAuth = readSecret(NEO4J_AUTH_FILE, "neo4j_auth_invalid");
 if (!neo4jAuth.includes("/")) fail("neo4j_auth_invalid", 503);
 const [neo4jUser, ...neo4jPasswordParts] = neo4jAuth.split("/");
@@ -40,9 +36,9 @@ const neo4jPassword = neo4jPasswordParts.join("/");
 
 export function workspaceGraphdBearer(secret, workspaceId) {
   const signature = crypto.createHmac("sha256", secret)
-    .update(`supermemory.graphd.workspace.v1\0${workspaceId}`)
+    .update(`supermemory.graphd.workspace.v2\0${workspaceId}`)
     .digest("base64url");
-  return `smg1.${Buffer.from(workspaceId).toString("base64url")}.${signature}`;
+  return `smg2.${Buffer.from(workspaceId).toString("base64url")}.${signature}`;
 }
 
 function authorized(header, workspaceId) {
@@ -71,10 +67,10 @@ function validateRequest(value, operation) {
     "schema", "contract_version", "operation", "workspace_id", "statement_id", "parameters"
   ]), "graphd_request_invalid");
   if (
-    value.schema !== "supermemory.graphd-request.v1" || value.contract_version !== "1.0.0" ||
+    value.schema !== "supermemory.graphd-request.v2" || value.contract_version !== "2.0.0" ||
     value.operation !== operation || !WORKSPACE.test(value.workspace_id)
   ) fail("graphd_request_invalid");
-  const expected = operation === "query" ? "bounded_path_v1" : "replace_workspace_projection_v1";
+  const expected = operation === "query" ? "bounded_path_v2" : "replace_workspace_projection_v2";
   if (value.statement_id !== expected) fail("graphd_statement_forbidden");
   return value;
 }
@@ -144,35 +140,10 @@ function projectionParameters(value, workspaceId) {
   return value;
 }
 
-async function notifyGraphiti(workspaceId, claims) {
-  const messages = claims.filter((claim) => claim.status === "active").slice(0, 1_000).map((claim) => ({
-    uuid: claim.claim_id,
-    name: "supermemory-authorized-claim",
-    role_type: "system",
-    role: "memory",
-    content: claim.claim_text ?? claim.text,
-    timestamp: claim.observed_at ?? claim.valid_from,
-    source_description: "authorized redacted SuperMemory projection"
-  }));
-  if (messages.length === 0) return "empty";
-  try {
-    const response = await fetch(new URL("/messages", GRAPHITI_URL), {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ group_id: workspaceId, messages }),
-      signal: AbortSignal.timeout(5_000)
-    });
-    return response.ok ? "accepted" : "unavailable";
-  } catch {
-    return "unavailable";
-  }
-}
-
 async function replaceProjection(input) {
   const request = validateRequest(input, "replace");
   const parameters = projectionParameters(request.parameters, request.workspace_id);
   const { records, projection_hash: projectionHash } = parameters;
-  const graphitiStatus = await notifyGraphiti(request.workspace_id, records.claims);
   await neo4jCommit([
     {
       statement: "MATCH (n {workspace_id: $workspace_id}) DETACH DELETE n",
@@ -201,7 +172,7 @@ async function replaceProjection(input) {
       parameters: { workspace_id: request.workspace_id, projection_hash: projectionHash }
     }
   ]);
-  return { ok: true, projection_hash: projectionHash, backend: "direct-neo4j", graphiti: graphitiStatus };
+  return { ok: true, projection_hash: projectionHash, backend: "graphd-neo4j" };
 }
 
 function queryParameters(value, workspaceId) {
@@ -246,33 +217,11 @@ async function boundedQuery(input) {
     Array.isArray(path.entity_ids) && Array.isArray(path.relation_ids) &&
     path.relation_ids.every((id) => RELATION.test(id))
   ));
-  return { paths, backend: "direct-neo4j" };
+  return { paths, backend: "graphd-neo4j" };
 }
 
 async function ready() {
   await neo4jCommit([{ statement: "RETURN 1 AS ready" }]);
-  const response = await fetch(new URL("/healthcheck", GRAPHITI_URL), { signal: AbortSignal.timeout(3_000) });
-  if (!response.ok) fail("graphiti_unavailable", 503);
-}
-
-async function proxyImprovement(route, { method = "GET", body = null } = {}) {
-  let response;
-  try {
-    response = await fetch(new URL(route, IMPROVED_URL), {
-      method,
-      headers: {
-        authorization: `Bearer ${improvedToken}`,
-        ...(body === null ? {} : { "content-type": "application/json" })
-      },
-      ...(body === null ? {} : { body: JSON.stringify(body) }),
-      signal: AbortSignal.timeout(35_000)
-    });
-  } catch {
-    fail("improvement_unavailable", 503);
-  }
-  const value = await response.json().catch(() => ({ ok: false, error: "improvement_response_invalid" }));
-  if (!response.ok) fail(value.error ?? "improvement_failed", response.status);
-  return value;
 }
 
 export function createGraphdServer() {
@@ -281,30 +230,17 @@ export function createGraphdServer() {
       if (request.method === "GET" && request.url === "/health") return send(response, 200, { ok: true });
       if (request.method === "GET" && request.url === "/ready") {
         await ready();
-        return send(response, 200, { ok: true, neo4j: "ready", graphiti: "ready" });
+        return send(response, 200, { ok: true, neo4j: "ready", contract_version: "2.0.0" });
       }
-      if (request.method === "POST" && request.url === "/v1/project") {
+      if (request.method === "POST" && request.url === "/v2/project") {
         const body = await readJson(request);
         if (!authorized(request.headers.authorization, body?.workspace_id)) fail("not_found_or_not_authorized", 404);
         return send(response, 200, await replaceProjection(body));
       }
-      if (request.method === "POST" && request.url === "/v1/query") {
+      if (request.method === "POST" && request.url === "/v2/query") {
         const body = await readJson(request);
         if (!authorized(request.headers.authorization, body?.workspace_id)) fail("not_found_or_not_authorized", 404);
         return send(response, 200, await boundedQuery(body));
-      }
-      if (request.method === "POST" && request.url === "/v1/improve/notify") {
-        const body = await readJson(request);
-        if (!authorized(request.headers.authorization, body?.workspace_id)) fail("not_found_or_not_authorized", 404);
-        return send(response, 202, await proxyImprovement("/v1/improve/notify", {
-          method: "POST",
-          body
-        }));
-      }
-      if (request.method === "GET" && request.url?.startsWith("/v1/improve/status?")) {
-        const workspaceId = new URL(request.url, "http://graphd.local").searchParams.get("workspace_id");
-        if (!authorized(request.headers.authorization, workspaceId)) fail("not_found_or_not_authorized", 404);
-        return send(response, 200, await proxyImprovement("/v1/improve/status"));
       }
       fail("not_found_or_not_authorized", 404);
     } catch (error) {

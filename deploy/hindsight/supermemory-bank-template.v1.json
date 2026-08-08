@@ -1,0 +1,31 @@
+{
+  "version": "1",
+  "bank": {
+    "retain_mission": "Extract durable, explicit and temporally anchored facts from already-authorized SuperMemory memories. Preserve uncertainty and contradiction.",
+    "retain_extraction_mode": "concise",
+    "enable_observations": true,
+    "observations_mission": "Consolidate recurring current-state patterns while preserving contradiction, temporal qualifiers and source facts.",
+    "enable_temporal_retrieval": true,
+    "enable_graph_retrieval": true,
+    "enable_reranking": true,
+    "reflect_mission": "Synthesize only retrieved evidence, surface uncertainty and never claim authority or execute actions.",
+    "entities_allow_free_form": false,
+    "consolidation_source_facts_max_tokens": 4096,
+    "consolidation_source_facts_max_tokens_per_observation": 1024,
+    "max_observations_per_scope": 128,
+    "reflect_source_facts_max_tokens": 4096,
+    "audit_log_enabled": true,
+    "store_document_text": false,
+    "mcp_enabled_tools": []
+  },
+  "mental_models": [],
+  "directives": [
+    {
+      "name": "grounded-current-state",
+      "content": "Use retrieved evidence only. State conflicts and uncertainty. Do not infer permission, authority or external action.",
+      "priority": 100,
+      "is_active": true,
+      "tags": []
+    }
+  ]
+}

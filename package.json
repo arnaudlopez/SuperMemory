@@ -19,7 +19,6 @@
     "review": "node scripts/supermemory-review.mjs",
     "codex": "node scripts/supermemory-codex.mjs",
     "desktop": "node scripts/supermemory-desktop.mjs",
-    "canary:codex": "node scripts/run-codex-integration-canary.mjs",
     "test:codex-integration": "node scripts/run-codex-integration-canary.mjs",
     "verify:codex": "node scripts/verify-codex-supermemory-release.mjs",
     "smoke:product:live": "node scripts/supermemory-product-live-smoke.mjs",
@@ -31,6 +30,7 @@
     "verify:runtime": "node scripts/verify-supermemory-runtime-readiness.mjs",
     "verify:production": "node scripts/verify-supermemory-production-readiness.mjs",
     "verify:memory-fabric-v2": "node scripts/verify-memory-fabric-v2.mjs && node --test tests/memory-fabric-v2-acceptance.test.mjs tests/memory-fabric-v2-e2e.test.mjs tests/memory-fabric-v2-performance.test.mjs",
+    "verify:hindsight-native": "node scripts/verify-hindsight-native-plane.mjs && node --test tests/hindsight-native-plane-acceptance.test.mjs tests/hindsight-native-memory-plane.test.mjs tests/hindsight-native-migration.test.mjs tests/memory-fabric-v2-e2e.test.mjs",
     "verify:secrets": "node scripts/verify-secret-hygiene.mjs"
   },
   "dependencies": {

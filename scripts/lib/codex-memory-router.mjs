@@ -1,3 +1,5 @@
+import { hindsightReflectSchema } from "./hindsight-reflect-schemas.mjs";
+
 const STRATEGIES = new Set(["auto", "working", "durable", "graph", "hybrid", "temporal"]);
 const DIRECTIONS = new Set(["outbound", "inbound", "both"]);
 
@@ -65,6 +67,27 @@ function normalizeDurable(result) {
       memory_id: item.memory_id,
       ...(item.citation ?? {})
     }]
+  }));
+}
+
+function normalizeHindsight(result) {
+  return (result?.results ?? []).map((item) => ({
+    memory_tier: item.fact_type === "observation" ? "observation" : "durable",
+    memory_tiers: [item.fact_type === "observation" ? "observation" : "durable"],
+    memory_id: item.memory_id,
+    text: item.text ?? "",
+    score: Number(item.score) || 0,
+    evidence_ids: unique(item.sources?.flatMap((source) => source.citation?.event_ids ?? source.citation?.evidence_ids ?? []) ?? []),
+    episode_ids: [],
+    entity_ids: [],
+    path_ids: [],
+    admission_ids: [],
+    admission_states: ["active"],
+    valid_from: item.occurred_start ?? null,
+    valid_to: item.occurred_end ?? null,
+    temporal_intervals: [{ valid_from: item.occurred_start ?? null, valid_to: item.occurred_end ?? null }],
+    citations: (Array.isArray(item.citation) ? item.citation : [item.citation]).filter(Boolean),
+    source_fact_ids: item.source_fact_ids ?? []
   }));
 }
 
@@ -179,6 +202,9 @@ export function createCodexMemoryRouter({
   projectId,
   workingRecall,
   durableRecall = null,
+  hindsightGateway = null,
+  ontologyRegistry = null,
+  learnedPlane = null,
   graphAdapter = null,
   timeoutMs = 1_500,
   pathTtlMs = 60_000,
@@ -275,7 +301,7 @@ export function createCodexMemoryRouter({
     const limit = boundedInteger(input.limit, 10, 1, maxLimit, "memory_router_limit_invalid");
     const requestedTiers = route.strategy === "hybrid"
       ? ["working", "durable", "graph"]
-      : [route.strategy === "temporal" ? "graph" : route.strategy];
+      : (route.strategy === "temporal" ? ["durable", "graph"] : [route.strategy]);
     const preparedGraphQuery = requestedTiers.includes("graph")
       ? graphQueryInput(input, route.strategy)
       : null;
@@ -290,15 +316,23 @@ export function createCodexMemoryRouter({
         limit
       }));
       else if (tier === "durable") {
-        if (!durableRecall || typeof durableRecall.search !== "function") {
+        if (hindsightGateway && typeof hindsightGateway.recall === "function") {
+          normalized = normalizeHindsight(await hindsightGateway.recall({
+            query,
+            asOf: input.as_of ?? null,
+            historical: route.strategy === "temporal",
+            maxTokens: boundedInteger(input.max_tokens, 4096, 256, 8192, "memory_router_token_budget_invalid")
+          }));
+        } else if (durableRecall && typeof durableRecall.search === "function") {
+          normalized = normalizeDurable(await durableRecall.search({
+            query,
+            limit,
+            types: input.types,
+            as_of: input.as_of ?? null
+          }));
+        } else {
           throw Object.assign(new Error("backend_unavailable"), { code: "backend_unavailable" });
         }
-        normalized = normalizeDurable(await durableRecall.search({
-          query,
-          limit,
-          types: input.types,
-          as_of: input.as_of ?? null
-        }));
       } else {
         normalized = preparedGraphQuery ? normalizeGraph(await (
           typeof graphAdapter.queryAsync === "function"
@@ -372,7 +406,11 @@ export function createCodexMemoryRouter({
     workspace_id: workspaceId,
     project_id: projectId,
     working_recall: true,
-    durable_recall: Boolean(durableRecall),
+    durable_recall: Boolean(hindsightGateway ?? durableRecall),
+    hindsight: hindsightGateway ? await Promise.resolve(hindsightGateway.status()).catch((error) => ({
+      available: false,
+      error: error?.code ?? "hindsight_unavailable"
+    })) : { available: false, status: "disabled" },
     graph_recall: Boolean(graphAdapter),
     strategies: [...STRATEGIES]
   });
@@ -380,6 +418,10 @@ export function createCodexMemoryRouter({
   return Object.freeze({
     workspaceId,
     projectId,
+    graphAdapter,
+    hindsightGateway,
+    ontologyRegistry,
+    learnedPlane,
     assertBound,
     recall,
     search: (input = {}) => recall({ ...input, strategy: "durable" }),
@@ -389,6 +431,22 @@ export function createCodexMemoryRouter({
     workingSearch: (input = {}) => workingRecall.search(input),
     workingOpen: (input = {}) => workingRecall.open(input),
     workingNeighbors: (input = {}) => workingRecall.neighbors(input),
+    reflect: async (input = {}) => {
+      validateScopeFree(input);
+      assertBound(input);
+      if (!hindsightGateway?.reflect) fail("backend_unavailable");
+      if (Object.hasOwn(input, "as_of") || Object.hasOwn(input, "response_schema")) fail("reflect_argument_forbidden");
+      const query = String(input.query ?? "").trim();
+      if (!query || query.length > 4_000) fail("memory_router_query_invalid");
+      const format = input.format ?? "summary";
+      const maxTokens = boundedInteger(input.max_tokens, 2048, 256, 4096, "memory_router_token_budget_invalid");
+      return hindsightGateway.reflect({
+        query,
+        format,
+        responseSchema: hindsightReflectSchema(format),
+        maxTokens
+      });
+    },
     get: (input = {}) => {
       validateScopeFree(input);
       assertBound(input);

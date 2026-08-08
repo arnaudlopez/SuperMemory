@@ -10,8 +10,8 @@ import { createKnowledgeGraphAdapter } from "../scripts/lib/knowledge-graph-adap
 import { createMemoryAdmissionPolicy } from "../scripts/lib/memory-admission-policy.mjs";
 import {
   createCanonicalWorkingEpisodeSource,
-  createMemoryImproveWorker
-} from "../scripts/lib/memory-improve-worker.mjs";
+  createCanonicalKnowledgeWorker
+} from "../scripts/lib/canonical-knowledge-worker.mjs";
 import { createWorkspaceOntologyRegistry } from "../scripts/lib/ontology-registry.mjs";
 
 const KEY = Buffer.alloc(32, 0x62);
@@ -23,7 +23,7 @@ const RETRIEVAL_CORPUS = JSON.parse(fs.readFileSync(
 ));
 const NOW = "2026-08-08T10:01:00.000Z";
 
-test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal graph → cited hybrid recall", async (t) => {
+test("Hindsight-native E2E: ingest → admission → graph → retain → consolidation → observation → cited recall/Reflect", async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "memory-fabric-v2-e2e-"));
   const vault = path.join(root, "vault");
   fs.mkdirSync(vault);
@@ -61,7 +61,9 @@ test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal g
     },
     clock: () => NOW
   });
-  const worker = createMemoryImproveWorker({
+  let retainedClaims = 0;
+  let consolidatedSessions = 0;
+  const worker = createCanonicalKnowledgeWorker({
     vaultRoot: vault,
     encryptionKey: KEY,
     workspaceId: WORKSPACE,
@@ -94,6 +96,16 @@ test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal g
           alias_binding_verified: true
         }
       })
+    },
+    learnedPlane: {
+      projectCanonicalClaim: async () => {
+        retainedClaims += 1;
+        return { status: "completed", operation_id: "018f7c0e-7b7d-5abc-8def-0123456789af" };
+      },
+      consolidateSession: async () => {
+        consolidatedSessions += 1;
+        return { status: "completed", operation_id: "018f7c0e-7b7d-5abc-8def-0123456789b0" };
+      }
     },
     clock: () => NOW
   });
@@ -142,7 +154,7 @@ test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal g
   assert.equal(capture.working.complete, true);
   assert.equal(capture.working.reopen_verified, true);
 
-  const improved = worker.process();
+  const improved = await worker.process();
   assert.equal(improved.status, "complete");
   assert.equal(improved.processed, 1);
   const canonical = graph.readCanonicalState({ workspaceId: WORKSPACE });
@@ -151,6 +163,7 @@ test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal g
   assert.equal(canonical.relations.length, 1);
   assert.equal(canonical.relations[0].valid_from, NOW);
   assert.equal(reviewCandidateCalls, 0);
+  assert.equal(retainedClaims, 1);
 
   const workingRecall = createCodexWorkingRecall({
     workingStore: captureStore.workingStore,
@@ -164,16 +177,32 @@ test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal g
     projectId: PROJECT,
     workingRecall,
     graphAdapter: graph,
-    durableRecall: {
-      search: async () => ({
+    hindsightGateway: {
+      recall: async () => ({
         results: [{
-          memory_id: "mem_fixture_supermemory_graphd",
+          id: "obs_supermemory_graphd",
+          fact_type: "observation",
+          memory_id: null,
           text: "SuperMemory depends on GraphD.",
           score: 0.9,
-          admission_ids: [canonical.claims[0].admission.admission_id],
-          admission_states: ["active"]
+          source_fact_ids: ["fact_supermemory_graphd"],
+          sources: [{
+            fact_id: "fact_supermemory_graphd",
+            memory_id: "memory:fixture",
+            citation: { evidence_ids: [capture.working.evidence_id] }
+          }],
+          citation: [{ evidence_ids: [capture.working.evidence_id] }]
         }]
-      })
+      }),
+      reflect: async () => ({
+        schema: "supermemory.reflect-result.v1",
+        status: "grounded",
+        structured_output: { answer: "SuperMemory depends on GraphD.", key_points: ["GraphD"], uncertainties: [] },
+        based_on: [{ fact_id: "fact_supermemory_graphd", citation: { evidence_ids: [capture.working.evidence_id] } }],
+        coverage: { facts_used: 1, facts_validated: 1, facts_rejected: 0 },
+        authoritative: false
+      }),
+      status: async () => ({ available: true, version: "0.9.0" })
     },
     wallClock: () => NOW
   });
@@ -191,12 +220,29 @@ test("Memory Fabric v2 E2E: ingest → independent auto-admission → temporal g
   assert.deepEqual(recalled.coverage, { working: "complete", graph: "complete", durable: "complete" });
   assert.ok(recalled.results.some((item) => item.memory_tiers.includes("working")));
   const hybrid = recalled.results.find((item) => (
-    item.memory_tiers.includes("graph") && item.memory_tiers.includes("durable")
+    item.memory_tiers.includes("graph") && item.memory_tiers.includes("observation")
   ));
   assert.ok(hybrid);
   assert.ok(hybrid.citations.some((citation) => citation.kind === "graph_edge"));
-  assert.ok(hybrid.citations.some((citation) => citation.kind === "durable_memory"));
+  assert.ok(hybrid.citations.some((citation) => citation.evidence_ids?.includes(capture.working.evidence_id)));
   assert.deepEqual(hybrid.evidence_ids, [capture.working.evidence_id]);
   assert.deepEqual(hybrid.episode_ids, [capture.working.episode_id]);
   assert.deepEqual(hybrid.admission_states, ["active"]);
+  captureStore.workingStore.closeSession({
+    workspaceId: WORKSPACE,
+    projectId: PROJECT,
+    sessionId: "ses_hook:memory-fabric-v2-e2e",
+    workingSetId: capture.working.working_set_id,
+    closedAt: "2026-08-08T10:01:00.000Z"
+  });
+  const closed = await worker.notifySessionClosed({ sessionId: "ses_hook:memory-fabric-v2-e2e" });
+  assert.equal(closed.status, "complete");
+  assert.equal(consolidatedSessions, 1);
+  const reflected = await router.reflect({
+    working_set_id: capture.working.working_set_id,
+    query: "Summarize the current dependency",
+    format: "summary"
+  });
+  assert.equal(reflected.status, "grounded");
+  assert.equal(reflected.coverage.facts_validated, 1);
 });

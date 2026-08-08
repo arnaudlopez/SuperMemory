@@ -7,7 +7,7 @@ import { createTurnSnapshotStore } from "./codex-turn-snapshot.mjs";
 
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
 const DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434";
-const DEFAULT_MODEL = "llama3:latest";
+const DEFAULT_MODEL = "qwen3.5:9b";
 const COMPILER_SCHEMA = "supermemory.codex-memory-compiler.v1";
 const PROMPT_VERSION = "codex-durable-memory-v1";
 

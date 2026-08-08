@@ -1,11 +1,11 @@
 {
-  "schema": "supermemory.graphd-contract.v1",
-  "version": "1.0.0",
+  "schema": "supermemory.graphd-contract.v2",
+  "version": "2.0.0",
   "transport": {
     "tls_required": true,
     "tls_termination": "authenticated-ssh-tunnel-or-approved-reverse-proxy",
     "authentication": "workspace-scoped-bearer",
-    "token_derivation": "hmac-sha256-root-token-and-workspace-v1",
+    "token_derivation": "hmac-sha256-root-token-and-workspace-v2",
     "raw_cypher_accepted": false,
     "unknown_fields_accepted": false
   },
@@ -24,13 +24,15 @@
   },
   "operations": {
     "replace": {
-      "statement_id": "replace_workspace_projection_v1",
+      "endpoint": "/v2/project",
+      "statement_id": "replace_workspace_projection_v2",
       "parameters": ["workspace_id", "projection_hash", "records"],
       "acknowledgement_required": ["ok", "projection_hash"],
       "projection_hash_match": "exact"
     },
     "query": {
-      "statement_id": "bounded_path_v1",
+      "endpoint": "/v2/query",
+      "statement_id": "bounded_path_v2",
       "parameters": [
         "workspace_id",
         "entity_ids",
@@ -43,26 +45,16 @@
       "default_max_hops": 3,
       "hard_max_hops": 5,
       "raw_cypher": false
-    },
-    "improve_notify": {
-      "statement_id": "improve_notify_v1",
-      "gateway_route": "/v1/improve/notify",
-      "internal_target": "supermemory-improved",
-      "idempotency_key": "job_id",
-      "high_watermark": "workspace_cursor"
     }
   },
   "fallback": {
-    "primary": "graphiti-neo4j",
-    "fallback": "direct-neo4j",
-    "same_typed_request": true,
-    "same_canonical_revalidation": true
+    "primary": "graphd-neo4j",
+    "runtime_fallback": null,
+    "canonical_revalidation": true
   },
   "deployment": {
     "neo4j_version_line": "5.26-lts",
     "neo4j_published": false,
-    "graphiti_published": false,
-    "improvement_worker_published": false,
     "gateway_loopback_only": true,
     "migration": "idempotent-before-start",
     "backup": "offline-dump-with-sha256",

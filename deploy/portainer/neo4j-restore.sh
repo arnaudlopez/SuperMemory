@@ -26,7 +26,7 @@ compose() {
 
 # Always create a new verified safety backup before replacing the database.
 SUPERMEMORY_ENV_FILE="$ENV_FILE" "$SCRIPT_DIR/neo4j-backup.sh"
-compose stop supermemory-improved supermemory-graphd graphiti neo4j
+compose stop supermemory-graphd neo4j
 compose run --rm --no-deps neo4j sh -ec \
   "cd /backups && sha256sum -c '$BACKUP_NAME.sha256' && cp '$BACKUP_NAME' neo4j.dump"
 compose run --rm --no-deps neo4j neo4j-admin database load neo4j \

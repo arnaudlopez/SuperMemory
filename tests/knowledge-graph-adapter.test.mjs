@@ -17,7 +17,6 @@ import {
 const KEY = Buffer.alloc(32, 0x51);
 const WORKSPACE = "ws_018f1234-5678-7abc-8def-0123456789ac";
 const FOREIGN_WORKSPACE = "ws_018f1234-5678-7abc-8def-0123456789af";
-const TOKEN = "graph-test-token-0000000000000000000000000000";
 
 function projectionHash(records) {
   return `sha256:${crypto.createHash("sha256").update(canonicalJson(records)).digest("hex")}`;
@@ -289,13 +288,7 @@ test("temporal closure preflight accepts exact replay but rejects competing and 
 });
 
 test("KG-AC06/07/12: cited three-hop paths are bounded and unsafe or foreign queries never reach a backend", (t) => {
-  let queryCalls = 0;
-  const memory = createInMemoryGraphEngine();
-  const backend = {
-    project: (request) => memory.reset(request.parameters.records),
-    query: (request) => { queryCalls += 1; return memory.query(request); }
-  };
-  const fx = fixture(t, { graphitiBackend: backend, authToken: TOKEN });
+  const fx = fixture(t);
   const nodes = ["a", "b", "c", "d"].map((name) => entity(WORKSPACE, `project:${name}`, name.toUpperCase()));
   for (let index = 0; index < 3; index += 1) {
     activate(fx, mutation({
@@ -305,7 +298,6 @@ test("KG-AC06/07/12: cited three-hop paths are bounded and unsafe or foreign que
       relations: [relation(WORKSPACE, `hop-${index}`, nodes[index].entity_id, "DEPENDS_ON", nodes[index + 1].entity_id, `2026-01-0${index + 1}T00:00:00.000Z`)]
     }));
   }
-  queryCalls = 0;
   const result = fx.adapter.query({
     workspace_id: WORKSPACE, entity_ids: [nodes[0].entity_id],
     relation_types: ["DEPENDS_ON"], direction: "outbound", as_of: "2026-02-01T00:00:00.000Z"
@@ -314,30 +306,26 @@ test("KG-AC06/07/12: cited three-hop paths are bounded and unsafe or foreign que
   assert.ok(path3);
   assert.equal(path3.edges.every((edge) => edge.admission_id && edge.evidence_ids.length && edge.episode_ids.length), true);
   assert.equal(result.query.max_hops, 3);
-  assert.equal(queryCalls, 1);
   for (const unsafe of [
     { workspace_id: WORKSPACE, entity_ids: [nodes[0].entity_id], relation_types: ["DEPENDS_ON"], max_hops: 6 },
     { workspace_id: WORKSPACE, entity_ids: [nodes[0].entity_id], relation_types: ["RAW_EDGE"] },
     { workspace_id: WORKSPACE, entity_ids: [nodes[0].entity_id], relation_types: ["DEPENDS_ON"], cypher: "MATCH (n) RETURN n" }
   ]) assert.throws(() => fx.adapter.query(unsafe));
-  assert.equal(queryCalls, 1);
   const foreignEntity = canonicalGraphEntityId({ workspaceId: FOREIGN_WORKSPACE, bindingId: "project:a" });
   const foreign = fx.adapter.query({
     workspace_id: WORKSPACE, entity_ids: [foreignEntity], relation_types: ["DEPENDS_ON"]
   });
   assert.deepEqual(foreign.paths, []);
-  assert.equal(queryCalls, 1);
   assert.throws(() => fx.adapter.query({
     workspace_id: FOREIGN_WORKSPACE,
     entity_ids: [foreignEntity],
     relation_types: ["DEPENDS_ON"]
   }), /graph_unknown/);
-  assert.equal(queryCalls, 1);
 });
 
-test("KG-AC08: complete backend loss rebuilds from encrypted canonical records with equivalent hashes", (t) => {
+test("KG-AC08: complete GraphD loss rebuilds from encrypted canonical records with equivalent hashes", async (t) => {
   const remote = statefulRemoteBackend();
-  const fx = fixture(t, { graphitiBackend: remote, authToken: TOKEN });
+  const fx = fixture(t, { remoteBackend: remote });
   const a = entity(WORKSPACE, "project:a", "A");
   const b = entity(WORKSPACE, "project:b", "B");
   activate(fx, mutation({
@@ -346,13 +334,15 @@ test("KG-AC08: complete backend loss rebuilds from encrypted canonical records w
   }));
   const expected = fx.adapter.projectionHash({ workspaceId: WORKSPACE });
   const canonical = fx.adapter.readCanonicalState({ workspaceId: WORKSPACE });
+  assert.notEqual(remote.snapshotHash(), expected);
+  await fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE });
   assert.equal(remote.snapshotHash(), expected);
   assert.deepEqual(remote.snapshot(), canonical);
   assert.equal(remote.snapshot().relations[0].valid_from, "2026-01-01T00:00:00.000Z");
   remote.clear();
   assert.notEqual(remote.snapshotHash(), expected);
   assert.deepEqual(remote.snapshot(), { entities: [], claims: [], relations: [], tombstones: [] });
-  const rebuilt = fx.adapter.rebuildProjection({ workspaceId: WORKSPACE });
+  const rebuilt = await fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE });
   assert.equal(rebuilt.projection_hash, expected);
   assert.equal(remote.snapshotHash(), expected);
   assert.deepEqual(remote.snapshot(), canonical);
@@ -433,85 +423,35 @@ test("graph exposes one centralized current-authority decision for recall, ontol
   }).paths, []);
 });
 
-test("malformed Graphiti project and query responses use authenticated parameterized direct-Neo4j fallback", (t) => {
-  const requests = [];
-  let validRelationId;
-  let validEntities;
-  const graphiti = {
-    project: () => ({ ok: true }),
-    query: () => ({ malformed: true })
+test("malformed GraphD responses fail closed while local canonical truth remains queryable", async (t) => {
+  const remote = {
+    project: async () => ({ ok: true }),
+    query: async () => ({ malformed: true })
   };
-  const neo4j = {
-    project: (request) => {
-      requests.push(request);
-      return { ok: true, projection_hash: request.parameters.projection_hash };
-    },
-    query: (request) => {
-      requests.push(request);
-      return { paths: [
-        { entity_ids: validEntities, relation_ids: [validRelationId] },
-        { entity_ids: [validEntities[0], `ent_${"f".repeat(64)}`], relation_ids: [`rel_${"f".repeat(64)}`] }
-      ] };
-    }
-  };
-  const fx = fixture(t, { graphitiBackend: graphiti, directNeo4jBackend: neo4j, authToken: TOKEN });
-  const a = entity(WORKSPACE, "project:a", "A");
-  const b = entity(WORKSPACE, "project:b", "B");
-  const edge = relation(WORKSPACE, "fallback", a.entity_id, "RELATED_TO", b.entity_id, "2026-01-01T00:00:00.000Z");
-  validRelationId = edge.relation_id;
-  validEntities = [a.entity_id, b.entity_id];
+  const fx = fixture(t, { remoteBackend: remote });
+  const a = entity(WORKSPACE, "project:fail-closed-a", "Fail Closed A");
+  const b = entity(WORKSPACE, "project:fail-closed-b", "Fail Closed B");
   activate(fx, mutation({
-    number: 1, claimKey: "fallback", text: "A relates to B.", observedAt: "2026-01-01T00:00:00.000Z",
-    entities: [a, b], relations: [edge]
+    number: 55,
+    claimKey: "fail-closed",
+    text: "Fail Closed A relates to Fail Closed B.",
+    observedAt: "2026-01-01T00:00:00.000Z",
+    entities: [a, b],
+    relations: [relation(WORKSPACE, "fail-closed", a.entity_id, "RELATED_TO", b.entity_id, "2026-01-01T00:00:00.000Z")]
   }));
-  const result = fx.adapter.query({
+  assert.equal(fx.adapter.query({
     workspace_id: WORKSPACE, entity_ids: [a.entity_id], relation_types: ["RELATED_TO"], max_hops: 1
-  });
-  assert.equal(result.backend, "direct-neo4j");
-  assert.equal(result.paths.length, 1);
-  assert.equal(requests.every((request) => request.headers.authorization === `Bearer ${TOKEN}`), true);
-  assert.equal(requests.every((request) => request.statement_id && !("cypher" in request)), true);
-  assert.equal(requests.at(-1).parameters.max_hops, 1);
+  }).paths.length, 1);
+  await assert.rejects(
+    fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE }),
+    /graph_backend_response_invalid/
+  );
+  await assert.rejects(fx.adapter.queryAsync({
+    workspace_id: WORKSPACE, entity_ids: [a.entity_id], relation_types: ["RELATED_TO"], max_hops: 1
+  }), /graph_backend_response_invalid/);
 });
 
-test("thrown Graphiti project and query failures use successful direct-Neo4j fallback", (t) => {
-  const requests = [];
-  let edge;
-  let nodes;
-  const graphiti = {
-    project: () => { throw Object.assign(new Error("project down"), { code: "graphiti_project_down" }); },
-    query: () => { throw Object.assign(new Error("query down"), { code: "graphiti_query_down" }); }
-  };
-  const neo4j = {
-    project: (request) => {
-      requests.push(request);
-      return { ok: true, projection_hash: projectionHash(request.parameters.records) };
-    },
-    query: (request) => {
-      requests.push(request);
-      return { paths: [{ entity_ids: nodes, relation_ids: [edge.relation_id] }] };
-    }
-  };
-  const fx = fixture(t, { graphitiBackend: graphiti, directNeo4jBackend: neo4j, authToken: TOKEN });
-  const a = entity(WORKSPACE, "project:thrown-a", "Thrown A");
-  const b = entity(WORKSPACE, "project:thrown-b", "Thrown B");
-  edge = relation(WORKSPACE, "thrown", a.entity_id, "RELATED_TO", b.entity_id, "2026-01-01T00:00:00.000Z");
-  nodes = [a.entity_id, b.entity_id];
-  const projected = activate(fx, mutation({
-    number: 55, claimKey: "thrown", text: "Thrown A relates to Thrown B.",
-    observedAt: "2026-01-01T00:00:00.000Z", entities: [a, b], relations: [edge]
-  }));
-  assert.equal(projected.projection.backend, "direct-neo4j");
-  const result = fx.adapter.query({
-    workspace_id: WORKSPACE, entity_ids: [a.entity_id], relation_types: ["RELATED_TO"], max_hops: 1
-  });
-  assert.equal(result.backend, "direct-neo4j");
-  assert.equal(result.paths.length, 1);
-  assert.equal(requests.every((request) => request.headers.authorization === `Bearer ${TOKEN}`), true);
-  assert.equal(requests.every((request) => request.statement_id && !("cypher" in request)), true);
-});
-
-test("canonical mutation is idempotent and projection failure is recoverable without remote truth", (t) => {
+test("canonical mutation is idempotent and async GraphD projection failure is recoverable", async (t) => {
   let unavailable = true;
   const remote = {
     project: (request) => {
@@ -520,7 +460,7 @@ test("canonical mutation is idempotent and projection failure is recoverable wit
     },
     query: () => ({ paths: [] })
   };
-  const fx = fixture(t, { graphitiBackend: remote, directNeo4jBackend: remote, authToken: TOKEN });
+  const fx = fixture(t, { remoteBackend: remote });
   const a = entity(WORKSPACE, "project:a", "A");
   const b = entity(WORKSPACE, "project:b", "B");
   const item = mutation({
@@ -528,7 +468,9 @@ test("canonical mutation is idempotent and projection failure is recoverable wit
     entities: [a, b], relations: [relation(WORKSPACE, "idempotent", a.entity_id, "AFFECTS", b.entity_id, "2026-01-01T00:00:00.000Z")]
   });
   const first = activate(fx, item);
-  assert.equal(first.projection.projected, false);
+  assert.equal(first.projection.projected, true);
+  assert.equal(first.projection.backend, "deterministic-memory");
+  await assert.rejects(fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE }), /offline/);
   const graphRoot = path.join(fx.vault, "20_professional/memory-fabric", WORKSPACE, "graph");
   const canonicalCounts = () => Object.fromEntries(["entities", "claims", "relations"].map((kind) => [
     kind,
@@ -541,8 +483,9 @@ test("canonical mutation is idempotent and projection failure is recoverable wit
   assert.equal(state.claims.length, 1);
   assert.equal(state.relations.length, 1);
   unavailable = false;
-  const recovered = fx.adapter.rebuildProjection({ workspaceId: WORKSPACE });
+  const recovered = await fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE });
   assert.equal(recovered.projected, true);
+  assert.equal(recovered.backend, "graphd-neo4j");
   state = fx.adapter.readCanonicalState({ workspaceId: WORKSPACE });
   assert.equal(state.claims.length, 1);
 });
@@ -598,37 +541,39 @@ test("preflight rejects non-canonical relation IDs without exposing any canonica
   });
 });
 
-test("a missing remote projection hash never creates a complete checkpoint", (t) => {
+test("a missing remote projection hash never creates an additional complete checkpoint", async (t) => {
   const remote = { project: () => ({ ok: true }), query: () => ({ paths: [] }) };
-  const fx = fixture(t, { graphitiBackend: remote, directNeo4jBackend: remote, authToken: TOKEN });
+  const fx = fixture(t, { remoteBackend: remote });
   const a = entity(WORKSPACE, "project:hash-a", "Hash A");
   const b = entity(WORKSPACE, "project:hash-b", "Hash B");
-  const result = activate(fx, mutation({
+  activate(fx, mutation({
     number: 43, claimKey: "hash", text: "Hash A affects Hash B.",
     observedAt: "2026-05-03T00:00:00.000Z", entities: [a, b],
     relations: [relation(WORKSPACE, "hash", a.entity_id, "AFFECTS", b.entity_id, "2026-05-03T00:00:00.000Z")]
   }));
-  assert.equal(result.projection.projected, false);
   const checkpointRoot = path.join(fx.vault, "20_professional/memory-fabric", WORKSPACE, "graph", "checkpoints");
-  assert.equal(fs.existsSync(checkpointRoot), false);
+  const before = fs.readdirSync(checkpointRoot).length;
+  await assert.rejects(fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE }), /graph_backend_response_invalid/);
+  assert.equal(fs.readdirSync(checkpointRoot).length, before);
 });
 
-test("a mismatched remote projection hash never creates a complete checkpoint", (t) => {
+test("a mismatched remote projection hash never creates an additional complete checkpoint", async (t) => {
   const remote = {
     project: () => ({ ok: true, projection_hash: `sha256:${"0".repeat(64)}` }),
     query: () => ({ paths: [] })
   };
-  const fx = fixture(t, { graphitiBackend: remote, directNeo4jBackend: remote, authToken: TOKEN });
+  const fx = fixture(t, { remoteBackend: remote });
   const a = entity(WORKSPACE, "project:mismatch-a", "Mismatch A");
   const b = entity(WORKSPACE, "project:mismatch-b", "Mismatch B");
-  const result = activate(fx, mutation({
+  activate(fx, mutation({
     number: 44, claimKey: "mismatch", text: "Mismatch A affects Mismatch B.",
     observedAt: "2026-05-04T00:00:00.000Z", entities: [a, b],
     relations: [relation(WORKSPACE, "mismatch", a.entity_id, "AFFECTS", b.entity_id, "2026-05-04T00:00:00.000Z")]
   }));
-  assert.equal(result.projection.projected, false);
   const checkpointRoot = path.join(fx.vault, "20_professional/memory-fabric", WORKSPACE, "graph", "checkpoints");
-  assert.equal(fs.existsSync(checkpointRoot), false);
+  const before = fs.readdirSync(checkpointRoot).length;
+  await assert.rejects(fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE }), /graph_backend_response_invalid/);
+  assert.equal(fs.readdirSync(checkpointRoot).length, before);
 });
 
 test("async graphd projection is hash-acknowledged and every returned path is canonically revalidated", async (t) => {
@@ -676,7 +621,7 @@ test("async graphd projection is hash-acknowledged and every returned path is ca
   }));
 
   const rebuilt = await fx.adapter.rebuildProjectionAsync({ workspaceId: WORKSPACE });
-  assert.equal(rebuilt.backend, "graphd-http");
+  assert.equal(rebuilt.backend, "graphd-neo4j");
   assert.equal(rebuilt.projection_hash, fx.adapter.projectionHash({ workspaceId: WORKSPACE }));
   const result = await fx.adapter.queryAsync({
     workspace_id: WORKSPACE,
@@ -686,7 +631,7 @@ test("async graphd projection is hash-acknowledged and every returned path is ca
     as_of: "2026-08-04T12:00:00.000Z",
     max_hops: 1
   });
-  assert.equal(result.backend, "graphd-http");
+  assert.equal(result.backend, "graphd-neo4j");
   assert.equal(result.paths.length, 1);
   assert.equal(result.paths[0].edges[0].relation_id, validRelationId);
   assert.deepEqual(result.paths[0].edges[0].evidence_ids, projected.relations[0].evidence_ids);

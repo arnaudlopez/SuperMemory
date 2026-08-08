@@ -25,6 +25,7 @@ test("remote graphd client is loopback-or-TLS only and binds bearer to one works
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
     received = {
+      url: request.url,
       authorization: request.headers.authorization,
       body: JSON.parse(Buffer.concat(chunks).toString("utf8"))
     };
@@ -36,14 +37,15 @@ test("remote graphd client is loopback-or-TLS only and binds bearer to one works
   const endpoint = `http://127.0.0.1:${server.address().port}`;
   const backend = createGraphdHttpBackend({ endpoint, tokenFile, workspaceId: WORKSPACE_ID });
   await backend.query({
-    schema: "supermemory.graphd-request.v1",
-    contract_version: "1.0.0",
+    schema: "supermemory.graphd-request.v2",
+    contract_version: "2.0.0",
     operation: "query",
     workspace_id: WORKSPACE_ID,
-    statement_id: "bounded_path_v1",
+    statement_id: "bounded_path_v2",
     parameters: { workspace_id: WORKSPACE_ID }
   });
-  assert.match(received.authorization, /^Bearer /);
+  assert.match(received.authorization, /^Bearer smg2\./);
+  assert.equal(received.url, "/v2/query");
   assert.equal(received.body.workspace_id, WORKSPACE_ID);
   await assert.rejects(() => backend.query({
     ...received.body,

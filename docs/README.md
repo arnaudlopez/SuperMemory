@@ -4,44 +4,54 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
 
 ## Lecture recommandee
 
-1. `codex-supermemory-technical-design.md`
+1. `hindsight-native-memory-plane-blueprint.md`
+   - Blueprint produit/tech de la tranche Memory Fabric v2.1.
+   - Retrait immediat de Graphiti et `supermemory-improved`.
+   - Hindsight natif pour observations, operations, recall enrichi et Reflect.
+   - Neo4j/GraphD conserve comme graphe temporel exact.
+   - Procedure executable :
+     [`hindsight-native-migration-runbook.md`](hindsight-native-migration-runbook.md).
+   - Etat de livraison :
+     [`hindsight-native-release-receipt.md`](hindsight-native-release-receipt.md).
+
+2. `codex-supermemory-technical-design.md`
    - Conception normative de l'integration Codex Desktop, CLI et IDE.
    - Identite stable des projets, capture App Server/hooks et versioning.
    - Recall MCP gouverne, securite, migration, deploiement et acceptation.
 
-2. `audit-memoire-agentique-v2.md`
+3. `audit-memoire-agentique-v2.md`
    - Decision d'adoption de Hindsight.
    - Repartition entre moteur memoire et gouvernance SuperMemory.
    - Features Hindsight a utiliser par phase.
 
-3. `prd-memoire-agentique-v2.md`
+4. `prd-memoire-agentique-v2.md`
    - Plan produit cible avec Hindsight.
    - Contrat de promotion vers Hindsight.
    - Evals et milestones V2.
 
-4. `golden-case-implementation-roadmap.md`
+5. `golden-case-implementation-roadmap.md`
    - Decoupage des tranches d'implementation.
    - Objectifs intermediaires et oracles menant au Golden Case enterprise.
    - Ordre recommande entre contrats, Hindsight, source lifecycle, agents, acces, ports et CI.
 
-5. `golden-case-tdd-matrix.md`
+6. `golden-case-tdd-matrix.md`
    - Tests rouges precis par tranche.
    - Fixtures, commandes ciblees et criteres de passage.
    - Backlog TDD pour driver le developpement jusqu'au Golden Case.
 
-6. `audit-memoire-agentique.md`
+7. `audit-memoire-agentique.md`
    - Pourquoi cette architecture existe.
    - Decisions critiques.
    - Risques, angles morts, gouvernance et recherche academique.
    - Contexte V1 conserve pour historique.
 
-7. `prd-memoire-agentique.md`
+8. `prd-memoire-agentique.md`
    - Ce que le produit doit faire.
    - Structure cible du vault.
    - Protocoles d'ingestion, navigation, revue, publication, monitoring et multi-agent.
    - Contexte V1 conserve pour historique.
 
-8. `evaluation-comparative-retrieval-rappel.md`
+9. `evaluation-comparative-retrieval-rappel.md`
    - Comparaison avec les benchmarks et architectures retrieval/RAG.
    - Estimation de rappel et vitesse.
    - Trajectoire BM25, embeddings, hybrid retrieval, reranking, graph.
@@ -52,7 +62,9 @@ Le systeme cible est maintenant :
 
 - SuperMemory comme vault Markdown/Obsidian gouverne ;
 - Hindsight comme moteur memoire adopte ;
-- ports d'extension pour graphe temporel et versioning memoire si les evals l'exigent ;
+- Hindsight comme plan derive unique pour facts, observations, recall hybride et Reflect ;
+- Neo4j/GraphD comme graphe temporel exact, type et reconstruisible ;
+- Graphiti et `supermemory-improved` retires sans fallback runtime ;
 - ontologie metier evolutive, creee a la demande ;
 - snapshots immuables pour les sources externes ou mutables ;
 - memoire vivante : fraicheur, revision, historisation, interdiction ;
@@ -77,7 +89,7 @@ sources brutes
 
 La source de verite reste le vault Markdown. Hindsight accelere et enrichit le rappel, mais ne decide pas quelles sources sont autorisees.
 
-Les systemes de retrieval maison ne sont plus la trajectoire par defaut. Les moteurs additionnels comme Graphiti ou Memoria sont des ports d'extension, actives seulement si les evaluations montrent un manque apres integration Hindsight. Le contrat T11 executable (`node scripts/verify-engine-port-evals.mjs`) garde cette decision auditable via `80_logs/engine_port_evals.jsonl`.
+Les systemes de retrieval maison ne sont plus la trajectoire par defaut. Graphiti n'est plus un port actif : Hindsight porte le plan appris et Neo4j/GraphD porte le graphe exact. Le blueprint normatif de cette bascule est [`hindsight-native-memory-plane-blueprint.md`](hindsight-native-memory-plane-blueprint.md).
 
 ## Integration Codex
 

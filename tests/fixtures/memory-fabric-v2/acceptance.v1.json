@@ -43,8 +43,8 @@
     { "id": "RT-AC01", "test_file": "tests/codex-memory-router.test.mjs", "test_pattern": "auto routing follows the versioned deterministic intent corpus", "proof": "observable deterministic routing" },
     { "id": "RT-AC02", "test_file": "tests/codex-memory-router.test.mjs", "test_pattern": "hybrid recall preserves healthy results and explicit partial coverage", "proof": "tier degradation is explicit" },
     { "id": "RT-AC03", "test_file": "tests/codex-memory-router.test.mjs", "test_pattern": "cross-tier dedup retains every tier", "proof": "dedup preserves provenance and time" },
-    { "id": "IM-AC01", "test_file": "tests/memory-improve-worker.test.mjs", "test_pattern": "IM-AC01 and E2E", "proof": "idempotent cited enrichment" },
-    { "id": "IM-AC02", "test_file": "tests/memory-improve-worker.test.mjs", "test_pattern": "IM-AC02", "proof": "session consolidation under two minutes" },
-    { "id": "IM-AC03", "test_file": "tests/memory-improve-worker.test.mjs", "test_pattern": "IM-AC03", "proof": "feedback bounded and non-authoritative" }
+    { "id": "IM-AC01", "test_file": "tests/canonical-knowledge-worker.test.mjs", "test_pattern": "canonical worker commits authority", "proof": "idempotent canonical graph commit independent of learned plane" },
+    { "id": "IM-AC02", "test_file": "tests/memory-fabric-v2-e2e.test.mjs", "test_pattern": "retain → consolidation", "proof": "session close triggers native Hindsight consolidation" },
+    { "id": "IM-AC03", "test_file": "tests/hindsight-native-memory-plane.test.mjs", "test_pattern": "HN-AC11/12/14/15/16", "proof": "scores and observations remain non-authoritative" }
   ]
 }

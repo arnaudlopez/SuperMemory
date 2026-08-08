@@ -8,8 +8,16 @@ import { createCodexMemoryRouter } from "./lib/codex-memory-router.mjs";
 import { createCodexWorkingRecall } from "./lib/codex-working-recall.mjs";
 import { createCodexWorkingSetStore } from "./lib/codex-working-set-store.mjs";
 import { createCodexWorkspaceStore } from "./lib/codex-workspace-store.mjs";
+import { createCanonicalKnowledgeWorker, createCanonicalWorkingEpisodeSource } from "./lib/canonical-knowledge-worker.mjs";
+import { createCanonicalOllamaPipeline } from "./lib/canonical-ollama-pipeline.mjs";
 import { createGraphdHttpBackend } from "./lib/graphd-http-backend.mjs";
+import { createHindsightAuthorityGateway } from "./lib/hindsight-authority-gateway.mjs";
+import { createHindsightClientV2 } from "./lib/hindsight-client-v2.mjs";
+import { createHindsightOperationReceiptStore } from "./lib/hindsight-operation-receipts.mjs";
+import { canonicalClaimMemoryId, createHindsightLearnedPlane } from "./lib/hindsight-learned-plane.mjs";
 import { createKnowledgeGraphAdapter } from "./lib/knowledge-graph-adapter.mjs";
+import { createMemoryAdmissionPolicy } from "./lib/memory-admission-policy.mjs";
+import { createWorkspaceOntologyRegistry } from "./lib/ontology-registry.mjs";
 import { normalizeCodexRuntimeConfig } from "./lib/codex-runtime-config.mjs";
 import { createSuperMemoryDaemon } from "./lib/supermemory-daemon.mjs";
 
@@ -20,12 +28,16 @@ function parseArguments(argv) {
     json: false,
     check: false,
     ollama_url: process.env.SUPERMEMORY_OLLAMA_URL || "http://127.0.0.1:11434",
-    ollama_model: process.env.HINDSIGHT_OLLAMA_MODEL || "llama3:latest",
+    ollama_model: process.env.HINDSIGHT_OLLAMA_MODEL || "qwen3.5:9b",
     compiler_timeout_ms: 20_000,
     working_memory: process.env.SUPERMEMORY_WORKING_MEMORY_ENABLED === "1",
     working_offload: process.env.SUPERMEMORY_WORKING_OFFLOAD_ENABLED === "1",
     graphd_endpoint: process.env.SUPERMEMORY_GRAPHD_ENDPOINT || null,
-    graphd_token_file: process.env.SUPERMEMORY_GRAPHD_TOKEN_FILE || null
+    graphd_token_file: process.env.SUPERMEMORY_GRAPHD_TOKEN_FILE || null,
+    hindsight_enabled: process.env.SUPERMEMORY_HINDSIGHT_ENABLED === "1",
+    hindsight_url: process.env.SUPERMEMORY_HINDSIGHT_URL || "http://127.0.0.1:8888",
+    hindsight_api_key_file: process.env.SUPERMEMORY_HINDSIGHT_API_KEY_FILE || null,
+    continuous_improvement: false
   };
   const values = new Set([
     "--host",
@@ -35,6 +47,8 @@ function parseArguments(argv) {
     "--compiler-timeout-ms",
     "--graphd-endpoint",
     "--graphd-token-file",
+    "--hindsight-url",
+    "--hindsight-api-key-file",
     "--port",
     "--project-id",
     "--runtime-root",
@@ -45,7 +59,7 @@ function parseArguments(argv) {
   ]);
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
-    if (token === "--json" || token === "--check" || token === "--working-memory" || token === "--working-offload") {
+    if (token === "--json" || token === "--check" || token === "--working-memory" || token === "--working-offload" || token === "--hindsight-enabled") {
       options[token.slice(2)] = true;
       continue;
     }
@@ -120,9 +134,12 @@ try {
       options.graphd_endpoint = null;
       options.graphd_token_file = null;
     }
+    options.hindsight_enabled = runtimeContract.hindsight.enabled;
+    options.continuous_improvement = runtimeContract.continuous_improvement.enabled;
   }
   const encryptionKey = loadKey(options.key_file);
   const daemonBearer = loadToken(options.token_file);
+  const hindsightApiKey = options.hindsight_api_key_file ? loadToken(options.hindsight_api_key_file) : "";
   const recallEnabled = Boolean(options.workspace_id && options.project_id);
   const workingSetStore = recallEnabled ? createCodexWorkingSetStore({
     vaultRoot: options.vault_root,
@@ -155,39 +172,131 @@ try {
         workspaceId: options.workspace_id,
         projectId: options.project_id
       });
-      const durableRecall = createCodexMemoryRecall({
-        workspaceStore: createCodexWorkspaceStore({
-          vaultRoot: options.vault_root,
-          workspaceId: options.workspace_id,
-          projectId: options.project_id
-        })
+      const workspaceStore = createCodexWorkspaceStore({
+        vaultRoot: options.vault_root,
+        workspaceId: options.workspace_id,
+        projectId: options.project_id
       });
+      const durableRecall = createCodexMemoryRecall({ workspaceStore });
       const remoteBackend = options.graphd_endpoint ? createGraphdHttpBackend({
         endpoint: options.graphd_endpoint,
         tokenFile: options.graphd_token_file,
         workspaceId: options.workspace_id
       }) : null;
-      const graphAdapter = createKnowledgeGraphAdapter({
+      let graphAdapter;
+      const ontologyRegistry = createWorkspaceOntologyRegistry({
         vaultRoot: options.vault_root,
         encryptionKey,
         workspaceId: options.workspace_id,
+        claimAuthorityResolver: (input) => graphAdapter?.resolveAuthorizedClaims(input) ?? [],
+        retrievalCorpus: JSON.parse(fs.readFileSync(new URL(
+          "../deploy/hindsight/ontology-retrieval-corpus.v1.json",
+          import.meta.url
+        ), "utf8"))
+      });
+      graphAdapter = createKnowledgeGraphAdapter({
+        vaultRoot: options.vault_root,
+        encryptionKey,
+        workspaceId: options.workspace_id,
+        ontologyRegistry,
         remoteBackend,
         provenanceResolver: ({ workspaceId, episodeIds, evidenceIds }) => {
-          const active = workingSetStore.listImproveEpisodes({
-            workspaceId,
-            captureStore
-          }).filter((source) => source.status === "active" && source.reopened === true);
+          const active = workingSetStore.listImproveEpisodes({ workspaceId, captureStore })
+            .filter((source) => source.status === "active" && source.reopened === true);
           const episodes = new Set(active.map((source) => source.episode.episode_id));
           const evidence = new Set(active.map((source) => source.evidence.evidence_id));
           return episodeIds.every((id) => episodes.has(id)) && evidenceIds.every((id) => evidence.has(id));
         }
       });
+      const hindsightClient = options.hindsight_enabled ? createHindsightClientV2({
+        workspaceId: options.workspace_id,
+        baseUrl: options.hindsight_url,
+        ["api" + "Key"]: hindsightApiKey
+      }) : null;
+      const hindsightGateway = hindsightClient ? createHindsightAuthorityGateway({
+        workspaceId: options.workspace_id,
+        client: hindsightClient,
+        receiptStore: createHindsightOperationReceiptStore({
+          vaultRoot: options.vault_root,
+          encryptionKey,
+          workspaceId: options.workspace_id
+        }),
+        authorityResolver: ({ memoryId, asOf, consumer }) => {
+          if (!memoryId) return null;
+          if (memoryId.startsWith("memory:")) {
+            const claim = graphAdapter.readAuthorizedState({
+              workspaceId: options.workspace_id,
+              asOf: asOf ?? new Date().toISOString()
+            }).claims.find((item) => canonicalClaimMemoryId(item.claim_id) === memoryId);
+            if (!claim) return null;
+            return {
+              workspace_id: options.workspace_id,
+              memory_id: memoryId,
+              authorized: true,
+              status: "active",
+              allowed_consumers: ["codex"],
+              citation: {
+                claim_id: claim.claim_id,
+                admission_id: claim.admission.admission_id,
+                evidence_ids: claim.evidence_ids,
+                episode_ids: claim.episode_ids
+              }
+            };
+          }
+          let memory;
+          try {
+            memory = workspaceStore.getMemory(memoryId, { includeInactive: true });
+          } catch {
+            return null;
+          }
+          const candidate = workspaceStore.getCandidate(memory.candidate_id);
+          return {
+            ...memory,
+            authorized: memory.status === "active" && memory.sensitivity === "standard",
+            allowed_consumers: memory.allowed_consumers,
+            citation: {
+              candidate_id: candidate.candidate_id,
+              event_ids: candidate.event_ids,
+              turn_snapshot_id: candidate.turn_snapshot_id,
+              source_snapshot_ids: candidate.source_snapshot_ids,
+              locator: workspaceStore.resolveCitation(candidate)
+            },
+            valid_until: memory.valid_until,
+            as_of: asOf,
+            consumer
+          };
+        }
+      }) : null;
+      const learnedPlane = hindsightGateway ? createHindsightLearnedPlane({ gateway: hindsightGateway, graphAdapter }) : null;
       return createCodexMemoryRouter({
         workspaceId: options.workspace_id,
         projectId: options.project_id,
         workingRecall,
         durableRecall,
-        graphAdapter
+        graphAdapter,
+        hindsightGateway,
+        ontologyRegistry,
+        learnedPlane
+      });
+    } : null,
+    canonicalWorkerFactory: recallEnabled && options.continuous_improvement ? ({ captureStore, memoryRouter }) => {
+      const pipeline = createCanonicalOllamaPipeline({
+        baseUrl: options.ollama_url,
+        model: options.ollama_model,
+        timeoutMs: options.compiler_timeout_ms
+      });
+      return createCanonicalKnowledgeWorker({
+        vaultRoot: options.vault_root,
+        encryptionKey,
+        workspaceId: options.workspace_id,
+        enabled: true,
+        episodeSource: createCanonicalWorkingEpisodeSource({ workingStore: workingSetStore, captureStore }),
+        graphAdapter: memoryRouter.graphAdapter,
+        ontologyRegistry: memoryRouter.ontologyRegistry,
+        admissionPolicy: createMemoryAdmissionPolicy(),
+        extractor: pipeline.extractor,
+        verifier: pipeline.verifier,
+        learnedPlane: memoryRouter.learnedPlane
       });
     } : null
   });

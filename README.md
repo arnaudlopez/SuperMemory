@@ -321,7 +321,7 @@ The production verifier performs no live writes. It refuses stale, failed, mock,
 - Node.js 18 or newer
 - Git
 - Docker Desktop with Compose
-- Ollama running locally with `llama3:latest` already installed
+- Ollama running locally with `qwen3.5:9b` already installed
 
 ### Clone and verify
 
@@ -336,7 +336,7 @@ npm run verify:release
 SuperMemory never downloads a model implicitly. Install the expected model yourself once if `ollama list` does not already show it:
 
 ```bash
-ollama pull llama3:latest
+ollama pull qwen3.5:9b
 ```
 
 ### Inspect the supported operator surface
@@ -384,7 +384,7 @@ Each browser directory import is marked as a complete inventory. A previously ac
 docker compose -f compose.hindsight.yml up -d
 ```
 
-The image is pinned by digest and ports `8888` and `9999` are bound to `127.0.0.1` only. The container connects to host Ollama at `host.docker.internal`, uses the explicit `llama3:latest` model, limits local LLM concurrency to one, and disables optional observations. Hindsight Cloud is not used.
+The Hindsight 0.9.0 image is pinned by digest and ports `8888` and `9999` are bound to `127.0.0.1` only. The container connects to host Ollama at `host.docker.internal`, uses the explicit `qwen3.5:9b` model, limits local LLM concurrency to one, and enables native observations while keeping automatic consolidation under SuperMemory control. Hindsight Cloud is not used.
 
 Hindsight also needs a reachable local LLM provider capable of structured output. If the API is healthy but extraction produces no memory units, SuperMemory marks the projection as pending, keeps the approved canonical memory safe, and uses the cited local fallback until resynchronization succeeds.
 

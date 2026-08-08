@@ -238,10 +238,7 @@ export function createKnowledgeGraphAdapter({
   workspaceId: boundWorkspaceId,
   provenanceResolver,
   engine = createInMemoryGraphEngine(),
-  graphitiBackend = null,
-  directNeo4jBackend = null,
   remoteBackend = null,
-  authToken = null,
   clock = () => new Date().toISOString(),
   faultInjector = null,
   ontologyRegistry = createOntologyRegistry()
@@ -257,9 +254,6 @@ export function createKnowledgeGraphAdapter({
     typeof ontologyRegistry.validateRelation !== "function" ||
     typeof ontologyRegistry.hasRelationType !== "function"
   ) fail("graph_ontology_registry_invalid");
-  if ((graphitiBackend || directNeo4jBackend) && (typeof authToken !== "string" || authToken.length < 32)) {
-    fail("graph_backend_auth_required");
-  }
   if (remoteBackend && (typeof remoteBackend.query !== "function" || typeof remoteBackend.project !== "function")) {
     fail("graph_backend_invalid");
   }
@@ -480,58 +474,18 @@ export function createKnowledgeGraphAdapter({
     tombstones: state.tombstones
   });
   const backendRequest = (operation, workspaceId, parameters) => ({
-    schema: "supermemory.graphd-request.v1",
-    contract_version: "1.0.0",
+    schema: "supermemory.graphd-request.v2",
+    contract_version: "2.0.0",
     operation,
     workspace_id: workspaceId,
-    statement_id: operation === "query" ? "bounded_path_v1" : "replace_workspace_projection_v1",
-    parameters,
-    headers: { authorization: `Bearer ${authToken}` }
+    statement_id: operation === "query" ? "bounded_path_v2" : "replace_workspace_projection_v2",
+    parameters
   });
-  const invokeBackend = (backend, method, request) => {
-    if (!backend || typeof backend[method] !== "function") fail("graph_backend_unavailable");
-    const result = backend[method](request);
-    if (result && typeof result.then === "function") fail("graph_backend_async_unsupported");
-    return result;
-  };
-  const queryCandidates = (backend, request) => {
-    const candidates = invokeBackend(backend, "query", request);
-    if (!candidates || !Array.isArray(candidates.paths)) fail("graph_backend_response_invalid");
-    return candidates;
-  };
   const project = (workspaceId, state) => {
     const material = projectionMaterial(state);
     const projectionHash = contentHash(material);
-    let backend = "deterministic-memory";
-    if (graphitiBackend || directNeo4jBackend) {
-      const request = backendRequest("replace", workspaceId, {
-        workspace_id: workspaceId,
-        projection_hash: projectionHash,
-        records: material
-      });
-      try {
-        const acknowledgement = invokeBackend(graphitiBackend, "project", request);
-        if (acknowledgement?.ok !== true || acknowledgement.projection_hash !== projectionHash) {
-          fail("graph_backend_response_invalid");
-        }
-        backend = "graphiti-neo4j";
-      } catch (graphitiError) {
-        try {
-          const acknowledgement = invokeBackend(directNeo4jBackend, "project", request);
-          if (acknowledgement?.ok !== true || acknowledgement.projection_hash !== projectionHash) {
-            fail("graph_backend_response_invalid");
-          }
-          backend = "direct-neo4j";
-        } catch (neo4jError) {
-          return {
-            projected: false,
-            backend: "unavailable",
-            projection_hash: projectionHash,
-            error: neo4jError?.code ?? graphitiError?.code ?? "graph_backend_unavailable"
-          };
-        }
-      }
-    } else engine.reset(material);
+    const backend = "deterministic-memory";
+    engine.reset(material);
     const existing = latestRecords(workspaceId, "checkpoints");
     const checkpointId = `chk_${hash(canonicalJson({ projection_hash: projectionHash, sequence: existing.length + 1 }))}`;
     appendRevision(workspaceId, "checkpoints", checkpointId, {
@@ -877,17 +831,8 @@ export function createKnowledgeGraphAdapter({
       return { workspace_id: normalized.workspace_id, query: normalized, paths: [], backend: "none" };
     }
     const request = backendRequest("query", normalized.workspace_id, normalized);
-    let backend = "deterministic-memory";
-    let candidates;
-    if (graphitiBackend || directNeo4jBackend) {
-      try {
-        candidates = queryCandidates(graphitiBackend, request);
-        backend = "graphiti-neo4j";
-      } catch {
-        candidates = queryCandidates(directNeo4jBackend, request);
-        backend = "direct-neo4j";
-      }
-    } else candidates = engine.query(request);
+    const backend = "deterministic-memory";
+    const candidates = engine.query(request);
     if (!candidates || !Array.isArray(candidates.paths)) fail("graph_backend_response_invalid");
     const paths = [];
     const seen = new Set();
@@ -929,7 +874,7 @@ export function createKnowledgeGraphAdapter({
       paths.push(canonical);
       if (paths.length >= normalized.limit) break;
     }
-    return { workspace_id: normalized.workspace_id, query: normalized, paths, backend: "graphd-http" };
+    return { workspace_id: normalized.workspace_id, query: normalized, paths, backend: "graphd-neo4j" };
   };
 
   const rebuildProjection = ({ workspaceId, workspace_id: snakeWorkspaceId } = {}) => {
@@ -960,11 +905,11 @@ export function createKnowledgeGraphAdapter({
       appendRevision(workspace, "checkpoints", checkpointId, {
         checkpoint_id: checkpointId,
         projection_hash: projectionHash,
-        backend: "graphd-http",
+        backend: "graphd-neo4j",
         status: "complete",
         projected_at: clock()
       });
-      return { projected: true, backend: "graphd-http", projection_hash: projectionHash };
+      return { projected: true, backend: "graphd-neo4j", projection_hash: projectionHash };
     });
   };
 

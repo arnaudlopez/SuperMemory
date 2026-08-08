@@ -103,16 +103,17 @@ test("shape validators reject unknown fields, forbidden types, and invalid windo
   }), /ontology_relation_window_invalid/);
 });
 
-test("graphd contract forbids raw Cypher and fixes authenticated fallback semantics", () => {
-  const contract = JSON.parse(fs.readFileSync("services/supermemory-graphd/contract.v1.json", "utf8"));
-  assert.equal(contract.schema, "supermemory.graphd-contract.v1");
+test("GraphD v2 contract forbids raw Cypher and has no runtime fallback", () => {
+  const contract = JSON.parse(fs.readFileSync("services/supermemory-graphd/contract.v2.json", "utf8"));
+  assert.equal(contract.schema, "supermemory.graphd-contract.v2");
   assert.equal(contract.transport.authentication, "workspace-scoped-bearer");
   assert.equal(contract.transport.raw_cypher_accepted, false);
   assert.equal(contract.operations.query.default_max_hops, 3);
   assert.equal(contract.operations.query.hard_max_hops, 5);
   assert.deepEqual(contract.operations.replace.acknowledgement_required, ["ok", "projection_hash"]);
   assert.equal(contract.operations.replace.projection_hash_match, "exact");
-  assert.equal(contract.fallback.fallback, "direct-neo4j");
+  assert.equal(contract.fallback.primary, "graphd-neo4j");
+  assert.equal(contract.fallback.runtime_fallback, null);
   assert.equal(contract.authority.backend_may_decide.length, 0);
 });
 

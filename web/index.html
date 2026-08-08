@@ -6,6 +6,7 @@
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#080d19">
   <title>SuperMemory — Mémoire locale gouvernée</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" type="module"></script>
 </head>
@@ -66,12 +67,26 @@
     </section>
 
     <section class="projection-status" aria-live="polite">
-      <div>
+      <div class="projection-summary">
         <span class="status-dot" id="hindsight-dot" aria-hidden="true"></span>
         <div>
           <strong id="hindsight-status">Vérification de Hindsight…</strong>
           <small id="hindsight-details">Le vault reste la source canonique dans tous les cas.</small>
         </div>
+      </div>
+      <div class="memory-plane-legend" aria-label="Autorité et provenance des plans mémoire">
+        <span class="memory-plane authoritative" data-memory-plane="canonical-proofs" data-state="ready">
+          <b>Preuves canoniques</b><small>Autorité locale</small>
+        </span>
+        <span class="memory-plane derived" data-memory-plane="raw-facts" data-state="checking">
+          <b>Faits bruts</b><small>Dérivé Hindsight</small>
+        </span>
+        <span class="memory-plane derived" data-memory-plane="observations" data-state="checking">
+          <b>Observations</b><small>Dérivé Hindsight</small>
+        </span>
+        <span class="memory-plane derived" data-memory-plane="reflect-syntheses" data-state="checking">
+          <b>Synthèses Reflect</b><small>Dérivé, revalidé</small>
+        </span>
       </div>
       <button class="button ghost" id="retry-projections" type="button" hidden>
         Resynchroniser

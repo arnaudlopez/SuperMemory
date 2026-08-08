@@ -26,6 +26,19 @@ function response(data, status = 200) {
   };
 }
 
+const capabilities = Object.fromEntries([
+  "prefer_observations", "observation_scopes", "source_fact_ids", "source_facts", "tag_groups",
+  "query_timestamp", "response_schema", "operation_id", "enable_temporal_retrieval",
+  "enable_graph_retrieval", "enable_reranking", "last_write_at"
+].map((key) => [key, {}]));
+
+function hindsightResponse(url) {
+  const target = String(url);
+  if (target.endsWith("/version")) return response({ version: "0.9.0" });
+  if (target.endsWith("/openapi.json")) return response(capabilities);
+  return response({ status: "healthy" });
+}
+
 const spawnAvailable = () => ({ status: 0, stdout: "available\n", stderr: "" });
 
 test("doctor reports ready only with local dependencies, installed model and healthy Hindsight", async () => {
@@ -35,8 +48,8 @@ test("doctor reports ready only with local dependencies, installed model and hea
     env: {},
     spawnSyncImpl: spawnAvailable,
     fetchImpl: async (url) => String(url).endsWith("/api/tags")
-      ? response({ models: [{ name: "llama3:latest" }] })
-      : response({ status: "healthy" })
+      ? response({ models: [{ name: "qwen3.5:9b" }] })
+      : hindsightResponse(url)
   });
   assert.equal(report.status, "ready");
   assert.equal(report.ready, true, JSON.stringify(report, null, 2));
@@ -54,7 +67,7 @@ test("doctor fails closed without downloading a missing Ollama model", async () 
     spawnSyncImpl: spawnAvailable,
     fetchImpl: async (url) => String(url).endsWith("/api/tags")
       ? response({ models: [] })
-      : response({ status: "healthy" })
+      : hindsightResponse(url)
   });
   assert.equal(report.ready, false);
   assert.equal(report.modelDownloaded, false);
@@ -70,8 +83,8 @@ test("doctor refuses a remote Hindsight endpoint", async () => {
     env: { HINDSIGHT_BASE_URL: "https://remote.example.test" },
     spawnSyncImpl: spawnAvailable,
     fetchImpl: async (url) => String(url).endsWith("/api/tags")
-      ? response({ models: [{ name: "llama3:latest" }] })
-      : response({ status: "healthy" })
+      ? response({ models: [{ name: "qwen3.5:9b" }] })
+      : hindsightResponse(url)
   });
   assert.equal(report.ready, false);
   assert.ok(report.blockers.some((item) => item.code === "hindsight_loopback"));
@@ -87,7 +100,7 @@ test("doctor refuses a remote Ollama endpoint without contacting it", async () =
     spawnSyncImpl: spawnAvailable,
     fetchImpl: async (url, options = {}) => {
       contacted.push(String(url));
-      return response({ status: "healthy" });
+      return hindsightResponse(url);
     }
   });
   assert.equal(report.ready, false);
@@ -106,8 +119,8 @@ test("doctor refuses backups configured inside the canonical vault", async () =>
     },
     spawnSyncImpl: spawnAvailable,
     fetchImpl: async (url) => String(url).endsWith("/api/tags")
-      ? response({ models: [{ name: "llama3:latest" }] })
-      : response({ status: "healthy" })
+      ? response({ models: [{ name: "qwen3.5:9b" }] })
+      : hindsightResponse(url)
   });
   assert.equal(report.ready, false);
   assert.ok(report.blockers.some((item) => item.code === "backups"));
@@ -198,14 +211,14 @@ test("doctor --codex reports the bound capability profile without governing nati
     }),
     fetchImpl: async (url, options = {}) => {
       if (String(url).endsWith("/api/tags")) {
-        return response({ models: [{ name: "llama3:latest" }] });
+        return response({ models: [{ name: "qwen3.5:9b" }] });
       }
       if (String(url).includes(":8765/health")) {
         return response({
           status: "ready",
           compiler: {
             status: "ready",
-            model: "llama3:latest",
+            model: "qwen3.5:9b",
             pending: 0,
             compiled: 2,
             candidates: 1,
@@ -232,7 +245,7 @@ test("doctor --codex reports the bound capability profile without governing nati
           working_recall: true
         });
       }
-      return response({ status: "healthy" });
+      return hindsightResponse(url);
     }
   });
   assert.equal(report.ready, true, JSON.stringify(report, null, 2));

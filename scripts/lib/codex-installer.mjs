@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { canonicalJson } from "./codex-redaction.mjs";
-import { createDisabledCodexRuntimeV3, normalizeCodexRuntimeConfig } from "./codex-runtime-config.mjs";
+import { createDisabledCodexRuntimeV4, normalizeCodexRuntimeConfig } from "./codex-runtime-config.mjs";
 
 export class CodexInstallerError extends Error {
   constructor(code) {
@@ -209,7 +209,7 @@ export function createCodexInstaller({
     !["127.0.0.1", "localhost", "::1", "[::1]"].includes(daemonUrl.hostname)
   ) fail("daemon_endpoint_invalid");
   const normalizedRuntimeContract = runtimeContract === null
-    ? createDisabledCodexRuntimeV3()
+    ? createDisabledCodexRuntimeV4()
     : normalizeCodexRuntimeConfig(runtimeContract);
 
   const buildPlan = () => {
