@@ -277,6 +277,15 @@ export function createSuperMemoryDaemon({
     status: typeof router?.rebuildFabric === "function" ? "pending" : "disabled",
     error: null
   };
+  const completeFabricRecovery = (rebuilt) => ({
+    status: "complete",
+    error: null,
+    schema: rebuilt.schema ?? null,
+    graph: rebuilt.graph?.projected === true ? "projected" : rebuilt.graph?.status ?? "unchanged",
+    topics: rebuilt.topics?.working_sets ?? 0,
+    authority_states: rebuilt.authority_states ?? 0,
+    exceptions: rebuilt.exceptions ?? 0
+  });
 
   const server = http.createServer(async (request, response) => {
     counters.requests += 1;
@@ -337,9 +346,14 @@ export function createSuperMemoryDaemon({
       }
       try {
         const input = await readJsonBody(request, maxBodyBytes);
+        if (method === "rebuildFabric") fabricRecovery = { status: "running", error: null };
         const result = await router[method](input);
+        if (method === "rebuildFabric") fabricRecovery = completeFabricRecovery(result);
         sendJson(response, 200, { ok: true, ...result });
       } catch (error) {
+        if (method === "rebuildFabric") {
+          fabricRecovery = { status: "degraded", error: error?.code ?? "fabric_rebuild_failed" };
+        }
         counters.rejected += 1;
         sendJson(response, recallErrorStatus(error), recallErrorBody(error));
       }
@@ -437,15 +451,7 @@ export function createSuperMemoryDaemon({
           fabricRecovery = { status: "running", error: null };
           try {
             const rebuilt = await router.rebuildFabric({});
-            fabricRecovery = {
-              status: "complete",
-              error: null,
-              schema: rebuilt.schema ?? null,
-              graph: rebuilt.graph?.projected === true ? "projected" : rebuilt.graph?.status ?? "unchanged",
-              topics: rebuilt.topics?.working_sets ?? 0,
-              authority_states: rebuilt.authority_states ?? 0,
-              exceptions: rebuilt.exceptions ?? 0
-            };
+            fabricRecovery = completeFabricRecovery(rebuilt);
           } catch (error) {
             fabricRecovery = {
               status: "degraded",

@@ -71,3 +71,48 @@ test("daemon exposes authenticated read-only recall routes through a proxy clien
   });
   assert.equal(seen[2][0], "workingSearch");
 });
+
+test("a successful manual fabric rebuild clears a transient startup degradation", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "supermemory-daemon-rebuild-"));
+  fs.mkdirSync(path.join(root, "vault"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  let attempts = 0;
+  const empty = async () => ({ results: [] });
+  const memoryRouter = {
+    async rebuildFabric() {
+      attempts += 1;
+      if (attempts === 1) throw Object.assign(new Error("graph unavailable"), { code: "graph_backend_unavailable" });
+      return {
+        schema: "supermemory.fabric-rebuild.v1",
+        graph: { projected: true },
+        topics: { working_sets: 1 },
+        authority_states: 0,
+        exceptions: 0
+      };
+    },
+    recall: empty, workingSearch: empty, workingOpen: empty, workingNeighbors: empty, workingMap: empty,
+    graphQuery: empty, explainPath: empty, search: empty, get: empty, explainCitation: empty,
+    status: async () => ({ strategies: ["hybrid"] })
+  };
+  const compiler = {
+    notifyCapture() {}, recover() {}, stop: async () => {}, stats: () => ({ status: "idle" })
+  };
+  const daemon = createSuperMemoryDaemon({
+    vaultRoot: path.join(root, "vault"), encryptionKey: Buffer.alloc(32, 8), authToken: TOKEN,
+    memoryCompiler: compiler, memoryRouter
+  });
+  t.after(() => daemon.stop());
+  const address = await daemon.start();
+  const headers = { authorization: `Bearer ${TOKEN}` };
+  const degraded = await (await fetch(`${address.url}/health`, { headers })).json();
+  assert.equal(degraded.status, "degraded");
+  assert.equal(degraded.fabric_rebuild.error, "graph_backend_unavailable");
+  const rebuilt = await fetch(`${address.url}/v1/admin/rebuild`, {
+    method: "POST", headers: { ...headers, "content-type": "application/json" }, body: "{}"
+  });
+  assert.equal(rebuilt.status, 200);
+  const ready = await (await fetch(`${address.url}/health`, { headers })).json();
+  assert.equal(ready.status, "ready");
+  assert.equal(ready.fabric_rebuild.status, "complete");
+  assert.equal(ready.fabric_rebuild.graph, "projected");
+});
