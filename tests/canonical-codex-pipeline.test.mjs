@@ -75,6 +75,14 @@ test("canonical Codex pipeline enforces the single Luna High provider", async ()
   const verification = await pipeline.compilerVerifier.verify({ candidate, messages: [] });
   assert.equal(verification.verifier.model, "gpt-5.6-luna");
   assert.equal(calls.length, 2);
+  await pipeline.verifier.verify({
+    episode: { observed_at: "2026-08-08T00:00:00.000Z" },
+    evidence: { kind: "prompt.submitted", source_adapter: "hook" },
+    payload: { prompt: "Préférence explicite." },
+    extraction: { text: "Préférence explicite." }
+  });
+  assert.match(calls.at(-1).system, /reopened, hash-verified prompt\.submitted/);
+  assert.match(calls.at(-1).system, /never as authentication of an external or machine fact/);
 });
 
 test("canonical extraction contract requires temporal and Quiet Authority signals", () => {
