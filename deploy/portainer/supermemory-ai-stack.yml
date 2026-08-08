@@ -135,6 +135,7 @@ services:
       GRAPHD_TOKEN_FILE: /run/secrets/graphd_token
       NEO4J_AUTH_FILE: /run/secrets/neo4j_auth
     secrets: [graphd_token, neo4j_auth]
+    group_add: ["7474"]
     depends_on:
       neo4j: { condition: service_healthy }
     read_only: true
@@ -156,6 +157,7 @@ services:
       - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:${GRAPHD_PORT:-8787}:8080"
     environment: *graphd_environment
     secrets: [graphd_token, neo4j_auth]
+    group_add: ["7474"]
     depends_on:
       neo4j-migrate: { condition: service_completed_successfully }
     healthcheck:

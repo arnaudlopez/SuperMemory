@@ -39,11 +39,16 @@ sudo install -d -m 0700 /opt/supermemory/secrets
 NEO4J_PASSWORD_VALUE=$(openssl rand -base64 36 | tr -d '\n')
 printf 'neo4j/%s\n' "$NEO4J_PASSWORD_VALUE" | sudo tee /opt/supermemory/secrets/neo4j_auth >/dev/null
 openssl rand -hex 32 | sudo tee /opt/supermemory/secrets/graphd_token >/dev/null
-sudo chmod 0600 /opt/supermemory/secrets/*
+sudo chown root:7474 /opt/supermemory/secrets/neo4j_auth
+sudo chown root:1000 /opt/supermemory/secrets/graphd_token
+sudo chmod 0440 /opt/supermemory/secrets/*
 unset NEO4J_PASSWORD_VALUE
 ```
 
 Never put those values in Portainer variables, `.env`, Git, logs or tickets.
+Docker Standalone mounts file-backed Compose secrets with their host ownership;
+the numeric groups are therefore deliberate. GraphD runs as uid/gid 1000 and
+receives supplemental group 7474 solely to read Neo4j credentials.
 
 ## Full preflight
 

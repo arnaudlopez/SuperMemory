@@ -61,6 +61,8 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
     assert.match(secret.file, /\/opt\/supermemory\/secrets\//);
   }
   assert.equal(config.services.neo4j.environment.NEO4J_AUTH_FILE, "/run/secrets/neo4j_auth");
+  assert.deepEqual(config.services["neo4j-migrate"].group_add, ["7474"]);
+  assert.deepEqual(config.services["supermemory-graphd"].group_add, ["7474"]);
   for (const service of Object.values(config.services)) {
     assert.notEqual(service.privileged, true);
     if (service.image) assert.doesNotMatch(service.image, /:latest(?:@|$)/);
