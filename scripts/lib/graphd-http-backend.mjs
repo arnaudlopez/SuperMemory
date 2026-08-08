@@ -13,7 +13,7 @@ function fail(code) {
 function secureSecret(filePath) {
   const resolved = path.resolve(filePath);
   const stat = fs.lstatSync(resolved);
-  if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o077) !== 0) fail("graphd_token_file_insecure");
+  if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o027) !== 0) fail("graphd_token_file_insecure");
   const value = fs.readFileSync(resolved, "utf8").trim();
   if (Buffer.byteLength(value) < 32) fail("graphd_token_invalid");
   return value;

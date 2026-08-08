@@ -11,8 +11,16 @@ const WORKSPACE_ID = "ws_018f7c0e-7b7d-7abc-8def-0123456789ab";
 test("remote graphd client is loopback-or-TLS only and binds bearer to one workspace", async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "graphd-client-"));
   const tokenFile = path.join(root, "token");
-  fs.writeFileSync(tokenFile, "workspace-token-000000000000000000000000", { mode: 0o600 });
+  fs.writeFileSync(tokenFile, "workspace-token-000000000000000000000000", { mode: 0o440 });
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  fs.chmodSync(tokenFile, 0o460);
+  assert.throws(() => createGraphdHttpBackend({
+    endpoint: "http://127.0.0.1:8787",
+    tokenFile,
+    workspaceId: WORKSPACE_ID
+  }), /graphd_token_file_insecure/);
+  fs.chmodSync(tokenFile, 0o440);
 
   assert.throws(() => createGraphdHttpBackend({
     endpoint: "http://graph.example.test",
