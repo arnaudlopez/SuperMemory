@@ -110,7 +110,7 @@ function authority(memoryId, active = true) {
   };
 }
 
-test("HN-AC11/12/14/15/16: observations are all-or-nothing and historical recall excludes them", async () => {
+test("HN-AC11/12/14/15/16 + QA-AC12: observations are all-or-nothing, reject non-current sources and historical recall excludes them", async () => {
   const calls = [];
   const sourceFacts = {
     fact_1: { id: "fact_1", metadata: { memory_id: "mem_1" }, text: "Source one" },

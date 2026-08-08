@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { createFullDeploymentRuntimeV4 } from "./lib/codex-runtime-config.mjs";
+import { createFullDeploymentRuntimeV5 } from "./lib/codex-runtime-config.mjs";
 import { resolveProjectMarkerBinding } from "./lib/project-registry.mjs";
 
 function fail(code) {
@@ -148,7 +148,7 @@ export function configureZ2Client({
   ]) secureRegularFile(filePath, code);
   const binding = resolveProjectMarkerBinding(project);
   if (binding.status !== "bound") fail("z2_client_project_unbound");
-  const runtimeContract = createFullDeploymentRuntimeV4({
+  const runtimeContract = createFullDeploymentRuntimeV5({
     graphEndpoint: "http://127.0.0.1:8787",
     graphTokenFile: graphToken
   });

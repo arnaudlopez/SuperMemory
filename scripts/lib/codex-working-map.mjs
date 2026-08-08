@@ -38,7 +38,7 @@ function renderLine(item) {
   return `- DATA: ${item.text} [evidence:${item.evidence_ids.join(",")}]`;
 }
 
-export function workingMapInputHash(state) {
+export function workingMapInputHash(state, { topicContext = null, topicView = null } = {}) {
   return hash(canonicalJson({
     working_set_id: state?.manifest?.working_set_id,
     source_sequence_high_watermark: state?.manifest?.source_sequence_high_watermark,
@@ -48,13 +48,19 @@ export function workingMapInputHash(state) {
       status: entry.status,
       pinned: entry.pinned === true,
       expires_at: entry.expires_at ?? null
-    }))
+    })),
+    topic_id: topicContext?.topic?.topic_id ?? null,
+    checkpoint_ids: topicContext?.checkpoints?.map((item) => item.checkpoint_id) ?? [],
+    topic_evidence_ids: topicView?.evidence_ids ?? []
   }));
 }
 
 export function buildCodexWorkingMap({
   state,
   reopen,
+  topicContext = null,
+  topicView = null,
+  reopenTopic = null,
   maxTokens = 8_000,
   targetTokens = 4_000,
   clock = () => new Date().toISOString()
@@ -97,6 +103,50 @@ export function buildCodexWorkingMap({
     });
   }
 
+  const currentEvidence = new Set(state.entries.map((entry) => entry.evidence_id));
+  if (topicView && typeof reopenTopic === "function") {
+    for (const reference of topicView.selected ?? []) {
+      if (currentEvidence.has(reference.evidence_id)) continue;
+      let opened;
+      try { opened = reopenTopic(reference); } catch { continue; }
+      const entry = { ...reference, created_at: reference.observed_at };
+      const target = sectionFor(entry);
+      const text = target === "evidence_catalog"
+        ? clean(`${entry.kind}: ${payloadText(opened.payload)}`)
+        : payloadText(opened.payload);
+      if (!text) continue;
+      sections[target].push({
+        text,
+        evidence_ids: [entry.evidence_id],
+        status: "active",
+        updated_at: entry.observed_at,
+        source_working_set_id: entry.working_set_id
+      });
+    }
+  }
+
+  const latestCheckpoint = topicContext?.checkpoints?.at(-1) ?? null;
+  if (latestCheckpoint) {
+    const checkpointSections = {
+      goal: latestCheckpoint.goal,
+      constraints: latestCheckpoint.invariants,
+      current_state: latestCheckpoint.current_state,
+      completed: latestCheckpoint.completed,
+      decisions: latestCheckpoint.decisions,
+      next_actions: latestCheckpoint.next_actions,
+      open_questions: latestCheckpoint.open_questions,
+      evidence_catalog: latestCheckpoint.artifacts
+    };
+    for (const [name, items] of Object.entries(checkpointSections)) {
+      for (const item of items ?? []) sections[name].push({
+        ...item,
+        status: "active",
+        updated_at: latestCheckpoint.created_at,
+        checkpoint_id: latestCheckpoint.checkpoint_id
+      });
+    }
+  }
+
   if (sections.goal.length > 1) sections.goal = [sections.goal[0]];
   const header = [
     "SuperMemory Working Map — contenu cité dérivé",
@@ -116,7 +166,7 @@ export function buildCodexWorkingMap({
   }
   const estimatedTokens = Math.ceil(markdown.length / 4);
   return {
-    schema: "supermemory.working-map.v1",
+    schema: "supermemory.working-map.v2",
     working_set_id: state.manifest.working_set_id,
     workspace_id: state.manifest.workspace_id,
     project_id: state.manifest.project_id,
@@ -125,7 +175,19 @@ export function buildCodexWorkingMap({
     generated_at: clock(),
     source_sequence_high_watermark: state.manifest.source_sequence_high_watermark,
     coverage: state.manifest.capture_coverage,
-    input_hash: workingMapInputHash(state),
+    input_hash: workingMapInputHash(state, { topicContext, topicView }),
+    topic: topicContext ? {
+      topic_id: topicContext.topic.topic_id,
+      title: topicContext.topic.title,
+      continuity: topicContext.current_membership.resolution,
+      membership_count: topicContext.memberships.length,
+      last_checkpoint_id: latestCheckpoint?.checkpoint_id ?? null,
+      working_view: topicView ? {
+        selected_tokens: topicView.budget.selected_tokens,
+        capacity_tokens: topicView.budget.capacity_tokens,
+        status: topicView.status
+      } : null
+    } : null,
     sections,
     lines,
     evidence_ids: [...new Set(lines.flatMap((line) => line.evidence_ids))].sort(),

@@ -8,6 +8,7 @@ import {
   canonicalGraphRelationId
 } from "./knowledge-graph-adapter.mjs";
 import { createOntologySupportAttestation } from "./ontology-registry.mjs";
+import { normalizeTemporalExpression } from "./codex-temporal-normalizer.mjs";
 
 const WORKSPACE = /^ws_[A-Za-z0-9._:-]{8,}$/;
 
@@ -75,6 +76,9 @@ export function createCanonicalKnowledgeWorker({
   extractor = null,
   verifier = null,
   learnedPlane = null,
+  authorityPolicy = null,
+  exceptionStore = null,
+  topicContextResolver = null,
   clock = () => new Date().toISOString()
 } = {}) {
   if (!Buffer.isBuffer(encryptionKey) || encryptionKey.length !== 32) fail("canonical_worker_key_invalid");
@@ -166,23 +170,44 @@ export function createCanonicalKnowledgeWorker({
       aliases: [...new Set(item.aliases ?? [])].sort()
     }));
     const byBinding = new Map(entities.map((item) => [item.binding_id, item.entity_id]));
+    const claimEventTime = normalizeTemporalExpression({
+      text: value.temporal_expression ?? value.text,
+      observedAt: source.episode.observed_at,
+      explicit: value.event_time ?? null
+    });
     const relations = value.relations.map((item) => {
       const subject = byBinding.get(item.subject_binding_id);
       const object = byBinding.get(item.object_binding_id);
       if (!subject || !object) fail("canonical_relation_entity_unknown");
+      const versionedRelationKey = `${item.relation_key}@${source.episode.episode_id}`;
       return {
-        relation_id: canonicalGraphRelationId({ workspaceId, relationKey: item.relation_key }),
-        relation_key: item.relation_key,
+        relation_id: canonicalGraphRelationId({ workspaceId, relationKey: versionedRelationKey }),
+        relation_key: versionedRelationKey,
         subject_entity_id: subject,
         predicate: item.predicate,
         object_entity_id: object,
         valid_from: item.valid_from ?? source.episode.observed_at,
         valid_to: item.valid_to ?? null,
+        event_time: normalizeTemporalExpression({
+          text: item.temporal_expression ?? value.temporal_expression ?? value.text,
+          observedAt: source.episode.observed_at,
+          explicit: item.event_time ?? value.event_time ?? null
+        }),
         supersedes_relation_ids: [...new Set(item.supersedes_relation_ids ?? [])].sort(),
         contradicts_relation_ids: [...new Set(item.contradicts_relation_ids ?? [])].sort()
       };
     });
-    return { ...value, entities, relations };
+    return { ...value, event_time: claimEventTime, entities, relations };
+  };
+
+  const factClass = (extracted) => {
+    if (extracted.fact_class) return extracted.fact_class;
+    if (extracted.relations.some((item) => item.predicate === "PREFERS")) return "user_preference";
+    if (extracted.entities.some((item) => item.entity_type === "Decision")) return "user_decision";
+    if (/\b(permission|autorisation|consentement|allowed|interdit)\b/i.test(extracted.text)) return "permission";
+    if (extracted.entities.some((item) => ["Tool", "Error"].includes(item.entity_type))) return "machine_state";
+    if (extracted.entities.some((item) => ["Requirement", "Procedure"].includes(item.entity_type))) return "project_constraint";
+    return "external_fact";
   };
 
   const syncRevocations = async (sources) => {
@@ -219,7 +244,8 @@ export function createCanonicalKnowledgeWorker({
           workspaceId, episode: source.episode, evidence: source.evidence,
           payload: source.payload, extractor: extractorIdentity
         }));
-        const claimId = canonicalGraphClaimId({ workspaceId, claimKey: extracted.claim_key });
+        const graphClaimKey = `${extracted.claim_key}@${source.episode.episode_id}`;
+        const claimId = canonicalGraphClaimId({ workspaceId, claimKey: graphClaimKey });
         const candidate = {
           candidate_id: claimId,
           workspace_id: workspaceId,
@@ -245,17 +271,92 @@ export function createCanonicalKnowledgeWorker({
           results.push({ episode_id: source.episode.episode_id, status: admission.status });
           continue;
         }
-        const graph = graphAdapter.upsertEpisodeGraph({
+        let authority = null;
+        if (authorityPolicy?.evaluate) {
+          let topicId = null;
+          try {
+            topicId = topicContextResolver?.({
+              workspaceId,
+              projectId: source.episode.project_id,
+              workingSetId: source.episode.working_set_id
+            })?.topic?.topic_id ?? null;
+          } catch {
+            topicId = null;
+          }
+          authority = authorityPolicy.evaluate({
+            claim: {
+              claim_id: claimId,
+              claim_key: extracted.claim_key,
+              workspace_id: workspaceId,
+              project_id: source.episode.project_id,
+              topic_id: topicId,
+              fact_class: factClass(extracted),
+              evidence_ids: source.episode.evidence_ids,
+              observed_at: source.episode.observed_at,
+              event_time: extracted.event_time,
+              proof_strength: verification.signals?.evidence_entailment >= 0.9 ? "strong" : "standard",
+              explicit: extracted.explicit === true,
+              authenticated: extracted.authenticated === true,
+              inferred: extracted.inferred === true,
+              ...(extracted.ttl_ms ? { ttl_ms: extracted.ttl_ms } : {})
+            }
+          });
+          if (authority.state.state === "disputed" && exceptionStore?.upsert) {
+            exceptionStore.upsert({
+              topicId,
+              claimIds: [...new Set([claimId, ...authority.transitions.filter((item) => item.claim_id !== claimId).map((item) => item.claim_id)])],
+              reasonCodes: authority.state.reason_codes,
+              level: "latent",
+              impact: authority.state.fact_class === "permission" ? "high" : "low",
+              irreversibility: authority.state.fact_class === "permission" ? "permission" : "reversible"
+            });
+          }
+        }
+        let graph = graphAdapter.upsertEpisodeGraph({
           workspaceId,
           episodeId: source.episode.episode_id,
           evidenceIds: source.episode.evidence_ids,
-          claim: { claim_id: claimId, claim_key: extracted.claim_key, text: extracted.text, observed_at: source.episode.observed_at },
+          claim: {
+            claim_id: claimId,
+            claim_key: graphClaimKey,
+            text: extracted.text,
+            observed_at: source.episode.observed_at,
+            event_time: extracted.event_time
+          },
           admission: admission.admission,
+          ...(authority ? {
+            authorityState: authority.state,
+            authorityTransitions: authority.transitions
+          } : {}),
           entities: extracted.entities,
           relations: extracted.relations
         });
+        if (typeof graphAdapter.rebuildProjectionAsync === "function") {
+          try {
+            graph = { ...graph, projection: await graphAdapter.rebuildProjectionAsync({ workspaceId }) };
+          } catch (error) {
+            graph = {
+              ...graph,
+              projection: { projected: false, status: "degraded_retryable", error: error?.code ?? "graph_projection_failed" }
+            };
+          }
+        }
         const claim = graphAdapter.resolveAuthorizedClaims({ workspaceId, claimIds: [claimId], asOf: clock() })[0];
-        if (!claim) fail("canonical_claim_authority_missing");
+        if (!claim && !["superseded", "revoked", "expired"].includes(authority?.state?.state)) {
+          fail("canonical_claim_authority_missing");
+        }
+        if (!claim) {
+          checkpoint = writeCheckpoint(checkpoint, source, authority.state.state);
+          results.push({
+            episode_id: source.episode.episode_id,
+            status: authority.state.state,
+            claim_id: claimId,
+            graph,
+            authority: authority.state,
+            learned: { status: "not_authoritative" }
+          });
+          continue;
+        }
         for (const proposal of extracted.ontology_proposals ?? []) {
           ontologyRegistry?.proposeChange({
             ...proposal,
@@ -271,7 +372,15 @@ export function createCanonicalKnowledgeWorker({
         } catch (error) {
           learned = { status: "degraded_retryable", error: error?.code ?? "hindsight_unavailable" };
         }
-        results.push({ episode_id: source.episode.episode_id, status: admission.status, claim_id: claimId, graph, ontology, learned });
+        results.push({
+          episode_id: source.episode.episode_id,
+          status: admission.status,
+          claim_id: claimId,
+          graph,
+          ontology,
+          authority: authority?.state ?? claim.authority ?? null,
+          learned
+        });
       } catch (error) {
         results.push({ episode_id: source.episode?.episode_id ?? null, status: "failed", error: error?.code ?? "canonical_worker_failed" });
         break;

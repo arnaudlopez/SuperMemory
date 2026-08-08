@@ -9,6 +9,11 @@ import {
   createOntologyRegistry
 } from "./ontology-registry.mjs";
 import { withVaultMutationLock } from "./registry-transaction.mjs";
+import {
+  eventTimeOverlaps,
+  legacyObservedEventTime,
+  validateEventTime
+} from "./codex-temporal-normalizer.mjs";
 
 const RECORD_KINDS = Object.freeze(["entities", "claims", "relations", "checkpoints", "tombstones", "commits"]);
 const CANONICAL_KINDS = Object.freeze(["entities", "claims", "relations", "tombstones"]);
@@ -50,6 +55,12 @@ function assertId(value, pattern, code) {
 function assertTimestamp(value, code) {
   if (typeof value !== "string" || !Number.isFinite(Date.parse(value))) fail(code);
   return value;
+}
+
+function boundedInteger(value, fallback, minimum, maximum, code) {
+  const number = value === undefined || value === null ? fallback : Number(value);
+  if (!Number.isSafeInteger(number) || number < minimum || number > maximum) fail(code);
+  return number;
 }
 
 function exactFields(value, allowed, code) {
@@ -432,6 +443,8 @@ export function createKnowledgeGraphAdapter({
   };
   const claimAuthorized = (claim, state, asOf) => {
     if (!claim || claim.status !== "active") return false;
+    if (["superseded", "revoked", "expired"].includes(claim.authority?.state)) return false;
+    if (claim.authority?.valid_until && Date.parse(asOf) >= Date.parse(claim.authority.valid_until)) return false;
     const tombstones = tombstoneSets(state);
     if (tombstones.admissions.has(claim.admission.admission_id)) return false;
     if (claim.episode_ids.some((id) => tombstones.episodes.has(id))) return false;
@@ -506,13 +519,16 @@ export function createKnowledgeGraphAdapter({
   };
 
   const validateClaim = (workspaceId, value, evidenceIds, episodeIds, admission) => {
-    exactFields(value, new Set(["claim_id", "claim_key", "text", "observed_at"]), "graph_claim_shape_invalid");
+    exactFields(value, new Set(["claim_id", "claim_key", "text", "observed_at", "event_time"]), "graph_claim_shape_invalid");
     const claimId = assertId(value.claim_id, CLAIM_ID, "graph_claim_id_invalid");
     if (claimId !== canonicalGraphClaimId({ workspaceId, claimKey: value.claim_key })) {
       fail("graph_claim_key_invalid");
     }
     if (typeof value.text !== "string" || !value.text.trim()) fail("graph_claim_text_invalid");
     const observedAt = assertTimestamp(value.observed_at, "graph_claim_time_invalid");
+    const eventTime = value.event_time
+      ? validateEventTime(value.event_time)
+      : legacyObservedEventTime(observedAt);
     if (!verifyAdmissionDecision(admission, {
       candidateId: claimId,
       workspaceId,
@@ -521,19 +537,20 @@ export function createKnowledgeGraphAdapter({
       fail("graph_admission_invalid");
     }
     if (!provenanceActive(workspaceId, episodeIds, evidenceIds)) fail("graph_provenance_invalid");
-    return { claimId, claimKey: value.claim_key, observedAt, text: value.text };
+    return { claimId, claimKey: value.claim_key, observedAt, eventTime, text: value.text };
   };
 
   const upsertEpisodeGraph = (input) => withVaultMutationLock(vault, () => {
     const workspaceId = authorizeWorkspace(input?.workspaceId ?? input?.workspace_id);
     exactFields(input, new Set([
       "workspaceId", "workspace_id", "episodeId", "episode_id", "evidenceIds", "evidence_ids",
-      "claim", "admission", "entities", "relations"
+      "claim", "admission", "authorityState", "authority_state", "authorityTransitions", "authority_transitions",
+      "entities", "relations"
     ]), "graph_mutation_shape_invalid");
     const episodeId = assertId(input.episodeId ?? input.episode_id, EPISODE_ID, "graph_episode_id_invalid");
     const evidenceIds = uniqueIds(input.evidenceIds ?? input.evidence_ids, EVIDENCE_ID, "graph_evidence_invalid");
     const episodeIds = [episodeId];
-    const { claimId, claimKey, observedAt, text } = validateClaim(
+    const { claimId, claimKey, observedAt, eventTime, text } = validateClaim(
       workspaceId,
       input.claim,
       evidenceIds,
@@ -543,8 +560,28 @@ export function createKnowledgeGraphAdapter({
     if (!Array.isArray(input.entities) || input.entities.length === 0) fail("graph_entities_missing");
     if (!Array.isArray(input.relations) || input.relations.length === 0) fail("graph_relations_missing");
     const entities = input.entities.map((value) => ontologyRegistry.validateEntity(value));
-    const relations = input.relations.map((value) => ontologyRegistry.validateRelation(value));
+    const relations = input.relations.map((value) => ontologyRegistry.validateRelation({
+      ...value,
+      event_time: value.event_time ?? eventTime
+    }));
     const ontologyVersion = ontologyRegistry.activeVersion?.().version_id ?? CORE_ONTOLOGY_V1.version;
+    const authorityState = input.authorityState ?? input.authority_state ?? {
+      schema: "supermemory.authority-state.v1",
+      claim_id: claimId,
+      state: "current",
+      revision: 0,
+      policy_version: "admission-compatibility-v1",
+      valid_from: observedAt,
+      valid_until: null,
+      supersedes: [],
+      evidence_ids: evidenceIds,
+      reason_codes: ["legacy_admission_authority"]
+    };
+    if (
+      authorityState.schema !== "supermemory.authority-state.v1" || authorityState.claim_id !== claimId ||
+      !["current", "provisional", "disputed", "superseded", "revoked", "expired"].includes(authorityState.state) ||
+      !Number.isSafeInteger(authorityState.revision) || authorityState.revision < 0
+    ) fail("graph_authority_state_invalid");
     const entityIds = new Set(entities.map((entity) => entity.entity_id));
     if (entityIds.size !== entities.length) fail("graph_entity_duplicate");
     for (const entity of entities) {
@@ -572,15 +609,34 @@ export function createKnowledgeGraphAdapter({
       claim_key: claimKey,
       claim_text: text,
       observed_at: observedAt,
+      event_time: eventTime,
       evidence_ids: evidenceIds,
       episode_ids: episodeIds,
       admission: input.admission,
+      authority: authorityState,
       ontology_version: ontologyVersion,
       status: "active",
       content_hash: contentHash({ text, evidence_ids: evidenceIds, episode_ids: episodeIds })
     };
     if (existingClaim && canonicalJson(recordPayload(existingClaim)) !== canonicalJson(claimBody)) fail("graph_claim_id_collision");
     const entries = [];
+    for (const transition of input.authorityTransitions ?? input.authority_transitions ?? []) {
+      if (transition?.schema !== "supermemory.authority-state.v1") fail("graph_authority_state_invalid");
+      const priorClaim = currentClaims.get(transition.claim_id);
+      if (!priorClaim) continue;
+      entries.push({ kind: "claims", id: priorClaim.claim_id, body: { ...priorClaim, authority: transition } });
+      for (const priorRelation of current.relations.filter((item) => item.claim_id === priorClaim.claim_id)) {
+        entries.push({
+          kind: "relations",
+          id: priorRelation.relation_id,
+          body: {
+            ...priorRelation,
+            authority_state: transition.state,
+            authority_revision: transition.revision
+          }
+        });
+      }
+    }
     if (!existingClaim) entries.push({ kind: "claims", id: claimId, body: claimBody });
 
     const currentEntities = new Map(current.entities.map((entity) => [entity.entity_id, entity]));
@@ -655,10 +711,13 @@ export function createKnowledgeGraphAdapter({
         claim_text: text,
         valid_from: relation.valid_from,
         valid_to: relation.valid_to,
+        event_time: relation.event_time,
         observed_at: observedAt,
         evidence_ids: evidenceIds,
         episode_ids: episodeIds,
         admission_id: input.admission.admission_id,
+        authority_state: authorityState.state,
+        authority_revision: authorityState.revision,
         ontology_version: ontologyVersion,
         supersedes_relation_ids: relation.supersedes_relation_ids,
         contradicts_relation_ids: relation.contradicts_relation_ids,
@@ -794,10 +853,13 @@ export function createKnowledgeGraphAdapter({
         object_entity_id: relation.object_entity_id,
         valid_from: relation.valid_from,
         valid_to: relation.valid_to,
+        event_time: relation.event_time,
         observed_at: relation.observed_at,
         claim_id: claim.claim_id,
         claim_text: claim.claim_text,
         admission_id: relation.admission_id,
+        authority_state: relation.authority_state ?? claim.authority?.state ?? "current",
+        authority_revision: relation.authority_revision ?? claim.authority?.revision ?? 0,
         evidence_ids: relation.evidence_ids,
         episode_ids: relation.episode_ids
       });
@@ -882,6 +944,116 @@ export function createKnowledgeGraphAdapter({
     return withVaultMutationLock(vault, () => project(workspace, canonicalState(workspace)));
   };
 
+  const queryEvents = ({
+    workspaceId,
+    workspace_id: snakeWorkspaceId,
+    start = null,
+    end = null,
+    asOf = null,
+    as_of: snakeAsOf = null,
+    limit = 1_000,
+    cursor = 0
+  } = {}) => {
+    const workspace = authorizeWorkspace(workspaceId ?? snakeWorkspaceId);
+    if (start !== null) assertTimestamp(start, "graph_event_window_invalid");
+    if (end !== null) assertTimestamp(end, "graph_event_window_invalid");
+    if (start && end && Date.parse(start) > Date.parse(end)) fail("graph_event_window_invalid");
+    const pageLimit = boundedInteger(limit, 1_000, 1, 10_000, "graph_event_limit_invalid");
+    const offset = boundedInteger(cursor, 0, 0, Number.MAX_SAFE_INTEGER, "graph_event_cursor_invalid");
+    const at = asOf ?? snakeAsOf ?? clock();
+    assertTimestamp(at, "graph_query_time_invalid");
+    const state = authorizedState(workspace, at);
+    const temporal = state.relations.map((relation) => ({
+      relation,
+      event_time: relation.event_time ?? legacyObservedEventTime(relation.observed_at)
+    }));
+    const unresolved = temporal.filter((item) => item.event_time.earliest === null).length;
+    const records = temporal.filter((item) => (
+      (!start && !end) || eventTimeOverlaps(item.event_time, { start, end })
+    )).map((item) => ({ ...item.relation, event_time: item.event_time }))
+      .sort((left, right) => {
+        const time = Date.parse(left.event_time.earliest) - Date.parse(right.event_time.earliest);
+        return time || left.relation_id.localeCompare(right.relation_id);
+      });
+    const page = records.slice(offset, offset + pageLimit);
+    const next = offset + page.length;
+    return {
+      schema: "supermemory.temporal-events.v1",
+      workspace_id: workspace,
+      window: { start, end, as_of: at },
+      results: page,
+      pagination: {
+        cursor: offset,
+        next_cursor: next < records.length ? next : null,
+        complete: next >= records.length,
+        total: records.length,
+        unresolved_event_time_count: unresolved,
+        coverage_complete: next >= records.length && ((!start && !end) || unresolved === 0)
+      }
+    };
+  };
+
+  const migrateTemporalAuthority = ({
+    workspaceId,
+    workspace_id: snakeWorkspaceId,
+    authorityResolver = null
+  } = {}) => withVaultMutationLock(vault, () => {
+    const workspace = authorizeWorkspace(workspaceId ?? snakeWorkspaceId);
+    const state = canonicalState(workspace);
+    const resolved = new Map();
+    const entries = [];
+    for (const claim of [...state.claims].sort((left, right) => (
+      left.observed_at.localeCompare(right.observed_at) || left.claim_id.localeCompare(right.claim_id)
+    ))) {
+      const eventTime = claim.event_time ?? legacyObservedEventTime(claim.observed_at);
+      const authorityResult = authorityResolver?.({ ...claim, event_time: eventTime }) ?? null;
+      const authority = authorityResult?.state ?? authorityResult ?? claim.authority ?? {
+        schema: "supermemory.authority-state.v1",
+        claim_id: claim.claim_id,
+        state: "current",
+        revision: 0,
+        policy_version: "legacy-migration-v1",
+        valid_from: claim.observed_at,
+        valid_until: null,
+        supersedes: [],
+        evidence_ids: claim.evidence_ids,
+        reason_codes: ["legacy_admission_authority"]
+      };
+      for (const transition of authorityResult?.transitions ?? []) resolved.set(transition.claim_id, transition);
+      resolved.set(claim.claim_id, authority);
+    }
+    for (const claim of state.claims) {
+      const authority = resolved.get(claim.claim_id);
+      if (!authority) continue;
+      const body = { ...claim, event_time: claim.event_time ?? legacyObservedEventTime(claim.observed_at), authority };
+      if (canonicalJson(recordPayload(claim)) !== canonicalJson(recordPayload(body))) {
+        entries.push({ kind: "claims", id: claim.claim_id, body });
+      }
+    }
+    for (const relation of state.relations) {
+      const authority = resolved.get(relation.claim_id) ?? null;
+      const body = {
+        ...relation,
+        event_time: relation.event_time ?? legacyObservedEventTime(relation.observed_at),
+        authority_state: authority?.state ?? relation.authority_state ?? "current",
+        authority_revision: authority?.revision ?? relation.authority_revision ?? 0
+      };
+      if (canonicalJson(recordPayload(relation)) !== canonicalJson(recordPayload(body))) {
+        entries.push({ kind: "relations", id: relation.relation_id, body });
+      }
+    }
+    const batchId = commitBatch(workspace, entries, "migration:temporal-authority-v1");
+    return {
+      schema: "supermemory.temporal-authority-migration.v1",
+      workspace_id: workspace,
+      claims: state.claims.length,
+      relations: state.relations.length,
+      migrated_records: entries.length,
+      batch_id: batchId,
+      projection: entries.length > 0 ? bestEffortProject(workspace) : { projected: false, status: "unchanged" }
+    };
+  });
+
   const rebuildProjectionAsync = async ({ workspaceId, workspace_id: snakeWorkspaceId } = {}) => {
     const workspace = authorizeWorkspace(workspaceId ?? snakeWorkspaceId);
     if (!remoteBackend) return rebuildProjection({ workspaceId: workspace });
@@ -925,6 +1097,8 @@ export function createKnowledgeGraphAdapter({
     ),
     query,
     queryAsync,
+    queryEvents,
+    migrateTemporalAuthority,
     rebuildProjection,
     rebuildProjectionAsync,
     projectionHash: ({ workspaceId, workspace_id: snake }) => contentHash(

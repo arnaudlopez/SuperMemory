@@ -1,5 +1,5 @@
 {
-  "schema": "supermemory.codex-runtime.v4",
+  "schema": "supermemory.codex-runtime.v5",
   "deployment": {
     "strategy": "full",
     "canary": false,
@@ -34,6 +34,35 @@
     "max_hops": 3,
     "hard_max_hops": 5,
     "max_results": 20
+  },
+  "topic_continuity": {
+    "enabled": true,
+    "working_view_capacity_tokens": 100000,
+    "auto_bind_threshold": 0.9,
+    "auto_bind_margin": 0.25,
+    "semantic_link_mode": "suggest_only",
+    "checkpoint_on_compaction": true,
+    "checkpoint_on_session_end": true,
+    "reflect_enrichment": true
+  },
+  "temporal_retrieval": {
+    "enabled": true,
+    "plan_schema": "supermemory.retrieval-plan.v1",
+    "max_rounds": 3,
+    "repair_intents": ["current_state", "temporal_range", "aggregation", "preference", "multi_hop"],
+    "max_ms": 5000,
+    "max_results": 1000,
+    "max_tokens": 12000,
+    "abstain_on_incomplete_coverage": true
+  },
+  "authority": {
+    "enabled": true,
+    "mode": "quiet",
+    "policy_version": "quiet-authority-v1.0.0",
+    "routine_user_prompts": false,
+    "interrupt_only_at_action_boundary": true,
+    "proactive_notifications": false,
+    "visible_exception_min_age_ms": 86400000
   },
   "knowledge_graph": {
     "enabled": true,
@@ -89,8 +118,8 @@
     ]
   },
   "migration": {
-    "source_schema": "explicit_owner_migration",
-    "compatibility_flags_off": false,
+    "source_schema": "supermemory.codex-runtime.v4",
+    "compatibility_flags_off": true,
     "immutable_vault_rewrite": false
   }
 }

@@ -7,6 +7,10 @@ import { createCodexMemoryRecall } from "./lib/codex-memory-recall.mjs";
 import { createCodexMemoryRouter } from "./lib/codex-memory-router.mjs";
 import { createCodexWorkingRecall } from "./lib/codex-working-recall.mjs";
 import { createCodexWorkingSetStore } from "./lib/codex-working-set-store.mjs";
+import { createCodexTopicStore } from "./lib/codex-topic-store.mjs";
+import { createCodexTopicResolver } from "./lib/codex-topic-resolver.mjs";
+import { createCodexTopicView } from "./lib/codex-topic-view.mjs";
+import { migrateTopicContinuity } from "./lib/codex-topic-migration.mjs";
 import { createCodexWorkspaceStore } from "./lib/codex-workspace-store.mjs";
 import { createCanonicalKnowledgeWorker, createCanonicalWorkingEpisodeSource } from "./lib/canonical-knowledge-worker.mjs";
 import { createCanonicalCodexPipeline } from "./lib/canonical-codex-pipeline.mjs";
@@ -17,6 +21,8 @@ import { createHindsightOperationReceiptStore } from "./lib/hindsight-operation-
 import { canonicalClaimMemoryId, createHindsightLearnedPlane } from "./lib/hindsight-learned-plane.mjs";
 import { createKnowledgeGraphAdapter } from "./lib/knowledge-graph-adapter.mjs";
 import { createMemoryAdmissionPolicy } from "./lib/memory-admission-policy.mjs";
+import { createMemoryAuthorityPolicy } from "./lib/memory-authority-policy.mjs";
+import { createMemoryExceptionStore } from "./lib/memory-exception-store.mjs";
 import { createWorkspaceOntologyRegistry } from "./lib/ontology-registry.mjs";
 import { normalizeCodexRuntimeConfig } from "./lib/codex-runtime-config.mjs";
 import { createSuperMemoryDaemon } from "./lib/supermemory-daemon.mjs";
@@ -38,7 +44,16 @@ function parseArguments(argv) {
     hindsight_enabled: process.env.SUPERMEMORY_HINDSIGHT_ENABLED === "1",
     hindsight_url: process.env.SUPERMEMORY_HINDSIGHT_URL || "http://127.0.0.1:8888",
     hindsight_api_key_file: process.env.SUPERMEMORY_HINDSIGHT_API_KEY_FILE || null,
-    continuous_improvement: false
+    continuous_improvement: false,
+    topic_continuity: true,
+    topic_view_capacity_tokens: 100_000,
+    topic_auto_bind_threshold: 0.90,
+    topic_auto_bind_margin: 0.25,
+    authority_visible_min_age_ms: 86_400_000,
+    retrieval_max_rounds: 3,
+    retrieval_max_ms: 5_000,
+    retrieval_max_results: 1_000,
+    retrieval_max_tokens: 12_000
   };
   const values = new Set([
     "--host",
@@ -138,6 +153,15 @@ try {
     }
     options.hindsight_enabled = runtimeContract.hindsight.enabled;
     options.continuous_improvement = runtimeContract.continuous_improvement.enabled;
+    options.topic_continuity = runtimeContract.topic_continuity.enabled;
+    options.topic_view_capacity_tokens = runtimeContract.topic_continuity.working_view_capacity_tokens;
+    options.topic_auto_bind_threshold = runtimeContract.topic_continuity.auto_bind_threshold;
+    options.topic_auto_bind_margin = runtimeContract.topic_continuity.auto_bind_margin;
+    options.authority_visible_min_age_ms = runtimeContract.authority.visible_exception_min_age_ms;
+    options.retrieval_max_rounds = runtimeContract.temporal_retrieval.max_rounds;
+    options.retrieval_max_ms = runtimeContract.temporal_retrieval.max_ms;
+    options.retrieval_max_results = runtimeContract.temporal_retrieval.max_results;
+    options.retrieval_max_tokens = runtimeContract.temporal_retrieval.max_tokens;
   }
   const encryptionKey = loadKey(options.key_file);
   const daemonBearer = loadToken(options.token_file);
@@ -177,11 +201,48 @@ try {
     },
     workingSetStore,
     memoryRouterFactory: recallEnabled ? ({ captureStore }) => {
+      workingSetStore.migrateTemporalEpisodes({ workspaceId: options.workspace_id });
+      const topicStore = options.topic_continuity ? createCodexTopicStore({
+        vaultRoot: options.vault_root,
+        encryptionKey
+      }) : null;
+      const topicView = topicStore ? createCodexTopicView({
+        topicStore,
+        workingStore: workingSetStore,
+        capacityTokens: options.topic_view_capacity_tokens
+      }) : null;
+      const topicResolver = topicStore ? createCodexTopicResolver({
+        topicStore,
+        workingStore: workingSetStore,
+        autoBindThreshold: options.topic_auto_bind_threshold,
+        autoBindMargin: options.topic_auto_bind_margin
+      }) : null;
+      if (topicStore) migrateTopicContinuity({
+        workspaceId: options.workspace_id,
+        projectId: options.project_id,
+        workingStore: workingSetStore,
+        topicStore
+      });
       const workingRecall = createCodexWorkingRecall({
         workingStore: workingSetStore,
         captureStore,
         workspaceId: options.workspace_id,
+        projectId: options.project_id,
+        topicStore,
+        topicView
+      });
+      const authorityPolicy = createMemoryAuthorityPolicy({
+        vaultRoot: options.vault_root,
+        encryptionKey,
+        workspaceId: options.workspace_id,
         projectId: options.project_id
+      });
+      const exceptionStore = createMemoryExceptionStore({
+        vaultRoot: options.vault_root,
+        encryptionKey,
+        workspaceId: options.workspace_id,
+        projectId: options.project_id,
+        visibleMinAgeMs: options.authority_visible_min_age_ms
       });
       const workspaceStore = createCodexWorkspaceStore({
         vaultRoot: options.vault_root,
@@ -219,6 +280,25 @@ try {
           return episodeIds.every((id) => episodes.has(id)) && evidenceIds.every((id) => evidence.has(id));
         }
       });
+      graphAdapter.migrateTemporalAuthority({
+        workspaceId: options.workspace_id,
+        authorityResolver: (claim) => authorityPolicy.evaluate({
+          claim: {
+            claim_id: claim.claim_id,
+            claim_key: claim.claim_key,
+            workspace_id: options.workspace_id,
+            project_id: options.project_id,
+            topic_id: claim.authority?.topic_id ?? null,
+            fact_class: claim.authority?.fact_class ?? "external_fact",
+            evidence_ids: claim.evidence_ids,
+            observed_at: claim.observed_at,
+            event_time: claim.event_time,
+            proof_strength: "strong",
+            authenticated: true,
+            explicit: true
+          }
+        })
+      });
       const hindsightClient = options.hindsight_enabled ? createHindsightClientV2({
         workspaceId: options.workspace_id,
         baseUrl: options.hindsight_url,
@@ -245,6 +325,9 @@ try {
               memory_id: memoryId,
               authorized: true,
               status: "active",
+              authority: claim.authority ?? null,
+              authority_state: claim.authority?.state ?? "current",
+              authority_revision: claim.authority?.revision ?? 0,
               allowed_consumers: ["codex"],
               citation: {
                 claim_id: claim.claim_id,
@@ -283,6 +366,17 @@ try {
         workspaceId: options.workspace_id,
         projectId: options.project_id,
         workingRecall,
+        workingStore: workingSetStore,
+        topicRecall: workingRecall,
+        topicResolver,
+        topicStore,
+        topicView,
+        authorityPolicy,
+        exceptionStore,
+        retrievalMaxRounds: options.retrieval_max_rounds,
+        retrievalMaxMs: options.retrieval_max_ms,
+        retrievalMaxResults: options.retrieval_max_results,
+        retrievalMaxTokens: options.retrieval_max_tokens,
         durableRecall,
         graphAdapter,
         hindsightGateway,
@@ -302,7 +396,12 @@ try {
         admissionPolicy,
         extractor: codexPipeline.extractor,
         verifier: codexPipeline.verifier,
-        learnedPlane: memoryRouter.learnedPlane
+        learnedPlane: memoryRouter.learnedPlane,
+        authorityPolicy: memoryRouter.authorityPolicy,
+        exceptionStore: memoryRouter.exceptionStore,
+        topicContextResolver: ({ workspaceId, projectId, workingSetId }) => memoryRouter.topicStore?.getContext({
+          workspaceId, projectId, workingSetId
+        }) ?? null
       });
     } : null
   });

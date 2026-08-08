@@ -34,6 +34,13 @@ const elements = {
   derivedMemoryPlanes: [...document.querySelectorAll(".memory-plane.derived")],
   retryProjections: document.querySelector("#retry-projections"),
   engineLabel: document.querySelector("#engine-label"),
+  workingBindingForm: document.querySelector("#working-binding-form"),
+  workingSetInput: document.querySelector("#working-set-input"),
+  topicDashboard: document.querySelector("#topic-dashboard"),
+  refreshWork: document.querySelector("#refresh-work"),
+  authorityExceptionList: document.querySelector("#authority-exception-list"),
+  refreshAuthorityExceptions: document.querySelector("#refresh-authority-exceptions"),
+  authorityExceptionBadge: document.querySelector("#authority-exception-badge"),
   toast: document.querySelector("#toast")
 };
 
@@ -91,6 +98,8 @@ function showTab(name) {
   if (name === "review") loadCandidates();
   if (name === "search") elements.searchInput.focus();
   if (name === "manage") Promise.all([loadSources(), loadBackups()]);
+  if (name === "work") loadWork();
+  if (name === "exceptions") loadAuthorityExceptions();
 }
 
 function emptyState(title, message) {
@@ -543,6 +552,126 @@ async function retryProjections() {
   }
 }
 
+function boundWorkingSet() {
+  return elements.workingSetInput.value.trim();
+}
+
+function citedList(title, items = []) {
+  const section = document.createElement("section");
+  section.className = "topic-section";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  section.append(heading);
+  if (!items.length) {
+    const empty = document.createElement("small");
+    empty.textContent = "Aucun élément actif.";
+    section.append(empty);
+    return section;
+  }
+  const list = document.createElement("ul");
+  for (const item of items) {
+    const row = document.createElement("li");
+    const text = document.createElement("span");
+    text.textContent = item.text;
+    const citation = document.createElement("code");
+    citation.textContent = (item.evidence_ids ?? []).join(", ");
+    row.append(text, citation);
+    list.append(row);
+  }
+  section.append(list);
+  return section;
+}
+
+async function loadWork() {
+  const workingSetId = boundWorkingSet();
+  if (!workingSetId) {
+    elements.topicDashboard.replaceChildren(emptyState("Working Set requis", "Collez l’identifiant wset_… de votre session courante."));
+    return;
+  }
+  localStorage.setItem("supermemory.working_set_id", workingSetId);
+  elements.topicDashboard.replaceChildren(emptyState("Chargement…", "Construction de la vue citée du sujet."));
+  try {
+    const context = await api(`/api/work?workingSetId=${encodeURIComponent(workingSetId)}`);
+    const summary = document.createElement("article");
+    summary.className = "topic-summary";
+    const title = document.createElement("h3");
+    title.textContent = context.topic.title;
+    const meta = document.createElement("p");
+    meta.textContent = `${context.membership.resolution} · ${context.memberships.length} session(s) · ${context.working_view.budget.selected_tokens.toLocaleString("fr-FR")} / ${context.working_view.budget.capacity_tokens.toLocaleString("fr-FR")} tokens`;
+    const topicId = document.createElement("code");
+    topicId.textContent = context.topic.topic_id;
+    summary.append(title, meta, topicId);
+    const sections = context.working_map.sections;
+    elements.topicDashboard.replaceChildren(
+      summary,
+      citedList("Objectif", sections.goal),
+      citedList("Invariants", sections.constraints),
+      citedList("État courant", sections.current_state),
+      citedList("Décisions", sections.decisions),
+      citedList("Prochaines actions", sections.next_actions),
+      citedList("Questions ouvertes", sections.open_questions)
+    );
+    await loadAuthorityExceptions();
+  } catch (error) {
+    elements.topicDashboard.replaceChildren(emptyState("Vue indisponible", error.message));
+  }
+}
+
+function authorityExceptionCard(item) {
+  const article = document.createElement("article");
+  article.className = `authority-exception ${item.level}`;
+  const copy = document.createElement("div");
+  const title = document.createElement("strong");
+  title.textContent = item.level === "blocking" ? "Action bloquée" : "Exception visible";
+  const reason = document.createElement("p");
+  reason.textContent = item.reason_codes.join(" · ");
+  const meta = document.createElement("small");
+  meta.textContent = `${item.impact} · ${item.irreversibility} · évaluée ${item.evaluation_count} fois`;
+  copy.append(title, reason, meta);
+  const resolve = document.createElement("button");
+  resolve.type = "button";
+  resolve.className = "button ghost";
+  resolve.textContent = "Résoudre…";
+  resolve.addEventListener("click", async () => {
+    const decision = window.prompt("Décision owner à enregistrer pour cette exception :");
+    if (!decision?.trim()) return;
+    try {
+      await api("/api/authority-exceptions/resolve", {
+        method: "POST",
+        body: JSON.stringify({ workingSetId: boundWorkingSet(), fingerprint: item.fingerprint, decision })
+      });
+      showToast("Exception résolue avec un reçu d’audit local.");
+      await loadAuthorityExceptions();
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  });
+  article.append(copy, resolve);
+  return article;
+}
+
+async function loadAuthorityExceptions() {
+  const workingSetId = boundWorkingSet();
+  if (!workingSetId) {
+    elements.authorityExceptionList.replaceChildren(emptyState("Sujet non sélectionné", "Renseignez d’abord le Working Set dans la vue Travail."));
+    return;
+  }
+  elements.authorityExceptionList.replaceChildren(emptyState("Chargement…", "Réévaluation des exceptions du sujet."));
+  try {
+    const payload = await api(`/api/authority-exceptions?workingSetId=${encodeURIComponent(workingSetId)}`);
+    elements.authorityExceptionBadge.textContent = payload.results.length;
+    elements.authorityExceptionBadge.hidden = payload.results.length === 0;
+    elements.authorityExceptionList.replaceChildren();
+    if (!payload.results.length) {
+      elements.authorityExceptionList.append(emptyState("Aucune exception visible", "Les ambiguïtés latentes restent silencieuses tant qu’elles ne bloquent aucune action."));
+      return;
+    }
+    for (const item of payload.results) elements.authorityExceptionList.append(authorityExceptionCard(item));
+  } catch (error) {
+    elements.authorityExceptionList.replaceChildren(emptyState("Exceptions indisponibles", error.message));
+  }
+}
+
 async function ingestSelection() {
   if (selectedFiles.length === 0) return;
   elements.ingestButton.disabled = true;
@@ -627,5 +756,14 @@ elements.refreshSources.addEventListener("click", loadSources);
 elements.createBackup.addEventListener("click", createBackup);
 elements.searchForm.addEventListener("submit", performSearch);
 elements.retryProjections.addEventListener("click", retryProjections);
+elements.workingBindingForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  loadWork();
+});
+elements.refreshWork.addEventListener("click", loadWork);
+elements.refreshAuthorityExceptions.addEventListener("click", loadAuthorityExceptions);
+
+elements.workingSetInput.value = new URLSearchParams(window.location.search).get("workingSetId") ||
+  localStorage.getItem("supermemory.working_set_id") || "";
 
 loadStatus().then(loadCandidates).catch((error) => showToast(error.message, "error"));

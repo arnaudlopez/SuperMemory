@@ -129,3 +129,28 @@ test("tampering is detected before restore and leaves the active vault unchanged
 
   fs.rmSync(root, { recursive: true, force: true });
 });
+
+test("E2E-AC03: backup and restore preserve topic, authority and exception ledgers byte-for-byte", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "supermemory-backup-fabric-"));
+  const vaultRoot = path.join(root, "vault");
+  const backupsRoot = path.join(root, "backups");
+  writeFixture(vaultRoot);
+  const files = [
+    "00_inbox/supermemory-product/codex-topics/ws_demo/topic-events.jsonl.aead",
+    "00_inbox/supermemory-product/codex-authority/ws_demo/authority-events.jsonl.aead",
+    "00_inbox/supermemory-product/codex-authority/ws_demo/exception-events.jsonl.aead"
+  ];
+  for (const [index, relative] of files.entries()) {
+    const target = path.join(vaultRoot, relative);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, `encrypted-ledger-${index}\n`);
+  }
+  const manager = createProductBackupManager({ vaultRoot, backupsRoot });
+  const backup = manager.create({ reason: "fabric-e2e" });
+  for (const relative of files) fs.writeFileSync(path.join(vaultRoot, relative), "changed\n");
+  manager.restore(backup.backupId, `RESTORE ${backup.backupId}`);
+  for (const [index, relative] of files.entries()) {
+    assert.equal(fs.readFileSync(path.join(vaultRoot, relative), "utf8"), `encrypted-ledger-${index}\n`);
+  }
+  fs.rmSync(root, { recursive: true, force: true });
+});

@@ -25,12 +25,15 @@ function recallItems(response) {
   return [];
 }
 
-function currentRecord(record, workspaceId, consumer, asOf) {
+function currentRecord(record, workspaceId, consumer, asOf, requireCurrent = false) {
   if (!record || record.workspace_id !== workspaceId || record.authorized !== true) return false;
   if (record.status && record.status !== "active") return false;
   if (Array.isArray(record.allowed_consumers) && !record.allowed_consumers.includes(consumer)) return false;
   if (record.valid_until && Date.parse(asOf) >= Date.parse(record.valid_until)) return false;
   if (record.revoked_at && Date.parse(asOf) >= Date.parse(record.revoked_at)) return false;
+  const authorityState = record.authority?.state ?? record.authority_state ?? "current";
+  if (["superseded", "revoked", "expired"].includes(authorityState)) return false;
+  if (requireCurrent && authorityState !== "current") return false;
   return true;
 }
 
@@ -48,9 +51,9 @@ export function createHindsightAuthorityGateway({
   if (typeof authorityResolver !== "function") fail("hindsight_authority_resolver_required");
   if (factSourceResolver !== null && typeof factSourceResolver !== "function") fail("hindsight_fact_resolver_invalid");
 
-  const resolve = async ({ memoryId = null, hindsightFactId = null, asOf = clock() }) => {
+  const resolve = async ({ memoryId = null, hindsightFactId = null, asOf = clock(), requireCurrent = false }) => {
     const record = await authorityResolver({ workspaceId, memoryId, hindsightFactId, asOf, consumer });
-    return currentRecord(record, workspaceId, consumer, asOf) ? record : null;
+    return currentRecord(record, workspaceId, consumer, asOf, requireCurrent) ? record : null;
   };
 
   const projectionTags = (memory) => [
@@ -75,7 +78,7 @@ export function createHindsightAuthorityGateway({
       memory?.workspace_id !== workspaceId || memory.status !== "active" ||
       !memory.memory_id || !memory.allowed_consumers?.includes(consumer)
     ) fail("hindsight_projection_forbidden");
-    const record = await resolve({ memoryId: memory.memory_id });
+    const record = await resolve({ memoryId: memory.memory_id, requireCurrent: true });
     if (!record) fail("hindsight_projection_unauthorized");
     const result = await client.retain({
       documentId: memory.projection?.document_id ?? memory.memory_id,
@@ -141,7 +144,7 @@ export function createHindsightAuthorityGateway({
         const mapping = await factSourceResolver({ workspaceId, hindsightFactId: factId, fact: source });
         memoryId = mapping?.memory_id ?? null;
       }
-      const record = await resolve({ memoryId, hindsightFactId: factId, asOf });
+      const record = await resolve({ memoryId, hindsightFactId: factId, asOf, requireCurrent: true });
       if (!record) return null;
       sources.push({ fact_id: factId, memory_id: memoryId, citation: record.citation });
     }
@@ -202,7 +205,7 @@ export function createHindsightAuthorityGateway({
     if (!Array.isArray(facts) || facts.length === 0) fail("reflect_grounding_failed_retryable");
     const validated = [];
     for (const fact of facts) {
-      const record = await resolve({ memoryId: hindsightMemoryId(fact), hindsightFactId: fact.id ?? null });
+      const record = await resolve({ memoryId: hindsightMemoryId(fact), hindsightFactId: fact.id ?? null, requireCurrent: true });
       if (!record) fail("reflect_grounding_failed_retryable");
       validated.push({ fact_id: fact.id, memory_id: record.memory_id ?? null, citation: record.citation });
     }

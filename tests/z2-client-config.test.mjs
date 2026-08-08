@@ -53,8 +53,12 @@ test("Mac mini M4 Pro config is a remote-only Z2 client with a persistent tunnel
   assert.equal(hook.expected_workspace_id, binding.workspaceId);
   assert.equal(mcp.expected_project_id, binding.projectId);
   assert.equal(contract.deployment.activation, "full");
+  assert.equal(contract.schema, "supermemory.codex-runtime.v5");
   assert.equal(contract.deployment.canary, false);
   assert.equal(contract.deployment.progressive, false);
+  assert.equal(contract.topic_continuity.enabled, true);
+  assert.equal(contract.temporal_retrieval.max_rounds, 3);
+  assert.equal(contract.authority.mode, "quiet");
   const tunnel = fs.readFileSync(agent, "utf8");
   for (const forward of [
     "4310:127.0.0.1:4310",

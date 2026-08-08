@@ -207,10 +207,13 @@ services:
     environment:
       HINDSIGHT_BASE_URL: "http://127.0.0.1:8888"
       HINDSIGHT_BANK_ID: "${HINDSIGHT_BANK_ID:-supermemory-local}"
+      SUPERMEMORY_DAEMON_ENDPOINT: "http://127.0.0.1:8765"
+      SUPERMEMORY_DAEMON_TOKEN_FILE: "/run/supermemory/daemon.token"
     command: ["node", "scripts/supermemory-app.mjs", "--port", "4310", "--vault-root", "/data/vault", "--backups-root", "/data/backups", "--automatic-admission"]
     volumes:
       - ${SUPERMEMORY_VAULT_DIR:-/opt/supermemory/vault}:/data/vault
       - ${SUPERMEMORY_BACKUPS_DIR:-/opt/supermemory/backups}:/data/backups
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/daemon_token:/run/supermemory/daemon.token:ro
     depends_on:
       hindsight: { condition: service_healthy }
       supermemory-daemon: { condition: service_healthy }

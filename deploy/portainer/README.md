@@ -103,9 +103,10 @@ chmod 0600 /opt/supermemory/config/supermemory-ai.env
 chmod 0644 /opt/supermemory/config/runtime-contract.json
 ```
 
-The runtime contract at
+The v5 runtime contract at
 `/opt/supermemory/config/runtime-contract.json` must activate Working Memory,
-offload, Hindsight, GraphD and continuous improvement in full deployment mode.
+Topic Continuity, Temporal Retrieval, Quiet Authority, offload, Hindsight,
+GraphD and continuous improvement in full deployment mode.
 It must point GraphD to `http://127.0.0.1:8787` and its token file to
 `/run/supermemory/graphd.token`.
 
@@ -114,6 +115,7 @@ Run the non-mutating structural gates:
 ```bash
 npm ci --ignore-scripts
 npm run verify:memory-fabric-v2
+npm run verify:memory-fabric-v22
 npm run verify:secrets
 docker compose \
   --env-file /opt/supermemory/config/supermemory-ai.env \
@@ -158,6 +160,13 @@ the graph migration completes, GraphD becomes healthy, the daemon starts, then
 the web interface starts. Deploy the complete artifact; do not release selected
 services individually.
 
+At daemon startup, Working Set temporal metadata, Topic memberships and graph
+authority/temporal state are migrated idempotently from the canonical vault.
+Historical roots become isolated topics and only verified fork chains inherit a
+topic. Semantic similarity never merges historical topics automatically. A
+failed projection leaves capture durable and is repaired through the bounded
+fabric rebuild operation.
+
 `--remove-orphans` removes containers from the retired local-LLM topology. It
 does not delete named volumes. Never use `docker compose down -v`.
 
@@ -190,8 +199,9 @@ The first command is a read-only plan. The second writes private `0600`
 configuration and the LaunchAgent. Unload the retired local daemon before
 bootstrapping the tunnel because both use local port `8765`.
 
-- `http://127.0.0.1:4310` is the SuperMemory product UI: sources, exceptions,
-  cited search, projection freshness and backups.
+- `http://127.0.0.1:4310` is the SuperMemory product UI: sources, cited search,
+  backups, **Travail** and silent **Exceptions**. Travail accepts only a bound
+  `working_set_id`; the browser never lists or selects a raw `topic_id`.
 - `http://127.0.0.1:9999` is the Hindsight Control Plane: banks, entities,
   relationships, Constellation graph, operations and recall/reflect tests.
 - `127.0.0.1:8765` is the authenticated Codex capture/recall daemon.
@@ -215,9 +225,10 @@ docker compose \
 ```
 
 Then run one complete authenticated flow through the Mac mini tunnel: capture,
-automatic admission, temporal graph projection, hybrid cited recall, freshness
-audit and visualization in both UIs. Restart the stack and repeat health and
-recall checks to prove persistence.
+automatic admission, topic resolution, checkpoint, temporal graph projection,
+hybrid cited recall, evidence-coverage audit and visualization in both UIs.
+Restart the stack and repeat health, topic recall and authority checks to prove
+persistence.
 
 The runtime must report only provider `openai-codex`, model `gpt-5.6-luna` and
 reasoning `high`. Any drift, missing authentication, provider fallback or model
@@ -239,6 +250,12 @@ SUPERMEMORY_ENV_FILE=/opt/supermemory/config/supermemory-ai.env \
 For application rollback, redeploy the previous reviewed Git revision. For a
 data-format rollback, restore the exact verified vault/Neo4j backups. Never
 delete named volumes or treat Git rollback as data recovery.
+
+The product vault backup includes the encrypted Topic, Authority and Exception
+ledgers as well as checkpoints. Product restore verifies hashes, keeps a safety
+copy, atomically replaces the vault, then requests a deterministic fabric
+rebuild. Stop capture writes for the final production restore window; do not
+run two writable canonical vaults.
 
 ## Image and migration policy
 

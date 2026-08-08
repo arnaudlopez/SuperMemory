@@ -15,3 +15,14 @@ test("memory UI distinguishes canonical proofs from Hindsight-derived planes", (
   assert.match(html, /Dérivé Hindsight/);
   assert.match(app, /plane\.dataset\.state = ready \? "ready" : "degraded"/);
 });
+
+test("Topic Continuity UI exposes Travail and silent Exceptions without accepting topic selection", () => {
+  assert.match(html, /data-tab="work"/);
+  assert.match(html, /data-tab="exceptions"/);
+  assert.match(html, /Working Set courant/);
+  assert.match(html, /Quiet Authority/);
+  assert.doesNotMatch(html, /name="topic_id"|id="topic-id-input"/);
+  assert.match(app, /\/api\/work\?workingSetId=/);
+  assert.match(app, /\/api\/authority-exceptions\?workingSetId=/);
+  assert.match(app, /Aucune exception visible/);
+});

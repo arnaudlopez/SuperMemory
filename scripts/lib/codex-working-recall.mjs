@@ -48,9 +48,12 @@ function decodeCursor(value) {
 export function createCodexWorkingRecall({
   workingStore,
   captureStore,
+  topicStore = null,
+  topicView = null,
   workspaceId,
   projectId,
   maxSearchLimit = 20,
+  maxTopicSearchLimit = 1_000,
   maxOpenTokens = 20_000,
   defaultOpenTokens = 8_000,
   mapMaxTokens = 8_000,
@@ -64,6 +67,7 @@ export function createCodexWorkingRecall({
     typeof workspaceId !== "string" || typeof projectId !== "string"
   ) fail("working_recall_configuration_invalid");
   boundedInteger(maxSearchLimit, 20, 1, 20, "working_limit_invalid");
+  boundedInteger(maxTopicSearchLimit, 1_000, 1, 10_000, "working_limit_invalid");
   boundedInteger(maxOpenTokens, 20_000, 1, 20_000, "working_limit_invalid");
   boundedInteger(defaultOpenTokens, 8_000, 1, maxOpenTokens, "working_limit_invalid");
   boundedInteger(mapMaxTokens, 8_000, 128, 8_000, "working_limit_invalid");
@@ -114,6 +118,30 @@ export function createCodexWorkingRecall({
     }
   };
 
+  const topicStates = (current) => {
+    if (!topicStore?.getContext) return { context: null, states: [current] };
+    const context = topicStore.getContext({
+      workspaceId,
+      projectId,
+      workingSetId: current.manifest.working_set_id
+    });
+    const states = context.memberships.map((membership) => workingStore.resolveWorkingSet({
+      workspaceId,
+      projectId,
+      workingSetId: membership.working_set_id
+    }));
+    return { context, states };
+  };
+
+  const targetState = (input, current) => {
+    const requested = input.source_working_set_id ?? input.sourceWorkingSetId ?? current.manifest.working_set_id;
+    if (requested === current.manifest.working_set_id) return current;
+    const { states } = topicStates(current);
+    const target = states.find((state) => state.manifest.working_set_id === requested);
+    if (!target) fail("not_found_or_not_authorized");
+    return target;
+  };
+
   const citation = (state, entry) => ({
     kind: "working_evidence",
     working_set_id: state.manifest.working_set_id,
@@ -127,18 +155,29 @@ export function createCodexWorkingRecall({
     const state = boundState(input);
     const query = String(input.query ?? "").trim();
     if (!query || query.length > 4_000) fail("working_query_invalid");
-    const limit = boundedInteger(input.limit, 8, 1, maxSearchLimit, "working_limit_invalid");
+    const requestedScope = input.scope ?? (topicStore ? "topic" : "current_session");
+    if (!["current_session", "topic"].includes(requestedScope)) fail("working_scope_invalid");
+    const { context, states } = requestedScope === "topic"
+      ? topicStates(state)
+      : { context: null, states: [state] };
+    const limit = boundedInteger(
+      input.limit,
+      8,
+      1,
+      requestedScope === "topic" ? maxTopicSearchLimit : maxSearchLimit,
+      "working_limit_invalid"
+    );
     const queryTokens = tokens(query);
     const ranked = [];
     const now = Date.parse(clock());
-    for (const entry of state.entries) {
+    for (const sourceState of states) for (const entry of sourceState.entries) {
       if (
         !["selected", "active"].includes(entry.status) || entry.complete === false ||
         (entry.expires_at && Date.parse(entry.expires_at) <= now)
       ) continue;
       let opened;
       try {
-        opened = reopen(state, entry);
+        opened = reopen(sourceState, entry);
       } catch {
         continue;
       }
@@ -157,7 +196,9 @@ export function createCodexWorkingRecall({
         observed_at: entry.created_at,
         valid_from: entry.created_at,
         valid_to: entry.expires_at,
-        citations: [citation(state, entry)]
+        working_set_id: sourceState.manifest.working_set_id,
+        session_id: sourceState.manifest.session_id,
+        citations: [citation(sourceState, entry)]
       });
     }
     ranked.sort((left, right) => right.score - left.score || left.evidence_ids[0].localeCompare(right.evidence_ids[0]));
@@ -165,15 +206,24 @@ export function createCodexWorkingRecall({
       workspace_id: workspaceId,
       project_id: projectId,
       working_set_id: state.manifest.working_set_id,
-      coverage: state.manifest.capture_coverage,
+      topic_id: context?.topic.topic_id ?? null,
+      scope: requestedScope,
+      coverage: states.every((item) => item.manifest.capture_coverage === "complete") ? "complete" : state.manifest.capture_coverage,
       results: ranked.slice(0, limit),
       bounded: ranked.length > limit,
-      limit
+      limit,
+      pagination: {
+        cursor: 0,
+        next_cursor: ranked.length > limit ? limit : null,
+        complete: ranked.length <= limit,
+        total: ranked.length
+      }
     };
   };
 
   const open = (input = {}) => {
-    const state = boundState(input);
+    const current = boundState(input);
+    const state = targetState(input, current);
     const entry = activeEntry(state, input.evidence_id ?? input.evidenceId);
     const opened = reopen(state, entry);
     const serialized = canonicalJson(opened.payload);
@@ -204,7 +254,8 @@ export function createCodexWorkingRecall({
     return {
       workspace_id: workspaceId,
       project_id: projectId,
-      working_set_id: state.manifest.working_set_id,
+      working_set_id: current.manifest.working_set_id,
+      source_working_set_id: state.manifest.working_set_id,
       evidence_id: entry.evidence_id,
       content,
       content_hash: entry.content_hash,
@@ -216,7 +267,8 @@ export function createCodexWorkingRecall({
   };
 
   const neighbors = (input = {}) => {
-    const state = boundState(input);
+    const current = boundState(input);
+    const state = targetState(input, current);
     const entry = activeEntry(state, input.evidence_id ?? input.evidenceId);
     const before = boundedInteger(input.before, 3, 0, 10, "working_limit_invalid");
     const after = boundedInteger(input.after, 3, 0, 10, "working_limit_invalid");
@@ -240,7 +292,8 @@ export function createCodexWorkingRecall({
     return {
       workspace_id: workspaceId,
       project_id: projectId,
-      working_set_id: state.manifest.working_set_id,
+      working_set_id: current.manifest.working_set_id,
+      source_working_set_id: state.manifest.working_set_id,
       evidence_id: entry.evidence_id,
       before: entries.slice(Math.max(0, index - before), index).map(present),
       after: entries.slice(index + 1, index + 1 + after).map(present)
@@ -249,7 +302,13 @@ export function createCodexWorkingRecall({
 
   const map = (input = {}) => {
     const state = boundState(input);
-    const expectedHash = workingMapInputHash(state);
+    let context = null;
+    let view = null;
+    if (topicStore?.getContext && topicView?.build) {
+      context = topicStore.getContext({ workspaceId, projectId, workingSetId: state.manifest.working_set_id });
+      view = topicView.build({ workspaceId, projectId, workingSetId: state.manifest.working_set_id });
+    }
+    const expectedHash = workingMapInputHash(state, { topicContext: context, topicView: view });
     if (typeof workingStore.readDerivedMap === "function") {
       try {
         const cached = workingStore.readDerivedMap({
@@ -258,7 +317,7 @@ export function createCodexWorkingRecall({
           sessionId: state.manifest.session_id,
           workingSetId: state.manifest.working_set_id
         });
-        if (cached?.input_hash === expectedHash) return cached;
+        if (cached?.input_hash === expectedHash && (!context || cached.schema === "supermemory.working-map.v2")) return cached;
       } catch {
         // Derived maps are disposable and rebuilt from authoritative journals.
       }
@@ -266,6 +325,17 @@ export function createCodexWorkingRecall({
     const built = buildCodexWorkingMap({
       state,
       reopen: (entry) => reopen(state, entry),
+      topicContext: context,
+      topicView: view,
+      reopenTopic: (reference) => {
+        const sourceState = workingStore.resolveWorkingSet({
+          workspaceId,
+          projectId,
+          workingSetId: reference.working_set_id
+        });
+        const entry = activeEntry(sourceState, reference.evidence_id);
+        return reopen(sourceState, entry);
+      },
       maxTokens: mapMaxTokens,
       targetTokens: mapTargetTokens,
       clock

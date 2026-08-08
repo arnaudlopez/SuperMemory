@@ -310,6 +310,38 @@ main {
 .tab-button:hover { color: var(--text); }
 .tab-button b { padding: 2px 6px; border-radius: 99px; background: var(--amber); color: #211a09; font-size: 10px; }
 
+.working-binding { margin-bottom: 22px; display: grid; gap: 8px; }
+.working-binding label { color: var(--muted); font-size: 11px; font-weight: 750; }
+.working-binding > div { display: flex; gap: 10px; }
+.working-binding input {
+  min-width: 0;
+  flex: 1;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  background: #091221;
+}
+
+.topic-dashboard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.topic-summary { grid-column: 1 / -1; padding: 18px; border: 1px solid #355879; border-radius: 15px; background: #102037; }
+.topic-summary h3, .topic-section h3 { margin: 0; }
+.topic-summary p { margin: 7px 0; color: var(--muted); font-size: 12px; }
+.topic-summary code { color: var(--sky); font-size: 10px; }
+.topic-section { padding: 17px; border: 1px solid var(--line-soft); border-radius: 14px; background: #0c1626; }
+.topic-section h3 { margin-bottom: 12px; font-size: 14px; }
+.topic-section > small { color: var(--muted); }
+.topic-section ul { margin: 0; padding-left: 18px; display: grid; gap: 10px; }
+.topic-section li { color: var(--text); font-size: 12px; line-height: 1.5; }
+.topic-section li code { display: block; margin-top: 3px; color: var(--sky); font-size: 9px; overflow-wrap: anywhere; }
+
+.authority-exception-list { display: grid; gap: 12px; }
+.authority-exception { padding: 17px; border: 1px solid var(--line); border-radius: 14px; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: #0c1626; }
+.authority-exception.visible { border-color: #f2c56866; }
+.authority-exception.blocking { border-color: #ff7f8d88; background: #27141d; }
+.authority-exception p { margin: 6px 0; color: var(--muted); font-size: 12px; }
+.authority-exception small { color: #71829d; }
+
 .panel {
   min-height: 420px;
   padding: 34px;
@@ -658,6 +690,8 @@ footer {
   .source-card > div:last-child { flex-wrap: wrap; }
   .backup-heading, .backup-card { align-items: stretch; flex-direction: column; }
   .search-heading { align-items: flex-start; }
+  .topic-dashboard { grid-template-columns: 1fr; }
+  .authority-exception { align-items: stretch; flex-direction: column; }
 }
 
 @media (max-width: 520px) {

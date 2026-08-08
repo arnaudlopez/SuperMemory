@@ -56,23 +56,26 @@ const BOUND_TOOLS = Object.freeze([
     working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     memory_id: { type: "string", pattern: "^mem_" }
   }, ["working_set_id", "memory_id"]),
-  tool("supermemory_working_map", "Return the bounded map for one exact working set.", {
+  tool("supermemory_working_map", "Return the cited Working Map v2 and current topic checkpoint resolved from one exact working set.", {
     working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" }
   }, ["working_set_id"]),
-  tool("supermemory_working_search", "Search active evidence inside one exact working set.", {
+  tool("supermemory_working_search", "Search active evidence in the bound topic by default, or only the current session.", {
     working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     query: { type: "string", minLength: 1, maxLength: 4000 },
-    limit: { type: "integer", minimum: 1, maximum: 20 }
+    limit: { type: "integer", minimum: 1, maximum: 1000 },
+    scope: { enum: ["current_session", "topic"] }
   }, ["working_set_id", "query"]),
   tool("supermemory_working_open", "Open one cited working evidence page without listing the working set.", {
     working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     evidence_id: { type: "string", pattern: "^wev_[0-9a-f-]{36}$" },
+    source_working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     max_tokens: { type: "integer", minimum: 1, maximum: 20000 },
     cursor: { type: "string", maxLength: 2048 }
   }, ["working_set_id", "evidence_id"]),
   tool("supermemory_working_neighbors", "Return bounded evidence neighbors around one cited item.", {
     working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     evidence_id: { type: "string", pattern: "^wev_[0-9a-f-]{36}$" },
+    source_working_set_id: { type: "string", pattern: "^wset_[0-9a-f-]{36}$" },
     before: { type: "integer", minimum: 0, maximum: 10 },
     after: { type: "integer", minimum: 0, maximum: 10 }
   }, ["working_set_id", "evidence_id"]),
@@ -189,7 +192,7 @@ export function createCodexMcpServer({
     }
     if (
       mode === "bound" &&
-      ["workspace_id", "workspaceId", "project_id", "projectId", "cwd", "session_id", "sessionId"]
+      ["workspace_id", "workspaceId", "project_id", "projectId", "topic_id", "topicId", "cwd", "session_id", "sessionId"]
         .some((key) => Object.hasOwn(args, key))
     ) throw Object.assign(new Error("scope_argument_forbidden"), { code: "scope_argument_forbidden" });
     validateToolArguments(descriptor, args);

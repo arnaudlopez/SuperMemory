@@ -16,6 +16,7 @@ import {
 
 const KEY = Buffer.alloc(32, 0x51);
 const WORKSPACE = "ws_018f1234-5678-7abc-8def-0123456789ac";
+const PROJECT_ID = "prj_018f1234-5678-7abc-8def-0123456789ab";
 const FOREIGN_WORKSPACE = "ws_018f1234-5678-7abc-8def-0123456789af";
 
 function projectionHash(records) {
@@ -185,9 +186,98 @@ test("KG-AC01/02/03: canonical objects are cited, aliases merge explicitly, and 
   assert.equal(state.entities.every((item) => item.observed_at && item.admission_ids.length > 0), true);
   assert.equal(state.claims.every((item) => item.admission?.integrity_hash), true);
   assert.equal(state.relations.every((item) => item.valid_from && "valid_to" in item && item.admission_id), true);
+  assert.equal(state.claims.every((item) => item.event_time?.normalization === "legacy_observed_only"), true);
+  assert.equal(state.relations.every((item) => item.event_time?.normalization === "legacy_observed_only"), true);
   const files = fs.readdirSync(path.join(fx.vault, "20_professional/memory-fabric", WORKSPACE, "graph", "claims"));
   assert.ok(files.length >= 3);
   for (const file of files) assert.doesNotMatch(fs.readFileSync(path.join(fx.vault, "20_professional/memory-fabric", WORKSPACE, "graph", "claims", file), "utf8"), /SuperMemory uses Vault/);
+});
+
+test("Lot 4.5: temporal events use event time independently from observation and validity", (t) => {
+  const fx = fixture(t);
+  const project = entity(WORKSPACE, "project:temporal", "Temporal Project");
+  const event = entity(WORKSPACE, "event:release", "Release", "Event");
+  const item = mutation({
+    number: 91,
+    claimKey: "temporal-release",
+    text: "The release happened yesterday.",
+    observedAt: "2026-08-03T10:00:00.000Z",
+    entities: [project, event],
+    relations: [{
+      ...relation(WORKSPACE, "temporal-release", event.entity_id, "OCCURRED_IN", project.entity_id, "2026-08-03T10:00:00.000Z"),
+      event_time: {
+        kind: "interval",
+        earliest: "2026-08-02T00:00:00.000Z",
+        latest: "2026-08-02T23:59:59.999Z",
+        granularity: "day",
+        anchor_timestamp: "2026-08-03T10:00:00.000Z",
+        normalization: "relative_expression"
+      }
+    }]
+  });
+  item.input.claim.event_time = item.input.relations[0].event_time;
+  activate(fx, item);
+  const events = fx.adapter.queryEvents({
+    workspaceId: WORKSPACE,
+    start: "2026-08-02T00:00:00.000Z",
+    end: "2026-08-02T23:59:59.999Z"
+  });
+  assert.equal(events.results.length, 1);
+  assert.equal(events.results[0].observed_at, "2026-08-03T10:00:00.000Z");
+  assert.equal(events.results[0].valid_from, "2026-08-03T10:00:00.000Z");
+  assert.equal(events.results[0].event_time.earliest, "2026-08-02T00:00:00.000Z");
+  assert.equal(events.pagination.complete, true);
+});
+
+test("QA-AC02/03 + E2E-AC02: authority transitions immediately hide superseded claims without graph cleanup", (t) => {
+  const fx = fixture(t);
+  const owner = entity(WORKSPACE, "person:owner", "Owner", "Person");
+  const project = entity(WORKSPACE, "project:authority", "Authority Project");
+  const first = mutation({
+    number: 92, claimKey: "preference-v1", text: "Owner prefers blue.",
+    observedAt: "2026-08-01T10:00:00.000Z", entities: [owner, project],
+    relations: [relation(WORKSPACE, "preference-v1", owner.entity_id, "PREFERS", project.entity_id, "2026-08-01T10:00:00.000Z")]
+  });
+  first.input.authorityState = {
+    schema: "supermemory.authority-state.v1", claim_id: first.input.claim.claim_id,
+    claim_key: "owner-project-preference", workspace_id: WORKSPACE, project_id: PROJECT_ID,
+    topic_id: null, fact_class: "user_preference", state: "current", revision: 1,
+    observed_at: "2026-08-01T10:00:00.000Z", valid_from: "2026-08-01T10:00:00.000Z",
+    valid_until: null, supersedes: [], evidence_ids: first.input.evidenceIds,
+    policy_version: "quiet-authority-v1.0.0", reason_codes: ["explicit_owner_preference"],
+    evaluated_at: "2026-08-01T10:00:00.000Z"
+  };
+  activate(fx, first);
+  const second = mutation({
+    number: 93, claimKey: "preference-v2", text: "Owner prefers green.",
+    observedAt: "2026-08-02T10:00:00.000Z", entities: [owner, project],
+    relations: [relation(WORKSPACE, "preference-v2", owner.entity_id, "PREFERS", project.entity_id, "2026-08-02T10:00:00.000Z")]
+  });
+  const superseded = {
+    ...first.input.authorityState,
+    state: "superseded",
+    valid_until: "2026-08-02T10:00:00.000Z",
+    superseded_by: second.input.claim.claim_id,
+    reason_codes: ["newer_authoritative_claim"]
+  };
+  second.input.authorityState = {
+    ...first.input.authorityState,
+    claim_id: second.input.claim.claim_id,
+    state: "current",
+    revision: 2,
+    observed_at: "2026-08-02T10:00:00.000Z",
+    valid_from: "2026-08-02T10:00:00.000Z",
+    supersedes: [first.input.claim.claim_id],
+    evidence_ids: second.input.evidenceIds,
+    evaluated_at: "2026-08-02T10:00:00.000Z"
+  };
+  second.input.authorityTransitions = [superseded, second.input.authorityState];
+  activate(fx, second);
+  const canonical = fx.adapter.readCanonicalState({ workspaceId: WORKSPACE });
+  assert.equal(canonical.claims.find((item) => item.claim_id === first.input.claim.claim_id).authority.state, "superseded");
+  const authorized = fx.adapter.readAuthorizedState({ workspaceId: WORKSPACE, asOf: "2026-08-04T00:00:00.000Z" });
+  assert.deepEqual(authorized.claims.map((item) => item.claim_id), [second.input.claim.claim_id]);
+  assert.deepEqual(authorized.relations.map((item) => item.claim_id), [second.input.claim.claim_id]);
 });
 
 test("KG-AC04/05: contradiction closes history and as_of returns only the valid relation", (t) => {

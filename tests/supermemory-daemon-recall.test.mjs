@@ -13,6 +13,16 @@ test("daemon exposes authenticated read-only recall routes through a proxy clien
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const seen = [];
   const memoryRouter = {
+    rebuildFabric: async () => {
+      seen.push(["rebuildFabric", {}]);
+      return {
+        schema: "supermemory.fabric-rebuild.v1",
+        graph: { projected: true },
+        topics: { working_sets: 2 },
+        authority_states: 3,
+        exceptions: 1
+      };
+    },
     recall: async (input) => { seen.push(["recall", input]); return { results: [{ text: "ok" }] }; },
     workingSearch: async (input) => { seen.push(["workingSearch", input]); return { results: [] }; },
     workingOpen: async () => ({}), workingNeighbors: async () => ({}), workingMap: async () => ({}),
@@ -32,6 +42,20 @@ test("daemon exposes authenticated read-only recall routes through a proxy clien
   });
   t.after(() => daemon.stop());
   const address = await daemon.start();
+  const healthResponse = await fetch(`${address.url}/health`, {
+    headers: { authorization: `Bearer ${TOKEN}` }
+  });
+  const health = await healthResponse.json();
+  assert.equal(health.status, "ready");
+  assert.deepEqual(health.fabric_rebuild, {
+    status: "complete",
+    error: null,
+    schema: "supermemory.fabric-rebuild.v1",
+    graph: "projected",
+    topics: 2,
+    authority_states: 3,
+    exceptions: 1
+  });
   const client = createSuperMemoryRecallClient({ endpoint: address.url, authToken: TOKEN, timeoutMs: 500 });
   const recalled = await client.recall({
     working_set_id: "wset_018f7c0e-7b7d-7abc-8def-0123456789ad",
@@ -39,10 +63,11 @@ test("daemon exposes authenticated read-only recall routes through a proxy clien
     query: "architecture"
   });
   assert.equal(recalled.results[0].text, "ok");
-  assert.equal(seen[0][0], "recall");
+  assert.equal(seen[0][0], "rebuildFabric");
+  assert.equal(seen[1][0], "recall");
   await client.workingSearch({
     working_set_id: "wset_018f7c0e-7b7d-7abc-8def-0123456789ad",
     query: "test"
   });
-  assert.equal(seen[1][0], "workingSearch");
+  assert.equal(seen[2][0], "workingSearch");
 });

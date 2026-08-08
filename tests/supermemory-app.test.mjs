@@ -567,3 +567,46 @@ test("automatic review ignores forged HTTP verifier signals and keeps quarantine
   const search = await jsonRequest(runtime.url, "/api/search", { query: "high impact disputed" });
   assert.deepEqual(search.body.results, []);
 });
+
+test("Topic Continuity UI APIs proxy only Working Set-bound work and exception operations", async (t) => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "supermemory-topic-ui-"));
+  const calls = [];
+  const daemonProxy = {
+    async post(route, body) {
+      calls.push({ route, body });
+      if (route === "/v1/topic/context") return {
+        topic: { topic_id: "topic_demo", title: "Sujet courant" },
+        membership: { resolution: "exact" }, memberships: [{}, {}],
+        working_view: { budget: { selected_tokens: 1000, capacity_tokens: 100000 } },
+        working_map: { sections: { goal: [], constraints: [], current_state: [], decisions: [], next_actions: [], open_questions: [] } }
+      };
+      if (route === "/v1/exceptions/query") return { results: [{ fingerprint: "sha256:demo", level: "visible" }] };
+      if (route === "/v1/exceptions/resolve") return { status: "resolved", fingerprint: body.fingerprint };
+      if (route === "/v1/admin/rebuild") return { status: "rebuilt" };
+      throw new Error("unexpected_route");
+    }
+  };
+  const app = createSuperMemoryServer({
+    vaultRoot: path.join(tempRoot, "vault"),
+    hindsightOptions: { enabled: false },
+    daemonProxy
+  });
+  const runtime = await app.start();
+  t.after(async () => {
+    await app.stop();
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+  const workingSetId = "wset_018f7c0e-7b7d-7abc-8def-0123456789ad";
+  const work = await request(runtime.url, `/api/work?workingSetId=${workingSetId}`);
+  assert.equal(work.body.topic.topic_id, "topic_demo");
+  const exceptions = await request(runtime.url, `/api/authority-exceptions?workingSetId=${workingSetId}`);
+  assert.equal(exceptions.body.results.length, 1);
+  const resolved = await jsonRequest(runtime.url, "/api/authority-exceptions/resolve", {
+    workingSetId, fingerprint: "sha256:demo", decision: "Prefer primary evidence"
+  });
+  assert.equal(resolved.body.status, "resolved");
+  assert.deepEqual(calls.map((item) => item.route), [
+    "/v1/topic/context", "/v1/exceptions/query", "/v1/exceptions/resolve"
+  ]);
+  assert.equal(calls.some((item) => Object.hasOwn(item.body, "topic_id")), false);
+});

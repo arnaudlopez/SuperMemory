@@ -37,7 +37,7 @@ function fixture(t) {
   return { root, vault, project, binding, configPath };
 }
 
-test("bound MCP advertises only scope-free read tools and returns tool errors safely", async () => {
+test("TC-AC06: bound MCP advertises only scope-free read tools, accepts no topic id and returns tool errors safely", async () => {
   const workingSetId = "wset_018f7c0e-7b7d-7abc-8def-0123456789ad";
   const recall = {
     assertBound(args) {
@@ -124,6 +124,12 @@ test("bound MCP advertises only scope-free read tools and returns tool errors sa
     arguments: { working_set_id: workingSetId, query: "résume", response_schema: {} }
   }));
   assert.equal(arbitrarySchema.result.isError, true);
+  const topicInjection = await server.handle(request(7, "tools/call", {
+    name: "supermemory_working_search",
+    arguments: { working_set_id: workingSetId, query: "cache", topic_id: "topic_forbidden" }
+  }));
+  assert.equal(topicInjection.result.isError, true);
+  assert.equal(topicInjection.result.structuredContent.error, "scope_argument_forbidden");
 });
 
 test("global MCP is diagnostic-only and cannot invoke content tools", async () => {

@@ -93,11 +93,15 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
     "utf8"
   ));
   assert.equal(runtime.deployment.activation, "full");
+  assert.equal(runtime.schema, "supermemory.codex-runtime.v5");
   assert.equal(runtime.deployment.canary, false);
   assert.equal(runtime.deployment.progressive, false);
   assert.equal(runtime.working_memory.capacity_tokens, 100_000);
   assert.equal(runtime.working_memory.map_max_tokens, 8_000);
   assert.equal(runtime.admission.mode, "automatic");
+  assert.equal(runtime.topic_continuity.enabled, true);
+  assert.equal(runtime.temporal_retrieval.max_rounds, 3);
+  assert.equal(runtime.authority.mode, "quiet");
 });
 
 test("GraphD v2 is non-root and exposes only bounded authenticated Neo4j operations", () => {

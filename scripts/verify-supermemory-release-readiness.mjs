@@ -195,6 +195,7 @@ function checkTrackedSecretHygiene() {
 }
 
 const checks = [
+  runCommand("memory_fabric_v22", "npm", ["run", "verify:memory-fabric-v22"]),
   runCommand("memory_fabric_v2", "node", [
     "--test",
     "tests/memory-fabric-v2-acceptance.test.mjs",

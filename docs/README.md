@@ -4,7 +4,13 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
 
 ## Lecture recommandee
 
-1. `hindsight-native-memory-plane-blueprint.md`
+1. `topic-continuity-quiet-authority-blueprint.md`
+   - Blueprint produit/tech de la tranche Memory Fabric v2.2.
+   - Dossier de sujet persistant au-dessus de plusieurs sessions.
+   - Topic Working View 100K, checkpoints cites et Working Map <= 8K.
+   - Autorite canonique silencieuse et interruptions reservees aux actions reellement bloquees.
+
+2. `hindsight-native-memory-plane-blueprint.md`
    - Blueprint produit/tech de la tranche Memory Fabric v2.1.
    - Retrait immediat de Graphiti et `supermemory-improved`.
    - Hindsight natif pour observations, operations, recall enrichi et Reflect.
@@ -14,44 +20,44 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
    - Etat de livraison :
      [`hindsight-native-release-receipt.md`](hindsight-native-release-receipt.md).
 
-2. `codex-supermemory-technical-design.md`
+3. `codex-supermemory-technical-design.md`
    - Conception normative de l'integration Codex Desktop, CLI et IDE.
    - Identite stable des projets, capture App Server/hooks et versioning.
    - Recall MCP gouverne, securite, migration, deploiement et acceptation.
 
-3. `audit-memoire-agentique-v2.md`
+4. `audit-memoire-agentique-v2.md`
    - Decision d'adoption de Hindsight.
    - Repartition entre moteur memoire et gouvernance SuperMemory.
    - Features Hindsight a utiliser par phase.
 
-4. `prd-memoire-agentique-v2.md`
+5. `prd-memoire-agentique-v2.md`
    - Plan produit cible avec Hindsight.
    - Contrat de promotion vers Hindsight.
    - Evals et milestones V2.
 
-5. `golden-case-implementation-roadmap.md`
+6. `golden-case-implementation-roadmap.md`
    - Decoupage des tranches d'implementation.
    - Objectifs intermediaires et oracles menant au Golden Case enterprise.
    - Ordre recommande entre contrats, Hindsight, source lifecycle, agents, acces, ports et CI.
 
-6. `golden-case-tdd-matrix.md`
+7. `golden-case-tdd-matrix.md`
    - Tests rouges precis par tranche.
    - Fixtures, commandes ciblees et criteres de passage.
    - Backlog TDD pour driver le developpement jusqu'au Golden Case.
 
-7. `audit-memoire-agentique.md`
+8. `audit-memoire-agentique.md`
    - Pourquoi cette architecture existe.
    - Decisions critiques.
    - Risques, angles morts, gouvernance et recherche academique.
    - Contexte V1 conserve pour historique.
 
-8. `prd-memoire-agentique.md`
+9. `prd-memoire-agentique.md`
    - Ce que le produit doit faire.
    - Structure cible du vault.
    - Protocoles d'ingestion, navigation, revue, publication, monitoring et multi-agent.
    - Contexte V1 conserve pour historique.
 
-9. `evaluation-comparative-retrieval-rappel.md`
+10. `evaluation-comparative-retrieval-rappel.md`
    - Comparaison avec les benchmarks et architectures retrieval/RAG.
    - Estimation de rappel et vitesse.
    - Trajectoire BM25, embeddings, hybrid retrieval, reranking, graph.
@@ -64,6 +70,9 @@ Le systeme cible est maintenant :
 - Hindsight comme moteur memoire adopte ;
 - Hindsight comme plan derive unique pour facts, observations, recall hybride et Reflect ;
 - Neo4j/GraphD comme graphe temporel exact, type et reconstruisible ;
+- Topic Dossier comme continuite operationnelle au-dessus de plusieurs sessions ;
+- Topic Working View bornee a 100K et Working Map citee bornee a 8K ;
+- autorite canonique silencieuse, avec revue humaine reservee aux exceptions bloquantes ;
 - Graphiti et `supermemory-improved` retires sans fallback runtime ;
 - ontologie metier evolutive, creee a la demande ;
 - snapshots immuables pour les sources externes ou mutables ;
@@ -78,11 +87,13 @@ sources brutes
   -> snapshot immuable si source mutable
   -> notes compilees
   -> gouvernance des types metier
-  -> promotion gouvernee vers Hindsight
+  -> extraction et verification independantes
+  -> admission automatique ou quarantaine d'exception
+  -> projection gouvernee vers Hindsight
   -> recall Hindsight filtre
   -> signaux publies
   -> agents specialises
-  -> revue humaine
+  -> revue humaine seulement si une action importante reste bloquee
   -> monitoring
   -> gouvernance
 ```
@@ -106,21 +117,24 @@ enveloppes d'evenements redactees
   -> journal + spool AEAD par workspace/session
   -> archives de preuves et snapshots immuables
   -> candidats inactifs
-  -> approbation ou rejet humain
+  -> verification independante + admission automatique/TTL/quarantaine
   -> memoire canonique versionnee dans le vault
   -> projection Hindsight locale et reconstruisible
   -> recall MCP lie au workspace, revalide par le vault, avec citations
 ```
 
-Les echanges observes ne deviennent jamais automatiquement des souvenirs
-actifs. Le pipeline separe quatre niveaux :
+Un echange observe ne devient jamais actif sur la seule decision du modele qui
+l'a extrait. Une memoire standard peut toutefois etre admise automatiquement
+apres preuve exacte, verification independante et decision de politique
+versionnee. Le pipeline separe les niveaux suivants :
 
 | Niveau | Role | Autorite |
 | --- | --- | --- |
 | Journal chiffre | Rejouer les evenements visibles et dedupliques | Archive seulement |
 | Archive de preuves | Conserver les observations et snapshots sources | Non active |
-| Candidat | Proposer un fait cite a la revue | Inactif |
-| Memoire approuvee | Alimenter le recall apres controles de scope | Vault canonique |
+| Candidat | Proposer un fait cite a la verification | Inactif |
+| Memoire admise | Alimenter le recall apres controles de scope, preuve et fraicheur | Vault canonique |
+| Exception | Conserver un conflit non resolu sans bloquer le reste du pipeline | Inactive ou provisional selon la politique |
 
 Le serveur MCP de contenu est lance dans le contexte du projet. Il expose un
 recall en lecture seule et refuse tout workspace ambigu ou non lie. Le serveur
@@ -229,14 +243,14 @@ identity-vault/
 
 ## Prochaine etape recommandee
 
-Le squelette, les contrats T0-T14 et l'outillage operateur local sont implementes. La prochaine preuve a produire est operationnelle :
+Memory Fabric v2.2 est implementee directement dans le runtime production v5.
+La prochaine etape est operationnelle :
 
-1. garder le gate `contract-ready` vert ;
-2. lancer un smoke Hindsight reel sur une banque sacrificielle locale ;
-3. valider l'evidence recente avec `verify-supermemory-runtime-readiness.mjs` ;
-4. prendre ensuite une decision explicite d'approbation production.
-
-Le plan de durcissement execute et l'audit courant sont dans `improvement-plan-and-audit-2026-07-17.md`.
+1. sauvegarder puis synchroniser le vault canonique vers Z2 ;
+2. deployer la stack complete a six services, sans canari ni second provider ;
+3. verifier les migrations atomiques Topic, temporalite et authority au demarrage ;
+4. executer le smoke authentifie capture -> topic -> recall temporel cite ;
+5. controler les vues locales Travail et Exceptions depuis le Mac mini M4 Pro.
 
 ## Verification
 

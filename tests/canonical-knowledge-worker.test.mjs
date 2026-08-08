@@ -20,7 +20,7 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
   const vault = path.join(root, "vault");
   fs.mkdirSync(vault);
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const payload = { text: "Project A depends on Tool B" };
+  const payload = { text: "Project A depended on Tool B yesterday" };
   const episodeId = "epi_018f7c0e-7b7d-7abc-8def-0123456789ad";
   const evidenceId = "wev_018f7c0e-7b7d-7abc-8def-0123456789ae";
   const source = {
@@ -80,7 +80,7 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
       identity: { provider: "fixture", model: "extractor", prompt_version: "v1" },
       extract: async () => ({
         claim_key: "project-a-depends-tool-b",
-        text: "Project A depends on Tool B",
+        text: "Project A depended on Tool B yesterday",
         entities: [
           { binding_id: "project:a", canonical_name: "Project A", entity_type: "Project", aliases: [] },
           { binding_id: "tool:b", canonical_name: "Tool B", entity_type: "Tool", aliases: [] }
@@ -125,6 +125,9 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
   const state = graphAdapter.readCanonicalState({ workspaceId: WORKSPACE });
   assert.equal(state.claims.length, 1);
   assert.equal(state.relations.length, 1);
+  assert.equal(state.claims[0].observed_at, "2026-08-08T10:00:00.000Z");
+  assert.equal(state.claims[0].event_time.earliest, "2026-08-07T00:00:00.000Z");
+  assert.equal(state.relations[0].event_time.earliest, "2026-08-07T00:00:00.000Z");
   assert.equal(await fs.promises.stat(worker.root).then(() => true), true);
   assert.deepEqual(fs.readdirSync(worker.root), ["checkpoint.aead.json"]);
   assert.equal((await worker.process()).processed, 0);

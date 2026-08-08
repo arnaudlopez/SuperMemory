@@ -6,6 +6,7 @@ import { generateUuidV7 } from "./project-registry.mjs";
 import { canonicalJson, openJsonAead, sealJsonAead } from "./codex-redaction.mjs";
 import { classifyWorkingEvent, selectWorkingEvidence } from "./codex-working-set-index.mjs";
 import { withVaultMutationLock } from "./registry-transaction.mjs";
+import { legacyObservedEventTime } from "./codex-temporal-normalizer.mjs";
 
 const WORKING_ID = /^wset_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EVIDENCE_ID = /^wev_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -508,6 +509,8 @@ export function createCodexWorkingSetStore({
       workspace_id: scope.workspaceId,
       project_id: scope.projectId,
       session_id: scope.sessionId,
+      thread_id: created.thread_id ?? null,
+      checkout_id: created.checkout_id ?? null,
       forked_from_working_set_id: created.forked_from_working_set_id,
       forked_from_session_id: created.forked_from_session_id,
       fork_identity: created.fork_identity,
@@ -611,14 +614,18 @@ export function createCodexWorkingSetStore({
     }
   };
   const writeCanonicalEpisode = (episode) => {
-    const filePath = canonicalEpisodePath(episode.workspace_id, episode.episode_id, true);
-    atomicWrite(filePath, `${JSON.stringify(sealJsonAead(episode, {
+    const normalized = {
+      ...episode,
+      event_time: episode.event_time ?? legacyObservedEventTime(episode.observed_at)
+    };
+    const filePath = canonicalEpisodePath(normalized.workspace_id, normalized.episode_id, true);
+    atomicWrite(filePath, `${JSON.stringify(sealJsonAead(normalized, {
       encryptionKey,
-      aad: episodeAad(episode.workspace_id, episode.episode_id)
+      aad: episodeAad(normalized.workspace_id, normalized.episode_id)
     }))}\n`);
-    const reopened = readCanonicalEpisode(episode.workspace_id, episode.episode_id);
-    if (canonicalJson(reopened) !== canonicalJson(episode)) fail("working_episode_reopen_failed");
-    inject("after_episode_commit", episode);
+    const reopened = readCanonicalEpisode(normalized.workspace_id, normalized.episode_id);
+    if (canonicalJson(reopened) !== canonicalJson(normalized)) fail("working_episode_reopen_failed");
+    inject("after_episode_commit", normalized);
     return reopened;
   };
 
@@ -649,6 +656,8 @@ export function createCodexWorkingSetStore({
     const forkedFromWorkingSetId = input?.forkedFromWorkingSetId ?? input?.forked_from_working_set_id ?? null;
     const forkedFromSessionId = input?.forkedFromSessionId ?? input?.forked_from_session_id ?? null;
     const forkIdentity = input?.forkIdentity ?? input?.fork_identity ?? null;
+    const threadId = input?.threadId ?? input?.thread_id ?? null;
+    const checkoutId = input?.checkoutId ?? input?.checkout_id ?? null;
     if (forkedFromWorkingSetId !== null) {
       assertId(forkedFromWorkingSetId, WORKING_ID, "working_set_unknown");
       assertString(forkedFromSessionId, "working_fork_parent_session_required");
@@ -676,6 +685,8 @@ export function createCodexWorkingSetStore({
       forked_from_working_set_id: forkedFromWorkingSetId,
       forked_from_session_id: forkedFromSessionId,
       fork_identity: forkIdentity,
+      thread_id: threadId,
+      checkout_id: checkoutId,
       recorded_at: clock()
     });
     inject("after_checkpoint_commit", { workingSetId, type: "working.created" });
@@ -738,6 +749,8 @@ export function createCodexWorkingSetStore({
             forked_from_working_set_id: forkedFromWorkingSetId,
             forked_from_session_id: forkedFromSessionId,
             fork_identity: forkIdentity,
+            thread_id: record.envelope.thread_id ?? null,
+            checkout_id: record.envelope.checkout_id ?? null,
             recorded_at: clock()
           });
           state = replay(envelopeScope.workspaceId, newWorkingSetId, envelopeScope);
@@ -941,12 +954,21 @@ export function createCodexWorkingSetStore({
     const target = derivedMapPath(workspaceId, workingSetId);
     if (!fs.existsSync(target)) return null;
     try {
-      const value = openJsonAead(JSON.parse(fs.readFileSync(target, "utf8")), {
-        encryptionKey,
-        expectedAad: `supermemory.working-map.v1.${workspaceId}.${workingSetId}`
-      });
+      const sealed = JSON.parse(fs.readFileSync(target, "utf8"));
+      let value;
+      try {
+        value = openJsonAead(sealed, {
+          encryptionKey,
+          expectedAad: `supermemory.working-map.v2.${workspaceId}.${workingSetId}`
+        });
+      } catch {
+        value = openJsonAead(sealed, {
+          encryptionKey,
+          expectedAad: `supermemory.working-map.v1.${workspaceId}.${workingSetId}`
+        });
+      }
       if (
-        value?.schema !== "supermemory.working-map.v1" ||
+        !["supermemory.working-map.v1", "supermemory.working-map.v2"].includes(value?.schema) ||
         value.workspace_id !== workspaceId || value.project_id !== state.manifest.project_id ||
         value.session_id !== state.manifest.session_id || value.working_set_id !== workingSetId
       ) fail("working_map_corrupt");
@@ -963,13 +985,13 @@ export function createCodexWorkingSetStore({
     const workspaceId = state.manifest.workspace_id;
     const workingSetId = state.manifest.working_set_id;
     if (
-      value?.schema !== "supermemory.working-map.v1" ||
+      !["supermemory.working-map.v1", "supermemory.working-map.v2"].includes(value?.schema) ||
       value.workspace_id !== workspaceId || value.project_id !== state.manifest.project_id ||
       value.session_id !== state.manifest.session_id || value.working_set_id !== workingSetId
     ) fail("working_map_invalid");
     atomicWrite(derivedMapPath(workspaceId, workingSetId), `${JSON.stringify(sealJsonAead(value, {
       encryptionKey,
-      aad: `supermemory.working-map.v1.${workspaceId}.${workingSetId}`
+      aad: `${value.schema}.${workspaceId}.${workingSetId}`
     }))}\n`);
     return value;
   });
@@ -1315,6 +1337,45 @@ export function createCodexWorkingSetStore({
     return state;
   });
 
+  const listWorkingSets = ({ workspaceId, workspace_id: snakeWorkspaceId, projectId, project_id: snakeProjectId } = {}) => {
+    const workspace = assertString(workspaceId ?? snakeWorkspaceId, "working_set_unknown");
+    const project = projectId ?? snakeProjectId ?? null;
+    const directory = path.join(root, workspace);
+    if (!fs.existsSync(directory)) return [];
+    const stat = fs.lstatSync(directory);
+    if (stat.isSymbolicLink() || !stat.isDirectory()) fail("working_set_unknown");
+    const states = [];
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.isSymbolicLink() || !WORKING_ID.test(entry.name)) continue;
+      try {
+        const state = replay(workspace, entry.name);
+        if (project === null || state.manifest.project_id === project) states.push(state);
+      } catch {
+        // A corrupt set is isolated and will be surfaced when addressed directly.
+      }
+    }
+    return states.sort((left, right) => left.manifest.created_at.localeCompare(right.manifest.created_at));
+  };
+
+  const migrateTemporalEpisodes = ({ workspaceId, workspace_id: snakeWorkspaceId } = {}) => withVaultMutationLock(vault, () => {
+    const workspace = safeSegment(workspaceId ?? snakeWorkspaceId, "working_scope_invalid");
+    const directory = path.join(vault, "20_professional", "memory-fabric", workspace, "episodes");
+    if (!fs.existsSync(directory)) return { workspace_id: workspace, episodes: 0, migrated: 0 };
+    let episodes = 0;
+    let migrated = 0;
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const match = /^(epi_[0-9a-f-]{36})\.json\.aead$/i.exec(entry.name);
+      if (!entry.isFile() || entry.isSymbolicLink() || !match) fail("working_episode_unknown");
+      const episode = readCanonicalEpisode(workspace, match[1]);
+      episodes += 1;
+      if (!episode.event_time) {
+        writeCanonicalEpisode(episode);
+        migrated += 1;
+      }
+    }
+    return { schema: "supermemory.episode-temporal-migration.v1", workspace_id: workspace, episodes, migrated };
+  });
+
   return {
     root,
     ensure,
@@ -1325,6 +1386,8 @@ export function createCodexWorkingSetStore({
     listEpisodes,
     resolveWorkingSet,
     listImproveEpisodes,
+    listWorkingSets,
+    migrateTemporalEpisodes,
     recordAdmissionRevocation,
     listRevokedAdmissions,
     readClosedSession,

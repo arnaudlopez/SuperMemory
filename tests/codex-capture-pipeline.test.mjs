@@ -492,6 +492,53 @@ test("daemon acknowledges a durable Stop without waiting for memory compilation"
   await daemon.stop();
 });
 
+test("daemon creates deterministic topic checkpoints on compaction and session end without a canonical worker", async (t) => {
+  const { vault } = fixture(t);
+  const checkpoints = [];
+  const empty = async () => ({ results: [] });
+  const memoryRouter = {
+    recall: empty,
+    workingSearch: empty,
+    workingOpen: async () => ({}),
+    workingNeighbors: async () => ({}),
+    workingMap: async () => ({}),
+    graphQuery: empty,
+    explainPath: async () => ({}),
+    search: empty,
+    get: async () => ({}),
+    explainCitation: async () => ({}),
+    status: async () => ({ status: "ready" }),
+    topicCheckpoint: async (input) => {
+      checkpoints.push(input);
+      return { status: "created" };
+    }
+  };
+  const memoryCompiler = {
+    notifyCapture() {}, recover() {}, stop: async () => {}, stats: () => ({ status: "idle" })
+  };
+  const daemon = createSuperMemoryDaemon({
+    vaultRoot: vault,
+    encryptionKey: KEY,
+    authToken: TOKEN,
+    workingMemory: { enabled: true },
+    memoryCompiler,
+    memoryRouter
+  });
+  const address = await daemon.start();
+  t.after(() => daemon.stop().catch(() => {}));
+  for (const [sequence, eventType] of [[0, "context.compacted"], [1, "assistant.completed"]]) {
+    const response = await requestJson(`${address.url}/v1/events`, {
+      method: "POST",
+      token: TOKEN,
+      body: captureInput({ sequence, eventType, externalEventId: `checkpoint-${eventType}` })
+    });
+    assert.equal(response.status, 202);
+  }
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(checkpoints.map((item) => item.kind), ["compaction", "session_end"]);
+  assert.equal(checkpoints[0].working_set_id, checkpoints[1].working_set_id);
+});
+
 test("daemon startup replays encrypted outage spool before compiling completed turns", async (t) => {
   const { vault, runtime } = fixture(t);
   const spool = createCodexSpool({

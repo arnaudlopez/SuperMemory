@@ -30,6 +30,7 @@
     "verify:runtime": "node scripts/verify-supermemory-runtime-readiness.mjs",
     "verify:production": "node scripts/verify-supermemory-production-readiness.mjs",
     "verify:memory-fabric-v2": "node scripts/verify-memory-fabric-v2.mjs && node --test tests/memory-fabric-v2-acceptance.test.mjs tests/memory-fabric-v2-e2e.test.mjs tests/memory-fabric-v2-performance.test.mjs",
+    "verify:memory-fabric-v22": "node scripts/verify-memory-fabric-v22.mjs && node --test tests/codex-topic-store.test.mjs tests/codex-topic-resolver.test.mjs tests/codex-topic-migration.test.mjs tests/codex-topic-view.test.mjs tests/codex-topic-checkpoint.test.mjs tests/codex-topic-working-recall.test.mjs tests/codex-temporal-normalizer.test.mjs tests/codex-retrieval-plan.test.mjs tests/codex-evidence-coverage.test.mjs tests/memory-authority-policy.test.mjs tests/memory-exception-store.test.mjs tests/memory-fabric-v22-acceptance.test.mjs",
     "verify:hindsight-native": "node scripts/verify-hindsight-native-plane.mjs && node --test tests/hindsight-native-plane-acceptance.test.mjs tests/hindsight-native-memory-plane.test.mjs tests/hindsight-native-migration.test.mjs tests/memory-fabric-v2-e2e.test.mjs",
     "verify:secrets": "node scripts/verify-secret-hygiene.mjs"
   },

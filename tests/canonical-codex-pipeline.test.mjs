@@ -24,6 +24,13 @@ test("canonical Codex pipeline enforces the single Luna High provider", async ()
       return {
         claim_key: "architecture:z2-canonical",
         text: "Z2 héberge le brain canonique.",
+        fact_class: "user_decision",
+        explicit: true,
+        authenticated: false,
+        inferred: false,
+        ttl_ms: null,
+        temporal_expression: "",
+        event_time: null,
         entities: [{ binding_id: "z2", canonical_name: "Z2", entity_type: "server", aliases: [] }],
         relations: [],
         ontology_proposals: []
@@ -56,6 +63,7 @@ test("canonical Codex pipeline enforces the single Luna High provider", async ()
   assert.equal(pipeline.compilerExtractor.provider, "openai-codex");
   assert.equal(pipeline.compilerExtractor.reasoningEffort, "high");
   assert.equal(pipeline.extractor.identity.provider, "openai-codex");
+  assert.equal(pipeline.extractor.identity.prompt_version, "canonical-extract-v3");
   assert.equal(pipeline.verifier.identity.independent, true);
 
   const candidate = await pipeline.compilerExtractor.extract({
@@ -67,6 +75,22 @@ test("canonical Codex pipeline enforces the single Luna High provider", async ()
   const verification = await pipeline.compilerVerifier.verify({ candidate, messages: [] });
   assert.equal(verification.verifier.model, "gpt-5.6-luna");
   assert.equal(calls.length, 2);
+});
+
+test("canonical extraction contract requires temporal and Quiet Authority signals", () => {
+  const schema = JSON.parse(fs.readFileSync(new URL(
+    "../deploy/codex/canonical-extraction.schema.json",
+    import.meta.url
+  ), "utf8"));
+  for (const field of [
+    "fact_class", "explicit", "authenticated", "inferred", "ttl_ms",
+    "temporal_expression", "event_time"
+  ]) {
+    assert.ok(schema.required.includes(field));
+    assert.ok(schema.properties[field]);
+  }
+  assert.ok(schema.properties.relations.items.required.includes("event_time"));
+  assert.ok(schema.properties.relations.items.required.includes("temporal_expression"));
 });
 
 test("canonical Codex pipeline keeps empty turns out of durable memory", async () => {

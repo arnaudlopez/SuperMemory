@@ -21,6 +21,8 @@ function parseArgs(argv) {
     admissionMode: process.env.SUPERMEMORY_ADMISSION_MODE === "automatic"
       ? "automatic"
       : "legacy_manual",
+    daemonEndpoint: process.env.SUPERMEMORY_DAEMON_ENDPOINT || "http://127.0.0.1:8765",
+    daemonTokenFile: process.env.SUPERMEMORY_DAEMON_TOKEN_FILE || null,
     json: false
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -37,6 +39,10 @@ function parseArgs(argv) {
       options.json = true;
     } else if (arg === "--automatic-admission") {
       options.admissionMode = "automatic";
+    } else if (arg === "--daemon-endpoint") {
+      options.daemonEndpoint = argv[++index];
+    } else if (arg === "--daemon-token-file") {
+      options.daemonTokenFile = argv[++index];
     } else if (arg === "--help" || arg === "-h") {
       options.help = true;
     } else {
@@ -52,7 +58,7 @@ function parseArgs(argv) {
 
 function usage() {
   return [
-    "Usage: node scripts/supermemory-app.mjs [--port <number>] [--vault-root <directory>] [--backups-root <directory>] [--automatic-admission] [--json]",
+    "Usage: node scripts/supermemory-app.mjs [--port <number>] [--vault-root <directory>] [--backups-root <directory>] [--automatic-admission] [--daemon-endpoint <url>] [--daemon-token-file <file>] [--json]",
     "",
     "Starts the SuperMemory local web application on 127.0.0.1.",
     "Markdown, TXT, PDF and DOCX are extracted locally with source citations."
@@ -255,6 +261,34 @@ async function rebuildDerivedHindsight(hindsight, store) {
   }
 }
 
+function createDaemonProxy({ endpoint, tokenFile } = {}) {
+  if (!tokenFile) return null;
+  const parsed = new URL(endpoint);
+  if (parsed.protocol !== "http:" || !["127.0.0.1", "localhost", "::1"].includes(parsed.hostname)) {
+    throw new Error("daemon_endpoint_must_be_loopback");
+  }
+  const stat = fs.lstatSync(tokenFile);
+  if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o027) !== 0) throw new Error("daemon_token_file_insecure");
+  const token = fs.readFileSync(tokenFile, "utf8").trim();
+  if (Buffer.byteLength(token) < 32) throw new Error("daemon_token_invalid");
+  return Object.freeze({
+    async post(route, body) {
+      const response = await fetch(new URL(route, parsed), {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30_000)
+      });
+      const result = await response.json();
+      if (!response.ok || result.ok !== true) {
+        throw new ProductError(result.error ?? "daemon_unavailable", "La mémoire de travail n’est pas disponible.", response.status);
+      }
+      const { ok, ...value } = result;
+      return value;
+    }
+  });
+}
+
 export function createSuperMemoryServer({
   host = "127.0.0.1",
   port = 0,
@@ -267,7 +301,10 @@ export function createSuperMemoryServer({
   backupManager = null,
   admissionMode = "legacy_manual",
   admissionPolicy = null,
-  verifier = null
+  verifier = null,
+  daemonEndpoint = "http://127.0.0.1:8765",
+  daemonTokenFile = null,
+  daemonProxy = null
 }) {
   if (host !== "127.0.0.1") throw new Error("host_must_be_loopback");
   const hindsightAdapter = hindsight ?? createProductHindsight(hindsightOptions);
@@ -280,6 +317,7 @@ export function createSuperMemoryServer({
     verifier
   });
   const backups = backupManager ?? createProductBackupManager({ vaultRoot, backupsRoot, clock });
+  const memoryDaemon = daemonProxy ?? createDaemonProxy({ endpoint: daemonEndpoint, tokenFile: daemonTokenFile });
   let server;
 
   const requestHandler = async (req, res) => {
@@ -311,6 +349,28 @@ export function createSuperMemoryServer({
         send(res, 200, { backups: backups.list() });
         return;
       }
+      if (req.method === "GET" && pathname === "/api/work") {
+        if (!memoryDaemon) throw new ProductError("daemon_unavailable", "La mémoire de travail n’est pas configurée.", 503);
+        const workingSetId = url.searchParams.get("workingSetId");
+        send(res, 200, await memoryDaemon.post("/v1/topic/context", { working_set_id: workingSetId }));
+        return;
+      }
+      if (req.method === "GET" && pathname === "/api/authority-exceptions") {
+        if (!memoryDaemon) throw new ProductError("daemon_unavailable", "La mémoire de travail n’est pas configurée.", 503);
+        const workingSetId = url.searchParams.get("workingSetId");
+        send(res, 200, await memoryDaemon.post("/v1/exceptions/query", { working_set_id: workingSetId }));
+        return;
+      }
+      if (req.method === "POST" && pathname === "/api/authority-exceptions/resolve") {
+        if (!memoryDaemon) throw new ProductError("daemon_unavailable", "La mémoire de travail n’est pas configurée.", 503);
+        const body = await readJsonBody(req);
+        send(res, 200, await memoryDaemon.post("/v1/exceptions/resolve", {
+          working_set_id: body.workingSetId,
+          fingerprint: body.fingerprint,
+          decision: body.decision
+        }));
+        return;
+      }
       if (req.method === "POST" && pathname === "/api/backups") {
         const body = await readJsonBody(req);
         const created = backups.create({ reason: body.reason || "manual" });
@@ -324,7 +384,12 @@ export function createSuperMemoryServer({
         const body = await readJsonBody(req);
         const restored = backups.restore(backupId, body.confirmation);
         const hindsightRebuild = await rebuildDerivedHindsight(hindsightAdapter, store);
-        send(res, 200, { ...restored, hindsightRebuild });
+        let fabricRebuild = { status: "not_configured" };
+        if (memoryDaemon) {
+          try { fabricRebuild = await memoryDaemon.post("/v1/admin/rebuild", {}); }
+          catch (error) { fabricRebuild = { status: "pending", error: error.code ?? "daemon_unavailable" }; }
+        }
+        send(res, 200, { ...restored, hindsightRebuild, fabricRebuild });
         return;
       }
       if (req.method === "POST" && pathname === "/api/ingest") {

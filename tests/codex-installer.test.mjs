@@ -6,6 +6,7 @@ import test from "node:test";
 import { createCodexInstaller } from "../scripts/lib/codex-installer.mjs";
 import {
   createFullDeploymentRuntimeV4,
+  createFullDeploymentRuntimeV5,
   normalizeCodexRuntimeConfig
 } from "../scripts/lib/codex-runtime-config.mjs";
 
@@ -82,10 +83,10 @@ test("install plan is redacted/read-only and apply requires its exact hash", (t)
   assert.equal(fs.existsSync(path.join(codexHome, "config.toml")), false);
 });
 
-test("v1/v2/v3 migrate flags-off and explicit v4 activation is one complete deployment contract", () => {
+test("v1/v2/v3/v4 migrate flags-off to v5 and explicit v5 activation is one complete deployment contract", () => {
   for (const schema of ["supermemory.hook-runtime.v1", "supermemory.codex-runtime.v2", "supermemory.codex-runtime.v3"]) {
     const migrated = normalizeCodexRuntimeConfig({ schema });
-    assert.equal(migrated.schema, "supermemory.codex-runtime.v4");
+    assert.equal(migrated.schema, "supermemory.codex-runtime.v5");
     assert.equal(migrated.migration.source_schema, schema);
     assert.equal(migrated.migration.compatibility_flags_off, true);
     assert.equal(migrated.working_memory.enabled, false);
@@ -112,6 +113,19 @@ test("v1/v2/v3 migrate flags-off and explicit v4 activation is one complete depl
   assert.equal(full.continuous_improvement.enabled, true);
   assert.equal(full.admission.human_review_default, false);
   assert.equal(full.migration.immutable_vault_rewrite, false);
+  const fullV5 = createFullDeploymentRuntimeV5({
+    graphEndpoint: "http://127.0.0.1:8787",
+    graphTokenFile: "/secure/graphd_token"
+  });
+  assert.equal(fullV5.schema, "supermemory.codex-runtime.v5");
+  assert.equal(fullV5.topic_continuity.enabled, true);
+  assert.equal(fullV5.temporal_retrieval.enabled, true);
+  assert.equal(fullV5.temporal_retrieval.max_rounds, 3);
+  assert.equal(fullV5.authority.enabled, true);
+  assert.equal(fullV5.authority.routine_user_prompts, false);
+  const migratedV4 = normalizeCodexRuntimeConfig(full);
+  assert.equal(migratedV4.schema, "supermemory.codex-runtime.v5");
+  assert.equal(migratedV4.migration.source_schema, "supermemory.codex-runtime.v4");
 });
 
 test("rollback restores previous plugin state and always preserves the vault", (t) => {

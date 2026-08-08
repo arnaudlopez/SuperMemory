@@ -198,7 +198,7 @@ export function validateCoreEntity(value) {
 function validateCoreRelationShape(value, allowedTypes) {
   exactFields(value, new Set([
     "relation_id", "relation_key", "subject_entity_id", "predicate", "object_entity_id",
-    "valid_from", "valid_to", "supersedes_relation_ids", "contradicts_relation_ids"
+    "valid_from", "valid_to", "event_time", "supersedes_relation_ids", "contradicts_relation_ids"
   ]), "ontology_relation_shape_invalid");
   requiredString(value.relation_id, "ontology_relation_id_invalid");
   requiredString(value.relation_key, "ontology_relation_key_invalid");
@@ -216,6 +216,7 @@ function validateCoreRelationShape(value, allowedTypes) {
     object_entity_id: value.object_entity_id,
     valid_from: validFrom,
     valid_to: validTo,
+    ...(value.event_time ? { event_time: validateEventTime(value.event_time) } : {}),
     supersedes_relation_ids: stringArray(
       value.supersedes_relation_ids ?? [],
       "ontology_relation_supersedes_invalid"
@@ -681,3 +682,4 @@ import path from "node:path";
 import { canonicalJson, openJsonAead, sealJsonAead } from "./codex-redaction.mjs";
 import { verifyAdmissionDecision } from "./memory-admission-policy.mjs";
 import { withVaultMutationLock } from "./registry-transaction.mjs";
+import { validateEventTime } from "./codex-temporal-normalizer.mjs";

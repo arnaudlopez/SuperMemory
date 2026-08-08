@@ -111,6 +111,13 @@
         <span>4</span> Gérer
         <b id="removal-badge" hidden>0</b>
       </button>
+      <button class="tab-button" type="button" data-tab="work">
+        <span>5</span> Travail
+      </button>
+      <button class="tab-button" type="button" data-tab="exceptions">
+        <span>6</span> Exceptions
+        <b id="authority-exception-badge" hidden>0</b>
+      </button>
     </nav>
 
     <section class="panel active" id="panel-ingest" data-panel="ingest">
@@ -214,6 +221,37 @@
         </div>
         <div class="backup-list" id="backup-list"></div>
       </div>
+    </section>
+
+    <section class="panel" id="panel-work" data-panel="work" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Continuité</p>
+          <h2>Sujet de travail courant</h2>
+          <p>La vue est résolue depuis votre Working Set ; aucun identifiant de topic n’est accepté.</p>
+        </div>
+        <button class="button ghost" id="refresh-work" type="button">Actualiser</button>
+      </div>
+      <form class="working-binding" id="working-binding-form">
+        <label for="working-set-input">Working Set courant</label>
+        <div>
+          <input id="working-set-input" type="text" pattern="wset_[0-9a-f-]{36}" placeholder="wset_…" autocomplete="off">
+          <button class="button primary" type="submit">Afficher</button>
+        </div>
+      </form>
+      <div class="topic-dashboard" id="topic-dashboard"></div>
+    </section>
+
+    <section class="panel" id="panel-exceptions" data-panel="exceptions" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Quiet Authority</p>
+          <h2>Exceptions qui méritent votre attention</h2>
+          <p>Aucune notification proactive : seules les exceptions visibles ou bloquantes du sujet courant apparaissent.</p>
+        </div>
+        <button class="button ghost" id="refresh-authority-exceptions" type="button">Actualiser</button>
+      </div>
+      <div class="authority-exception-list" id="authority-exception-list"></div>
     </section>
   </main>
 

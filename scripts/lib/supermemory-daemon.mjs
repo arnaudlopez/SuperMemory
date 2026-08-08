@@ -214,6 +214,16 @@ export function createSuperMemoryDaemon({
     ["/v1/working/open", "workingOpen"],
     ["/v1/working/neighbors", "workingNeighbors"],
     ["/v1/working/map", "workingMap"],
+    ["/v1/topic/resolve", "resolveTopic"],
+    ["/v1/topic/checkpoint", "topicCheckpoint"],
+    ["/v1/topic/context", "topicContext"],
+    ["/v1/topic/search", "topicSearch"],
+    ["/v1/recall/plan", "recallPlan"],
+    ["/v1/recall/coverage", "recallCoverage"],
+    ["/v1/authority/explain", "authorityExplain"],
+    ["/v1/exceptions/query", "exceptionsQuery"],
+    ["/v1/exceptions/resolve", "exceptionsResolve"],
+    ["/v1/admin/rebuild", "rebuildFabric"],
     ["/v1/graph/query", "graphQuery"],
     ["/v1/graph/explain-path", "explainPath"],
     ["/v1/memory/search", "search"],
@@ -228,6 +238,30 @@ export function createSuperMemoryDaemon({
     duplicates: 0,
     rejected: 0
   };
+  const handleWorkingLifecycle = ({ envelope, working, notifyWorker = true }) => {
+    const sessionEnd = envelope?.event_type === "assistant.completed";
+    const compaction = envelope?.event_type === "context.compacted";
+    if ((!sessionEnd && !compaction) || !working?.working_set_id) return;
+    if (sessionEnd && store.workingStore?.closeSession) {
+      store.workingStore.closeSession({
+        workspaceId: envelope.workspace_id,
+        projectId: envelope.project_id,
+        sessionId: envelope.session_id,
+        workingSetId: working.working_set_id,
+        closedAt: envelope.occurred_at
+      });
+    }
+    if (typeof router?.topicCheckpoint === "function") {
+      Promise.resolve(router.topicCheckpoint({
+        working_set_id: working.working_set_id,
+        kind: sessionEnd ? "session_end" : "compaction",
+        created_at: envelope.occurred_at
+      })).catch(() => {});
+    }
+    if (sessionEnd && worker && notifyWorker) {
+      Promise.resolve(worker.notifySessionClosed({ sessionId: envelope.session_id })).catch(() => {});
+    }
+  };
   let listening = false;
   let recoveryPromise = null;
   let spoolReplay = {
@@ -238,6 +272,10 @@ export function createSuperMemoryDaemon({
     failed: 0,
     retained: 0,
     expired: 0
+  };
+  let fabricRecovery = {
+    status: typeof router?.rebuildFabric === "function" ? "pending" : "disabled",
+    error: null
   };
 
   const server = http.createServer(async (request, response) => {
@@ -252,10 +290,17 @@ export function createSuperMemoryDaemon({
       sendJson(response, 401, { ok: false, error: "daemon_unauthorized" });
       return;
     }
+    const recovering = [spoolReplay.status, fabricRecovery.status]
+      .some((status) => ["pending", "running"].includes(status));
+    if (recovering && !(request.method === "GET" && request.url === "/health")) {
+      sendJson(response, 503, { ok: false, error: "daemon_recovering", retryable: true });
+      return;
+    }
     if (request.method === "GET" && request.url === "/health") {
-      const runtimeStatus = ["pending", "running"].includes(spoolReplay.status)
+      const recoveryStates = [spoolReplay.status, fabricRecovery.status];
+      const runtimeStatus = recoveryStates.some((status) => ["pending", "running"].includes(status))
         ? "starting"
-        : spoolReplay.status === "degraded"
+        : recoveryStates.includes("degraded")
           ? "degraded"
           : "ready";
       sendJson(response, 200, {
@@ -265,6 +310,8 @@ export function createSuperMemoryDaemon({
         capture: store.stats(),
         compiler: compiler.stats(),
         canonical_worker: worker?.status() ?? { enabled: false, status: "disabled" },
+        memory: router ? await router.status().catch((error) => ({ status: "degraded", error: error?.code ?? "memory_status_failed" })) : { status: "disabled" },
+        fabric_rebuild: { ...fabricRecovery },
         spool_replay: { ...spoolReplay },
         counters: { ...counters }
       });
@@ -283,13 +330,14 @@ export function createSuperMemoryDaemon({
       return;
     }
     if (request.method === "POST" && recallRoutes.has(request.url)) {
-      if (!router) {
+      const method = recallRoutes.get(request.url);
+      if (!router || typeof router[method] !== "function") {
         sendJson(response, 503, { ok: false, error: "backend_unavailable" });
         return;
       }
       try {
         const input = await readJsonBody(request, maxBodyBytes);
-        const result = await router[recallRoutes.get(request.url)](input);
+        const result = await router[method](input);
         sendJson(response, 200, { ok: true, ...result });
       } catch (error) {
         counters.rejected += 1;
@@ -301,22 +349,22 @@ export function createSuperMemoryDaemon({
       try {
         const input = await readJsonBody(request, maxBodyBytes);
         const result = store.ingest(input);
+        let topic = null;
+        if (typeof router?.resolveTopic === "function" && result.working?.working_set_id) {
+          try {
+            topic = router.resolveTopic({
+              working_set_id: result.working.working_set_id,
+              title: input.payload?.prompt ?? input.payload?.text ?? "Sujet sans titre"
+            });
+          } catch (error) {
+            topic = { status: "degraded", error: error?.code ?? "topic_resolution_failed" };
+          }
+        }
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
         compiler.notifyCapture(input);
-        if (input?.event_type === "assistant.completed" && worker) {
-          if (result.working?.working_set_id && store.workingStore?.closeSession) {
-            store.workingStore.closeSession({
-              workspaceId: input.workspace_id,
-              projectId: input.project_id,
-              sessionId: input.session_id,
-              workingSetId: result.working.working_set_id,
-              closedAt: input.occurred_at
-            });
-          }
-          Promise.resolve(worker.notifySessionClosed({ sessionId: input.session_id })).catch(() => {});
-        }
-        sendJson(response, 202, { ok: true, ...result });
+        handleWorkingLifecycle({ envelope: input, working: result.working });
+        sendJson(response, 202, { ok: true, ...result, topic });
       } catch (error) {
         counters.rejected += 1;
         sendJson(response, errorStatus(error), {
@@ -331,22 +379,22 @@ export function createSuperMemoryDaemon({
         const prepared = await readJsonBody(request, maxBodyBytes);
         const result = store.ingestPrepared(prepared);
         const envelope = prepared.envelope;
+        let topic = null;
+        if (typeof router?.resolveTopic === "function" && result.working?.working_set_id) {
+          try {
+            topic = router.resolveTopic({
+              working_set_id: result.working.working_set_id,
+              title: prepared.payload?.prompt ?? prepared.payload?.text ?? "Sujet sans titre"
+            });
+          } catch (error) {
+            topic = { status: "degraded", error: error?.code ?? "topic_resolution_failed" };
+          }
+        }
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
         compiler.notifyCapture(envelope);
-        if (envelope?.event_type === "assistant.completed" && worker) {
-          if (result.working?.working_set_id && store.workingStore?.closeSession) {
-            store.workingStore.closeSession({
-              workspaceId: envelope.workspace_id,
-              projectId: envelope.project_id,
-              sessionId: envelope.session_id,
-              workingSetId: result.working.working_set_id,
-              closedAt: envelope.occurred_at
-            });
-          }
-          Promise.resolve(worker.notifySessionClosed({ sessionId: envelope.session_id })).catch(() => {});
-        }
-        sendJson(response, 202, { ok: true, ...result });
+        handleWorkingLifecycle({ envelope, working: result.working });
+        sendJson(response, 202, { ok: true, ...result, topic });
       } catch (error) {
         counters.rejected += 1;
         sendJson(response, errorStatus(error), {
@@ -385,6 +433,26 @@ export function createSuperMemoryDaemon({
         return;
       }
       recoveryPromise = (async () => {
+        if (typeof router?.rebuildFabric === "function") {
+          fabricRecovery = { status: "running", error: null };
+          try {
+            const rebuilt = await router.rebuildFabric({});
+            fabricRecovery = {
+              status: "complete",
+              error: null,
+              schema: rebuilt.schema ?? null,
+              graph: rebuilt.graph?.projected === true ? "projected" : rebuilt.graph?.status ?? "unchanged",
+              topics: rebuilt.topics?.working_sets ?? 0,
+              authority_states: rebuilt.authority_states ?? 0,
+              exceptions: rebuilt.exceptions ?? 0
+            };
+          } catch (error) {
+            fabricRecovery = {
+              status: "degraded",
+              error: error?.code ?? "fabric_rebuild_failed"
+            };
+          }
+        }
         if (runtimeRoot) {
           spoolReplay = { ...spoolReplay, status: "running" };
           try {
@@ -438,16 +506,18 @@ export function createSuperMemoryDaemon({
     const completedScopes = new Map();
     const result = await spool.replay((prepared) => {
       const ingest = store.ingestPrepared(prepared);
-      if (prepared.envelope.event_type === "assistant.completed") {
-        if (ingest.working?.working_set_id && store.workingStore?.closeSession) {
-          store.workingStore.closeSession({
-            workspaceId: prepared.envelope.workspace_id,
-            projectId: prepared.envelope.project_id,
-            sessionId: prepared.envelope.session_id,
-            workingSetId: ingest.working.working_set_id,
-            closedAt: prepared.envelope.occurred_at
+      if (typeof router?.resolveTopic === "function" && ingest.working?.working_set_id) {
+        try {
+          router.resolveTopic({
+            working_set_id: ingest.working.working_set_id,
+            title: prepared.payload?.prompt ?? prepared.payload?.text ?? "Sujet sans titre"
           });
+        } catch {
+          // Capture replay stays durable even when topic projection needs repair.
         }
+      }
+      handleWorkingLifecycle({ envelope: prepared.envelope, working: ingest.working, notifyWorker: false });
+      if (prepared.envelope.event_type === "assistant.completed") {
         const scope = {
           workspaceId: prepared.envelope.workspace_id,
           sessionId: prepared.envelope.session_id
@@ -643,6 +713,16 @@ export function createSuperMemoryRecallClient({
     workingSearch: (input) => invoke("/v1/working/search", input),
     workingOpen: (input) => invoke("/v1/working/open", input),
     workingNeighbors: (input) => invoke("/v1/working/neighbors", input),
+    resolveTopic: (input) => invoke("/v1/topic/resolve", input),
+    topicCheckpoint: (input) => invoke("/v1/topic/checkpoint", input, Math.max(timeoutMs, 30_000)),
+    topicContext: (input) => invoke("/v1/topic/context", input),
+    topicSearch: (input) => invoke("/v1/topic/search", input),
+    recallPlan: (input) => invoke("/v1/recall/plan", input),
+    recallCoverage: (input) => invoke("/v1/recall/coverage", input),
+    authorityExplain: (input) => invoke("/v1/authority/explain", input),
+    exceptionsQuery: (input) => invoke("/v1/exceptions/query", input),
+    exceptionsResolve: (input) => invoke("/v1/exceptions/resolve", input),
+    rebuildFabric: () => invoke("/v1/admin/rebuild", {}, Math.max(timeoutMs, 30_000)),
     graphQuery: (input) => invoke("/v1/graph/query", input),
     explainPath: (input) => invoke("/v1/graph/explain-path", input),
     status: () => invoke("/v1/memory/status", {})

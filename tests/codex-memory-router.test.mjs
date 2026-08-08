@@ -171,7 +171,7 @@ test("cross-tier dedup retains every tier, admission, temporal window and citati
   assert.deepEqual(result.results[0].evidence_ids, ["wev-1", "wev-2"]);
 });
 
-test("HN-AC20/21: Hindsight and Neo4j failures degrade independently without stopping capture-facing recall", async () => {
+test("HN-AC20/21 + TR-AC08: Hindsight and Neo4j failures degrade independently without stopping capture-facing recall", async () => {
   const workingRecall = {
     assertBound: () => ({ manifest: { working_set_id: WORKING_SET_ID } }),
     search: async () => workingResult(), map: () => ({}), open: () => ({}), neighbors: () => ({})
@@ -227,4 +227,65 @@ test("HN-AC20/21: Hindsight and Neo4j failures degrade independently without sto
   assert.equal(withoutNeo4j.coverage.durable, "complete");
   assert.equal(withoutNeo4j.coverage.graph, "unavailable");
   assert.ok(withoutNeo4j.results.some((item) => item.memory_tiers.includes("durable")));
+});
+
+test("TR-AC04/06/07: exhaustive aggregation is proven once and unresolved gaps abstain after three rounds", async () => {
+  const workingRecall = {
+    assertBound: () => ({ manifest: { working_set_id: WORKING_SET_ID } }),
+    search: async () => ({ results: [], pagination: { complete: true } }),
+    map: () => ({}), open: () => ({}), neighbors: () => ({})
+  };
+  const durableRecall = { search: async () => ({ results: [] }), get: () => ({}), explainCitation: () => ({}) };
+  const event = {
+    relation_id: "rel-event", claim_id: "clm-event", claim_text: "Incident enregistré",
+    predicate: "OCCURRED_IN", evidence_ids: ["wev-event"], episode_ids: ["epi-event"],
+    admission_id: "adm-event", subject_entity_id: "ent-a", object_entity_id: "ent-b",
+    valid_from: "2026-08-01T00:00:00.000Z", valid_to: null,
+    event_time: {
+      kind: "interval", earliest: "2026-08-01T00:00:00.000Z", latest: "2026-08-01T23:59:59.999Z",
+      granularity: "day", anchor_timestamp: "2026-08-08T00:00:00.000Z", normalization: "explicit"
+    }
+  };
+  const graphAdapter = {
+    readAuthorizedState: () => ({ entities: [], relations: [] }),
+    query: () => ({ paths: [] }),
+    queryEvents: () => ({
+      results: [event],
+      pagination: { complete: true, coverage_complete: true, unresolved_event_time_count: 0, total: 1 }
+    })
+  };
+  const router = createCodexMemoryRouter({
+    workspaceId: WORKSPACE_ID, projectId: PROJECT_ID, workingRecall,
+    topicRecall: workingRecall, durableRecall, graphAdapter,
+    wallClock: () => "2026-08-08T00:00:00.000Z"
+  });
+  const exact = await router.recall({
+    working_set_id: WORKING_SET_ID,
+    query: "Combien d'incidents le 2026-08-01 ?"
+  });
+  assert.equal(exact.retrieval_plan.intent, "aggregation");
+  assert.equal(exact.evidence_coverage.coverage.aggregation, "exact");
+  assert.equal(exact.rounds, 1);
+  assert.equal(exact.abstention_required, false);
+
+  const unavailable = createCodexMemoryRouter({
+    workspaceId: WORKSPACE_ID,
+    projectId: PROJECT_ID,
+    workingRecall,
+    durableRecall,
+    graphAdapter: {
+      readAuthorizedState: () => ({ entities: [], relations: [] }),
+      query: () => ({ paths: [] }),
+      queryEvents: () => { throw Object.assign(new Error("offline"), { code: "backend_unavailable" }); }
+    },
+    wallClock: () => "2026-08-08T00:00:00.000Z"
+  });
+  const partial = await unavailable.recall({
+    working_set_id: WORKING_SET_ID,
+    query: "Combien d'incidents le 2026-08-01 ?"
+  });
+  assert.equal(partial.rounds, 3);
+  assert.equal(partial.abstention_required, true);
+  assert.equal(partial.partial, true);
+  assert.equal(partial.trace.attempts.filter((item) => item.source === "events").length, 3);
 });

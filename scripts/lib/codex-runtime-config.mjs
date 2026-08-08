@@ -1,6 +1,8 @@
 import path from "node:path";
 
 const LEGACY_SCHEMA = /^supermemory\.(?:codex|hook|mcp|app-server)-runtime\.v[123]$/;
+const RUNTIME_V4 = "supermemory.codex-runtime.v4";
+const RUNTIME_V5 = "supermemory.codex-runtime.v5";
 
 function fail(code) {
   const error = new Error(code);
@@ -8,9 +10,9 @@ function fail(code) {
   throw error;
 }
 
-function defaults() {
-  return {
-    schema: "supermemory.codex-runtime.v4",
+function defaults(schema = RUNTIME_V5) {
+  const config = {
+    schema,
     deployment: {
       strategy: "full",
       canary: false,
@@ -45,6 +47,35 @@ function defaults() {
       max_hops: 3,
       hard_max_hops: 5,
       max_results: 20
+    },
+    topic_continuity: {
+      enabled: false,
+      working_view_capacity_tokens: 100_000,
+      auto_bind_threshold: 0.90,
+      auto_bind_margin: 0.25,
+      semantic_link_mode: "suggest_only",
+      checkpoint_on_compaction: true,
+      checkpoint_on_session_end: true,
+      reflect_enrichment: true
+    },
+    temporal_retrieval: {
+      enabled: false,
+      plan_schema: "supermemory.retrieval-plan.v1",
+      max_rounds: 3,
+      repair_intents: ["current_state", "temporal_range", "aggregation", "preference", "multi_hop"],
+      max_ms: 5_000,
+      max_results: 1_000,
+      max_tokens: 12_000,
+      abstain_on_incomplete_coverage: true
+    },
+    authority: {
+      enabled: false,
+      mode: "quiet",
+      policy_version: "quiet-authority-v1.0.0",
+      routine_user_prompts: false,
+      interrupt_only_at_action_boundary: true,
+      proactive_notifications: false,
+      visible_exception_min_age_ms: 86_400_000
     },
     knowledge_graph: {
       enabled: false,
@@ -105,6 +136,12 @@ function defaults() {
       immutable_vault_rewrite: false
     }
   };
+  if (schema === RUNTIME_V4) {
+    delete config.topic_continuity;
+    delete config.temporal_retrieval;
+    delete config.authority;
+  }
+  return config;
 }
 
 function merge(base, input) {
@@ -132,7 +169,7 @@ function safeGraphEndpoint(value) {
 }
 
 function validate(config) {
-  if (config.schema !== "supermemory.codex-runtime.v4") fail("runtime_config_schema_invalid");
+  if (![RUNTIME_V4, RUNTIME_V5].includes(config.schema)) fail("runtime_config_schema_invalid");
   if (
     config.deployment?.strategy !== "full" || config.deployment.canary !== false ||
     config.deployment.progressive !== false
@@ -171,6 +208,27 @@ function validate(config) {
     config.hindsight?.reflect?.exclude_mental_models !== true ||
     config.hindsight?.reflect?.fail_on_unvalidated_fact !== true
   ) fail("runtime_hindsight_contract_invalid");
+  if (config.schema === RUNTIME_V5) {
+    if (
+      config.topic_continuity?.working_view_capacity_tokens !== 100_000 ||
+      config.topic_continuity?.semantic_link_mode !== "suggest_only" ||
+      config.topic_continuity?.auto_bind_threshold < 0.5 || config.topic_continuity.auto_bind_threshold > 1 ||
+      config.topic_continuity?.auto_bind_margin < 0 || config.topic_continuity.auto_bind_margin > 1
+    ) fail("runtime_topic_contract_invalid");
+    if (
+      config.temporal_retrieval?.plan_schema !== "supermemory.retrieval-plan.v1" ||
+      !Number.isSafeInteger(config.temporal_retrieval?.max_rounds) || config.temporal_retrieval.max_rounds < 1 ||
+      config.temporal_retrieval.max_rounds > 3 || config.temporal_retrieval.abstain_on_incomplete_coverage !== true ||
+      !Number.isSafeInteger(config.temporal_retrieval.max_ms) || config.temporal_retrieval.max_ms < 100 || config.temporal_retrieval.max_ms > 30_000 ||
+      !Number.isSafeInteger(config.temporal_retrieval.max_results) || config.temporal_retrieval.max_results < 1 || config.temporal_retrieval.max_results > 10_000 ||
+      !Number.isSafeInteger(config.temporal_retrieval.max_tokens) || config.temporal_retrieval.max_tokens < 256 || config.temporal_retrieval.max_tokens > 50_000
+    ) fail("runtime_temporal_retrieval_invalid");
+    if (
+      config.authority?.mode !== "quiet" || config.authority?.routine_user_prompts !== false ||
+      config.authority?.interrupt_only_at_action_boundary !== true || config.authority?.proactive_notifications !== false ||
+      !Number.isSafeInteger(config.authority.visible_exception_min_age_ms) || config.authority.visible_exception_min_age_ms < 0
+    ) fail("runtime_authority_contract_invalid");
+  }
   if (config.deployment.activation === "full") {
     if (
       !config.working_memory.enabled || !config.memory_router.enabled ||
@@ -178,6 +236,9 @@ function validate(config) {
       !config.hindsight.reflect.enabled || !config.continuous_improvement.enabled ||
       config.admission.mode !== "automatic" || config.admission.human_review_default !== false
     ) fail("runtime_full_activation_incomplete");
+    if (config.schema === RUNTIME_V5 && (
+      !config.topic_continuity.enabled || !config.temporal_retrieval.enabled || !config.authority.enabled
+    )) fail("runtime_full_activation_incomplete");
   }
   if (
     config.continuous_improvement?.canonical_worker !== "local" ||
@@ -189,22 +250,32 @@ function validate(config) {
 
 export function normalizeCodexRuntimeConfig(input = {}) {
   if (!input || typeof input !== "object" || Array.isArray(input)) fail("runtime_config_invalid");
-  if (LEGACY_SCHEMA.test(input.schema ?? "")) {
-    const compatible = defaults();
+  if (LEGACY_SCHEMA.test(input.schema ?? "") || input.schema === RUNTIME_V4) {
+    const compatible = defaults(RUNTIME_V5);
     compatible.migration.source_schema = input.schema;
-    return validate(compatible);
+    const merged = input.schema === RUNTIME_V4 ? merge(compatible, {
+      ...input,
+      schema: RUNTIME_V5,
+      ...(input.deployment?.activation === "full" ? {
+        topic_continuity: { enabled: true },
+        temporal_retrieval: { enabled: true },
+        authority: { enabled: true }
+      } : {})
+    }) : compatible;
+    merged.migration.source_schema = input.schema;
+    return validate(merged);
   }
-  if (input.schema !== "supermemory.codex-runtime.v4") fail("runtime_config_schema_invalid");
-  return validate(merge(defaults(), input));
+  if (input.schema !== RUNTIME_V5) fail("runtime_config_schema_invalid");
+  return validate(merge(defaults(RUNTIME_V5), input));
 }
 
 export function createDisabledCodexRuntimeV4() {
-  return validate(defaults());
+  return validate(defaults(RUNTIME_V4));
 }
 
 export function createFullDeploymentRuntimeV4({ graphEndpoint, graphTokenFile } = {}) {
-  return normalizeCodexRuntimeConfig({
-    schema: "supermemory.codex-runtime.v4",
+  return validate(merge(defaults(RUNTIME_V4), {
+    schema: RUNTIME_V4,
     deployment: { activation: "full" },
     working_memory: { enabled: true, offload: { enabled: true } },
     memory_router: { enabled: true },
@@ -219,6 +290,35 @@ export function createFullDeploymentRuntimeV4({ graphEndpoint, graphTokenFile } 
     migration: {
       source_schema: "explicit_owner_migration",
       compatibility_flags_off: false,
+      immutable_vault_rewrite: false
+    }
+  }));
+}
+
+export function createDisabledCodexRuntimeV5() {
+  return validate(defaults(RUNTIME_V5));
+}
+
+export function createFullDeploymentRuntimeV5({ graphEndpoint, graphTokenFile } = {}) {
+  return normalizeCodexRuntimeConfig({
+    schema: RUNTIME_V5,
+    deployment: { activation: "full" },
+    working_memory: { enabled: true, offload: { enabled: true } },
+    memory_router: { enabled: true },
+    topic_continuity: { enabled: true },
+    temporal_retrieval: { enabled: true },
+    authority: { enabled: true },
+    knowledge_graph: {
+      enabled: true,
+      endpoint: graphEndpoint,
+      token_file: graphTokenFile
+    },
+    hindsight: { enabled: true, reflect: { enabled: true } },
+    continuous_improvement: { enabled: true },
+    admission: { mode: "automatic", human_review_default: false },
+    migration: {
+      source_schema: RUNTIME_V4,
+      compatibility_flags_off: true,
       immutable_vault_rewrite: false
     }
   });
