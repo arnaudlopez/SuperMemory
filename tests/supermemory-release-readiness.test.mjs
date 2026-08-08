@@ -82,6 +82,8 @@ assert.equal(release.no_tracked_secret_like_values, true);
 
 const checkIds = new Set(release.checks.map((check) => check.id));
 for (const checkId of [
+  "memory_fabric_v2",
+  "memory_fabric_v2_matrix",
   "global_specs",
   "golden_end_state_workflow",
   "manual_capture_workflow",

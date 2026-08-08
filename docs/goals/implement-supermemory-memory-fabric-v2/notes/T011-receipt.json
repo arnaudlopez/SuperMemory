@@ -1,0 +1,39 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T011",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": [
+      "scripts/lib/memory-admission-policy.mjs",
+      "scripts/lib/codex-workspace-store.mjs",
+      "scripts/lib/product-store.mjs",
+      "scripts/supermemory-app.mjs",
+      "scripts/run-codex-integration-canary.mjs",
+      "scripts/verify-codex-supermemory-release.mjs",
+      "tests/fixtures/memory-admission-policy/calibration.v1.json",
+      "tests/fixtures/memory-admission-policy/corpus.v1.json",
+      "tests/memory-admission-policy.test.mjs",
+      "tests/codex-memory-governance.test.mjs",
+      "tests/supermemory-app.test.mjs",
+      "tests/codex-integration-canary.test.mjs",
+      "tests/codex-release-canary.test.mjs",
+      "tests/hindsight-local-runtime-unblock.test.mjs"
+    ],
+    "commands": [
+      {"cmd":"node --test tests/memory-admission-policy.test.mjs tests/codex-memory-governance.test.mjs tests/product-store-multi-workspace.test.mjs tests/supermemory-app.test.mjs tests/codex-integration-canary.test.mjs tests/codex-release-canary.test.mjs tests/hindsight-local-runtime-unblock.test.mjs","status":"pass"},
+      {"cmd":"node scripts/verify-memory-contracts.mjs","status":"pass"},
+      {"cmd":"node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs","status":"pass"},
+      {"cmd":"node scripts/verify-review-queues-actions.mjs","status":"pass"},
+      {"cmd":"npm run verify:codex","status":"pass"},
+      {"cmd":"npm test","status":"pass"},
+      {"cmd":"npm run verify","status":"pass"},
+      {"cmd":"npm run verify:release","status":"pass"},
+      {"cmd":"git diff --check","status":"pass"}
+    ],
+    "summary": "Repaired Lot 0 governance fully: separate diverse calibration (15) and holdout (25) splits with recorded thresholds and non-aborting confusion metrics; holdout precision is 100% with 4.55% standard exceptions. Attestations now recompute IDs and bind candidate, workspace, policy, evidence, and TTL. HTTP exception resolution ignores caller verifier fields and uses only the configured server verifier. The canary proves independent automatic admission without reviewCandidate. Release verification selects a validated existing Codex executable, and unavailable local Hindsight is explicit/skipped while live assertions remain strict.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 2,
+    "stopped_because": null
+  }
+}

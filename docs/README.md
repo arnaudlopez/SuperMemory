@@ -4,39 +4,44 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
 
 ## Lecture recommandee
 
-1. `audit-memoire-agentique-v2.md`
+1. `codex-supermemory-technical-design.md`
+   - Conception normative de l'integration Codex Desktop, CLI et IDE.
+   - Identite stable des projets, capture App Server/hooks et versioning.
+   - Recall MCP gouverne, securite, migration, deploiement et acceptation.
+
+2. `audit-memoire-agentique-v2.md`
    - Decision d'adoption de Hindsight.
    - Repartition entre moteur memoire et gouvernance SuperMemory.
    - Features Hindsight a utiliser par phase.
 
-2. `prd-memoire-agentique-v2.md`
+3. `prd-memoire-agentique-v2.md`
    - Plan produit cible avec Hindsight.
    - Contrat de promotion vers Hindsight.
    - Evals et milestones V2.
 
-3. `golden-case-implementation-roadmap.md`
+4. `golden-case-implementation-roadmap.md`
    - Decoupage des tranches d'implementation.
    - Objectifs intermediaires et oracles menant au Golden Case enterprise.
    - Ordre recommande entre contrats, Hindsight, source lifecycle, agents, acces, ports et CI.
 
-4. `golden-case-tdd-matrix.md`
+5. `golden-case-tdd-matrix.md`
    - Tests rouges precis par tranche.
    - Fixtures, commandes ciblees et criteres de passage.
    - Backlog TDD pour driver le developpement jusqu'au Golden Case.
 
-5. `audit-memoire-agentique.md`
+6. `audit-memoire-agentique.md`
    - Pourquoi cette architecture existe.
    - Decisions critiques.
    - Risques, angles morts, gouvernance et recherche academique.
    - Contexte V1 conserve pour historique.
 
-6. `prd-memoire-agentique.md`
+7. `prd-memoire-agentique.md`
    - Ce que le produit doit faire.
    - Structure cible du vault.
    - Protocoles d'ingestion, navigation, revue, publication, monitoring et multi-agent.
    - Contexte V1 conserve pour historique.
 
-7. `evaluation-comparative-retrieval-rappel.md`
+8. `evaluation-comparative-retrieval-rappel.md`
    - Comparaison avec les benchmarks et architectures retrieval/RAG.
    - Estimation de rappel et vitesse.
    - Trajectoire BM25, embeddings, hybrid retrieval, reranking, graph.
@@ -73,6 +78,62 @@ sources brutes
 La source de verite reste le vault Markdown. Hindsight accelere et enrichit le rappel, mais ne decide pas quelles sources sont autorisees.
 
 Les systemes de retrieval maison ne sont plus la trajectoire par defaut. Les moteurs additionnels comme Graphiti ou Memoria sont des ports d'extension, actives seulement si les evaluations montrent un manque apres integration Hindsight. Le contrat T11 executable (`node scripts/verify-engine-port-evals.mjs`) garde cette decision auditable via `80_logs/engine_port_evals.jsonl`.
+
+## Integration Codex
+
+L'integration Codex relie un projet local a un `project_id` et un
+`workspace_id` stables. Les chemins restent de simples aliases : deplacer un
+depot, ouvrir plusieurs onglets ou utiliser plusieurs worktrees ne cree pas une
+nouvelle memoire logique.
+
+```text
+Codex Desktop / CLI / IDE
+  | App Server (riche) ou hooks (couverture partielle explicite)
+  v
+enveloppes d'evenements redactees
+  -> journal + spool AEAD par workspace/session
+  -> archives de preuves et snapshots immuables
+  -> candidats inactifs
+  -> approbation ou rejet humain
+  -> memoire canonique versionnee dans le vault
+  -> projection Hindsight locale et reconstruisible
+  -> recall MCP lie au workspace, revalide par le vault, avec citations
+```
+
+Les echanges observes ne deviennent jamais automatiquement des souvenirs
+actifs. Le pipeline separe quatre niveaux :
+
+| Niveau | Role | Autorite |
+| --- | --- | --- |
+| Journal chiffre | Rejouer les evenements visibles et dedupliques | Archive seulement |
+| Archive de preuves | Conserver les observations et snapshots sources | Non active |
+| Candidat | Proposer un fait cite a la revue | Inactif |
+| Memoire approuvee | Alimenter le recall apres controles de scope | Vault canonique |
+
+Le serveur MCP de contenu est lance dans le contexte du projet. Il expose un
+recall en lecture seule et refuse tout workspace ambigu ou non lie. Le serveur
+global est diagnostic uniquement. Hindsight utilise une banque opaque distincte
+par workspace et n'est jamais la source de verite : une reponse projetee est
+ecartee si le vault ne confirme plus que la memoire est active et autorisee.
+
+La couverture est annoncee sans extrapolation :
+
+- App Server controle : capture riche des objets publics exposes par Codex ;
+- hooks du plugin : capture partielle et fail-soft des evenements supportes ;
+- nouveau `SessionStart` : injection d'un contexte approuve, cite et borne ;
+- client non instrumente, Codex web/cloud ou raisonnement cache : aucune
+  promesse de capture.
+
+Les identifiants, archives, spools, tombstones, attestations de suppression et
+regles de retention sont scopes par workspace. Les contenus sensibles sont
+redactes avant persistance normalisee ; les payloads conserves sont chiffres.
+Une suppression retire d'abord l'autorite canonique, puis la projection, avant
+la purge physique. Une panne de Hindsight ne reactive donc jamais une memoire.
+
+La specification normative, les limites et les 80 criteres d'acceptation sont
+dans [`codex-supermemory-technical-design.md`](codex-supermemory-technical-design.md).
+L'exploitation, l'installation reversible et la migration v1 sont decrites
+dans [`production-runbook.md`](production-runbook.md#codex-integration).
 
 ## V1 minimale
 
@@ -169,7 +230,14 @@ Le plan de durcissement execute et l'audit courant sont dans `improvement-plan-a
 
 ```bash
 node scripts/verify-supermemory-specs.mjs
+node scripts/verify-codex-supermemory-release.mjs --json
 ```
+
+Le second rapport est un gate de release candidat : il doit couvrir exactement
+les 80 contrats `AC-*`, mais reste volontairement `production_ready: false`
+tant que la revue finale et les canaries runtime annonces n'ont pas ete
+observees. Il ne faut pas transformer une preuve contractuelle CLI en preuve
+Desktop ou IDE.
 
 Contrats executables specialises recents :
 

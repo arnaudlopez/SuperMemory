@@ -5,9 +5,14 @@ const supportedExtensions = new Set([...textExtensions, ...binaryExtensions]);
 const elements = {
   sourceCount: document.querySelector("#source-count"),
   candidateCount: document.querySelector("#candidate-count"),
+  candidateCountLabel: document.querySelector("#candidate-count-label"),
   memoryCount: document.querySelector("#memory-count"),
+  memoryCountLabel: document.querySelector("#memory-count-label"),
   staleCount: document.querySelector("#stale-count"),
   reviewBadge: document.querySelector("#review-badge"),
+  reviewTabLabel: document.querySelector("#review-tab-label"),
+  reviewTitle: document.querySelector("#review-title"),
+  reviewDescription: document.querySelector("#review-description"),
   removalBadge: document.querySelector("#removal-badge"),
   folderInput: document.querySelector("#folder-input"),
   selectionCard: document.querySelector("#selection-card"),
@@ -33,6 +38,7 @@ const elements = {
 
 let selectedFiles = [];
 let toastTimer;
+let automaticAdmission = false;
 
 function extension(filename) {
   const index = filename.lastIndexOf(".");
@@ -99,12 +105,21 @@ function emptyState(title, message) {
 
 async function loadStatus() {
   const status = await api("/api/status");
+  automaticAdmission = status.admission?.mode === "automatic";
+  const reviewCount = automaticAdmission ? status.counts.exceptions : status.counts.pendingCandidates;
   elements.sourceCount.textContent = status.counts.sources;
-  elements.candidateCount.textContent = status.counts.pendingCandidates;
+  elements.candidateCount.textContent = reviewCount;
   elements.memoryCount.textContent = status.counts.approvedMemories;
   elements.staleCount.textContent = status.counts.staleMemories;
-  elements.reviewBadge.textContent = status.counts.pendingCandidates;
-  elements.reviewBadge.hidden = status.counts.pendingCandidates === 0;
+  elements.reviewBadge.textContent = reviewCount;
+  elements.reviewBadge.hidden = reviewCount === 0;
+  elements.candidateCountLabel.textContent = automaticAdmission ? "Exceptions" : "À valider";
+  elements.memoryCountLabel.textContent = automaticAdmission ? "Mémoires admises" : "Mémoires approuvées";
+  elements.reviewTabLabel.textContent = automaticAdmission ? "Exceptions" : "Valider";
+  elements.reviewTitle.textContent = automaticAdmission ? "Exceptions persistantes" : "Gardez uniquement ce qui compte";
+  elements.reviewDescription.textContent = automaticAdmission
+    ? "Les admissions standard sont automatiques. Seuls les conflits ou risques persistants apparaissent ici."
+    : "Chaque proposition reste inactive jusqu’à votre décision.";
   elements.removalBadge.textContent = status.counts.pendingRemovals;
   elements.removalBadge.hidden = status.counts.pendingRemovals === 0;
   const pending = status.counts.pendingProjections;
@@ -162,7 +177,7 @@ function candidateCard(candidate) {
   kicker.className = "candidate-kicker";
   kicker.textContent = candidate.sensitivity === "restricted_review"
     ? "Contenu sensible à vérifier"
-    : "Mémoire candidate";
+    : automaticAdmission ? "Exception d’admission" : "Mémoire candidate";
   const title = document.createElement("input");
   title.value = candidate.title;
   title.setAttribute("aria-label", "Titre de la mémoire");
@@ -173,6 +188,7 @@ function candidateCard(candidate) {
 
   const textarea = document.createElement("textarea");
   textarea.value = candidate.text;
+  textarea.readOnly = automaticAdmission;
   textarea.setAttribute("aria-label", "Contenu de la mémoire");
 
   const footer = document.createElement("footer");
@@ -193,7 +209,14 @@ function candidateCard(candidate) {
   approve.type = "button";
   approve.className = "button primary";
   approve.textContent = "Approuver";
-  actions.append(reject, approve);
+  if (automaticAdmission) {
+    const reason = document.createElement("small");
+    reason.textContent = "Non rappelable · réévaluation automatique après nouveaux signaux vérifiés.";
+    actions.append(reason);
+    title.readOnly = true;
+  } else {
+    actions.append(reject, approve);
+  }
   footer.append(source, actions);
   article.append(header, textarea, footer);
 
@@ -229,20 +252,25 @@ function candidateCard(candidate) {
     }
   };
 
-  reject.addEventListener("click", () => review("reject"));
-  approve.addEventListener("click", () => review("approve"));
+  if (!automaticAdmission) {
+    reject.addEventListener("click", () => review("reject"));
+    approve.addEventListener("click", () => review("approve"));
+  }
   return article;
 }
 
 async function loadCandidates() {
   elements.candidateList.replaceChildren(emptyState("Chargement…", "Lecture de la file locale."));
   try {
-    const { candidates } = await api("/api/candidates?status=pending");
+    const status = automaticAdmission ? "quarantined" : "pending";
+    const { candidates } = await api(`/api/candidates?status=${status}`);
     elements.candidateList.replaceChildren();
     if (candidates.length === 0) {
       elements.candidateList.append(emptyState(
-        "Aucune candidate en attente",
-        "Importez un dossier ou revenez après avoir modifié une source."
+        automaticAdmission ? "Aucune exception persistante" : "Aucune candidate en attente",
+        automaticAdmission
+          ? "Les admissions standard n’attendent aucun clic humain."
+          : "Importez un dossier ou revenez après avoir modifié une source."
       ));
       return;
     }
@@ -556,7 +584,8 @@ async function ingestSelection() {
       ? ` ${summary.missingSources} source(s) absente(s) ont été suspendues et attendent votre décision.`
       : "";
     showToast(`${summary.createdCandidates} candidate(s) créée(s).${unsupported}${warnings}${missing}`);
-    await Promise.all([loadStatus(), loadCandidates()]);
+    await loadStatus();
+    await loadCandidates();
     showTab(summary.missingSources ? "manage" : "review");
   } catch (error) {
     showToast(error.message, "error");
@@ -595,4 +624,4 @@ elements.createBackup.addEventListener("click", createBackup);
 elements.searchForm.addEventListener("submit", performSearch);
 elements.retryProjections.addEventListener("click", retryProjections);
 
-Promise.all([loadStatus(), loadCandidates()]).catch((error) => showToast(error.message, "error"));
+loadStatus().then(loadCandidates).catch((error) => showToast(error.message, "error"));

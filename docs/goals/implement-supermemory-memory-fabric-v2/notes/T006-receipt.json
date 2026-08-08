@@ -1,0 +1,29 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "blocked",
+    "task_id": "T006",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": [
+      "scripts/lib/memory-improve-worker.mjs",
+      "scripts/lib/ontology-registry.mjs",
+      "scripts/lib/knowledge-graph-adapter.mjs",
+      "scripts/lib/codex-working-set-store.mjs",
+      "tests/fixtures/memory-improve-worker/corpus.v1.json",
+      "tests/memory-improve-worker.test.mjs",
+      "tests/ontology-registry.test.mjs"
+    ],
+    "commands": [
+      {"cmd": "node --test tests/memory-improve-worker.test.mjs tests/ontology-registry.test.mjs tests/knowledge-graph-adapter.test.mjs tests/memory-admission-policy.test.mjs tests/codex-working-set-store.test.mjs tests/codex-working-memory-integration.test.mjs", "status": "pass"},
+      {"cmd": "npm run verify:secrets", "status": "pass"},
+      {"cmd": "npm run verify:codex", "status": "pass"},
+      {"cmd": "npm run verify:specs", "status": "fail"}
+    ],
+    "summary": "Implemented the bounded T006 ontology/improve slice and reached 43/43 focused tests passing. Verification then stopped at the board-required npm run verify:specs because package.json defines no verify:specs script. Adding that script requires editing package.json, which is outside T006 allowed_files and triggers stop_if.",
+    "deviations": [],
+    "remaining_blockers": [
+      "The exact required command npm run verify:specs cannot run because the script is absent from package.json; package.json is outside T006 allowed_files."
+    ],
+    "verification_attempts": 1,
+    "stopped_because": "required verification needs a file outside allowed_files"
+  }
+}

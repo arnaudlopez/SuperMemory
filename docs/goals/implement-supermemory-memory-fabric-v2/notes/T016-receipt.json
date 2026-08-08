@@ -1,0 +1,29 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T016",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "decision": "rejected",
+    "full_outcome_complete": false,
+    "rationale": "Focused tests and Codex verification pass, but the temporal graph is not ready. Remote projection acknowledgements may omit the expected hash yet still create a complete checkpoint, so KG-AC08 is proven only for the in-memory engine. More seriously, upsert persists claims and entities before validating all relation targets, allowing rejected or interrupted mutations to leave partial canonical truth that a rebuild can project. Relation IDs are not canonically workspace-bound, and malformed Graphiti query responses bypass direct fallback. These violate backend equivalence and canonical-authority guarantees despite otherwise sound encryption, temporal history, bounded queries, revalidation, and tombstone ordering.",
+    "worker_package": {
+      "objective": "Repair the T005 temporal graph as one atomic vertical slice: preflight every claim, entity, relation, closure, target, collision, temporal window, provenance/admission reference, and canonical workspace-scoped ID before mutation; make each upsert, contradiction, and supersession atomically visible through an immutable commit/batch mechanism so failed validation or crashes cannot expose partial canonical truth to canonicalState, query, projection, or rebuild; require every remote projection acknowledgement to contain the exact expected projection_hash before recording a complete checkpoint; prove remote rebuild equivalence after backend loss; and make invalid as well as thrown Graphiti project/query responses use the authenticated parameterized direct-Neo4j fallback followed by canonical revalidation. Preserve existing encryption, tombstone-first revocation, typed-AST bounds, deterministic behavior, and T005-only scope.",
+      "allowed_files": ["scripts/lib/knowledge-graph-adapter.mjs","scripts/lib/ontology-registry.mjs","services/supermemory-graphd/contract.v1.json","tests/fixtures/knowledge-graph/corpus.v1.json","tests/knowledge-graph-adapter.test.mjs","tests/ontology-registry.test.mjs"],
+      "verify": ["node --test tests/knowledge-graph-adapter.test.mjs tests/ontology-registry.test.mjs","npm run verify:secrets","npm run verify:codex","npm test","npm run verify","npm run verify:release","git diff --check"],
+      "stop_if": ["The repair requires changing files outside allowed_files, adding dependencies, live credentials, deployment, router/MCP behavior, or T006 ontology/improvement behavior.","Atomic visibility cannot be achieved while preserving recoverable encrypted canonical records and compatibility with the existing vault without a separately approved migration.","A crash at any injected point can still make an uncommitted claim, entity, relation, closure, or replacement visible to query, projection, or rebuild.","A remote backend cannot return and verify the exact canonical projection hash under the documented graphd contract.","The same verification failure recurs twice without new evidence."]
+    },
+    "evidence": [
+      "The focused graph and ontology suite passed 10/10; npm run verify:codex and git diff --check also passed on 2026-08-04.",
+      "scripts/lib/knowledge-graph-adapter.mjs accepts a remote project response when ok is true and projection_hash is absent, then records the checkpoint as complete; the direct-fallback test explicitly returns only {ok:true}.",
+      "KG-AC08 clears and rebuilds the deterministic in-memory engine, but no test proves Graphiti/direct-Neo4j loss recovery with a mandatory matching remote hash or rejection of missing/mismatched hashes.",
+      "upsertEpisodeGraph persists the claim and entities before validating all supersede/contradict targets and relation operations; no batch commit marker prevents those revisions from becoming canonical after a later failure or crash.",
+      "Relation validation accepts caller-supplied nonempty relation IDs without verifying the canonical workspace-scoped derivation.",
+      "Graphiti query fallback covers thrown primary errors, but response-shape validation occurs after the fallback try block, so malformed primary responses do not invoke direct fallback.",
+      "Exact-source review confirmed encrypted immutable revisions, admission/provenance revalidation, default-three/hard-five typed queries, temporal closing, deterministic IDs for entities/claims, authoritative tombstone-first removal, and canonical result filtering."
+    ],
+    "parallel_safety": {"safe":false,"rationale":"The repair changes shared canonical mutation, projection, fallback, and test surfaces; splitting it would risk incompatible transaction and acknowledgement semantics."},
+    "blocked_tasks": ["T006","T007","T008"],
+    "missing_evidence": ["Atomic all-or-nothing visibility for failed validation and crash points throughout upsert, contradiction, and supersession.","Mandatory matching projection hashes from Graphiti and direct-Neo4j acknowledgements, including missing-hash and mismatch rejection.","Remote backend-loss rebuild equivalence rather than only in-memory-engine equivalence.","Canonical workspace binding and deterministic validation for caller-supplied relation IDs.","Direct fallback after malformed, not only thrown, Graphiti project and query responses."],
+    "required_board_updates": ["Record T016 as rejected with the focused verification pass and the listed canonical-atomicity/backend-equivalence defects.","Do not activate T006; insert the graph-repair Worker package before ontology automation and continuous improvement.","Require a new milestone audit of the repaired T005 slice before unblocking T006-T008."]
+  }
+}

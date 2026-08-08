@@ -1,0 +1,22 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T017",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": ["scripts/lib/knowledge-graph-adapter.mjs","scripts/lib/ontology-registry.mjs","services/supermemory-graphd/contract.v1.json","tests/fixtures/knowledge-graph/corpus.v1.json","tests/knowledge-graph-adapter.test.mjs","tests/ontology-registry.test.mjs"],
+    "commands": [
+      {"cmd":"node --test tests/knowledge-graph-adapter.test.mjs tests/ontology-registry.test.mjs","status":"pass"},
+      {"cmd":"npm run verify:secrets","status":"pass"},
+      {"cmd":"npm run verify:codex","status":"pass"},
+      {"cmd":"npm test","status":"pass"},
+      {"cmd":"npm run verify","status":"pass"},
+      {"cmd":"npm run verify:release","status":"pass"},
+      {"cmd":"git diff --check","status":"pass"}
+    ],
+    "summary": "Repaired T005 with preflight validation and encrypted immutable batch commits whose exact revision hashes control canonical visibility. Uncommitted crash remnants are excluded from canonical state, queries, projections, and rebuilds. Added canonical claim/relation key derivation checks, atomic temporal closure planning, exact remote projection-hash acknowledgements, remote-loss rebuild equivalence, and malformed/thrown Graphiti fallback to authenticated parameterized direct Neo4j with canonical result revalidation. Preserved tombstone-first revocation, encryption, bounded ASTs, determinism, and T005 scope. Added focused crash, malformed-response, canonical-ID, hash-ack, and remote-rebuild tests. All required verification passed.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

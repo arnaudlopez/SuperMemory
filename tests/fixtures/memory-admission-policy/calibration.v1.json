@@ -1,0 +1,674 @@
+{
+  "schema": "supermemory.admission-calibration-corpus.v1",
+  "version": "calibration-v1.0.0",
+  "split": "calibration",
+  "policy_version": "admission-v1.0.0",
+  "threshold_profile": {
+    "profile_id": "admission-v1.0.0-calibrated",
+    "selected_from": "calibration-v1.0.0",
+    "thresholds": {
+      "auto_entailment": 0.95,
+      "auto_source_trust": 0.9,
+      "auto_agreement": 0.85,
+      "max_contradiction_risk": 0.05,
+      "ttl_entailment": 0.8,
+      "ttl_source_trust": 0.65,
+      "discard_entailment": 0.5,
+      "ttl_ms": 604800000
+    }
+  },
+  "cases": [
+    {
+      "id": "cal-auto-preference",
+      "candidate": {
+        "candidate_id": "candidate:cal-auto-preference",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "preference",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-auto-preference"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.99,
+          "source_trust": 0.98,
+          "extraction_agreement": 0.96,
+          "entity_resolution_confidence": 0.94,
+          "temporal_consistency": 0.97,
+          "independent_support": 0.8,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "cal-auto-decision",
+      "candidate": {
+        "candidate_id": "candidate:cal-auto-decision",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "decision",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-auto-decision"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.97,
+          "source_trust": 0.95,
+          "extraction_agreement": 0.9,
+          "entity_resolution_confidence": 0.92,
+          "temporal_consistency": 0.93,
+          "independent_support": 0.6,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "cal-auto-constraint",
+      "candidate": {
+        "candidate_id": "candidate:cal-auto-constraint",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "constraint",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-auto-constraint"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.96,
+          "source_trust": 0.93,
+          "extraction_agreement": 0.88,
+          "entity_resolution_confidence": 0.9,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.4,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "cal-auto-fact",
+      "candidate": {
+        "candidate_id": "candidate:cal-auto-fact",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-auto-fact"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.955,
+          "source_trust": 0.91,
+          "extraction_agreement": 0.86,
+          "entity_resolution_confidence": 0.89,
+          "temporal_consistency": 0.87,
+          "independent_support": 0.2,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "cal-ttl-status",
+      "candidate": {
+        "candidate_id": "candidate:cal-ttl-status",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "open_work",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-ttl-status"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.89,
+          "source_trust": 0.82,
+          "extraction_agreement": 0.9,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.8,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": true,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "activate_ttl"
+    },
+    {
+      "id": "cal-ttl-date",
+      "candidate": {
+        "candidate_id": "candidate:cal-ttl-date",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-ttl-date"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.82,
+          "source_trust": 0.7,
+          "extraction_agreement": 0.87,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.76,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": true,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "activate_ttl"
+    },
+    {
+      "id": "cal-discard-unproved",
+      "candidate": {
+        "candidate_id": "candidate:cal-discard-unproved",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-discard-unproved"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.31,
+          "source_trust": 0.88,
+          "extraction_agreement": 0.9,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "cal-discard-duplicate",
+      "candidate": {
+        "candidate_id": "candidate:cal-discard-duplicate",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-discard-duplicate"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.98,
+          "source_trust": 0.97,
+          "extraction_agreement": 0.95,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": true,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "cal-discard-fragment",
+      "candidate": {
+        "candidate_id": "candidate:cal-discard-fragment",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-discard-fragment"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.91,
+          "source_trust": 0.9,
+          "extraction_agreement": 0.87,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": true,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "cal-discard-scope",
+      "candidate": {
+        "candidate_id": "candidate:cal-discard-scope",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-discard-scope"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.99,
+          "source_trust": 0.99,
+          "extraction_agreement": 0.99,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": false,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "cal-conflict",
+      "candidate": {
+        "candidate_id": "candidate:cal-conflict",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-conflict"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.97,
+          "source_trust": 0.94,
+          "extraction_agreement": 0.9,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0.4,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "cal-restricted",
+      "candidate": {
+        "candidate_id": "candidate:cal-restricted",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-restricted"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.98,
+          "source_trust": 0.97,
+          "extraction_agreement": 0.95,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "cal-high-impact",
+      "candidate": {
+        "candidate_id": "candidate:cal-high-impact",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-high-impact"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.96,
+          "source_trust": 0.92,
+          "extraction_agreement": 0.88,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": true,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "cal-ontology",
+      "candidate": {
+        "candidate_id": "candidate:cal-ontology",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-ontology"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.95,
+          "source_trust": 0.91,
+          "extraction_agreement": 0.87,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": false,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "cal-outage",
+      "candidate": {
+        "candidate_id": "candidate:cal-outage",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:cal-outage"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "unavailable"
+      },
+      "expected": "pending_verification"
+    }
+  ]
+}

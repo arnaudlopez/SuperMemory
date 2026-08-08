@@ -1,0 +1,8 @@
+{
+  "schema": "supermemory.working-memory-corpus.v1",
+  "cases": [
+    { "name": "rich", "capture_coverage": "rich", "complete": true },
+    { "name": "standard", "capture_coverage": "standard", "complete": true },
+    { "name": "partial", "capture_coverage": "partial", "complete": false }
+  ]
+}

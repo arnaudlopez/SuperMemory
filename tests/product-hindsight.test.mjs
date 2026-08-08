@@ -118,6 +118,30 @@ test("product Hindsight refuses remote endpoints and uses strict local provenanc
   );
 });
 
+test("automatic admission metadata survives Hindsight projection", async () => {
+  let retained;
+  const adapter = createProductHindsight({
+    bankId: "product-admission",
+    fetchImpl: async (url, init) => {
+      if (url.endsWith("/memories")) retained = JSON.parse(init.body).items[0];
+      if (url.includes("/documents/")) return jsonResponse({ memory_unit_count: 1 });
+      return jsonResponse({ success: true });
+    }
+  });
+  await adapter.project({
+    ...approvedMemory(),
+    admissionId: "adm_fixture",
+    admissionDecision: "activate_ttl",
+    admissionPolicyVersion: "admission-v1.0.0",
+    validUntil: "2026-08-11T10:00:00.000Z"
+  });
+  assert.equal(retained.metadata.review_status, "admitted");
+  assert.equal(retained.metadata.admission_id, "adm_fixture");
+  assert.equal(retained.metadata.admission_decision, "activate_ttl");
+  assert.equal(retained.metadata.admission_policy_version, "admission-v1.0.0");
+  assert.equal(retained.metadata.valid_until, "2026-08-11T10:00:00.000Z");
+});
+
 test("web approval is canonical before projection, retries idempotently, and recalls cited memory", async (t) => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "supermemory-hindsight-product-"));
   const vaultRoot = path.join(tempRoot, "vault");

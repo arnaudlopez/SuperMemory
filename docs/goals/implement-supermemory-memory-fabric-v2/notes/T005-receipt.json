@@ -1,0 +1,22 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T005",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": ["scripts/lib/knowledge-graph-adapter.mjs","scripts/lib/ontology-registry.mjs","services/supermemory-graphd/contract.v1.json","tests/fixtures/knowledge-graph/corpus.v1.json","tests/knowledge-graph-adapter.test.mjs","tests/ontology-registry.test.mjs"],
+    "commands": [
+      {"cmd":"node --test tests/knowledge-graph-adapter.test.mjs tests/ontology-registry.test.mjs","status":"pass"},
+      {"cmd":"npm run verify:secrets","status":"pass"},
+      {"cmd":"npm run verify:codex","status":"pass"},
+      {"cmd":"npm test","status":"pass"},
+      {"cmd":"npm run verify","status":"pass"},
+      {"cmd":"npm run verify:release","status":"pass"},
+      {"cmd":"git diff --check","status":"pass"}
+    ],
+    "summary": "Implemented the bounded temporal graph slice with immutable core ontology v1, encrypted immutable canonical revisions, deterministic admission/provenance validation, temporal contradiction and supersede history, authoritative episode tombstones and admission revocations, and workspace-bound access. Added a deterministic in-memory engine, authenticated Graphiti/Neo4j contract, injected direct-Neo4j fallback, parameterized typed queries, canonical backend-result revalidation, and equivalent projection rebuilds. Added deterministic KG-AC01–09/KG-AC12 coverage for aliases, homonyms, three-hop citations, unsafe-query rejection, history, rebuild, revocation, encryption, idempotence, fallback, and projection recovery. All required verification passed.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

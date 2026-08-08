@@ -1,0 +1,69 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T024",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "decision": "rejected",
+    "full_outcome_complete": false,
+    "rationale": "T023 genuinely fixes canonical evidence reopening, late arrivals, centralized authorization, source tombstones, session scoping/retry, alias verification, automatic worker promotion, and IM-AC labeling; 47 focused tests and proportional verifiers pass. Promotion remains forgeable. proposeChange accepts any syntactically valid source claim without resolving current authority. promoteChange lets callers replace the proposal’s recorded support with arbitrary authorized supportClaimIds, without proving those claims support that ontology change. Its built-in retrieval evaluation manufactures improvement from support count rather than executing the versioned corpus, while injected evaluators self-assert trust. The official canonical source also returns no admission revocations.",
+    "worker_package": {
+      "objective": "Close the remaining ontology authority bypasses as one bounded T006 repair. Make verified proposal creation authority-checked at the registry boundary: resolve the supplied source claim immediately through the canonical graph resolver, require current workspace/provenance/admission/TTL/tombstone/revocation authority, and require a hash-bound independent-verifier support attestation that explicitly names the proposed kind and name. A forged or stale claim ID must create no shadow or quarantine artifact. Remove caller control over promotion support: promoteChange and automatic reevaluation must use exactly the registry-recorded, independently attested source claim IDs, re-resolve all of them at promotion time, and reject caller-supplied additions, substitutions, unrelated claims, shared episode/evidence authority, cross-workspace claims, and stale authority. Replace the synthetic support-count evaluation with an actual deterministic before/after retrieval evaluation over the versioned memory-improve corpus; compute cases_hash from the loaded corpus, persist exact results, require no regression plus positive configured delta, and authorize injected evaluators by a constructor-pinned identity/version rather than an evaluator-provided trusted boolean. Make the official canonical source expose real encrypted admission-revocation authority or remove the unsupported path and prove graph-canonical revocation is the sole source; in either case, revocation must precede enrichment visibility. Independently recompute payload hashes in the worker and bind evidence episode_id, workspace, project, session, source cursor, and content hash rather than trusting reopened=true. Add adversarial tests for direct forged proposals, unrelated support substitution, tombstoned/revoked/expired/provenance-invalid and duplicate support, evaluator forgery/corpus regression, payload tampering, and canonical revocation propagation. Preserve all T023 successes, disabled-by-default behavior, and T006 scope; do not begin router, MCP/API, deployment, or live-service work.",
+      "allowed_files": [
+        "scripts/lib/memory-improve-worker.mjs",
+        "scripts/lib/ontology-registry.mjs",
+        "scripts/lib/knowledge-graph-adapter.mjs",
+        "scripts/lib/memory-admission-policy.mjs",
+        "scripts/lib/codex-working-set-store.mjs",
+        "tests/fixtures/memory-improve-worker/corpus.v1.json",
+        "tests/memory-improve-worker.test.mjs",
+        "tests/ontology-registry.test.mjs",
+        "tests/knowledge-graph-adapter.test.mjs",
+        "tests/memory-admission-policy.test.mjs",
+        "tests/codex-working-set-store.test.mjs",
+        "tests/codex-working-memory-integration.test.mjs"
+      ],
+      "verify": [
+        "node --test tests/memory-improve-worker.test.mjs tests/ontology-registry.test.mjs tests/knowledge-graph-adapter.test.mjs tests/memory-admission-policy.test.mjs tests/codex-working-set-store.test.mjs tests/codex-working-memory-integration.test.mjs",
+        "npm run verify:secrets",
+        "npm run verify:codex",
+        "npm run verify:specs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "git diff --check"
+      ],
+      "stop_if": [
+        "A direct proposeChange call can persist an artifact for a source claim that is not currently resolved as authoritative or lacks an independent hash-bound attestation for that exact ontology proposal.",
+        "A caller can add, replace, or omit promotion support claim IDs instead of promotion using exactly the registry-recorded verified support set.",
+        "Three unrelated but otherwise authorized claims can promote an ontology change they never attested support for.",
+        "Promotion can use tombstoned, revoked, expired, provenance-invalid, duplicate-authority, or cross-workspace support.",
+        "Retrieval evaluation derives candidate improvement from support count, fixed assertions, or caller-provided scores rather than executing the versioned corpus before and after the candidate ontology.",
+        "An injected evaluator can authorize itself through a trusted boolean or change identity/version/corpus without invalidating the pinned contract and artifact hash.",
+        "The official source cannot surface canonical admission revocation and no single graph-canonical alternative is proven authoritative before enrichment visibility.",
+        "The worker trusts reopened=true without independently binding payload hash, evidence episode ID, workspace, project, session, and cursor to the canonical source.",
+        "Any required change falls outside allowed_files or requires router, MCP/API recall, deployment, live credentials, network access, or a real user vault.",
+        "The same verification failure remains unresolved after two attempts."
+      ]
+    },
+    "evidence": [
+      "T024 reran the focused oracle: 47 tests passed; verify:specs, verify:codex, and diff hygiene passed.",
+      "proposeChange validates only source claim ID syntax and does not resolve authority.",
+      "promoteChange accepts caller supportClaimIds ahead of recorded sources, allowing unrelated support substitution.",
+      "The built-in evaluator computes a synthetic gain from support count and injected evaluators self-assert trust.",
+      "The official canonical source hard-codes no admission revocations and the worker does not independently recompute payload hashes and all bindings."
+    ],
+    "parallel_safety": {"safe": false, "rationale": "Proposal attestations, support resolution, evaluation artifacts, canonical revocation, and shared adversarial tests are one overlapping authority boundary."},
+    "blocked_tasks": ["T007", "T008", "T009"],
+    "missing_evidence": [
+      "Zero artifacts from forged/stale proposal sources.",
+      "Exact attested support binding without substitution.",
+      "Executed versioned-corpus evaluation with pinned evaluator.",
+      "Canonical revocation propagation and tamper-resistant source binding."
+    ],
+    "required_board_updates": [
+      "Record T024 as rejected.",
+      "Insert the final ontology-authority repair before T007.",
+      "Require another focused Judge audit before T007."
+    ]
+  }
+}

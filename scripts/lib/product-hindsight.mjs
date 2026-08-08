@@ -70,7 +70,11 @@ function projectionMetadata(memory) {
     workspace_id: memory.workspaceId || "workspace:local",
     access_policy: "owner_only",
     allowed_consumers: ["supermemory"],
-    review_status: "approved",
+    review_status: memory.admissionDecision ? "admitted" : "approved",
+    admission_id: memory.admissionId ?? null,
+    admission_decision: memory.admissionDecision ?? "legacy_manual",
+    admission_policy_version: memory.admissionPolicyVersion ?? null,
+    valid_until: memory.validUntil ?? null,
     source_path: memory.relativePath,
     locator: memory.locator || null
   };

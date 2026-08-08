@@ -1,0 +1,32 @@
+{
+  "name": "supermemory",
+  "version": "0.1.0",
+  "description": "Local-first governed project memory for Codex.",
+  "author": {
+    "name": "SuperMemory"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "memory",
+    "codex",
+    "local-first",
+    "rag"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "SuperMemory",
+    "shortDescription": "Governed local project memory for Codex",
+    "longDescription": "Captures supported Codex lifecycle events locally, keeps project scope explicit, and injects only bounded approved memory context.",
+    "developerName": "SuperMemory",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Search this project's approved memory.",
+      "Show the current memory capture status."
+    ],
+    "brandColor": "#315B7D"
+  }
+}

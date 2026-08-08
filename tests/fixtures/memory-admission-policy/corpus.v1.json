@@ -1,0 +1,1124 @@
+{
+  "schema": "supermemory.admission-calibration-corpus.v1",
+  "version": "holdout-v1.0.0",
+  "split": "holdout",
+  "policy_version": "admission-v1.0.0",
+  "threshold_profile": {
+    "profile_id": "admission-v1.0.0-calibrated",
+    "selected_from": "calibration-v1.0.0",
+    "thresholds": {
+      "auto_entailment": 0.95,
+      "auto_source_trust": 0.9,
+      "auto_agreement": 0.85,
+      "max_contradiction_risk": 0.05,
+      "ttl_entailment": 0.8,
+      "ttl_source_trust": 0.65,
+      "discard_entailment": 0.5,
+      "ttl_ms": 604800000
+    }
+  },
+  "cases": [
+    {
+      "id": "hold-auto-pref",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-pref",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "preference",
+        "confidence": 0.03,
+        "evidence_ids": [
+          "evidence:hold-auto-pref"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.995,
+          "source_trust": 0.99,
+          "extraction_agreement": 0.98,
+          "entity_resolution_confidence": 0.98,
+          "temporal_consistency": 0.99,
+          "independent_support": 0.9,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-decision",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-decision",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "decision",
+        "confidence": 0.99,
+        "evidence_ids": [
+          "evidence:hold-auto-decision"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.985,
+          "source_trust": 0.975,
+          "extraction_agreement": 0.965,
+          "entity_resolution_confidence": 0.96,
+          "temporal_consistency": 0.98,
+          "independent_support": 0.75,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-constraint",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-constraint",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "constraint",
+        "confidence": 0.04,
+        "evidence_ids": [
+          "evidence:hold-auto-constraint"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.978,
+          "source_trust": 0.96,
+          "extraction_agreement": 0.94,
+          "entity_resolution_confidence": 0.95,
+          "temporal_consistency": 0.965,
+          "independent_support": 0.65,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-lesson",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-lesson",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "lesson",
+        "confidence": 0.98,
+        "evidence_ids": [
+          "evidence:hold-auto-lesson"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.972,
+          "source_trust": 0.95,
+          "extraction_agreement": 0.92,
+          "entity_resolution_confidence": 0.93,
+          "temporal_consistency": 0.95,
+          "independent_support": 0.55,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-fact-a",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-fact-a",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.05,
+        "evidence_ids": [
+          "evidence:hold-auto-fact-a"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.968,
+          "source_trust": 0.94,
+          "extraction_agreement": 0.91,
+          "entity_resolution_confidence": 0.92,
+          "temporal_consistency": 0.94,
+          "independent_support": 0.5,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-fact-b",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-fact-b",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.97,
+        "evidence_ids": [
+          "evidence:hold-auto-fact-b"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.964,
+          "source_trust": 0.935,
+          "extraction_agreement": 0.895,
+          "entity_resolution_confidence": 0.915,
+          "temporal_consistency": 0.93,
+          "independent_support": 0.45,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-pref-b",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-pref-b",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "preference",
+        "confidence": 0.06,
+        "evidence_ids": [
+          "evidence:hold-auto-pref-b"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.96,
+          "source_trust": 0.925,
+          "extraction_agreement": 0.885,
+          "entity_resolution_confidence": 0.905,
+          "temporal_consistency": 0.92,
+          "independent_support": 0.4,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-decision-b",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-decision-b",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "decision",
+        "confidence": 0.96,
+        "evidence_ids": [
+          "evidence:hold-auto-decision-b"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.958,
+          "source_trust": 0.92,
+          "extraction_agreement": 0.875,
+          "entity_resolution_confidence": 0.9,
+          "temporal_consistency": 0.91,
+          "independent_support": 0.35,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-constraint-b",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-constraint-b",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "constraint",
+        "confidence": 0.07,
+        "evidence_ids": [
+          "evidence:hold-auto-constraint-b"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.954,
+          "source_trust": 0.91,
+          "extraction_agreement": 0.865,
+          "entity_resolution_confidence": 0.895,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-auto-boundary",
+      "candidate": {
+        "candidate_id": "candidate:hold-auto-boundary",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.95,
+        "evidence_ids": [
+          "evidence:hold-auto-boundary"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.951,
+          "source_trust": 0.901,
+          "extraction_agreement": 0.851,
+          "entity_resolution_confidence": 0.89,
+          "temporal_consistency": 0.851,
+          "independent_support": 0.25,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "auto_activate"
+    },
+    {
+      "id": "hold-ttl-launch",
+      "candidate": {
+        "candidate_id": "candidate:hold-ttl-launch",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "open_work",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-ttl-launch"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.93,
+          "source_trust": 0.88,
+          "extraction_agreement": 0.92,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.82,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": true,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "activate_ttl"
+    },
+    {
+      "id": "hold-ttl-window",
+      "candidate": {
+        "candidate_id": "candidate:hold-ttl-window",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-ttl-window"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.88,
+          "source_trust": 0.79,
+          "extraction_agreement": 0.89,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.78,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": true,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "activate_ttl"
+    },
+    {
+      "id": "hold-ttl-single-source",
+      "candidate": {
+        "candidate_id": "candidate:hold-ttl-single-source",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-ttl-single-source"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.84,
+          "source_trust": 0.72,
+          "extraction_agreement": 0.86,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.73,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": true,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "activate_ttl"
+    },
+    {
+      "id": "hold-ttl-boundary",
+      "candidate": {
+        "candidate_id": "candidate:hold-ttl-boundary",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-ttl-boundary"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.801,
+          "source_trust": 0.651,
+          "extraction_agreement": 0.851,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.7,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": true,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "activate_ttl"
+    },
+    {
+      "id": "hold-discard-no-proof",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-no-proof",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-no-proof"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.18,
+          "source_trust": 0.92,
+          "extraction_agreement": 0.91,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-discard-weak-proof",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-weak-proof",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-weak-proof"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.49,
+          "source_trust": 0.84,
+          "extraction_agreement": 0.88,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-discard-duplicate",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-duplicate",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-duplicate"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.99,
+          "source_trust": 0.98,
+          "extraction_agreement": 0.97,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": true,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-discard-fragment",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-fragment",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-fragment"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.87,
+          "source_trust": 0.91,
+          "extraction_agreement": 0.9,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": true,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-discard-scope",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-scope",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-scope"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.98,
+          "source_trust": 0.96,
+          "extraction_agreement": 0.94,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": false,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-discard-source",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-source",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-source"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.94,
+          "source_trust": 0.61,
+          "extraction_agreement": 0.89,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-discard-agreement",
+      "candidate": {
+        "candidate_id": "candidate:hold-discard-agreement",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-discard-agreement"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.94,
+          "source_trust": 0.94,
+          "extraction_agreement": 0.82,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "discard"
+    },
+    {
+      "id": "hold-conflict-standard",
+      "candidate": {
+        "candidate_id": "candidate:hold-conflict-standard",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "standard",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-conflict-standard"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.98,
+          "source_trust": 0.95,
+          "extraction_agreement": 0.93,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0.2,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "hold-restricted",
+      "candidate": {
+        "candidate_id": "candidate:hold-restricted",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-restricted"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.99,
+          "source_trust": 0.98,
+          "extraction_agreement": 0.97,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": true,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": false
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "hold-ontology",
+      "candidate": {
+        "candidate_id": "candidate:hold-ontology",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-ontology"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "verified",
+        "verifier": {
+          "provider": "fixture-verifier",
+          "model": "verifier-v2",
+          "prompt_version": "verify-v2",
+          "independent": true
+        },
+        "signals": {
+          "evidence_entailment": 0.97,
+          "source_trust": 0.94,
+          "extraction_agreement": 0.91,
+          "entity_resolution_confidence": 0.91,
+          "temporal_consistency": 0.9,
+          "independent_support": 0.3,
+          "contradiction_risk": 0,
+          "scope_valid": true,
+          "ontology_compatible": false,
+          "temporary": false,
+          "duplicate": false,
+          "fragment": false,
+          "high_impact": false,
+          "permission_risk": false,
+          "destructive_ontology_change": true
+        }
+      },
+      "expected": "quarantine"
+    },
+    {
+      "id": "hold-verifier-outage",
+      "candidate": {
+        "candidate_id": "candidate:hold-verifier-outage",
+        "workspace_id": "workspace:evaluation",
+        "sensitivity": "restricted",
+        "type": "durable_fact",
+        "confidence": 0.5,
+        "evidence_ids": [
+          "evidence:hold-verifier-outage"
+        ],
+        "extractor": {
+          "provider": "fixture-extractor",
+          "model": "extractor-v1",
+          "prompt_version": "extract-v1"
+        }
+      },
+      "verification": {
+        "status": "unavailable"
+      },
+      "expected": "pending_verification"
+    }
+  ]
+}

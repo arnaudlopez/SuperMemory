@@ -1,0 +1,69 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T021",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "decision": "rejected",
+    "full_outcome_complete": false,
+    "rationale": "Verification passes, and encryption, replay, feedback bounds, TTL filtering, conflict history, and workspace isolation are materially implemented. The authority chain is not ready. Ontology promotion trusts caller-supplied gate booleans and caller-supplied claim objects rather than resolving current canonical authority and computing compatibility/evaluation itself; the improve worker never automatically promotes shadows and records extractor proposals before verification. Its E2E fixture supplies synthetic episodes with inline payloads rather than consuming reopened canonical working-store evidence. Enrichment authority duplicates graph checks but omits provenance revalidation, while source tombstones are not propagated. Session-close consolidation processes every workspace episode, not the closed session. These gaps block KG-AC10 and the claimed end-to-end milestone.",
+    "worker_package": {
+      "objective": "Repair T006 as one authority-complete ontology/improve vertical slice. Make ontology promotion non-forgeable: the registry must accept canonical support claim IDs, resolve their current graph authority itself, reject tombstoned/revoked/expired/provenance-invalid support, compute structural, backward-compatibility, scope, collision, and versioned retrieval-evaluation gates through trusted deterministic code or hash-bound evaluator artifacts, and never trust caller-supplied claim bodies or pass/fail booleans. After independently verified admission, the improve worker may create an admission/provenance-bound shadow proposal and must automatically reevaluate eligible shadows after each admitted claim; default-three independent authoritative support plus every computed gate promotes add-only changes to a new immutable version without a manual promote call. Unverified extraction must create neither graph truth nor ontology proposals; destructive changes remain quarantined. Consume real encrypted canonical working-store episodes through a source-owned monotonic cursor and independently reopened/hash-verified evidence, including late-arrival coverage. Centralize claim authorization in the graph boundary so enrichments use the same current provenance, admission, TTL, tombstone, and revocation decision as recall. Propagate canonical source tombstones/revocations to graph authority before enrichment rebuild. Consolidate only episodes belonging to a canonically closed session, keep degraded notifications retryable, and prove idempotent completion within 120 seconds. Add deterministic explicit-alias resolution evidence while preserving incompatible homonyms. Correctly map IM-AC02 to session consolidation and IM-AC03 to bounded non-authoritative feedback. Preserve disabled-by-default behavior and do not implement router, MCP/API recall, deployment, or live services.",
+      "allowed_files": [
+        "scripts/lib/memory-improve-worker.mjs",
+        "scripts/lib/ontology-registry.mjs",
+        "scripts/lib/knowledge-graph-adapter.mjs",
+        "scripts/lib/memory-admission-policy.mjs",
+        "scripts/lib/codex-working-set-store.mjs",
+        "tests/fixtures/memory-improve-worker/corpus.v1.json",
+        "tests/memory-improve-worker.test.mjs",
+        "tests/ontology-registry.test.mjs",
+        "tests/knowledge-graph-adapter.test.mjs",
+        "tests/memory-admission-policy.test.mjs",
+        "tests/codex-working-set-store.test.mjs",
+        "tests/codex-working-memory-integration.test.mjs"
+      ],
+      "verify": [
+        "node --test tests/memory-improve-worker.test.mjs tests/ontology-registry.test.mjs tests/knowledge-graph-adapter.test.mjs tests/memory-admission-policy.test.mjs tests/codex-working-set-store.test.mjs tests/codex-working-memory-integration.test.mjs",
+        "npm run verify:secrets",
+        "npm run verify:codex",
+        "npm run verify:specs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "git diff --check"
+      ],
+      "stop_if": [
+        "Promotion still accepts caller-supplied gate verdicts, evaluation scores without a hash-bound trusted evaluator result, or caller-supplied claim bodies as authority.",
+        "The registry cannot resolve current canonical support claims and reject tombstoned, revoked, expired, provenance-invalid, duplicate-authority, or cross-workspace support at promotion time.",
+        "Automatic shadow reevaluation/promotion requires a manual promote call, or an unverified extraction can persist an ontology proposal.",
+        "A real canonical episode cannot be paired with independently reopened evidence whose content hash and workspace/session scope are verified before extraction.",
+        "The high-watermark remains based only on observed_at and can permanently skip late-arriving canonical episodes.",
+        "Enrichment authorization diverges from graph recall authorization or source tombstones/revocations can leave an authoritative enrichment visible.",
+        "A session-close notification is not backed by canonical close state, processes another session, permanently caches a degraded result, or cannot meet the deterministic 120-second acceptance bound.",
+        "Explicit alias resolution can merge incompatible homonyms without independently verified binding evidence.",
+        "Any required change falls outside allowed_files or requires router, MCP/API recall, deployment, live credentials, network access, or a real user vault.",
+        "The same verification failure remains unresolved after two attempts."
+      ]
+    },
+    "evidence": [
+      "T021 reran all six focused files: 43 tests passed with zero failures; verify:specs, verify:codex, and diff hygiene passed.",
+      "promoteChange accepts arbitrary support claim objects and caller-supplied gates rather than resolving current canonical authority.",
+      "The improve worker submits ontology proposals before verifier/admission and never automatically calls promotion.",
+      "The alleged E2E test uses plain inline-payload episodes rather than reopened encrypted canonical evidence.",
+      "The observed_at watermark can permanently skip late arrivals; tombstone propagation and session-specific consolidation are absent."
+    ],
+    "parallel_safety": {"safe": false, "rationale": "Canonical episode cursors, graph authorization, ontology promotion, session state, and their end-to-end tests form one overlapping authority chain."},
+    "blocked_tasks": ["T007", "T008", "T009"],
+    "missing_evidence": [
+      "Automatic non-forgeable promotion through the improve loop.",
+      "Canonical encrypted working-store evidence and late-arrival integration.",
+      "Shared graph/enrichment authority with source tombstone propagation.",
+      "Canonical session-specific consolidation and explicit alias proof."
+    ],
+    "required_board_updates": [
+      "Record T021 as rejected.",
+      "Insert the authority-chain repair before T007.",
+      "Require a new Judge milestone after the repair."
+    ]
+  }
+}

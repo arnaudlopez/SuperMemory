@@ -1,0 +1,557 @@
+import crypto from "node:crypto";
+import fs from "node:fs";
+import http from "node:http";
+import path from "node:path";
+import { createCodexCaptureStore } from "./codex-capture-store.mjs";
+import { createCodexMemoryCompiler } from "./codex-memory-compiler.mjs";
+import { createCodexSpool } from "./codex-spool.mjs";
+
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "::1"]);
+
+function fail(code) {
+  const error = new Error(code);
+  error.code = code;
+  throw error;
+}
+
+function assertToken(authToken) {
+  if (typeof authToken !== "string" || Buffer.byteLength(authToken) < 32) {
+    fail("daemon_auth_token_invalid");
+  }
+}
+
+function isLoopbackUrl(url) {
+  return (
+    url.protocol === "http:" &&
+    (url.hostname === "127.0.0.1" || url.hostname === "[::1]" || url.hostname === "::1")
+  );
+}
+
+function authorized(header, expected) {
+  if (typeof header !== "string" || !header.startsWith("Bearer ")) return false;
+  const actual = Buffer.from(header.slice("Bearer ".length));
+  const wanted = Buffer.from(expected);
+  return actual.length === wanted.length && crypto.timingSafeEqual(actual, wanted);
+}
+
+function validHostHeader(value) {
+  if (typeof value !== "string") return false;
+  const normalized = value.toLowerCase();
+  return (
+    normalized === "localhost" ||
+    normalized.startsWith("localhost:") ||
+    normalized === "127.0.0.1" ||
+    normalized.startsWith("127.0.0.1:") ||
+    normalized === "[::1]" ||
+    normalized.startsWith("[::1]:")
+  );
+}
+
+function sendJson(response, statusCode, value) {
+  const body = `${JSON.stringify(value)}\n`;
+  response.writeHead(statusCode, {
+    "content-type": "application/json; charset=utf-8",
+    "content-length": Buffer.byteLength(body),
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff"
+  });
+  response.end(body);
+}
+
+function readJsonBody(request, maxBodyBytes) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    request.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > maxBodyBytes) {
+        reject(Object.assign(new Error("daemon_body_too_large"), { code: "daemon_body_too_large" }));
+        request.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    request.on("end", () => {
+      try {
+        resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+      } catch {
+        reject(Object.assign(new Error("daemon_json_invalid"), { code: "daemon_json_invalid" }));
+      }
+    });
+    request.on("error", reject);
+  });
+}
+
+function errorStatus(error) {
+  if (error?.code === "daemon_body_too_large") return 413;
+  if (
+    error?.code === "scope_unresolved" ||
+    error?.code === "event_envelope_invalid" ||
+    error?.name === "CodexEventError"
+  ) return 400;
+  return 422;
+}
+
+function recallErrorStatus(error) {
+  if (error?.code === "not_found_or_not_authorized") return 404;
+  if (error?.code === "backend_unavailable") return 503;
+  if (error?.code === "daemon_timeout") return 504;
+  return 400;
+}
+
+function recallErrorBody(error) {
+  const code = error?.code === "not_found_or_not_authorized"
+    ? "not_found_or_not_authorized"
+    : error?.code ?? "invalid_request";
+  return {
+    ok: false,
+    error: {
+      code,
+      message: code === "not_found_or_not_authorized"
+        ? "Memory is unavailable"
+        : "Recall request failed",
+      retryable: ["backend_unavailable", "daemon_timeout"].includes(code),
+      request_id: `req_${crypto.randomUUID()}`
+    }
+  };
+}
+
+function runtimeSpoolWorkspaces(runtimeRoot) {
+  if (!runtimeRoot) return [];
+  const resolved = path.resolve(runtimeRoot);
+  const stat = fs.lstatSync(resolved);
+  if (stat.isSymbolicLink() || !stat.isDirectory()) fail("daemon_runtime_root_invalid");
+  const spoolRoot = path.join(fs.realpathSync(resolved), "spool");
+  if (!fs.existsSync(spoolRoot)) return [];
+  const spoolStat = fs.lstatSync(spoolRoot);
+  if (spoolStat.isSymbolicLink() || !spoolStat.isDirectory()) {
+    fail("daemon_spool_root_invalid");
+  }
+  return fs.readdirSync(spoolRoot, { withFileTypes: true })
+    .map((entry) => {
+      if (entry.isSymbolicLink()) fail("daemon_spool_root_invalid");
+      return entry;
+    })
+    .filter((entry) => entry.isDirectory() && /^ws_[0-9a-f-]{36}$/i.test(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+}
+
+export function createSuperMemoryDaemon({
+  vaultRoot,
+  encryptionKey,
+  authToken,
+  host = "127.0.0.1",
+  port = 0,
+  clock = () => new Date().toISOString(),
+  maxBodyBytes = 1024 * 1024,
+  ollamaBaseUrl = "http://127.0.0.1:11434",
+  ollamaModel = "llama3:latest",
+  ollamaTimeoutMs = 20_000,
+  fetchImpl = globalThis.fetch,
+  memoryCompiler = null,
+  runtimeRoot = null,
+  workingMemory = null,
+  workingSetStore = null,
+  memoryRouter = null,
+  memoryRouterFactory = null
+} = {}) {
+  if (!LOOPBACK_HOSTS.has(host)) fail("daemon_host_not_loopback");
+  if (!Number.isInteger(port) || port < 0 || port > 65_535) fail("daemon_port_invalid");
+  if (!Number.isSafeInteger(maxBodyBytes) || maxBodyBytes < 1024) fail("daemon_body_limit_invalid");
+  assertToken(authToken);
+  const store = createCodexCaptureStore({
+    vaultRoot,
+    encryptionKey,
+    clock,
+    workingMemory,
+    workingSetStore
+  });
+  const router = memoryRouter ?? (typeof memoryRouterFactory === "function"
+    ? memoryRouterFactory({ captureStore: store })
+    : null);
+  const compiler = memoryCompiler ?? createCodexMemoryCompiler({
+    vaultRoot,
+    encryptionKey,
+    captureStore: store,
+    ollamaBaseUrl,
+    ollamaModel,
+    ollamaTimeoutMs,
+    fetchImpl,
+    clock
+  });
+  if (
+    typeof compiler.notifyCapture !== "function" ||
+    typeof compiler.recover !== "function" ||
+    typeof compiler.stop !== "function" ||
+    typeof compiler.stats !== "function"
+  ) fail("daemon_compiler_invalid");
+  if (router && [
+    "recall", "workingSearch", "workingOpen", "workingNeighbors", "workingMap",
+    "graphQuery", "explainPath", "search", "get", "explainCitation", "status"
+  ].some((method) => typeof router[method] !== "function")) fail("daemon_memory_router_invalid");
+  const recallRoutes = new Map([
+    ["/v1/recall", "recall"],
+    ["/v1/working/search", "workingSearch"],
+    ["/v1/working/open", "workingOpen"],
+    ["/v1/working/neighbors", "workingNeighbors"],
+    ["/v1/working/map", "workingMap"],
+    ["/v1/graph/query", "graphQuery"],
+    ["/v1/graph/explain-path", "explainPath"],
+    ["/v1/memory/search", "search"],
+    ["/v1/memory/get", "get"],
+    ["/v1/memory/explain-citation", "explainCitation"],
+    ["/v1/memory/status", "status"]
+  ]);
+  const startedAt = clock();
+  const counters = {
+    requests: 0,
+    applied: 0,
+    duplicates: 0,
+    rejected: 0
+  };
+  let listening = false;
+  let recoveryPromise = null;
+  let spoolReplay = {
+    status: runtimeRoot ? "pending" : "disabled",
+    workspaces: 0,
+    replayed: 0,
+    duplicates: 0,
+    failed: 0,
+    retained: 0,
+    expired: 0
+  };
+
+  const server = http.createServer(async (request, response) => {
+    counters.requests += 1;
+    if (!LOOPBACK_HOSTS.has(request.socket.localAddress) || !validHostHeader(request.headers.host)) {
+      counters.rejected += 1;
+      sendJson(response, 421, { ok: false, error: "daemon_host_rejected" });
+      return;
+    }
+    if (!authorized(request.headers.authorization, authToken)) {
+      counters.rejected += 1;
+      sendJson(response, 401, { ok: false, error: "daemon_unauthorized" });
+      return;
+    }
+    if (request.method === "GET" && request.url === "/health") {
+      const runtimeStatus = ["pending", "running"].includes(spoolReplay.status)
+        ? "starting"
+        : spoolReplay.status === "degraded"
+          ? "degraded"
+          : "ready";
+      sendJson(response, 200, {
+        ok: true,
+        status: runtimeStatus,
+        started_at: startedAt,
+        capture: store.stats(),
+        compiler: compiler.stats(),
+        spool_replay: { ...spoolReplay },
+        counters: { ...counters }
+      });
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/memory/status") {
+      if (!router) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      try {
+        sendJson(response, 200, { ok: true, ...(await router.status()) });
+      } catch (error) {
+        sendJson(response, recallErrorStatus(error), recallErrorBody(error));
+      }
+      return;
+    }
+    if (request.method === "POST" && recallRoutes.has(request.url)) {
+      if (!router) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      try {
+        const input = await readJsonBody(request, maxBodyBytes);
+        const result = await router[recallRoutes.get(request.url)](input);
+        sendJson(response, 200, { ok: true, ...result });
+      } catch (error) {
+        counters.rejected += 1;
+        sendJson(response, recallErrorStatus(error), recallErrorBody(error));
+      }
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/events") {
+      try {
+        const input = await readJsonBody(request, maxBodyBytes);
+        const result = store.ingest(input);
+        if (result.status === "duplicate") counters.duplicates += 1;
+        else counters.applied += 1;
+        compiler.notifyCapture(input);
+        sendJson(response, 202, { ok: true, ...result });
+      } catch (error) {
+        counters.rejected += 1;
+        sendJson(response, errorStatus(error), {
+          ok: false,
+          error: error?.code ?? error?.message ?? "capture_ingest_failed"
+        });
+      }
+      return;
+    }
+    sendJson(response, 404, { ok: false, error: "daemon_route_not_found" });
+  });
+
+  const start = () => new Promise((resolve, reject) => {
+    if (listening) {
+      const address = server.address();
+      resolve({
+        host,
+        port: address.port,
+        url: `http://${host === "::1" ? `[${host}]` : host}:${address.port}`
+      });
+      return;
+    }
+    const onError = (error) => {
+      server.off("listening", onListening);
+      reject(error);
+    };
+    const onListening = () => {
+      server.off("error", onError);
+      listening = true;
+      const address = server.address();
+      if (!address || typeof address === "string" || !LOOPBACK_HOSTS.has(address.address)) {
+        server.close();
+        reject(Object.assign(new Error("daemon_bound_outside_loopback"), {
+          code: "daemon_bound_outside_loopback"
+        }));
+        return;
+      }
+      recoveryPromise = (async () => {
+        if (runtimeRoot) {
+          spoolReplay = { ...spoolReplay, status: "running" };
+          try {
+            const summary = await replayRuntimeSpools();
+            spoolReplay = {
+              status: summary.failed > 0 ? "degraded" : "complete",
+              ...summary
+            };
+          } catch {
+            spoolReplay = { ...spoolReplay, status: "degraded", failed: spoolReplay.failed + 1 };
+          }
+        }
+        compiler.recover();
+      })();
+      const completeStart = () => resolve({
+        host: address.address,
+        port: address.port,
+        url: `http://${address.address === "::1" ? `[${address.address}]` : address.address}:${address.port}`
+      });
+      recoveryPromise.then(completeStart, () => {
+        spoolReplay = { ...spoolReplay, status: "degraded", failed: spoolReplay.failed + 1 };
+        completeStart();
+      });
+    };
+    server.once("error", onError);
+    server.once("listening", onListening);
+    server.listen({ host, port, exclusive: true });
+  });
+
+  const closeServer = () => new Promise((resolve, reject) => {
+    if (!listening) {
+      resolve();
+      return;
+    }
+    server.close((error) => {
+      if (error) reject(error);
+      else {
+        listening = false;
+        resolve();
+      }
+    });
+  });
+
+  const stop = async () => {
+    await closeServer();
+    if (recoveryPromise) await recoveryPromise;
+    await compiler.stop();
+  };
+
+  const replaySpool = async (spool) => {
+    const completedScopes = new Map();
+    const result = await spool.replay((prepared) => {
+      const ingest = store.ingestPrepared(prepared);
+      if (prepared.envelope.event_type === "assistant.completed") {
+        const scope = {
+          workspaceId: prepared.envelope.workspace_id,
+          sessionId: prepared.envelope.session_id
+        };
+        completedScopes.set(`${scope.workspaceId}\0${scope.sessionId}`, scope);
+      }
+      return ingest;
+    });
+    for (const scope of completedScopes.values()) compiler.schedule(scope);
+    return result;
+  };
+
+  const replayRuntimeSpools = async () => {
+    const summary = {
+      workspaces: 0,
+      replayed: 0,
+      duplicates: 0,
+      failed: 0,
+      retained: 0,
+      expired: 0
+    };
+    for (const workspaceId of runtimeSpoolWorkspaces(runtimeRoot)) {
+      summary.workspaces += 1;
+      const spool = createCodexSpool({
+        runtimeRoot,
+        workspaceId,
+        encryptionKey,
+        clock
+      });
+      const replay = await replaySpool(spool);
+      for (const key of ["replayed", "duplicates", "failed", "retained", "expired"]) {
+        summary[key] += Number(replay[key] ?? 0);
+      }
+    }
+    return summary;
+  };
+
+  return {
+    host,
+    store,
+    compiler,
+    memoryRouter: router,
+    start,
+    stop,
+    replaySpool,
+    replayRuntimeSpools,
+    counters: () => ({ ...counters })
+  };
+}
+
+function postJson(endpoint, route, value, authToken, timeoutMs) {
+  const url = new URL(route, endpoint);
+  if (!isLoopbackUrl(url)) return Promise.reject(Object.assign(
+    new Error("daemon_endpoint_not_loopback"),
+    { code: "daemon_endpoint_not_loopback" }
+  ));
+  const body = Buffer.from(JSON.stringify(value));
+  return new Promise((resolve, reject) => {
+    const request = http.request(url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${authToken}`,
+        "content-type": "application/json",
+        "content-length": body.length
+      }
+    }, (response) => {
+      const chunks = [];
+      response.on("data", (chunk) => chunks.push(chunk));
+      response.on("end", () => {
+        let parsed;
+        try {
+          parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        } catch {
+          reject(Object.assign(new Error("daemon_response_invalid"), {
+            code: "daemon_response_invalid"
+          }));
+          return;
+        }
+        if (response.statusCode < 200 || response.statusCode >= 300 || parsed.ok !== true) {
+          const responseError = typeof parsed.error === "object" && parsed.error
+            ? parsed.error.code
+            : parsed.error;
+          reject(Object.assign(new Error(responseError ?? "daemon_request_failed"), {
+            code: responseError ?? "daemon_request_failed"
+          }));
+          return;
+        }
+        resolve(parsed);
+      });
+    });
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(Object.assign(new Error("daemon_timeout"), { code: "daemon_timeout" }));
+    });
+    request.on("error", reject);
+    request.end(body);
+  });
+}
+
+export function createSuperMemoryDaemonClient({
+  endpoint,
+  authToken,
+  spool,
+  timeoutMs = 250
+} = {}) {
+  assertToken(authToken);
+  const parsed = new URL(endpoint);
+  if (!isLoopbackUrl(parsed)) fail("daemon_endpoint_not_loopback");
+  if (!spool || typeof spool.enqueue !== "function") fail("daemon_spool_required");
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10) fail("daemon_timeout_invalid");
+
+  const capture = async (input) => {
+    try {
+      const response = await postJson(parsed, "/v1/events", input, authToken, timeoutMs);
+      return {
+        ...response,
+        status: "delivered",
+        eventId: response.eventId
+      };
+    } catch (daemonError) {
+      try {
+        return {
+          ...spool.enqueue(input),
+          fallback: true,
+          daemonError: daemonError?.code ?? "daemon_unavailable"
+        };
+      } catch (spoolError) {
+        return {
+          status: "dropped",
+          reason: "spool_unavailable",
+          fallback: true,
+          daemonError: daemonError?.code ?? "daemon_unavailable",
+          spoolError: spoolError?.code ?? spoolError?.message ?? "spool_unavailable"
+        };
+      }
+    }
+  };
+
+  return { capture };
+}
+
+export function createSuperMemoryRecallClient({
+  endpoint,
+  authToken,
+  timeoutMs = 1_500
+} = {}) {
+  assertToken(authToken);
+  const parsed = new URL(endpoint);
+  if (!isLoopbackUrl(parsed)) fail("daemon_endpoint_not_loopback");
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10 || timeoutMs > 30_000) {
+    fail("daemon_timeout_invalid");
+  }
+  const invoke = async (route, input = {}) => {
+    const { ok, ...result } = await postJson(parsed, route, input, authToken, timeoutMs);
+    return result;
+  };
+  const workingSetPattern = /^wset_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const assertBound = ({ working_set_id: workingSetId } = {}) => {
+    if (typeof workingSetId !== "string" || !workingSetPattern.test(workingSetId)) {
+      fail("not_found_or_not_authorized");
+    }
+    return { working_set_id: workingSetId, authority: "daemon" };
+  };
+  return Object.freeze({
+    assertBound,
+    recall: (input) => invoke("/v1/recall", input),
+    search: (input) => invoke("/v1/memory/search", input),
+    get: (input) => invoke("/v1/memory/get", input),
+    explainCitation: (input) => invoke("/v1/memory/explain-citation", input),
+    workingMap: (input) => invoke("/v1/working/map", input),
+    workingSearch: (input) => invoke("/v1/working/search", input),
+    workingOpen: (input) => invoke("/v1/working/open", input),
+    workingNeighbors: (input) => invoke("/v1/working/neighbors", input),
+    graphQuery: (input) => invoke("/v1/graph/query", input),
+    explainPath: (input) => invoke("/v1/graph/explain-path", input),
+    status: () => invoke("/v1/memory/status", {})
+  });
+}

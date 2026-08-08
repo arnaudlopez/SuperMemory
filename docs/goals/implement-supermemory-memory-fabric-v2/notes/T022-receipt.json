@@ -1,0 +1,21 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T022",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": ["package.json"],
+    "commands": [
+      {"cmd": "node --test tests/memory-improve-worker.test.mjs tests/ontology-registry.test.mjs tests/knowledge-graph-adapter.test.mjs tests/memory-admission-policy.test.mjs tests/codex-working-set-store.test.mjs tests/codex-working-memory-integration.test.mjs", "status": "pass"},
+      {"cmd": "npm run verify:specs", "status": "pass"},
+      {"cmd": "npm test", "status": "pass"},
+      {"cmd": "npm run verify", "status": "pass"},
+      {"cmd": "npm run verify:release", "status": "pass"},
+      {"cmd": "git diff --check", "status": "pass"}
+    ],
+    "summary": "Added the missing verify:specs package script as an exact alias of the existing specification verifier, adjacent to verify without changing or reordering unrelated scripts. Revalidated the focused T006 oracle at 43/43 tests, the complete specification verifier, the full repository suite at 194 passing with one existing environment-dependent skip, release readiness, and diff hygiene.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

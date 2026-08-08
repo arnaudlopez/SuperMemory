@@ -1,0 +1,41 @@
+{
+  "schema": "supermemory.memory-improve-corpus.v1",
+  "version": 1,
+  "cases": [
+    {
+      "id": "KG-AC10",
+      "scenario": "gated_additive_ontology_promotion",
+      "evaluation": { "operation": "candidate_type_retrieval" }
+    },
+    {
+      "id": "KG-AC11",
+      "scenario": "destructive_ontology_quarantine",
+      "evaluation": { "operation": "core_entity_retrieval", "query": "Project" }
+    },
+    {
+      "id": "IM-AC01",
+      "scenario": "idempotent_independently_verified_enrichment",
+      "evaluation": { "operation": "core_relation_retrieval", "query": "RELATED_TO" }
+    },
+    {
+      "id": "IM-AC02",
+      "scenario": "canonical_session_close_consolidation_under_120_seconds",
+      "evaluation": { "operation": "core_entity_retrieval", "query": "Session" }
+    },
+    {
+      "id": "IM-AC03",
+      "scenario": "bounded_non_authoritative_feedback",
+      "evaluation": { "operation": "core_entity_retrieval", "query": "Claim" }
+    },
+    {
+      "id": "IM-E2E",
+      "scenario": "reopened_encrypted_working_evidence_to_graph_enrichment_replay",
+      "evaluation": { "operation": "core_relation_retrieval", "query": "HAS_EVIDENCE" }
+    },
+    {
+      "id": "IM-LATE",
+      "scenario": "source_owned_cursor_with_late_arrival",
+      "evaluation": { "operation": "core_entity_retrieval", "query": "Event" }
+    }
+  ]
+}

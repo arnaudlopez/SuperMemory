@@ -1,0 +1,37 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T004",
+    "board_path": "docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": [
+      "scripts/lib/codex-working-set-store.mjs",
+      "scripts/lib/codex-working-set-index.mjs",
+      "scripts/lib/codex-working-offload.mjs",
+      "scripts/lib/codex-capture-store.mjs",
+      "scripts/lib/supermemory-daemon.mjs",
+      "scripts/lib/codex-hook-adapter.mjs",
+      "scripts/supermemory-app-server.mjs",
+      "scripts/supermemoryd.mjs",
+      "tests/fixtures/working-memory/corpus.v1.json",
+      "tests/codex-working-set-store.test.mjs",
+      "tests/codex-working-set-index.test.mjs",
+      "tests/codex-working-offload.test.mjs",
+      "tests/codex-working-memory-integration.test.mjs",
+      "tests/supermemoryd.test.mjs"
+    ],
+    "commands": [
+      {"cmd":"node --test tests/codex-working-set-store.test.mjs tests/codex-working-set-index.test.mjs tests/codex-working-offload.test.mjs tests/codex-working-memory-integration.test.mjs tests/codex-capture-pipeline.test.mjs tests/codex-hook-adapter.test.mjs tests/codex-app-server-adapter.test.mjs tests/supermemoryd.test.mjs","status":"pass"},
+      {"cmd":"npm run verify:secrets","status":"pass"},
+      {"cmd":"npm run verify:codex","status":"pass"},
+      {"cmd":"npm test","status":"pass"},
+      {"cmd":"npm run verify","status":"pass"},
+      {"cmd":"npm run verify:release","status":"pass"},
+      {"cmd":"git diff --check","status":"pass"}
+    ],
+    "summary": "Implemented encrypted, scoped working sets and canonical evidence-ledger episodes with stable resume/fork identities, deterministic indexing, 100K quota handling, pins, eviction, tombstones, high-watermarks, idempotency, corruption rebuild, and verified canonical reopen. Capture/daemon/adapters now preserve truthful opt-in working-memory acknowledgements and fail open through the existing spool. Added non-replacing offload eligibility receipts and coverage for rich, standard, partial, duplicate, resume, fork, quota, tombstone, rebuild, outage, and post-commit failures. All mandated verification passed.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

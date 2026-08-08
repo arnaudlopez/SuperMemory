@@ -1,0 +1,52 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "blocked",
+    "task_id": "T002",
+    "board_path": "docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": [
+      "README.md",
+      "docs/codex-supermemory-technical-design.md",
+      "docs/prd-memoire-agentique-v2.md",
+      "scripts/lib/memory-admission-policy.mjs",
+      "scripts/lib/codex-memory-governance.mjs",
+      "scripts/lib/codex-workspace-store.mjs",
+      "scripts/lib/codex-memory-compiler.mjs",
+      "scripts/lib/product-store.mjs",
+      "scripts/lib/product-hindsight.mjs",
+      "scripts/hindsight-promote.mjs",
+      "scripts/supermemory-app.mjs",
+      "scripts/supermemory-review.mjs",
+      "scripts/verify-memory-contracts.mjs",
+      "scripts/verify-m1-hindsight-promotion-recall-fixture.mjs",
+      "web/app.js",
+      "web/index.html",
+      "tests/fixtures/memory-admission-policy/corpus.v1.json",
+      "tests/memory-admission-policy.test.mjs",
+      "tests/codex-memory-governance.test.mjs",
+      "tests/codex-memory-compiler.test.mjs",
+      "tests/product-store-multi-workspace.test.mjs",
+      "tests/product-hindsight.test.mjs",
+      "tests/supermemory-app.test.mjs",
+      "identity-vault/90_evals/cases/memory-contracts/input/contracts.fixture.json",
+      "identity-vault/90_evals/cases/memory-contracts/expected/assertions.json"
+    ],
+    "commands": [
+      "PASS node --test tests/memory-admission-policy.test.mjs tests/codex-memory-governance.test.mjs tests/codex-memory-compiler.test.mjs tests/product-store-multi-workspace.test.mjs tests/product-hindsight.test.mjs tests/hindsight-promote.test.mjs tests/supermemory-app.test.mjs (30 tests)",
+      "PASS node scripts/verify-memory-contracts.mjs",
+      "PASS node scripts/verify-m1-hindsight-promotion-recall-fixture.mjs",
+      "PASS node scripts/verify-review-queues-actions.mjs",
+      "FAIL npm run verify:codex (attempts 1 and 2: broken /opt/homebrew Codex shim; oracle_canary and codex_cli fail)",
+      "NOT RUN npm test (stopped after repeated required-verifier failure)",
+      "NOT RUN npm run verify",
+      "NOT RUN npm run verify:release",
+      "NOT RUN git diff --check (standalone; embedded diff_check passed in verify:codex)"
+    ],
+    "summary": "Implemented the complete Lot 0 automatic-admission slice: calibrated deterministic policy and holdout (100% auto precision, 4.17% exception rate), immutable attestations, both stores/compiler/governance, verifier-outage pending state, idempotence, TTL expiry, flags-off legacy mode, Exceptions UI/CLI/API, Hindsight metadata, normative contracts, and AD-AC01–07 tests. Focused tests and three normative verifiers pass. Required release verification remains blocked by the host Codex executable, not repository code.",
+    "deviations": [],
+    "remaining_blockers": [
+      "The first codex executable on PATH (/opt/homebrew/bin/codex) points to a missing packaged binary. npm run verify:codex therefore fails codex_cli and oracle_canary; the same failure persisted twice. Remaining verify commands were not run because the task stop_if requires stopping after two unresolved attempts."
+    ],
+    "verification_attempts": 2,
+    "stopped_because": "The same required npm run verify:codex failure remained unresolved after two attempts; repairing or replacing the host Codex installation is outside T002 allowed_files."
+  }
+}

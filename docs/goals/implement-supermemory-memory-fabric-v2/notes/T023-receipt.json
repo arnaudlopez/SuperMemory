@@ -1,0 +1,32 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T023",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": [
+      "scripts/lib/memory-improve-worker.mjs",
+      "scripts/lib/ontology-registry.mjs",
+      "scripts/lib/knowledge-graph-adapter.mjs",
+      "scripts/lib/codex-working-set-store.mjs",
+      "tests/fixtures/memory-improve-worker/corpus.v1.json",
+      "tests/memory-improve-worker.test.mjs",
+      "tests/ontology-registry.test.mjs",
+      "tests/knowledge-graph-adapter.test.mjs"
+    ],
+    "commands": [
+      {"command": "node --test tests/memory-improve-worker.test.mjs tests/ontology-registry.test.mjs tests/knowledge-graph-adapter.test.mjs tests/memory-admission-policy.test.mjs tests/codex-working-set-store.test.mjs tests/codex-working-memory-integration.test.mjs", "status": "pass"},
+      {"command": "npm run verify:secrets", "status": "pass"},
+      {"command": "npm run verify:codex", "status": "pass"},
+      {"command": "npm run verify:specs", "status": "pass"},
+      {"command": "npm test", "status": "pass"},
+      {"command": "npm run verify", "status": "pass"},
+      {"command": "npm run verify:release", "status": "pass"},
+      {"command": "git diff --check", "status": "pass"}
+    ],
+    "summary": "Repaired the ontology authority chain with canonical graph-resolved support claims, registry-owned gates and hash-bound retrieval evaluation, automatic post-admission shadow promotion, centralized authorization, real reopened encrypted evidence, monotonic source cursors, authority propagation, scoped closed-session consolidation, independently verified aliases, and corrected IM-AC02/IM-AC03 coverage. Disabled-by-default behavior remains intact. All focused, full, release, secret, Codex, specification, and diff checks pass.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 2,
+    "stopped_because": null
+  }
+}

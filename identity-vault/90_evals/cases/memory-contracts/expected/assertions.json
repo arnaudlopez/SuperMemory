@@ -15,7 +15,9 @@
     "T1.11",
     "T1.12",
     "T1.13",
-    "T1.14"
+    "T1.14",
+    "T1.15",
+    "T1.16"
   ],
   "expected_errors": {
     "T1.1": "missing_snapshot_proof",
@@ -31,7 +33,9 @@
     "T1.11": "interpretation_without_uncertainty",
     "T1.12": "interpretation_unknown_use_pattern",
     "T1.13": "interpretation_not_reviewed_for_active_memory",
-    "T1.14": "promotion_missing_interpretation_provenance"
+    "T1.14": "promotion_missing_interpretation_provenance",
+    "T1.15": "active_memory_not_admitted",
+    "T1.16": "promotion_missing_admission"
   },
   "valid_case_must_pass": true,
   "non_goals": [

@@ -1,0 +1,31 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T018",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "decision": "rejected",
+    "full_outcome_complete": false,
+    "rationale": "T017 materially fixes batch visibility, canonical relation IDs, exact hash checks, and malformed-response fallback, and all focused verification passes. Two milestone gaps remain. KG-AC08’s “remote” mock merely copies the requested projection_hash and echoes it; it never stores, loses, rebuilds, or independently hashes projected records, so remote-loss equivalence remains unproved. Also, preflight permits an already-closed target when valid_to equals the new closure time without requiring the same closed_by_relation_id. A competing relation can therefore overwrite closure attribution rather than fail as a collision. The missing-hash test also does not exercise a mismatched hash. T006 remains dependency-blocked.",
+    "worker_package": {
+      "objective": "Complete the temporal-graph milestone proof and closure-collision repair as one bounded package. In preflight, accept replay of an already-closed relation only when the existing closure time, closure status, and closed_by_relation_id exactly match the same incoming relation; reject competing closers and any relation listed as both superseded and contradicted before writing staged records. Add zero-visibility assertions for those failures. Replace the KG-AC08 echo mock with a stateful injected remote backend that independently computes its projection hash from received records, exposes its snapshot, can be completely cleared, and after rebuild matches canonical nodes, claims, relations, tombstones, dates, and hash. Add separate missing-hash and mismatched-hash cases proving neither creates a complete checkpoint. Exercise successful authenticated parameterized direct-Neo4j fallback for both thrown and malformed Graphiti project and query responses, retaining canonical filtering. Preserve batch commits, encryption, tombstone-first authority removal, bounded typed queries, and T005 scope; do not begin T006.",
+      "allowed_files": ["scripts/lib/knowledge-graph-adapter.mjs","scripts/lib/ontology-registry.mjs","services/supermemory-graphd/contract.v1.json","tests/fixtures/knowledge-graph/corpus.v1.json","tests/knowledge-graph-adapter.test.mjs","tests/ontology-registry.test.mjs"],
+      "verify": ["node --test tests/knowledge-graph-adapter.test.mjs tests/ontology-registry.test.mjs","npm run verify:secrets","npm run verify:codex","npm test","npm run verify","npm run verify:release","git diff --check"],
+      "stop_if": ["The repair requires files outside allowed_files, new dependencies, live credentials, deployment, router/MCP behavior, or T006 ontology/improvement behavior.","The stateful remote test cannot independently derive its hash from received projection records or cannot model complete backend loss without trusting the request projection_hash.","A competing temporal closure, ambiguous supersede/contradict classification, or failed preflight can still alter canonical visibility.","A missing or mismatched remote hash can still produce a complete projection checkpoint.","The same verification failure recurs twice without new evidence."]
+    },
+    "evidence": [
+      "The current focused graph/ontology suite passed 13/13; npm run verify:codex and git diff --check passed during T018.",
+      "knowledge-graph-adapter.mjs now stages immutable records under deterministic batch IDs and exposes them only through an integrity-linked immutable commit; canonicalState, query, projection, and rebuild all consume that committed view.",
+      "The atomicity test injects a crash after staged records and confirms the canonical state remains empty before a successful retry.",
+      "Canonical relation IDs are now derived from workspace_id plus relation_key for both incoming relations and closure targets.",
+      "Remote project responses now require ok=true and projection_hash exactly equal to the canonical projection hash; malformed project and query responses enter direct fallback, whose candidate paths are canonically revalidated.",
+      "The KG-AC08 test assigns remoteHash directly from request.parameters.projection_hash and returns that value. It neither stores records nor clears remote state nor independently recomputes a snapshot hash.",
+      "The projection-ack test covers an omitted projection_hash only; no mismatched-hash assertion exists.",
+      "Temporal preflight rejects a closed target only when valid_to differs from the incoming valid_from. If times match, it overwrites closed_by_relation_id without verifying the original closer, allowing a competing same-time closure.",
+      "PM supplied a fresh full SuperMemory index after T017: 8,348 nodes, 13,724 edges, skipped_count=0, persistence=false; exact findings were verified in checked-out source and tests."
+    ],
+    "parallel_safety": {"safe":false,"rationale":"Closure semantics, backend proof behavior, and their shared adapter tests must remain one coherent milestone repair; separate writers would overlap the same files and invariants."},
+    "blocked_tasks": ["T006","T007","T008"],
+    "missing_evidence": ["A stateful remote backend-loss test that independently reconstructs and hashes projected records after complete loss.","Explicit rejection and no-checkpoint proof for a mismatched projection hash, separate from an omitted hash.","Preflight rejection with zero canonical visibility for competing same-time closures and dual supersede/contradict classification.","Successful direct-Neo4j fallback coverage for both thrown and malformed project and query responses."],
+    "required_board_updates": ["Record T018 as rejected with the remaining remote-equivalence evidence and closure-collision defects.","Insert this bounded temporal-graph repair before T006 and keep T006-T008 queued.","Require another graph milestone audit before defining or activating ontology automation and continuous improvement."]
+  }
+}

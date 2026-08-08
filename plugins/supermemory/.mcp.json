@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "supermemory": {
+      "command": "node",
+      "args": [
+        "${PLUGIN_ROOT}/scripts/mcp.mjs"
+      ]
+    },
+    "supermemory-diagnostics": {
+      "command": "node",
+      "args": [
+        "${PLUGIN_ROOT}/scripts/mcp.mjs",
+        "--diagnostic"
+      ]
+    }
+  }
+}

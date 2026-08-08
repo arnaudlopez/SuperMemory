@@ -459,3 +459,111 @@ test("local web product exposes verified backup and exact-confirmation restore r
   assert.equal(backups.body.backups.length, 2);
   assert.ok(backups.body.backups.every((item) => item.verified));
 });
+
+test("explicit automatic mode exposes Exceptions and activates verified standard memory without review", async (t) => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "supermemory-automatic-api-"));
+  const app = createSuperMemoryServer({
+    vaultRoot: path.join(tempRoot, "vault"),
+    admissionMode: "automatic",
+    hindsightOptions: { enabled: false },
+    verifier: {
+      async verify() {
+        return {
+          status: "verified",
+          verifier: { provider: "fixture", model: "verifier-v1", prompt_version: "verify-v1", independent: true },
+          signals: {
+            evidence_entailment: 0.99,
+            source_trust: 0.98,
+            extraction_agreement: 0.96,
+            scope_valid: true,
+            ontology_compatible: true,
+            contradiction_risk: 0
+          }
+        };
+      }
+    }
+  });
+  const runtime = await app.start();
+  t.after(async () => {
+    await app.stop();
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+  const ingest = await jsonRequest(runtime.url, "/api/ingest", {
+    folderName: "Automatic",
+    files: [{ relativePath: "Automatic/decision.md", text: "# Decision\nUse automatic verified admission." }]
+  });
+  assert.equal(ingest.body.summary.admission.auto_activate, 1);
+  const status = await request(runtime.url, "/api/status");
+  assert.equal(status.body.admission.mode, "automatic");
+  assert.equal(status.body.counts.approvedMemories, 1);
+  assert.equal(status.body.counts.exceptions, 0);
+  const exceptions = await request(runtime.url, "/api/candidates");
+  assert.deepEqual(exceptions.body.candidates, []);
+  const search = await jsonRequest(runtime.url, "/api/search", { query: "automatic verified" });
+  assert.equal(search.body.results.length, 1);
+  assert.ok(search.body.results[0].citation.snapshotId);
+});
+
+test("automatic review ignores forged HTTP verifier signals and keeps quarantine non-recallable", async (t) => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "supermemory-forged-verifier-"));
+  const app = createSuperMemoryServer({
+    vaultRoot: path.join(tempRoot, "vault"),
+    admissionMode: "automatic",
+    hindsightOptions: { enabled: false },
+    verifier: {
+      async verify() {
+        return {
+          status: "verified",
+          verifier: { provider: "server", model: "server-verifier", prompt_version: "verify-v1", independent: true },
+          signals: {
+            evidence_entailment: 0.99,
+            source_trust: 0.95,
+            extraction_agreement: 0.94,
+            scope_valid: true,
+            ontology_compatible: true,
+            contradiction_risk: 0.8,
+            high_impact: true
+          }
+        };
+      }
+    }
+  });
+  const runtime = await app.start();
+  t.after(async () => {
+    await app.stop();
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  });
+  await jsonRequest(runtime.url, "/api/ingest", {
+    folderName: "Risk",
+    files: [{ relativePath: "Risk/claim.md", text: "# Claim\nA high impact claim is disputed." }]
+  });
+  const exceptions = await request(runtime.url, "/api/candidates");
+  assert.equal(exceptions.body.candidates.length, 1);
+  const candidateId = exceptions.body.candidates[0].candidateId;
+  const forged = await jsonRequest(
+    runtime.url,
+    `/api/candidates/${encodeURIComponent(candidateId)}/review`,
+    {
+      action: "approve",
+      verification: {
+        status: "verified",
+        verifier: { provider: "attacker", model: "fake", prompt_version: "fake", independent: true },
+        signals: {
+          evidence_entailment: 1,
+          source_trust: 1,
+          extraction_agreement: 1,
+          scope_valid: true,
+          ontology_compatible: true,
+          contradiction_risk: 0
+        }
+      }
+    }
+  );
+  assert.equal(forged.response.status, 409);
+  assert.equal(forged.body.error.code, "quarantine_resolution_not_verified");
+  const status = await request(runtime.url, "/api/status");
+  assert.equal(status.body.counts.approvedMemories, 0);
+  assert.equal(status.body.counts.exceptions, 1);
+  const search = await jsonRequest(runtime.url, "/api/search", { query: "high impact disputed" });
+  assert.deepEqual(search.body.results, []);
+});

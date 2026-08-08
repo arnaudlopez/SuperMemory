@@ -95,7 +95,15 @@ function checkValidatedMemories(input, errors) {
       memory.status === "active" &&
       derivesFrom.some((id) => {
         const interpretation = interpretationsById.get(id);
-        return interpretation && interpretation.review_status !== "approved";
+        return interpretation && !(
+          interpretation.review_status === "approved" ||
+          (
+            ["auto_activate", "activate_ttl"].includes(interpretation.admission_decision) &&
+            interpretation.admission_id &&
+            interpretation.admission_policy_version &&
+            interpretation.verifier?.independent === true
+          )
+        );
       })
     ) {
       errors.add("interpretation_not_reviewed_for_active_memory");
@@ -136,6 +144,15 @@ function checkPromotionPayloads(input, errors) {
       errors.add("incomplete_promotion_payload");
     } else if (!metadata.interpretation_id) {
       errors.add("promotion_missing_interpretation_provenance");
+    } else if (
+      metadata.review_status === "admitted" &&
+      (
+        !metadata.admission_id ||
+        !["auto_activate", "activate_ttl"].includes(metadata.admission_decision) ||
+        !metadata.admission_policy_version
+      )
+    ) {
+      errors.add("promotion_missing_admission");
     }
   }
 }

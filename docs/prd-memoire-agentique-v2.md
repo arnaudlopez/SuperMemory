@@ -196,7 +196,7 @@ opens_review
 
 Cette couche ne force pas un workflow metier par cas d'usage. Elle force seulement que chaque reponse, promotion Hindsight ou correction soit explicable par des objets, relations, snapshots et gates de gouvernance.
 
-L'interpretation est LLM-first : le modele peut proposer une signification adaptee a une source ou une demande inconnue. La validation reste deterministe : preuve, confidence, incertitude, assumptions, alternatives, use pattern, review state, acces, fraicheur et statut doivent etre explicites avant promotion.
+L'interpretation est LLM-first : le modele peut proposer une signification adaptee a une source ou une demande inconnue. L'admission reste deterministe : preuve, signaux d'un verificateur independant, incertitude, assumptions, alternatives, use pattern, acces, fraicheur et statut doivent etre explicites avant promotion. La confiance auto-declaree de l'extracteur ne decide jamais. Les claims standards peuvent devenir `auto_activate` ou `activate_ttl`; `quarantine`, `discard` et `pending_verification` restent hors recall. La revue humaine est une exception persistante, tandis que permissions, secrets, actions externes, readiness production et mutations destructives conservent leurs gates explicites.
 
 Le Golden Case entreprise doit devenir l'oracle principal de ce contrat : si une notion du modele n'est jamais exercee par le cas, elle doit etre justifiee ou retiree.
 

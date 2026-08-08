@@ -61,7 +61,16 @@
         "schema_status": "stable",
         "freshness": "fresh",
         "conflict_status": "none",
-        "review_status": "approved"
+        "review_status": "admitted",
+        "admission_id": "adm_acme_api_field",
+        "admission_decision": "auto_activate",
+        "admission_policy_version": "admission-v1.0.0",
+        "verifier": {
+          "provider": "fixture",
+          "model": "independent-verifier-v1",
+          "prompt_version": "verify-v1",
+          "independent": true
+        }
       }
     ],
     "validated_memories": [
@@ -70,6 +79,9 @@
         "document_id": "doc-acme-api-field",
         "derived_from": ["snap-acme-api-2026-05-20"],
         "status": "active",
+        "admission_id": "adm_acme_api_field",
+        "admission_decision": "auto_activate",
+        "admission_policy_version": "admission-v1.0.0",
         "freshness": "fresh",
         "visibility": "professional",
         "sensitivity": "medium",
@@ -109,7 +121,11 @@
           "entity_type:fact"
         ],
         "metadata": {
-          "interpretation_id": "interp-acme-api-field"
+          "interpretation_id": "interp-acme-api-field",
+          "review_status": "admitted",
+          "admission_id": "adm_acme_api_field",
+          "admission_decision": "auto_activate",
+          "admission_policy_version": "admission-v1.0.0"
         }
       }
     ],
@@ -404,6 +420,39 @@
         ]
       },
       "expected_error": "promotion_missing_interpretation_provenance"
+    },
+    {
+      "id": "T1.15",
+      "description": "A quarantined admission cannot become an active memory.",
+      "input": {
+        "validated_memories": [
+          {
+            "memory_id": "mem-quarantined",
+            "document_id": "doc-quarantined",
+            "derived_from": ["snap-acme-api-2026-05-20"],
+            "status": "active",
+            "admission_id": "adm_quarantined",
+            "admission_decision": "quarantine"
+          }
+        ]
+      },
+      "expected_error": "active_memory_not_admitted"
+    },
+    {
+      "id": "T1.16",
+      "description": "An admitted promotion must carry its admission provenance.",
+      "input": {
+        "promotion_payloads": [
+          {
+            "document_id": "doc-missing-admission",
+            "status": "active",
+            "metadata": {
+              "review_status": "admitted"
+            }
+          }
+        ]
+      },
+      "expected_error": "promotion_missing_admission"
     }
   ]
 }

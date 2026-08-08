@@ -67,7 +67,13 @@ function checkSnapshotIdentity(input, errors) {
 function checkMemoryCandidates(input, errors) {
   for (const candidate of list(input, "memory_candidates")) {
     const wantsActive = candidate.proposed_status === "active" || candidate.status === "active";
-    if (wantsActive && candidate.review_status !== "approved") {
+    const admitted = (
+      ["auto_activate", "activate_ttl"].includes(candidate.admission_decision) &&
+      Boolean(candidate.admission_id) &&
+      Boolean(candidate.admission_policy_version) &&
+      candidate.verifier?.independent === true
+    );
+    if (wantsActive && candidate.review_status !== "approved" && !admitted) {
       errors.add("candidate_not_validated");
     }
     if (wantsActive && candidate.schema_status === "candidate") {
@@ -109,6 +115,11 @@ function checkValidatedMemories(input, errors) {
     }
     if (
       memory.status === "active" &&
+      memory.admission_decision &&
+      !["auto_activate", "activate_ttl"].includes(memory.admission_decision)
+    ) errors.add("active_memory_not_admitted");
+    if (
+      memory.status === "active" &&
       derivedFrom.some((id) => {
         const interpretation = interpretationsById.get(id);
         return interpretation && interpretation.review_status !== "approved";
@@ -131,6 +142,18 @@ function checkPromotionPayloads(input, errors) {
     if (memory.status === "do_not_use" && activePayloadDocumentIds.has(memory.document_id)) {
       errors.add("do_not_use_not_promotable");
     }
+  }
+
+  for (const payload of list(input, "promotion_payloads")) {
+    if (
+      payload.status === "active" &&
+      payload.metadata?.review_status === "admitted" &&
+      (
+        !payload.metadata.admission_id ||
+        !["auto_activate", "activate_ttl"].includes(payload.metadata.admission_decision) ||
+        !payload.metadata.admission_policy_version
+      )
+    ) errors.add("promotion_missing_admission");
   }
 
   if (list(input, "interpretation_candidates").length > 0) {

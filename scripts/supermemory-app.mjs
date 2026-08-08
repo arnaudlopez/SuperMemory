@@ -18,6 +18,9 @@ function parseArgs(argv) {
     port: 4310,
     vaultRoot: process.env.SUPERMEMORY_VAULT_ROOT || path.resolve("identity-vault"),
     backupsRoot: process.env.SUPERMEMORY_BACKUPS_ROOT || path.join(os.homedir(), ".supermemory", "backups"),
+    admissionMode: process.env.SUPERMEMORY_ADMISSION_MODE === "automatic"
+      ? "automatic"
+      : "legacy_manual",
     json: false
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -32,6 +35,8 @@ function parseArgs(argv) {
       options.backupsRoot = argv[++index];
     } else if (arg === "--json") {
       options.json = true;
+    } else if (arg === "--automatic-admission") {
+      options.admissionMode = "automatic";
     } else if (arg === "--help" || arg === "-h") {
       options.help = true;
     } else {
@@ -47,7 +52,7 @@ function parseArgs(argv) {
 
 function usage() {
   return [
-    "Usage: node scripts/supermemory-app.mjs [--port <number>] [--vault-root <directory>] [--backups-root <directory>] [--json]",
+    "Usage: node scripts/supermemory-app.mjs [--port <number>] [--vault-root <directory>] [--backups-root <directory>] [--automatic-admission] [--json]",
     "",
     "Starts the SuperMemory local web application on 127.0.0.1.",
     "Markdown, TXT, PDF and DOCX are extracted locally with source citations."
@@ -259,11 +264,21 @@ export function createSuperMemoryServer({
   hindsight = null,
   hindsightOptions = {},
   backupsRoot = process.env.SUPERMEMORY_BACKUPS_ROOT || path.join(os.homedir(), ".supermemory", "backups"),
-  backupManager = null
+  backupManager = null,
+  admissionMode = "legacy_manual",
+  admissionPolicy = null,
+  verifier = null
 }) {
   if (host !== "127.0.0.1") throw new Error("host_must_be_loopback");
   const hindsightAdapter = hindsight ?? createProductHindsight(hindsightOptions);
-  const store = createProductStore({ vaultRoot, clock, hindsight: hindsightAdapter });
+  const store = createProductStore({
+    vaultRoot,
+    clock,
+    hindsight: hindsightAdapter,
+    admissionMode,
+    admissionPolicy,
+    verifier
+  });
   const backups = backupManager ?? createProductBackupManager({ vaultRoot, backupsRoot, clock });
   let server;
 
@@ -278,7 +293,8 @@ export function createSuperMemoryServer({
         return;
       }
       if (req.method === "GET" && pathname === "/api/candidates") {
-        send(res, 200, { candidates: store.listCandidates(url.searchParams.get("status") || "pending") });
+        const defaultStatus = store.admissionMode === "automatic" ? "quarantined" : "pending";
+        send(res, 200, { candidates: store.listCandidates(url.searchParams.get("status") || defaultStatus) });
         return;
       }
       if (req.method === "GET" && pathname === "/api/memories") {
@@ -318,7 +334,12 @@ export function createSuperMemoryServer({
       const reviewMatch = /^\/api\/candidates\/([^/]+)\/review$/.exec(pathname);
       if (req.method === "POST" && reviewMatch) {
         const candidateId = decodeURIComponent(reviewMatch[1]);
-        send(res, 200, await store.reviewCandidate(candidateId, await readJsonBody(req)));
+        const body = await readJsonBody(req);
+        send(res, 200, await store.reviewCandidate(candidateId, {
+          action: body.action,
+          title: body.title,
+          text: body.text
+        }));
         return;
       }
       if (req.method === "POST" && pathname === "/api/search") {

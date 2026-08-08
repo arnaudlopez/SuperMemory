@@ -1,0 +1,22 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T019",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": ["scripts/lib/knowledge-graph-adapter.mjs","tests/fixtures/knowledge-graph/corpus.v1.json","tests/knowledge-graph-adapter.test.mjs"],
+    "commands": [
+      {"cmd":"node --test tests/knowledge-graph-adapter.test.mjs tests/ontology-registry.test.mjs","status":"pass"},
+      {"cmd":"npm run verify:secrets","status":"pass"},
+      {"cmd":"npm run verify:codex","status":"pass"},
+      {"cmd":"npm test","status":"pass"},
+      {"cmd":"npm run verify","status":"pass"},
+      {"cmd":"npm run verify:release","status":"pass"},
+      {"cmd":"git diff --check","status":"pass"}
+    ],
+    "summary": "Completed the temporal-graph milestone repair. Closure preflight now accepts only identity-exact replay and rejects competing closers or dual supersede/contradict classification before staging, with canonical zero-visibility assertions. KG-AC08 now uses a stateful remote backend that independently hashes stored projection records, exposes snapshots, models complete loss, and proves exact canonical rebuild equivalence. Added separate missing- and mismatched-hash cases proving no complete checkpoint is created. Added successful authenticated, parameterized direct-Neo4j fallback coverage for both thrown and malformed Graphiti project/query responses while retaining canonical filtering. Preserved T005 scope and existing atomic, encryption, revocation, and bounded-query behavior. All required verification passed.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

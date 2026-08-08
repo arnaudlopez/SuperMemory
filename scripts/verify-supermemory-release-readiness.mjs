@@ -195,6 +195,13 @@ function checkTrackedSecretHygiene() {
 }
 
 const checks = [
+  runCommand("memory_fabric_v2", "node", [
+    "--test",
+    "tests/memory-fabric-v2-acceptance.test.mjs",
+    "tests/memory-fabric-v2-e2e.test.mjs",
+    "tests/memory-fabric-v2-performance.test.mjs"
+  ]),
+  runCommand("memory_fabric_v2_matrix", "node", ["scripts/verify-memory-fabric-v2.mjs"]),
   runCommand("client_onboarding", "node", ["scripts/verify-supermemory-onboarding.mjs"]),
   runCommand("global_specs", "node", ["scripts/verify-supermemory-specs.mjs"]),
   runCommand("golden_end_state_workflow", "node", ["scripts/verify-golden-end-state-workflow.mjs"]),

@@ -85,7 +85,16 @@ function promotionHasGovernance(payload) {
     metadata.access_policy === tagValue(tags, "access_policy:") &&
     Array.isArray(metadata.allowed_consumers) &&
     metadata.allowed_consumers.includes(consumer) &&
-    ["approved", "reviewed"].includes(metadata.review_status ?? metadata.review_state)
+    (
+      ["approved", "reviewed"].includes(metadata.review_status ?? metadata.review_state) ||
+      (
+        (metadata.review_status ?? metadata.review_state) === "admitted" &&
+        Boolean(metadata.admission_id) &&
+        ["auto_activate", "activate_ttl"].includes(metadata.admission_decision) &&
+        Boolean(metadata.admission_policy_version) &&
+        (!metadata.valid_until || Date.parse(metadata.valid_until) > Date.now())
+      )
+    )
   );
 }
 
@@ -239,7 +248,16 @@ function promotionSource(input) {
 function validatedMemoryIsPromotable(memory) {
   return (
     memory?.status === "active" &&
-    memory?.review_status === "approved" &&
+    (
+      memory?.review_status === "approved" ||
+      (
+        memory?.review_status === "admitted" &&
+        Boolean(memory?.admission_id ?? memory?.metadata?.admission_id) &&
+        ["auto_activate", "activate_ttl"].includes(
+          memory?.admission_decision ?? memory?.metadata?.admission_decision
+        )
+      )
+    ) &&
     memory?.promote_to_hindsight === true
   );
 }
@@ -312,6 +330,10 @@ function promotionPayloadFromValidatedMemory(memory, context = {}) {
       data_owner: enrichedMemory.data_owner,
       allowed_consumers: enrichedMemory.allowed_consumers,
       review_status: enrichedMemory.review_status,
+      admission_id: enrichedMemory.admission_id ?? enrichedMemory.metadata?.admission_id,
+      admission_decision: enrichedMemory.admission_decision ?? enrichedMemory.metadata?.admission_decision,
+      admission_policy_version: enrichedMemory.admission_policy_version ?? enrichedMemory.metadata?.admission_policy_version,
+      valid_until: enrichedMemory.valid_until ?? enrichedMemory.metadata?.valid_until,
       visibility: enrichedMemory.visibility,
       sensitivity: enrichedMemory.sensitivity,
       domain: enrichedMemory.domain,
@@ -334,7 +356,9 @@ function buildEffectiveInput(input) {
 
   const generationErrors = [];
   const memories = list(input, "validated_memories");
-  const eligibleMemories = memories.filter((memory) => memory?.status === "active" && memory?.review_status === "approved");
+  const eligibleMemories = memories.filter((memory) => (
+    memory?.status === "active" && ["approved", "admitted"].includes(memory?.review_status)
+  ));
   const unflagged = eligibleMemories.filter((memory) => memory.promote_to_hindsight !== true);
   if (unflagged.length > 0) {
     generationErrors.push("validated_memory_not_explicitly_promotable");

@@ -53,11 +53,11 @@
       </article>
       <article>
         <span class="metric-icon amber">02</span>
-        <div><strong id="candidate-count">0</strong><small>À valider</small></div>
+        <div><strong id="candidate-count">0</strong><small id="candidate-count-label">À valider</small></div>
       </article>
       <article>
         <span class="metric-icon mint">03</span>
-        <div><strong id="memory-count">0</strong><small>Mémoires approuvées</small></div>
+        <div><strong id="memory-count">0</strong><small id="memory-count-label">Mémoires approuvées</small></div>
       </article>
       <article>
         <span class="metric-icon violet">04</span>
@@ -83,7 +83,7 @@
         <span>1</span> Importer
       </button>
       <button class="tab-button" type="button" data-tab="review">
-        <span>2</span> Valider
+        <span>2</span> <span id="review-tab-label">Valider</span>
         <b id="review-badge" hidden>0</b>
       </button>
       <button class="tab-button" type="button" data-tab="search">
@@ -146,8 +146,8 @@
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Étape 2</p>
-          <h2>Gardez uniquement ce qui compte</h2>
-          <p>Chaque proposition reste inactive jusqu’à votre décision.</p>
+          <h2 id="review-title">Gardez uniquement ce qui compte</h2>
+          <p id="review-description">Chaque proposition reste inactive jusqu’à votre décision.</p>
         </div>
         <button class="button ghost" id="refresh-candidates" type="button">Actualiser</button>
       </div>

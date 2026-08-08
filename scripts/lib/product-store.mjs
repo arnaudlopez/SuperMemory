@@ -2,6 +2,10 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { DocumentExtractionError, extractBinaryDocument } from "./document-extractors.mjs";
+import {
+  createMemoryAdmissionPolicy,
+  verifyAdmissionDecision
+} from "./memory-admission-policy.mjs";
 
 const STORE_VERSION = 1;
 const MAX_FILES = 250;
@@ -265,6 +269,9 @@ function memoryMarkdown(memory) {
     `locator: ${yamlString(JSON.stringify(locator))}`,
     `status: ${memory.status}`,
     `approved_at: ${yamlString(memory.approvedAt)}`,
+    `admission_id: ${yamlString(memory.admissionId ?? "legacy_manual")}`,
+    `admission_decision: ${yamlString(memory.admissionDecision ?? "legacy_manual")}`,
+    `valid_until: ${yamlString(memory.validUntil ?? "")}`,
     `hindsight_document_id: ${yamlString(memory.projection?.documentId ?? "")}`,
     `hindsight_projection_status: ${yamlString(memory.projection?.status ?? "queued")}`,
     "---",
@@ -300,7 +307,10 @@ export function createProductStore({
   vaultRoot,
   workspaceId = "workspace:local",
   clock = () => new Date().toISOString(),
-  hindsight = null
+  hindsight = null,
+  admissionMode = "legacy_manual",
+  admissionPolicy = null,
+  verifier = null
 }) {
   if (!vaultRoot) throw new ProductError("vault_root_required", "A local vault root is required.", 500);
   const requestedRoot = path.resolve(vaultRoot);
@@ -312,9 +322,17 @@ export function createProductStore({
   const vaultReal = fs.realpathSync(requestedRoot);
   const stateDirectory = ensureSafeDirectory(vaultReal, "00_inbox/supermemory-product");
   const memoryDirectory = ensureSafeDirectory(vaultReal, "20_professional/product-memories");
+  const admissionDirectory = ensureSafeDirectory(vaultReal, "20_professional/admissions/product");
   const logDirectory = ensureSafeDirectory(vaultReal, "80_logs");
   const statePath = path.join(stateDirectory, "state.json");
   const eventLogPath = path.join(logDirectory, "product-events.jsonl");
+  if (!["legacy_manual", "automatic"].includes(admissionMode)) {
+    throw new ProductError("admission_mode_invalid", "Le mode d’admission est invalide.", 500);
+  }
+  if (verifier !== null && typeof verifier.verify !== "function") {
+    throw new ProductError("admission_verifier_invalid", "Le vérificateur d’admission est invalide.", 500);
+  }
+  const policy = admissionPolicy ?? createMemoryAdmissionPolicy({ clock });
 
   const readState = () => {
     if (!fs.existsSync(statePath)) return initialState(workspaceId, clock());
@@ -375,6 +393,22 @@ export function createProductStore({
     const memoryPath = path.join(memoryDirectory, `${memory.memoryId.replaceAll(":", "-")}.md`);
     atomicWrite(memoryPath, memoryMarkdown(memory));
     return path.relative(vaultReal, memoryPath).split(path.sep).join("/");
+  };
+
+  const writeAdmission = (admission) => {
+    if (!verifyAdmissionDecision(admission)) {
+      throw new ProductError("admission_artifact_invalid", "La décision d’admission est invalide.", 500);
+    }
+    const target = path.join(admissionDirectory, `${admission.admission_id}.json`);
+    const content = `${JSON.stringify(admission, null, 2)}\n`;
+    if (fs.existsSync(target)) {
+      if (fs.readFileSync(target, "utf8") !== content) {
+        throw new ProductError("admission_artifact_conflict", "La décision d’admission est immuable.", 409);
+      }
+      return target;
+    }
+    atomicWrite(target, content);
+    return target;
   };
 
   const removeVaultFile = (relativePath) => {
@@ -591,11 +625,34 @@ export function createProductStore({
     return deletion;
   };
 
+  const expireTtlMemories = () => {
+    const state = readState();
+    const now = Date.parse(clock());
+    let changed = false;
+    for (const memory of state.memories) {
+      if (
+        memory.status !== "active" ||
+        !memory.validUntil ||
+        Date.parse(memory.validUntil) > now
+      ) continue;
+      memory.status = "expired";
+      memory.expiredAt = clock();
+      queueDerivedDeletion(state, memory, "ttl_expired", memory.expiredAt);
+      memory.memoryPath = writeMemory(memory);
+      changed = true;
+    }
+    if (changed) writeState(state);
+    return state;
+  };
+
   const localSearch = (state, normalizedQuery, limit) => {
     const tokens = tokenize(normalizedQuery);
     const phrase = normalizedQuery.toLocaleLowerCase("fr");
     const results = [];
-    for (const memory of state.memories.filter((item) => item.status === "active")) {
+    const now = Date.parse(clock());
+    for (const memory of state.memories.filter((item) => (
+      item.status === "active" && (!item.validUntil || Date.parse(item.validUntil) > now)
+    ))) {
       const title = memory.title.toLocaleLowerCase("fr");
       const text = memory.text.toLocaleLowerCase("fr");
       let score = text.includes(phrase) || title.includes(phrase) ? 8 : 0;
@@ -641,13 +698,152 @@ export function createProductStore({
     }
   });
 
+  const trustedVerification = async (candidate, source, reason = "ingest") => {
+    if (!verifier) return { status: "unavailable" };
+    try {
+      const result = await verifier.verify({ candidate, source, workspaceId, reason });
+      return result?.status === "verified" ? result : { status: "unavailable" };
+    } catch {
+      return { status: "unavailable" };
+    }
+  };
+
+  const admitCandidate = async (candidateId, { verification = null } = {}) => {
+    if (admissionMode !== "automatic") {
+      throw new ProductError("automatic_admission_disabled", "L’admission automatique est désactivée.", 409);
+    }
+    let state = readState();
+    let candidate = state.candidates.find((item) => item.candidateId === candidateId);
+    if (!candidate) throw new ProductError("candidate_not_found", "Cette candidate n’existe pas.", 404);
+    if (candidate.admissionId && candidate.status !== "quarantined") {
+      const target = path.join(admissionDirectory, `${candidate.admissionId}.json`);
+      const admission = JSON.parse(fs.readFileSync(target, "utf8"));
+      if (!verifyAdmissionDecision(admission, {
+        candidateId: candidate.candidateId,
+        workspaceId,
+        policyVersion: policy.policyVersion,
+        evidenceIds: [candidate.snapshotId]
+      })) {
+        throw new ProductError("admission_artifact_invalid", "La décision d’admission est invalide.", 500);
+      }
+      return {
+        status: admission.decision,
+        candidate,
+        admission,
+        memory: state.memories.find((item) => item.memoryId === candidate.memoryId) ?? null
+      };
+    }
+    if (!["pending", "pending_verification", "quarantined"].includes(candidate.status)) {
+      throw new ProductError("candidate_already_admitted", "Cette candidate a déjà été admise.", 409);
+    }
+    const policyCandidate = {
+      candidate_id: candidate.candidateId,
+      workspace_id: workspaceId,
+      sensitivity: candidate.sensitivity,
+      evidence_ids: [candidate.snapshotId],
+      extractor: candidate.extractor ?? {
+        provider: "deterministic",
+        model: "product-source-blocks",
+        prompt_version: "source-blocks-v1"
+      }
+    };
+    const result = policy.evaluate({ candidate: policyCandidate, verification });
+    if (result.status === "pending_verification") {
+      candidate.status = "pending_verification";
+      writeState(state);
+      return { ...result, candidate, memory: null };
+    }
+    if (!verifyAdmissionDecision(result.admission, {
+      candidateId: candidate.candidateId,
+      workspaceId,
+      policyVersion: policy.policyVersion,
+      evidenceIds: [candidate.snapshotId]
+    })) {
+      throw new ProductError("admission_artifact_invalid", "La décision d’admission est invalide.", 500);
+    }
+    writeAdmission(result.admission);
+    candidate.admissionId = result.admission.admission_id;
+    candidate.admissionDecision = result.decision;
+    candidate.admissionHistory = [...new Set([...(candidate.admissionHistory ?? []), candidate.admissionId])];
+    candidate.status = result.decision === "quarantine" ? "quarantined" : result.decision;
+    if (!result.recall_allowed) {
+      writeState(state);
+      appendEvent({
+        event: "candidate_admitted",
+        at: result.admission.decided_at,
+        candidateId,
+        decision: result.decision,
+        admissionId: result.admission.admission_id
+      });
+      return { ...result, candidate, memory: null };
+    }
+    const memoryId = candidate.memoryId ?? stableId("memory", candidate.candidateId);
+    const source = state.sources.find((item) => item.sourceId === candidate.sourceId);
+    let memory = state.memories.find((item) => item.memoryId === memoryId);
+    if (!memory) {
+      memory = {
+        memoryId,
+        candidateId: candidate.candidateId,
+        sourceId: candidate.sourceId,
+        snapshotId: candidate.snapshotId,
+        relativePath: candidate.relativePath,
+        title: candidate.title,
+        text: candidate.text,
+        lineStart: candidate.lineStart,
+        lineEnd: candidate.lineEnd,
+        locator: candidate.locator,
+        workspaceId,
+        sourceKind: source?.sourceKind ?? "document",
+        sensitivity: candidate.sensitivity,
+        status: "active",
+        approvedAt: result.admission.decided_at,
+        admissionId: result.admission.admission_id,
+        admissionDecision: result.decision,
+        admissionPolicyVersion: result.admission.policy_version,
+        validUntil: result.admission.expires_at,
+        staleAt: null,
+        memoryPath: null,
+        projection: {
+          documentId: memoryId,
+          status: "queued",
+          attempts: 0,
+          lastAttemptAt: null,
+          syncedAt: null,
+          errorCode: null
+        }
+      };
+      memory.memoryPath = writeMemory(memory);
+      state.memories.push(memory);
+    }
+    candidate.memoryId = memoryId;
+    writeState(state);
+    appendEvent({
+      event: "candidate_admitted",
+      at: result.admission.decided_at,
+      candidateId,
+      memoryId,
+      decision: result.decision,
+      admissionId: result.admission.admission_id
+    });
+    memory.projection = await attemptProjection(memoryId);
+    state = readState();
+    candidate = state.candidates.find((item) => item.candidateId === candidateId);
+    memory = state.memories.find((item) => item.memoryId === memoryId);
+    return { ...result, candidate, memory };
+  };
+
   return {
     vaultRoot: vaultReal,
+    admissionMode,
+    admitCandidate,
 
     async getStatus() {
-      const state = readState();
+      const state = expireTtlMemories();
       const count = (items, status) => items.filter((item) => item.status === status).length;
-      const activeMemories = state.memories.filter((memory) => memory.status === "active");
+      const now = Date.parse(clock());
+      const activeMemories = state.memories.filter((memory) => (
+        memory.status === "active" && (!memory.validUntil || Date.parse(memory.validUntil) > now)
+      ));
       const projection = await (hindsight?.status?.() ?? Promise.resolve({
         status: "disabled",
         available: false
@@ -659,6 +855,8 @@ export function createProductStore({
         counts: {
           sources: count(state.sources, "active"),
           pendingCandidates: count(state.candidates, "pending"),
+          pendingVerification: count(state.candidates, "pending_verification"),
+          exceptions: count(state.candidates, "quarantined"),
           approvedMemories: count(state.memories, "active"),
           staleMemories: count(state.memories, "stale"),
           syncedMemories: activeMemories.filter((memory) => memory.projection?.status === "synced").length,
@@ -681,7 +879,8 @@ export function createProductStore({
           recall: hindsight?.enabled ? "hindsight-with-explicit-local-fallback" : "deterministic-local-fallback",
           hindsightProjection: Boolean(hindsight?.enabled),
           remoteNetworkCalls: false
-        }
+        },
+        admission: { mode: admissionMode, policyVersion: policy.policyVersion }
       };
     },
 
@@ -782,6 +981,7 @@ export function createProductStore({
       let changedSources = 0;
       let unchangedSources = 0;
       let createdCandidates = 0;
+      const createdCandidateIds = [];
       let staleMemories = 0;
       let restoredSources = 0;
 
@@ -893,6 +1093,7 @@ export function createProductStore({
             memoryId: null,
             sensitivity: file.secretLike ? "restricted_review" : "standard"
           });
+          createdCandidateIds.push(candidateId);
           createdCandidates += 1;
         }
       }
@@ -940,6 +1141,24 @@ export function createProductStore({
         .map((item) => item.deletionId);
       for (const deletionId of changedDeletionIds) await attemptDeletion(deletionId);
 
+      const admissionSummary = {
+        auto_activate: 0,
+        activate_ttl: 0,
+        quarantine: 0,
+        discard: 0,
+        pending_verification: 0
+      };
+      if (admissionMode === "automatic") {
+        for (const candidateId of createdCandidateIds) {
+          const current = readState();
+          const candidate = current.candidates.find((item) => item.candidateId === candidateId);
+          const source = current.sources.find((item) => item.sourceId === candidate?.sourceId);
+          const verification = await trustedVerification(candidate, source);
+          const admitted = await admitCandidate(candidateId, { verification });
+          admissionSummary[admitted.status] += 1;
+        }
+      }
+
       return {
         status: "ingested",
         summary: {
@@ -955,7 +1174,8 @@ export function createProductStore({
           staleMemories,
           restoredSources,
           missingSources,
-          inventoryComplete: inventoryComplete === true
+          inventoryComplete: inventoryComplete === true,
+          admission: admissionSummary
         },
         unsupported,
         warnings
@@ -973,7 +1193,7 @@ export function createProductStore({
     },
 
     listMemories() {
-      return readState().memories
+      return expireTtlMemories().memories
         .slice()
         .sort((left, right) => right.approvedAt.localeCompare(left.approvedAt));
     },
@@ -1122,6 +1342,30 @@ export function createProductStore({
       if (!["approve", "reject"].includes(action)) {
         throw new ProductError("review_action_invalid", "L’action doit être approve ou reject.");
       }
+      if (admissionMode === "automatic") {
+        const current = readState().candidates.find((item) => item.candidateId === candidateId);
+        if (!current) throw new ProductError("candidate_not_found", "Cette candidate n’existe pas.", 404);
+        if (current.status !== "quarantined") {
+          throw new ProductError(
+            "review_reserved_for_quarantine",
+            "La revue humaine est réservée aux exceptions persistantes.",
+            409
+          );
+        }
+        const state = readState();
+        const source = state.sources.find((item) => item.sourceId === current.sourceId);
+        const verification = await trustedVerification(current, source, "quarantine_resolution");
+        const resolved = await admitCandidate(candidateId, { verification });
+        const accepted = ["auto_activate", "activate_ttl"].includes(resolved.decision);
+        if ((action === "approve" && !accepted) || (action === "reject" && resolved.decision !== "discard")) {
+          throw new ProductError(
+            "quarantine_resolution_not_verified",
+            "La résolution de l’exception doit être confirmée par des signaux indépendants.",
+            409
+          );
+        }
+        return resolved;
+      }
       const state = readState();
       const candidate = state.candidates.find((item) => item.candidateId === candidateId);
       if (!candidate) throw new ProductError("candidate_not_found", "Cette candidate n’existe pas.", 404);
@@ -1198,11 +1442,14 @@ export function createProductStore({
       if (tokens.length === 0) {
         throw new ProductError("search_query_required", "Saisis au moins un mot à rechercher.");
       }
-      const state = readState();
+      const state = expireTtlMemories();
       const boundedLimit = Math.max(1, Math.min(Number(limit) || 10, 25));
-      const synced = state.memories.filter(
-        (memory) => memory.status === "active" && memory.projection?.status === "synced"
-      );
+      const now = Date.parse(clock());
+      const synced = state.memories.filter((memory) => (
+        memory.status === "active" &&
+        memory.projection?.status === "synced" &&
+        (!memory.validUntil || Date.parse(memory.validUntil) > now)
+      ));
       if (hindsight?.enabled && synced.length > 0) {
         try {
           const recalled = await hindsight.recall(normalizedQuery, { workspaceId });

@@ -1,0 +1,22 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T014",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "changed_files": ["scripts/lib/codex-working-set-store.mjs","scripts/lib/codex-working-set-index.mjs","scripts/lib/codex-working-offload.mjs","scripts/lib/codex-capture-store.mjs","tests/codex-working-set-store.test.mjs","tests/codex-working-offload.test.mjs","tests/codex-working-memory-integration.test.mjs"],
+    "commands": [
+      {"cmd":"node --test tests/codex-working-set-store.test.mjs tests/codex-working-set-index.test.mjs tests/codex-working-offload.test.mjs tests/codex-working-memory-integration.test.mjs tests/codex-capture-pipeline.test.mjs tests/codex-hook-adapter.test.mjs tests/codex-app-server-adapter.test.mjs tests/supermemoryd.test.mjs","status":"pass"},
+      {"cmd":"npm run verify:secrets","status":"pass"},
+      {"cmd":"npm run verify:codex","status":"pass"},
+      {"cmd":"npm test","status":"pass"},
+      {"cmd":"npm run verify","status":"pass"},
+      {"cmd":"npm run verify:release","status":"pass"},
+      {"cmd":"git diff --check","status":"pass"}
+    ],
+    "summary": "Replaced monolithic working state with encrypted manifest and independently chained append-only evidence, checkpoint, and tombstone journals. Added persisted UUIDv7 identities, stable resume/idempotence, scoped sibling forks, exact scope binding, canonical source validation, deterministic replay/selection, durable pin and tombstone recovery, fail-closed corruption/truncation handling, interrupted-projection repair, and explicit interim-format rejection. Canonical episodes remain separately encrypted and payload plaintext is not duplicated. Capture acknowledgements remain reopen-verified and fail open; offload remains non-replacing and rejects unsafe states. Added adversarial durability, isolation, rebuild, quota, and crash tests. All required verification passed.",
+    "deviations": [],
+    "remaining_blockers": [],
+    "verification_attempts": 1,
+    "stopped_because": null
+  }
+}

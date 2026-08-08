@@ -1,0 +1,20 @@
+{
+  "schema": "supermemory.knowledge-graph-corpus.v1",
+  "ontology_version": 1,
+  "cases": [
+    { "id": "KG-AC01", "scenario": "episode_provenance" },
+    { "id": "KG-AC02", "scenario": "explicit_alias_binding" },
+    { "id": "KG-AC03", "scenario": "incompatible_homonyms" },
+    { "id": "KG-AC04", "scenario": "contradiction_history" },
+    { "id": "KG-AC05", "scenario": "as_of_window" },
+    { "id": "KG-AC06", "scenario": "cited_three_hops" },
+    { "id": "KG-AC07", "scenario": "unsafe_query_rejection" },
+    { "id": "KG-AC08", "scenario": "remote_projection_loss_rebuild_with_exact_hash" },
+    { "id": "KG-AC09", "scenario": "transitive_authority_removal" },
+    { "id": "KG-AC12", "scenario": "workspace_isolation" },
+    { "id": "KG-ATOMIC", "scenario": "immutable_batch_visibility_under_injected_crash" },
+    { "id": "KG-CLOSURE", "scenario": "closure_replay_collision_and_dual_classification_preflight" },
+    { "id": "KG-HASH-ACK", "scenario": "missing_and_mismatched_projection_hash_rejection" },
+    { "id": "KG-FALLBACK", "scenario": "thrown_and_malformed_graphiti_responses_use_direct_neo4j" }
+  ]
+}

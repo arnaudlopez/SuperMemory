@@ -1,0 +1,9 @@
+{
+  "schema": "supermemory.memory-router-corpus.v1",
+  "cases": [
+    { "query": "quelle est la dernière erreur de cette session ?", "expected_strategy": "working" },
+    { "query": "pourquoi le service A dépend-il du service B ?", "expected_strategy": "graph" },
+    { "query": "quelle préférence durable avons-nous enregistrée ?", "expected_strategy": "durable" },
+    { "query": "résume le contexte mémoire utile", "expected_strategy": "hybrid" }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "supermemory.memory-fabric-v2-long-task.v1",
+  "working_set": {
+    "capacity_tokens": 100000,
+    "minimum_selected_tokens": 90000,
+    "regular_events": 8,
+    "regular_payload_chars": 37500,
+    "large_payload_chars": 72000
+  },
+  "slo_ms": {
+    "capture_p95": 250,
+    "search_100k_p95": 150,
+    "open_20k_p95": 250,
+    "map_p95": 2000
+  },
+  "offload": {
+    "threshold_tokens": 12000,
+    "minimum_visible_token_reduction": 0.4,
+    "maximum_success_regression_points": 2
+  }
+}

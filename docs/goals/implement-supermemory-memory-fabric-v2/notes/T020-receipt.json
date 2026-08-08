@@ -1,0 +1,72 @@
+{
+  "goalbuddy_receipt_v1": {
+    "result": "done",
+    "task_id": "T020",
+    "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/implement-supermemory-memory-fabric-v2/state.yaml",
+    "decision": "approved",
+    "full_outcome_complete": false,
+    "rationale": "T019 closes every T018 graph blocker. The remote test now independently hashes stored records, clears its state, and proves exact canonical snapshot/hash recovery. Missing and mismatched acknowledgements both remain degraded without checkpoints. Closure preflight permits only identity-exact replay and rejects competing or dual-classified closures before commit. Separate tests prove successful authenticated, parameterized direct-Neo4j fallback for malformed and thrown Graphiti project/query failures, with shared canonical filtering. The focused suite passes 16/16, Codex verification and diff hygiene pass, and T019 reports all broad verifiers green. The temporal graph milestone is ready for the bounded ontology/improve slice; the overall goal remains incomplete.",
+    "worker_package": {
+      "objective": "Implement T006 as one executable ontology-and-continuous-improvement vertical slice over canonical episodes, admission policy, and the temporal graph. Add an encrypted, immutable, workspace-scoped ontology registry with deterministic change/version IDs and states core|shadow|active|deprecated|quarantined|rejected. Permit only additive shadow→active promotion after all configured gates pass: structural/backward compatibility, default support from at least three independent currently admitted claims, scope/collision checks, and deterministic retrieval-evaluation improvement without regression; each promotion creates a new immutable version. Rename, merge, delete, narrowing, or other destructive changes must remain quarantined and must not alter active validation or graph projection. Add an idempotent memory-improve worker with per-workspace high-watermarks and independently injected extractor/verifier identities; missing, failed, dependent, or unverified verifier output must never activate claims. Resolve explicit aliases deterministically while preserving incompatible homonyms, route conflicts and temporal replacements through graph preflight/admission, revalidate TTL claims, and isolate workspace failures. Produce rebuildable cited enrichment projections for triplets, embeddings, communities, and summaries, each bound to source claims, episodes, evidence, admissions, and ontology version; tombstones/revocations must remove their authority before projection cleanup. Implement bounded feedback weights that cannot change admission, claim status, ontology state, or tombstones. Add idempotent session-close notification and consolidation that completes within 120 seconds under a healthy deterministic fixture. Acceptance is executable KG-AC10/11 and IM-AC01/02/03 coverage plus an end-to-end canonical episode→independent verification/admission→entity/conflict resolution→graph/enrichment→replay scenario. Keep new behavior explicitly invoked/disabled by default; do not implement router, MCP/API recall, deployment, live services, or configuration migration.",
+      "allowed_files": [
+        "scripts/lib/memory-improve-worker.mjs",
+        "scripts/lib/ontology-registry.mjs",
+        "scripts/lib/knowledge-graph-adapter.mjs",
+        "scripts/lib/memory-admission-policy.mjs",
+        "scripts/lib/codex-working-set-store.mjs",
+        "tests/fixtures/memory-improve-worker/corpus.v1.json",
+        "tests/memory-improve-worker.test.mjs",
+        "tests/ontology-registry.test.mjs",
+        "tests/knowledge-graph-adapter.test.mjs",
+        "tests/memory-admission-policy.test.mjs",
+        "tests/codex-working-set-store.test.mjs",
+        "tests/codex-working-memory-integration.test.mjs"
+      ],
+      "verify": [
+        "node --test tests/memory-improve-worker.test.mjs tests/ontology-registry.test.mjs tests/knowledge-graph-adapter.test.mjs tests/memory-admission-policy.test.mjs tests/codex-working-set-store.test.mjs tests/codex-working-memory-integration.test.mjs",
+        "npm run verify:secrets",
+        "npm run verify:codex",
+        "npm run verify:specs",
+        "npm test",
+        "npm run verify",
+        "npm run verify:release",
+        "git diff --check"
+      ],
+      "stop_if": [
+        "Any required change falls outside allowed_files or requires router, MCP/API recall, daemon deployment, Portainer, configuration migration, live credentials, network access, or a real user vault.",
+        "An extractor can verify its own output, verifier independence cannot be established, or missing/failed verification can activate or project a claim.",
+        "An ontology extension can activate without compatibility, independent-support, scope/collision, and deterministic evaluation gates, or activation mutates an existing ontology version.",
+        "A rename, merge, delete, narrowing, or other destructive ontology mutation can alter active validation or graph state instead of remaining quarantined.",
+        "A shadow or quarantined type becomes queryable/projectable as active, or historical graph records lose their original ontology-version binding.",
+        "Replaying a job or session-close notification duplicates a claim, entity, relation, ontology change/version, enrichment artifact, or durable checkpoint.",
+        "One workspace's failed job blocks another workspace, crosses scope, or advances the failed workspace high-watermark past unprocessed canonical episodes.",
+        "Feedback can activate, delete, tombstone, revoke, or change the admission/ontology authority of a claim, or its weight is not deterministically bounded.",
+        "A tombstoned episode or revoked/expired admission can retain authoritative summaries, embeddings, communities, or feedback-influenced results.",
+        "The healthy deterministic session-close fixture cannot complete consolidation within 120 seconds of the close timestamp.",
+        "The same verification failure remains unresolved after two attempts."
+      ]
+    },
+    "evidence": [
+      "T020 reran the graph/ontology suite: 16 tests passed with zero failures, including explicit closure-collision, remote rebuild, hash-acknowledgement, fallback, atomicity, and workspace-safety cases.",
+      "T020 reran npm run verify:codex and git diff --check successfully.",
+      "The stateful remote fixture independently hashes copied canonical projection records, supports complete loss, and exactly matches canonical state after rebuild.",
+      "Separate tests prove omitted and deliberately incorrect projection hashes produce projected=false and no checkpoint directory.",
+      "Malformed and thrown Graphiti cases separately reach authenticated, parameterized direct Neo4j fallback with canonical filtering."
+    ],
+    "parallel_safety": {
+      "safe": false,
+      "rationale": "Ontology versions, improve checkpoints, graph validation, canonical episode consumption, and shared acceptance tests define one authority chain and overlap; one Worker must own the slice."
+    },
+    "blocked_tasks": ["T007", "T008", "T009"],
+    "missing_evidence": [
+      "No memory-improve-worker implementation or replay/high-watermark proof exists yet.",
+      "The ontology registry currently exposes only immutable core v1; shadow proposals, gated promotion, immutable learned versions, and destructive quarantine remain unimplemented.",
+      "KG-AC10/11 and IM-AC01/02/03 do not yet have executable acceptance coverage."
+    ],
+    "required_board_updates": [
+      "Record T020 as approved and mark the temporal graph milestone accepted.",
+      "Copy the worker package into T006 and activate T006 as the sole write task.",
+      "Insert a separate Judge milestone immediately after T006 before activating T007 or T008."
+    ]
+  }
+}

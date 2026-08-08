@@ -7,7 +7,7 @@
 
 > Governed, living memory for personal, professional, and enterprise AI agents.
 
-SuperMemory is a production-shaped, local-first memory product that makes AI memory **traceable, reviewable, revocable, recoverable, and safe to use**. It combines a local web application, a Markdown/Obsidian-compatible vault, immutable source snapshots, deterministic governance, explicit approvals, verified backups, and a Hindsight-backed recall layer.
+SuperMemory is a production-shaped, local-first memory product that makes AI memory **traceable, auditable, revocable, recoverable, and safe to use**. It combines a local web application, a Markdown/Obsidian-compatible vault, immutable source snapshots, deterministic automatic admission, exceptional review, verified backups, and a Hindsight-backed recall layer.
 
 Most memory systems ask, “What can we retrieve?” SuperMemory asks the harder questions:
 
@@ -70,9 +70,9 @@ Hindsight promotion uses stable document identifiers, scoped tags, provenance me
 
 ### Local web product
 
-The product-shaped workflow is available on localhost. A user can select a folder in the browser, ingest Markdown, text, PDF, and DOCX documents, review or edit source-located memory candidates, approve or reject them, project approved memory into local Hindsight, and search with openable line, PDF-page, or DOCX-section citations. Product state and exact immutable binary snapshots remain inside the configured local vault.
+The product-shaped workflow is available on localhost. With automatic admission explicitly enabled, independently verified standard candidates are admitted and projected without a click; persistent conflicts and risks appear under **Exceptions**. With the flag off, the existing approve/reject workflow remains unchanged. Product state and exact immutable binary snapshots remain inside the configured local vault.
 
-PDF extraction uses PDF.js, DOCX semantic extraction uses Mammoth with external file access disabled, and all processing remains local and bounded. The vault is always written first and remains canonical. Hindsight receives only approved memory through a stable document ID, strict scope tags, and complete provenance. If the local Hindsight service is unavailable, projection remains visibly queued and search falls back explicitly to the deterministic local index.
+PDF extraction uses PDF.js, DOCX semantic extraction uses Mammoth with external file access disabled, and all processing remains local and bounded. The vault is always written first and remains canonical. Hindsight receives only legacy-approved or valid `auto_activate|activate_ttl` memory through a stable document ID, strict scope tags, complete evidence, and admission provenance. If either verifier or policy is unavailable, candidates remain `pending_verification` and non-recallable; a Hindsight outage leaves projection visibly queued.
 
 The **Gérer** tab also creates SHA-256-manifested backups outside the canonical vault. Restore verifies every file, requires an exact confirmation, creates a pre-restore safety backup, swaps the vault atomically, then rebuilds the dedicated Hindsight bank from restored canonical memory.
 
@@ -160,6 +160,40 @@ flowchart LR
 | Hindsight adapter | Translate governed memory into a recall-engine projection | Reviewed writes only |
 | Recall and answer contracts | Enforce scope, forbidden tags, freshness, and citations | Deny by default |
 | Verification suite | Prove contracts, release surface, runtime evidence, and secret hygiene | CI is mock-only |
+
+### Codex project memory
+
+The Codex integration binds every checkout to stable opaque project,
+workspace, and checkout identities. Threads and tabs opened on the same bound
+project therefore share the same approved workspace memory without relying on
+the folder name. A repository marketplace exposes one SuperMemory plugin with
+bounded hooks, a project-scoped MCP recall server, diagnostics, and an
+on-demand usage skill.
+
+Capture is deliberately evidence-based. Supported visible hook events are
+redacted, deduplicated and encrypted locally; an App Server host can use the
+provided transparent wrapper for authoritative completed-turn and file-change
+observations. Hook-only clients are reported as `partial`: SuperMemory does not
+claim to archive hidden reasoning, unsupported events, Codex web/cloud work,
+or every model exchange merely because it happened near the same folder.
+
+Captured history is not automatically trusted memory. It becomes encrypted
+archive evidence, then an inactive candidate. In explicit automatic mode an
+independent verifier feeds a calibrated deterministic policy; only a hash-attested
+`auto_activate` or `activate_ttl` decision writes canonical active memory and
+projects it to local Hindsight. Flags off retain explicit approval. Codex recalls
+active, in-scope memory through MCP with citations; a changed source marks
+derived memory stale before projection deletion. Hindsight is replaceable and
+the local vault remains authoritative.
+
+Installation is plan/apply/rollback based and preserves unrelated plugin
+marketplace entries. See the [Codex production procedure](docs/production-runbook.md#codex-integration)
+and run the real isolated proof with:
+
+```bash
+npm run test:codex-integration -- --json
+npm run verify:codex -- --json
+```
 
 ### Control plane and execution plane
 
@@ -320,7 +354,7 @@ On macOS, double-click `SuperMemory.command`. It checks every prerequisite, star
 npm run launch
 ```
 
-Open [http://127.0.0.1:4310](http://127.0.0.1:4310), choose a folder, and complete the import → review → search workflow in the browser. The server binds to `127.0.0.1` and makes no remote document calls.
+Open [http://127.0.0.1:4310](http://127.0.0.1:4310), choose a folder, and complete the import → exceptions → search workflow in the browser. Start with `--automatic-admission` (or `SUPERMEMORY_ADMISSION_MODE=automatic`) only when an independent verifier is configured; otherwise proposals remain machine-pending. Without that flag the legacy import → review → search workflow is unchanged.
 
 Run the same fail-closed preflight without starting anything:
 
@@ -378,7 +412,7 @@ node scripts/verify-golden-end-state-workflow.mjs
 | Workflow | Entry point | Mutation model |
 |---|---|---|
 | Complete local product | `SuperMemory.command` or `npm run launch` | doctor → pinned local runtime → browser workflow → graceful shutdown |
-| Web process only | `npm start` | browser folder selection → candidates → human review → canonical vault memory → governed local Hindsight projection → cited recall or explicit local fallback |
+| Web process only | `npm start` | legacy browser candidates → human review → canonical memory; explicit automatic mode → independent verification → deterministic admission → Exceptions only |
 | Backup/recovery | **Gérer** tab | verified external backup → exact confirmation → safety backup → atomic restore → Hindsight rebuild |
 | Product live proof | `npm run smoke:product:live` | explicit temporary four-format writes, refresh, deletion, backup, restore, restart, and cleanup |
 | Client onboarding | `scripts/supermemory-onboard.mjs` | inventory → plan → staging → confirmed vault commit |
@@ -488,17 +522,28 @@ See [docs/production-runbook.md](docs/production-runbook.md) for the full releas
 - adaptive business types and reusable agent use patterns;
 - complete enterprise Golden Case and CI regression suite;
 - contract, runtime, production, and secret-hygiene gates.
+- stable project-bound Codex plugin discovery, encrypted supported-event
+  capture, review-gated memory, cited MCP recall, stale-source invalidation,
+  lifecycle deletion, legacy migration, and reversible installation.
+- Memory Fabric v2 working sets up to 100K, cited active maps, verified output
+  offload, exact `working_set_id` recall, automatic evidence-based admission,
+  temporal multi-hop graph, learned additive ontology, continuous enrichment,
+  hybrid routing, and one complete Docker/Portainer server artifact with no
+  canary or progressive deployment.
 
 ### Not implemented in this release
 
 - hosted SaaS UI or public API;
-- automatic unreviewed LLM interpretation or non-local Hindsight projection;
-- multi-tenant authentication, RLS, billing, or background workers;
+- unverified or LLM-self-approved activation, and non-local Hindsight projection;
+- multi-tenant authentication, RLS, or billing;
 - automated Gmail, Drive, CRM, web-crawler, or paid external connectors;
 - automated remote source refresh;
 - Hindsight Cloud as a default dependency;
-- Graphiti or Memoria engine ports;
+- a completed live Memory Fabric v2 server deployment (the checked-in artifact
+  is ready for the operator, but this repository task starts no container);
 - unconfirmed external actions.
+- guaranteed capture of hidden reasoning, unsupported Codex events, or
+  Codex web/cloud conversations; hook-only clients have partial coverage.
 
 The production proof exercises real local LLM extraction, verifies nonzero Hindsight memory units, reconciles recall to active canonical memory, and confirms citations after backup restore and process restart.
 
