@@ -246,8 +246,7 @@ export function createCanonicalKnowledgeWorker({
           workspaceId, episode: source.episode, evidence: source.evidence,
           payload: source.payload, extractor: extractorIdentity
         });
-        const extracted = normalizeExtraction(source, rawExtraction);
-        const graphClaimKey = `${extracted.claim_key}@${source.episode.episode_id}`;
+        const graphClaimKey = `${rawExtraction.claim_key}@${source.episode.episode_id}`;
         const claimId = canonicalGraphClaimId({ workspaceId, claimKey: graphClaimKey });
         const candidate = {
           candidate_id: claimId,
@@ -258,12 +257,13 @@ export function createCanonicalKnowledgeWorker({
         };
         const verification = await verifier.verify({
           workspaceId, episode: source.episode, evidence: source.evidence, payload: source.payload,
-          candidate: { ...candidate, text: extracted.text }, extraction: rawExtraction, verifier: verifierIdentity
+          candidate: { ...candidate, text: rawExtraction.text }, extraction: rawExtraction, verifier: verifierIdentity
         });
         if (verification?.status !== "verified") {
           results.push({ episode_id: source.episode.episode_id, status: "pending_verification" });
           break;
         }
+        const extracted = normalizeExtraction(source, rawExtraction);
         if (extracted.entities.some((item) => item.aliases.length) && verification.signals?.alias_binding_verified !== true) {
           fail("canonical_alias_binding_unverified");
         }
