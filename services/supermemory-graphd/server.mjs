@@ -150,11 +150,19 @@ async function replaceProjection(input) {
       parameters: { workspace_id: request.workspace_id }
     },
     {
-      statement: "UNWIND $records AS record CREATE (n:SMEntity) SET n = record, n.workspace_id = $workspace_id",
+      statement: [
+        "UNWIND $records AS record",
+        "CREATE (n:SMEntity {workspace_id: $workspace_id, entity_id: record.entity_id})",
+        "SET n.canonical_name = record.canonical_name, n.entity_type = record.entity_type, n.aliases = record.aliases"
+      ].join(" "),
       parameters: { workspace_id: request.workspace_id, records: records.entities }
     },
     {
-      statement: "UNWIND $records AS record CREATE (n:SMClaim) SET n = record, n.workspace_id = $workspace_id",
+      statement: [
+        "UNWIND $records AS record",
+        "CREATE (n:SMClaim {workspace_id: $workspace_id, claim_id: record.claim_id})",
+        "SET n.claim_key = record.claim_key, n.text = record.text, n.observed_at = record.observed_at, n.status = record.status"
+      ].join(" "),
       parameters: { workspace_id: request.workspace_id, records: records.claims }
     },
     {
@@ -163,7 +171,9 @@ async function replaceProjection(input) {
         "MATCH (subject:SMEntity {workspace_id: $workspace_id, entity_id: record.subject_entity_id})",
         "MATCH (object:SMEntity {workspace_id: $workspace_id, entity_id: record.object_entity_id})",
         "CREATE (subject)-[relation:SM_RELATION]->(object)",
-        "SET relation = record, relation.workspace_id = $workspace_id"
+        "SET relation.workspace_id = $workspace_id, relation.relation_id = record.relation_id,",
+        "relation.predicate = record.predicate, relation.valid_from = record.valid_from,",
+        "relation.valid_to = record.valid_to, relation.claim_id = record.claim_id"
       ].join(" "),
       parameters: { workspace_id: request.workspace_id, records: records.relations }
     },

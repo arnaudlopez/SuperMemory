@@ -114,6 +114,7 @@ test("GraphD v2 is non-root and exposes only bounded authenticated Neo4j operati
   assert.match(source, /timingSafeEqual/);
   assert.doesNotMatch(source, /child_process|\beval\s*\(|new Function/);
   assert.doesNotMatch(source, /MATCH\s*\(n\)\s*RETURN\s*n/i);
+  assert.doesNotMatch(source, /SET n = record|SET relation = record/);
   const contract = JSON.parse(fs.readFileSync(
     path.join(root, "services/supermemory-graphd/contract.v2.json"), "utf8"
   ));
