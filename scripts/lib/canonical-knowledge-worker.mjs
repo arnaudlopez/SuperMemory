@@ -227,6 +227,7 @@ export function createCanonicalKnowledgeWorker({
     await learnedPlane?.reconcileRevocations?.({ workspaceId, canonicalState: graphAdapter.readCanonicalState({ workspaceId }) });
   };
 
+  let lastRun = null;
   const process = async ({ sessionId = null, session_id: snakeSessionId = null } = {}) => {
     const requestedSession = sessionId ?? snakeSessionId;
     const sources = episodeSource.listCanonicalEvidence({ workspaceId });
@@ -387,7 +388,7 @@ export function createCanonicalKnowledgeWorker({
         break;
       }
     }
-    return {
+    const result = {
       schema: "supermemory.canonical-worker-result.v1",
       status: results.some((item) => ["failed", "pending_verification"].includes(item.status)) ? "degraded" : "complete",
       workspace_id: workspaceId,
@@ -395,6 +396,13 @@ export function createCanonicalKnowledgeWorker({
       results,
       checkpoint: readCheckpoint()
     };
+    lastRun = {
+      status: result.status,
+      processed: result.processed,
+      outcome: result.results.at(-1)?.status ?? "idle",
+      error: result.results.find((item) => item.error)?.error ?? null
+    };
+    return result;
   };
 
   const notifySessionClosed = async ({ sessionId, session_id: snakeSessionId } = {}) => {
@@ -453,7 +461,14 @@ export function createCanonicalKnowledgeWorker({
     recover,
     notifySessionClosed,
     readCheckpoint,
-    status: () => ({ enabled: true, status: "ready", checkpoint: readCheckpoint()?.sequence ?? 0 })
+    status: () => ({
+      enabled: true,
+      status: lastRun?.status === "degraded" ? "degraded" : "ready",
+      checkpoint: readCheckpoint()?.sequence ?? 0,
+      last_outcome: lastRun?.outcome ?? null,
+      last_error: lastRun?.error ?? null,
+      last_processed: lastRun?.processed ?? 0
+    })
   });
 }
 

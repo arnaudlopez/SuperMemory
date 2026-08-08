@@ -133,5 +133,13 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
   assert.equal(state.relations[0].event_time.earliest, "2026-08-07T00:00:00.000Z");
   assert.equal(await fs.promises.stat(worker.root).then(() => true), true);
   assert.deepEqual(fs.readdirSync(worker.root), ["checkpoint.aead.json"]);
+  assert.deepEqual(worker.status(), {
+    enabled: true,
+    status: "ready",
+    checkpoint: 1,
+    last_outcome: "auto_activate",
+    last_error: null,
+    last_processed: 1
+  });
   assert.equal((await worker.process()).processed, 0);
 });
