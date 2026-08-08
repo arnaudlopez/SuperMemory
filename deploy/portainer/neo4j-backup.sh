@@ -20,6 +20,10 @@ restart_full_stack() {
 }
 
 trap restart_full_stack EXIT INT TERM
+docker run --rm --user 0 \
+  -v supermemory-neo4j-backups:/backups \
+  node:22.22.0-alpine@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34 \
+  chown 7474:7474 /backups
 compose stop supermemory-graphd neo4j
 compose run --rm --no-deps neo4j neo4j-admin database dump neo4j \
   --to-path=/backups --overwrite-destination

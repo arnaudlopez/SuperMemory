@@ -131,6 +131,8 @@ test("offline backup and exact-confirmation restore remain explicit and deployme
   const readme = fs.readFileSync(path.join(root, "deploy/portainer/README.md"), "utf8");
   assert.match(backup, /database dump/);
   assert.match(backup, /sha256sum/);
+  assert.match(backup, /supermemory-neo4j-backups:\/backups/);
+  assert.match(backup, /chown 7474:7474 \/backups/);
   assert.match(restore, /RESTORE neo4j/);
   assert.match(restore, /database load/);
   assert.match(readme, /six-service/i);
