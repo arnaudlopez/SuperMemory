@@ -46,6 +46,11 @@ test("Portainer artifact is one complete six-service private server stack", () =
   assert.equal(config.services["supermemory-graphd"].depends_on["neo4j-migrate"].condition, "service_completed_successfully");
   assert.equal(config.services["neo4j-migrate"].depends_on.neo4j.condition, "service_healthy");
   assert.equal(config.services.hindsight.depends_on["qwen-model"].condition, "service_completed_successfully");
+  const gpu = config.services.ollama.deploy.resources.reservations.devices[0];
+  assert.equal(gpu.driver, "nvidia");
+  assert.equal(gpu.count, 1);
+  assert.deepEqual(gpu.capabilities, ["gpu"]);
+  assert.equal(config.services.ollama.environment.NVIDIA_VISIBLE_DEVICES, "all");
 });
 
 test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0", () => {

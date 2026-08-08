@@ -24,6 +24,11 @@ free disk. A 32–64 GiB server and a GPU with at least 12 GiB VRAM are
 recommended. Do not compensate for insufficient capacity by moving server
 components onto the workstation.
 
+The Ollama service reserves one NVIDIA GPU explicitly through the Compose
+device contract. A smaller GPU may use partial CPU/RAM offload for functional
+validation, but performance results from that host are not production SLO
+evidence.
+
 ## Secret preparation
 
 Docker Standalone uses Compose secret files mounted read-only under
