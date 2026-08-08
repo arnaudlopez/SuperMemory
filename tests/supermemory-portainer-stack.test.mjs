@@ -43,6 +43,10 @@ test("Portainer artifact is one complete six-service private brain stack", () =>
   }
   assert.equal(config.services.neo4j.ports, undefined);
   assert.equal(config.services["supermemory-graphd"].ports[0].host_ip, "127.0.0.1");
+  assert.deepEqual(
+    Object.keys(config.services["supermemory-graphd"].networks).sort(),
+    ["supermemory_ai", "supermemory_graph"]
+  );
   assert.equal(config.services["supermemory-graphd"].depends_on["neo4j-migrate"].condition, "service_completed_successfully");
   assert.equal(config.services["neo4j-migrate"].depends_on.neo4j.condition, "service_healthy");
   assert.equal(config.services["supermemory-daemon"].network_mode, "host");
