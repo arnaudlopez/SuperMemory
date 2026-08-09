@@ -148,10 +148,10 @@ async function loadStatus() {
   elements.staleCount.textContent = status.counts.staleMemories;
   elements.reviewBadge.textContent = reviewCount;
   elements.reviewBadge.hidden = reviewCount === 0;
-  elements.candidateCountLabel.textContent = automaticAdmission ? "Exceptions" : "À valider";
+  elements.candidateCountLabel.textContent = automaticAdmission ? "Exceptions d’admission" : "À valider";
   elements.memoryCountLabel.textContent = automaticAdmission ? "Mémoires admises" : "Mémoires approuvées";
-  elements.reviewTabLabel.textContent = automaticAdmission ? "Exceptions" : "Valider";
-  elements.reviewTitle.textContent = automaticAdmission ? "Exceptions persistantes" : "Gardez uniquement ce qui compte";
+  elements.reviewTabLabel.textContent = automaticAdmission ? "Admissions" : "Valider";
+  elements.reviewTitle.textContent = automaticAdmission ? "Exceptions d’admission persistantes" : "Gardez uniquement ce qui compte";
   elements.reviewDescription.textContent = automaticAdmission
     ? "Les admissions standard sont automatiques. Seuls les conflits ou risques persistants apparaissent ici."
     : "Chaque proposition reste inactive jusqu’à votre décision.";
