@@ -125,7 +125,7 @@ services:
     logging: *default_logging
 
   supermemory-daemon:
-    image: ${SUPERMEMORY_RUNTIME_IMAGE:-supermemory-runtime:4.0.0}
+    image: ${SUPERMEMORY_RUNTIME_IMAGE:-supermemory-runtime:5.0.0}
     build:
       context: ../..
       dockerfile: deploy/runtime/Dockerfile
@@ -153,10 +153,6 @@ services:
       - /run/supermemory/daemon.token
       - --runtime-contract
       - /run/supermemory/runtime-contract.json
-      - --workspace-id
-      - "${SUPERMEMORY_WORKSPACE_ID}"
-      - --project-id
-      - "${SUPERMEMORY_PROJECT_ID}"
       - --hindsight-url
       - http://127.0.0.1:8888
       - --codex-executable
@@ -195,7 +191,7 @@ services:
     logging: *default_logging
 
   supermemory-web:
-    image: ${SUPERMEMORY_RUNTIME_IMAGE:-supermemory-runtime:4.0.0}
+    image: ${SUPERMEMORY_RUNTIME_IMAGE:-supermemory-runtime:5.0.0}
     build:
       context: ../..
       dockerfile: deploy/runtime/Dockerfile

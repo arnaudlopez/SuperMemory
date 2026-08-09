@@ -3,6 +3,7 @@ const binaryExtensions = new Set(["pdf", "docx"]);
 const supportedExtensions = new Set([...textExtensions, ...binaryExtensions]);
 
 const elements = {
+  projectSelector: document.querySelector("#project-selector"),
   sourceCount: document.querySelector("#source-count"),
   candidateCount: document.querySelector("#candidate-count"),
   candidateCountLabel: document.querySelector("#candidate-count-label"),
@@ -47,6 +48,30 @@ const elements = {
 let selectedFiles = [];
 let toastTimer;
 let automaticAdmission = false;
+
+function boundProject() {
+  return elements.projectSelector.value || new URLSearchParams(window.location.search).get("projectId") ||
+    localStorage.getItem("supermemory.project_id") || "";
+}
+
+async function loadProjects() {
+  const payload = await api("/api/projects");
+  const requested = boundProject();
+  elements.projectSelector.replaceChildren();
+  for (const project of payload.projects ?? []) {
+    const option = document.createElement("option");
+    option.value = project.projectId;
+    option.textContent = project.displayName;
+    elements.projectSelector.append(option);
+  }
+  if (requested && (payload.projects ?? []).some((item) => item.projectId === requested)) {
+    elements.projectSelector.value = requested;
+  }
+  if (!elements.projectSelector.value && elements.projectSelector.options.length > 0) {
+    elements.projectSelector.selectedIndex = 0;
+  }
+  if (elements.projectSelector.value) localStorage.setItem("supermemory.project_id", elements.projectSelector.value);
+}
 
 function extension(filename) {
   const index = filename.lastIndexOf(".");
@@ -591,7 +616,7 @@ async function loadWork() {
   localStorage.setItem("supermemory.working_set_id", workingSetId);
   elements.topicDashboard.replaceChildren(emptyState("Chargement…", "Construction de la vue citée du sujet."));
   try {
-    const context = await api(`/api/work?workingSetId=${encodeURIComponent(workingSetId)}`);
+    const context = await api(`/api/work?workingSetId=${encodeURIComponent(workingSetId)}&projectId=${encodeURIComponent(boundProject())}`);
     const summary = document.createElement("article");
     summary.className = "topic-summary";
     const title = document.createElement("h3");
@@ -638,7 +663,12 @@ function authorityExceptionCard(item) {
     try {
       await api("/api/authority-exceptions/resolve", {
         method: "POST",
-        body: JSON.stringify({ workingSetId: boundWorkingSet(), fingerprint: item.fingerprint, decision })
+        body: JSON.stringify({
+          workingSetId: boundWorkingSet(),
+          projectId: boundProject(),
+          fingerprint: item.fingerprint,
+          decision
+        })
       });
       showToast("Exception résolue avec un reçu d’audit local.");
       await loadAuthorityExceptions();
@@ -658,7 +688,7 @@ async function loadAuthorityExceptions() {
   }
   elements.authorityExceptionList.replaceChildren(emptyState("Chargement…", "Réévaluation des exceptions du sujet."));
   try {
-    const payload = await api(`/api/authority-exceptions?workingSetId=${encodeURIComponent(workingSetId)}`);
+    const payload = await api(`/api/authority-exceptions?workingSetId=${encodeURIComponent(workingSetId)}&projectId=${encodeURIComponent(boundProject())}`);
     elements.authorityExceptionBadge.textContent = payload.results.length;
     elements.authorityExceptionBadge.hidden = payload.results.length === 0;
     elements.authorityExceptionList.replaceChildren();
@@ -762,8 +792,15 @@ elements.workingBindingForm.addEventListener("submit", (event) => {
 });
 elements.refreshWork.addEventListener("click", loadWork);
 elements.refreshAuthorityExceptions.addEventListener("click", loadAuthorityExceptions);
+elements.projectSelector.addEventListener("change", () => {
+  localStorage.setItem("supermemory.project_id", elements.projectSelector.value);
+  const url = new URL(window.location.href);
+  url.searchParams.set("projectId", elements.projectSelector.value);
+  window.history.replaceState({}, "", url);
+  if (boundWorkingSet()) Promise.allSettled([loadWork(), loadAuthorityExceptions()]);
+});
 
 elements.workingSetInput.value = new URLSearchParams(window.location.search).get("workingSetId") ||
   localStorage.getItem("supermemory.working_set_id") || "";
 
-loadStatus().then(loadCandidates).catch((error) => showToast(error.message, "error"));
+Promise.all([loadStatus(), loadProjects()]).then(loadCandidates).catch((error) => showToast(error.message, "error"));

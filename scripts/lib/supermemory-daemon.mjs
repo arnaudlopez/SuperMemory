@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
-import { createCodexCaptureStore } from "./codex-capture-store.mjs";
+import { createCodexCaptureStore, prepareCodexCapture } from "./codex-capture-store.mjs";
 import { createCodexMemoryCompiler } from "./codex-memory-compiler.mjs";
 import { createCodexSpool } from "./codex-spool.mjs";
 
@@ -84,6 +84,7 @@ function readJsonBody(request, maxBodyBytes) {
 
 function errorStatus(error) {
   if (error?.code === "daemon_body_too_large") return 413;
+  if (error?.code === "not_authorized") return 404;
   if (
     error?.code === "scope_unresolved" ||
     error?.code === "event_envelope_invalid" ||
@@ -93,21 +94,21 @@ function errorStatus(error) {
 }
 
 function recallErrorStatus(error) {
-  if (error?.code === "not_found_or_not_authorized") return 404;
+  if (["not_found_or_not_authorized", "not_authorized"].includes(error?.code)) return 404;
   if (error?.code === "backend_unavailable") return 503;
   if (error?.code === "daemon_timeout") return 504;
   return 400;
 }
 
 function recallErrorBody(error) {
-  const code = error?.code === "not_found_or_not_authorized"
-    ? "not_found_or_not_authorized"
+  const code = ["not_found_or_not_authorized", "not_authorized"].includes(error?.code)
+    ? "not_authorized"
     : error?.code ?? "invalid_request";
   return {
     ok: false,
     error: {
       code,
-      message: code === "not_found_or_not_authorized"
+      message: code === "not_authorized"
         ? "Memory is unavailable"
         : "Recall request failed",
       retryable: ["backend_unavailable", "daemon_timeout"].includes(code),
@@ -160,7 +161,15 @@ export function createSuperMemoryDaemon({
   canonicalWorker = null,
   canonicalWorkerFactory = null,
   memoryRouter = null,
-  memoryRouterFactory = null
+  memoryRouterFactory = null,
+  runtimeSupervisor = null,
+  runtimeSupervisorFactory = null,
+  requestScopeResolver = null,
+  projectRegistry = null,
+  enrollmentService = null,
+  checkoutCredentialStore = null,
+  historyImportService = null,
+  ownerPreferenceStore = null
 } = {}) {
   if (!LOOPBACK_HOSTS.has(host)) fail("daemon_host_not_loopback");
   if (!Number.isInteger(port) || port < 0 || port > 65_535) fail("daemon_port_invalid");
@@ -175,6 +184,9 @@ export function createSuperMemoryDaemon({
   });
   const router = memoryRouter ?? (typeof memoryRouterFactory === "function"
     ? memoryRouterFactory({ captureStore: store })
+    : null);
+  const supervisor = runtimeSupervisor ?? (typeof runtimeSupervisorFactory === "function"
+    ? runtimeSupervisorFactory({ captureStore: store })
     : null);
   const worker = canonicalWorker ?? (typeof canonicalWorkerFactory === "function"
     ? canonicalWorkerFactory({ captureStore: store, memoryRouter: router })
@@ -208,6 +220,11 @@ export function createSuperMemoryDaemon({
     "recall", "workingSearch", "workingOpen", "workingNeighbors", "workingMap",
     "graphQuery", "explainPath", "search", "get", "explainCitation", "status"
   ].some((method) => typeof router[method] !== "function")) fail("daemon_memory_router_invalid");
+  if (supervisor && (
+    typeof supervisor.forScope !== "function" || typeof supervisor.forProject !== "function" ||
+    typeof supervisor.recover !== "function" || typeof supervisor.status !== "function" ||
+    typeof supervisor.close !== "function" || typeof requestScopeResolver !== "function"
+  )) fail("daemon_runtime_supervisor_invalid");
   const recallRoutes = new Map([
     ["/v1/recall", "recall"],
     ["/v1/reflect", "reflect"],
@@ -239,7 +256,7 @@ export function createSuperMemoryDaemon({
     duplicates: 0,
     rejected: 0
   };
-  const handleWorkingLifecycle = ({ envelope, working, notifyWorker = true }) => {
+  const handleWorkingLifecycle = async ({ envelope, working, activeRouter = router, notifyWorker = true }) => {
     const sessionEnd = envelope?.event_type === "assistant.completed";
     const compaction = envelope?.event_type === "context.compacted";
     if ((!sessionEnd && !compaction) || !working?.working_set_id) return;
@@ -252,15 +269,23 @@ export function createSuperMemoryDaemon({
         closedAt: envelope.occurred_at
       });
     }
-    if (typeof router?.topicCheckpoint === "function") {
-      Promise.resolve(router.topicCheckpoint({
+    if (typeof activeRouter?.topicCheckpoint === "function") {
+      Promise.resolve(activeRouter.topicCheckpoint({
         working_set_id: working.working_set_id,
         kind: sessionEnd ? "session_end" : "compaction",
         created_at: envelope.occurred_at
       })).catch(() => {});
     }
-    if (sessionEnd && worker && notifyWorker) {
-      Promise.resolve(worker.notifySessionClosed({ sessionId: envelope.session_id })).catch(() => {});
+    if (sessionEnd && notifyWorker) {
+      if (supervisor) {
+        Promise.resolve(supervisor.notifySessionClosed({
+          workspaceId: envelope.workspace_id,
+          projectId: envelope.project_id,
+          checkoutId: envelope.checkout_id
+        }, { sessionId: envelope.session_id })).catch(() => {});
+      } else if (worker) {
+        Promise.resolve(worker.notifySessionClosed({ sessionId: envelope.session_id })).catch(() => {});
+      }
     }
   };
   let listening = false;
@@ -275,7 +300,7 @@ export function createSuperMemoryDaemon({
     expired: 0
   };
   let fabricRecovery = {
-    status: typeof router?.rebuildFabric === "function" ? "pending" : "disabled",
+    status: supervisor || typeof router?.rebuildFabric === "function" ? "pending" : "disabled",
     error: null
   };
   const completeFabricRecovery = (rebuilt) => ({
@@ -287,6 +312,42 @@ export function createSuperMemoryDaemon({
     authority_states: rebuilt.authority_states ?? 0,
     exceptions: rebuilt.exceptions ?? 0
   });
+  const completeSupervisorRecovery = (recovered) => ({
+    status: recovered.failures?.length > 0 ? "degraded" : "complete",
+    error: recovered.failures?.length > 0 ? "workspace_recovery_partial" : null,
+    schema: "supermemory.multi-workspace-recovery.v1",
+    graph: "workspace_partitioned",
+    topics: 0,
+    authority_states: 0,
+    exceptions: 0,
+    recovered_workspaces: recovered.recovered ?? 0,
+    failures: recovered.failures ?? []
+  });
+
+  const scopedRouter = (request, input, capability) => {
+    if (!supervisor) return { activeRouter: router, scope: null };
+    const ownerProjectId = request.headers["x-supermemory-owner-project-id"];
+    if (typeof ownerProjectId === "string" && projectRegistry) {
+      const project = projectRegistry.snapshot().projects.find((item) => (
+        item.projectId === ownerProjectId && item.status === "active"
+      ));
+      if (!project) fail("not_authorized");
+      const assertions = [
+        input?.workspace_id ?? input?.workspaceId,
+        input?.project_id ?? input?.projectId
+      ];
+      if (
+        (assertions[0] !== undefined && assertions[0] !== project.workspaceId) ||
+        (assertions[1] !== undefined && assertions[1] !== project.projectId)
+      ) fail("not_authorized");
+      return {
+        activeRouter: supervisor.forProject({ workspaceId: project.workspaceId, projectId: project.projectId }),
+        scope: { workspaceId: project.workspaceId, projectId: project.projectId, ownerProxy: true }
+      };
+    }
+    const scope = requestScopeResolver({ headers: request.headers, input, capability });
+    return { activeRouter: supervisor.forScope(scope), scope };
+  };
 
   const server = http.createServer(async (request, response) => {
     counters.requests += 1;
@@ -319,21 +380,127 @@ export function createSuperMemoryDaemon({
         started_at: startedAt,
         capture: store.stats(),
         compiler: compiler.stats(),
-        canonical_worker: worker?.status() ?? { enabled: false, status: "disabled" },
-        memory: router ? await router.status().catch((error) => ({ status: "degraded", error: error?.code ?? "memory_status_failed" })) : { status: "disabled" },
+        canonical_worker: supervisor?.status() ?? worker?.status() ?? { enabled: false, status: "disabled" },
+        memory: supervisor
+          ? supervisor.status()
+          : router
+            ? await router.status().catch((error) => ({ status: "degraded", error: error?.code ?? "memory_status_failed" }))
+            : { status: "disabled" },
         fabric_rebuild: { ...fabricRecovery },
         spool_replay: { ...spoolReplay },
         counters: { ...counters }
       });
       return;
     }
+    if (request.method === "GET" && request.url === "/v1/projects") {
+      if (!projectRegistry || typeof projectRegistry.snapshot !== "function") {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      sendJson(response, 200, { ok: true, ...projectRegistry.snapshot() });
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/owner/preferences") {
+      if (!ownerPreferenceStore) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      sendJson(response, 200, { ok: true, memories: ownerPreferenceStore.list() });
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/owner/preferences/promote") {
+      try {
+        if (!ownerPreferenceStore) fail("backend_unavailable");
+        const input = await readJsonBody(request, maxBodyBytes);
+        sendJson(response, 201, { ok: true, memory: ownerPreferenceStore.promote({
+          title: input.title,
+          text: input.text,
+          category: input.category,
+          sourceProjectId: input.source_project_id,
+          evidenceIds: input.evidence_ids,
+          confirmation: input.confirmation
+        }) });
+      } catch (error) {
+        sendJson(response, errorStatus(error), { ok: false, error: error?.code ?? "owner_promotion_failed" });
+      }
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/projects/enrollment/plan") {
+      try {
+        const input = await readJsonBody(request, maxBodyBytes);
+        sendJson(response, 200, { ok: true, ...enrollmentService.plan(input) });
+      } catch (error) {
+        sendJson(response, errorStatus(error), { ok: false, error: error?.code ?? "enrollment_plan_failed" });
+      }
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/projects/enrollment/apply") {
+      try {
+        const input = await readJsonBody(request, maxBodyBytes);
+        sendJson(response, 201, { ok: true, ...enrollmentService.apply({
+          planId: input.plan_id,
+          planHash: input.plan_hash
+        }) });
+      } catch (error) {
+        sendJson(response, errorStatus(error), { ok: false, error: error?.code ?? "enrollment_apply_failed" });
+      }
+      return;
+    }
+    const credentialRoute = /^\/v1\/projects\/([^/]+)\/checkouts\/([^/]+)\/(issue|rotate|revoke)$/.exec(request.url ?? "");
+    if (request.method === "POST" && credentialRoute) {
+      try {
+        if (!checkoutCredentialStore) fail("backend_unavailable");
+        const [, projectId, checkoutId, action] = credentialRoute;
+        const checkout = projectRegistry?.snapshot().checkouts.find((item) => (
+          item.checkoutId === checkoutId && item.projectId === projectId
+        ));
+        if (!checkout) fail("not_authorized");
+        const input = await readJsonBody(request, maxBodyBytes);
+        const result = action === "issue"
+          ? checkoutCredentialStore.issue({
+            checkoutId,
+            projectId,
+            workspaceId: checkout.workspaceId,
+            deviceId: input.device_id,
+            capabilities: ["capture", "recall", "status", "history_import"]
+          })
+          : action === "rotate"
+            ? checkoutCredentialStore.rotate({ checkoutId, deviceId: input.device_id })
+            : checkoutCredentialStore.revoke({ checkoutId });
+        sendJson(response, 200, { ok: true, ...result });
+      } catch (error) {
+        sendJson(response, recallErrorStatus(error), recallErrorBody(error));
+      }
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/history/import/plan") {
+      try {
+        if (!historyImportService) fail("backend_unavailable");
+        const input = await readJsonBody(request, maxBodyBytes);
+        sendJson(response, 200, { ok: true, ...(await historyImportService.plan(input)) });
+      } catch (error) {
+        sendJson(response, errorStatus(error), { ok: false, error: error?.code ?? "history_plan_failed" });
+      }
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/history/import/apply") {
+      try {
+        if (!historyImportService) fail("backend_unavailable");
+        const input = await readJsonBody(request, maxBodyBytes);
+        sendJson(response, 202, { ok: true, ...(await historyImportService.apply(input)) });
+      } catch (error) {
+        sendJson(response, errorStatus(error), { ok: false, error: error?.code ?? "history_apply_failed" });
+      }
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/memory/status") {
-      if (!router) {
+      if (!router && !supervisor) {
         sendJson(response, 503, { ok: false, error: "backend_unavailable" });
         return;
       }
       try {
-        sendJson(response, 200, { ok: true, ...(await router.status()) });
+        const { activeRouter } = scopedRouter(request, {}, "status");
+        sendJson(response, 200, { ok: true, ...(await activeRouter.status()) });
       } catch (error) {
         sendJson(response, recallErrorStatus(error), recallErrorBody(error));
       }
@@ -341,14 +508,16 @@ export function createSuperMemoryDaemon({
     }
     if (request.method === "POST" && recallRoutes.has(request.url)) {
       const method = recallRoutes.get(request.url);
-      if (!router || typeof router[method] !== "function") {
+      if (!router && !supervisor) {
         sendJson(response, 503, { ok: false, error: "backend_unavailable" });
         return;
       }
       try {
         const input = await readJsonBody(request, maxBodyBytes);
+        const { activeRouter } = scopedRouter(request, input, method === "rebuildFabric" ? "status" : "recall");
+        if (!activeRouter || typeof activeRouter[method] !== "function") fail("backend_unavailable");
         if (method === "rebuildFabric") fabricRecovery = { status: "running", error: null };
-        const result = await router[method](input);
+        const result = await activeRouter[method](input);
         if (method === "rebuildFabric") fabricRecovery = completeFabricRecovery(result);
         sendJson(response, 200, { ok: true, ...result });
       } catch (error) {
@@ -363,11 +532,12 @@ export function createSuperMemoryDaemon({
     if (request.method === "POST" && request.url === "/v1/events") {
       try {
         const input = await readJsonBody(request, maxBodyBytes);
+        const { activeRouter } = scopedRouter(request, input, "capture");
         const result = store.ingest(input);
         let topic = null;
-        if (typeof router?.resolveTopic === "function" && result.working?.working_set_id) {
+        if (typeof activeRouter?.resolveTopic === "function" && result.working?.working_set_id) {
           try {
-            topic = router.resolveTopic({
+            topic = await activeRouter.resolveTopic({
               working_set_id: result.working.working_set_id,
               title: input.payload?.prompt ?? input.payload?.text ?? "Sujet sans titre"
             });
@@ -378,7 +548,7 @@ export function createSuperMemoryDaemon({
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
         compiler.notifyCapture(input);
-        handleWorkingLifecycle({ envelope: input, working: result.working });
+        await handleWorkingLifecycle({ envelope: input, working: result.working, activeRouter });
         sendJson(response, 202, { ok: true, ...result, topic });
       } catch (error) {
         counters.rejected += 1;
@@ -392,12 +562,13 @@ export function createSuperMemoryDaemon({
     if (request.method === "POST" && request.url === "/v1/events/prepared") {
       try {
         const prepared = await readJsonBody(request, maxBodyBytes);
+        const { activeRouter } = scopedRouter(request, prepared.envelope, "capture");
         const result = store.ingestPrepared(prepared);
         const envelope = prepared.envelope;
         let topic = null;
-        if (typeof router?.resolveTopic === "function" && result.working?.working_set_id) {
+        if (typeof activeRouter?.resolveTopic === "function" && result.working?.working_set_id) {
           try {
-            topic = router.resolveTopic({
+            topic = await activeRouter.resolveTopic({
               working_set_id: result.working.working_set_id,
               title: prepared.payload?.prompt ?? prepared.payload?.text ?? "Sujet sans titre"
             });
@@ -408,7 +579,7 @@ export function createSuperMemoryDaemon({
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
         compiler.notifyCapture(envelope);
-        handleWorkingLifecycle({ envelope, working: result.working });
+        await handleWorkingLifecycle({ envelope, working: result.working, activeRouter });
         sendJson(response, 202, { ok: true, ...result, topic });
       } catch (error) {
         counters.rejected += 1;
@@ -448,7 +619,17 @@ export function createSuperMemoryDaemon({
         return;
       }
       recoveryPromise = (async () => {
-        if (typeof router?.rebuildFabric === "function") {
+        if (supervisor) {
+          fabricRecovery = { status: "running", error: null };
+          try {
+            fabricRecovery = completeSupervisorRecovery(await supervisor.recover());
+          } catch (error) {
+            fabricRecovery = {
+              status: "degraded",
+              error: error?.code ?? "workspace_recovery_failed"
+            };
+          }
+        } else if (typeof router?.rebuildFabric === "function") {
           fabricRecovery = { status: "running", error: null };
           try {
             const rebuilt = await router.rebuildFabric({});
@@ -508,15 +689,20 @@ export function createSuperMemoryDaemon({
     await closeServer();
     if (recoveryPromise) await recoveryPromise;
     await compiler.stop();
+    if (supervisor) await supervisor.close();
   };
 
   const replaySpool = async (spool) => {
     const completedScopes = new Map();
-    const result = await spool.replay((prepared) => {
+    const result = await spool.replay(async (prepared) => {
+      const activeRouter = supervisor ? supervisor.forProject({
+        workspaceId: prepared.envelope.workspace_id,
+        projectId: prepared.envelope.project_id
+      }) : router;
       const ingest = store.ingestPrepared(prepared);
-      if (typeof router?.resolveTopic === "function" && ingest.working?.working_set_id) {
+      if (typeof activeRouter?.resolveTopic === "function" && ingest.working?.working_set_id) {
         try {
-          router.resolveTopic({
+          await activeRouter.resolveTopic({
             working_set_id: ingest.working.working_set_id,
             title: prepared.payload?.prompt ?? prepared.payload?.text ?? "Sujet sans titre"
           });
@@ -524,10 +710,16 @@ export function createSuperMemoryDaemon({
           // Capture replay stays durable even when topic projection needs repair.
         }
       }
-      handleWorkingLifecycle({ envelope: prepared.envelope, working: ingest.working, notifyWorker: false });
+      await handleWorkingLifecycle({
+        envelope: prepared.envelope,
+        working: ingest.working,
+        activeRouter,
+        notifyWorker: false
+      });
       if (prepared.envelope.event_type === "assistant.completed") {
         const scope = {
           workspaceId: prepared.envelope.workspace_id,
+          projectId: prepared.envelope.project_id,
           sessionId: prepared.envelope.session_id
         };
         completedScopes.set(`${scope.workspaceId}\0${scope.sessionId}`, scope);
@@ -536,7 +728,12 @@ export function createSuperMemoryDaemon({
     });
     for (const scope of completedScopes.values()) {
       compiler.schedule(scope);
-      if (worker && worker.workspaceId === scope.workspaceId) {
+      if (supervisor) {
+        Promise.resolve(supervisor.notifySessionClosed({
+          workspaceId: scope.workspaceId,
+          projectId: scope.projectId
+        }, { sessionId: scope.sessionId })).catch(() => {});
+      } else if (worker && worker.workspaceId === scope.workspaceId) {
         Promise.resolve(worker.notifySessionClosed({ sessionId: scope.sessionId })).catch(() => {});
       }
     }
@@ -574,6 +771,7 @@ export function createSuperMemoryDaemon({
     compiler,
     canonicalWorker: worker,
     memoryRouter: router,
+    runtimeSupervisor: supervisor,
     start,
     stop,
     replaySpool,
@@ -582,7 +780,21 @@ export function createSuperMemoryDaemon({
   };
 }
 
-function postJson(endpoint, route, value, authToken, timeoutMs) {
+function checkoutHeaders(checkoutAuth) {
+  if (!checkoutAuth) return {};
+  const { checkoutId, deviceId, token } = checkoutAuth;
+  if (
+    typeof checkoutId !== "string" || typeof deviceId !== "string" ||
+    typeof token !== "string" || token.length < 32
+  ) fail("daemon_checkout_auth_invalid");
+  return {
+    "x-supermemory-checkout-id": checkoutId,
+    "x-supermemory-device-id": deviceId,
+    "x-supermemory-checkout-token": token
+  };
+}
+
+function postJson(endpoint, route, value, authToken, timeoutMs, checkoutAuth = null) {
   const url = new URL(route, endpoint);
   if (!isLoopbackUrl(url)) return Promise.reject(Object.assign(
     new Error("daemon_endpoint_not_loopback"),
@@ -595,7 +807,8 @@ function postJson(endpoint, route, value, authToken, timeoutMs) {
       headers: {
         authorization: `Bearer ${authToken}`,
         "content-type": "application/json",
-        "content-length": body.length
+        "content-length": body.length,
+        ...checkoutHeaders(checkoutAuth)
       }
     }, (response) => {
       const chunks = [];
@@ -634,6 +847,8 @@ export function createSuperMemoryDaemonClient({
   endpoint,
   authToken,
   spool,
+  checkoutAuth = null,
+  encryptionKey = null,
   timeoutMs = 250
 } = {}) {
   assertToken(authToken);
@@ -643,6 +858,7 @@ export function createSuperMemoryDaemonClient({
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10) fail("daemon_timeout_invalid");
 
   const capture = async (input) => {
+    const preparedInput = encryptionKey ? prepareCodexCapture(input, { encryptionKey }) : null;
     let spoolReplay = null;
     try {
       spoolReplay = await spool.replay(async (prepared) => {
@@ -651,7 +867,8 @@ export function createSuperMemoryDaemonClient({
           "/v1/events/prepared",
           prepared,
           authToken,
-          timeoutMs
+          timeoutMs,
+          checkoutAuth
         );
         return response;
       }, { maxEntries: 1 });
@@ -659,7 +876,14 @@ export function createSuperMemoryDaemonClient({
       spoolReplay = { status: "degraded" };
     }
     try {
-      const response = await postJson(parsed, "/v1/events", input, authToken, timeoutMs);
+      const response = await postJson(
+        parsed,
+        preparedInput ? "/v1/events/prepared" : "/v1/events",
+        preparedInput ?? input,
+        authToken,
+        timeoutMs,
+        checkoutAuth
+      );
       return {
         ...response,
         status: "delivered",
@@ -669,7 +893,9 @@ export function createSuperMemoryDaemonClient({
     } catch (daemonError) {
       try {
         return {
-          ...spool.enqueue(input),
+          ...(preparedInput && typeof spool.enqueuePrepared === "function"
+            ? spool.enqueuePrepared(preparedInput)
+            : spool.enqueue(input)),
           fallback: true,
           daemonError: daemonError?.code ?? "daemon_unavailable"
         };
@@ -691,6 +917,7 @@ export function createSuperMemoryDaemonClient({
 export function createSuperMemoryRecallClient({
   endpoint,
   authToken,
+  checkoutAuth = null,
   timeoutMs = 1_500
 } = {}) {
   assertToken(authToken);
@@ -700,7 +927,14 @@ export function createSuperMemoryRecallClient({
     fail("daemon_timeout_invalid");
   }
   const invoke = async (route, input = {}, requestTimeoutMs = timeoutMs) => {
-    const { ok, ...result } = await postJson(parsed, route, input, authToken, requestTimeoutMs);
+    const { ok, ...result } = await postJson(
+      parsed,
+      route,
+      input,
+      authToken,
+      requestTimeoutMs,
+      checkoutAuth
+    );
     return result;
   };
   const workingSetPattern = /^wset_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

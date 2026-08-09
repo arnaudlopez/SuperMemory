@@ -706,3 +706,18 @@ footer {
   .search-form > div { grid-template-columns: 1fr; }
   footer { gap: 10px; flex-direction: column; }
 }
+.project-switcher {
+  display: grid;
+  gap: 0.2rem;
+  color: var(--muted, #9aa7bd);
+  font-size: 0.7rem;
+}
+
+.project-switcher select {
+  max-width: 15rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.65rem;
+  background: rgba(8, 13, 25, 0.92);
+  color: inherit;
+  padding: 0.45rem 0.65rem;
+}

@@ -23,15 +23,18 @@ test("Mac mini M4 Pro config is a remote-only Z2 client with a persistent tunnel
   const key = path.join(root, "archive.key");
   const token = path.join(root, "daemon.token");
   const graphToken = path.join(root, "graphd.token");
+  const checkoutToken = path.join(root, "checkout.token");
   fs.writeFileSync(key, Buffer.alloc(32, 1), { mode: 0o600 });
   fs.writeFileSync(token, "daemon-token-0000000000000000000000000000", { mode: 0o600 });
   fs.writeFileSync(graphToken, "graph-token-00000000000000000000000000000", { mode: 0o600 });
+  fs.writeFileSync(checkoutToken, "smco_0000000000000000000000000000000000000000000", { mode: 0o600 });
 
   const options = {
     projectRoot: project,
     runtimeRoot: runtime,
     keyFile: key,
     tokenFile: token,
+    checkoutTokenFile: checkoutToken,
     graphTokenFile: graphToken,
     configRoot: configs,
     launchAgentPath: agent,
@@ -52,8 +55,10 @@ test("Mac mini M4 Pro config is a remote-only Z2 client with a persistent tunnel
   assert.equal("vault_root" in mcp, false);
   assert.equal(hook.expected_workspace_id, binding.workspaceId);
   assert.equal(mcp.expected_project_id, binding.projectId);
-  assert.equal(contract.deployment.activation, "full");
-  assert.equal(contract.schema, "supermemory.codex-runtime.v5");
+  assert.equal(contract.deployment.activation, "enabled");
+  assert.equal(contract.schema, "supermemory.codex-runtime.v6");
+  assert.equal(hook.checkout_token_file, checkoutToken);
+  assert.equal(mcp.device_id, "device_mac-mini-m4pro");
   assert.equal(contract.deployment.canary, false);
   assert.equal(contract.deployment.progressive, false);
   assert.equal(contract.topic_continuity.enabled, true);

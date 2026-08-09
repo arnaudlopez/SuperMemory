@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { createFullDeploymentRuntimeV5 } from "./lib/codex-runtime-config.mjs";
+import { createFullDeploymentRuntimeV6 } from "./lib/codex-runtime-config.mjs";
 import { resolveProjectMarkerBinding } from "./lib/project-registry.mjs";
 
 function fail(code) {
@@ -127,16 +127,19 @@ export function configureZ2Client({
   runtimeRoot,
   keyFile,
   tokenFile,
+  checkoutTokenFile,
   graphTokenFile,
   configRoot,
   launchAgentPath,
   sshHost = "z2",
+  deviceId = "device_mac-mini-m4pro",
   apply = false
 } = {}) {
   const project = absolute(projectRoot, "z2_client_project_invalid");
   const runtime = absolute(runtimeRoot, "z2_client_runtime_invalid");
   const key = absolute(keyFile, "z2_client_key_invalid");
   const token = absolute(tokenFile, "z2_client_token_invalid");
+  const checkoutToken = absolute(checkoutTokenFile, "z2_client_checkout_token_invalid");
   const graphToken = absolute(graphTokenFile, "z2_client_graph_token_invalid");
   const configs = absolute(configRoot, "z2_client_config_invalid");
   const agent = absolute(launchAgentPath, "z2_client_launch_agent_invalid");
@@ -144,11 +147,13 @@ export function configureZ2Client({
   for (const [filePath, code] of [
     [key, "z2_client_key_insecure"],
     [token, "z2_client_token_insecure"],
-    [graphToken, "z2_client_graph_token_insecure"]
+    [graphToken, "z2_client_graph_token_insecure"],
+    [checkoutToken, "z2_client_checkout_token_insecure"]
   ]) secureRegularFile(filePath, code);
+  if (!/^device_[A-Za-z0-9._-]{8,180}$/.test(deviceId)) fail("z2_client_device_invalid");
   const binding = resolveProjectMarkerBinding(project);
   if (binding.status !== "bound") fail("z2_client_project_unbound");
-  const runtimeContract = createFullDeploymentRuntimeV5({
+  const runtimeContract = createFullDeploymentRuntimeV6({
     graphEndpoint: "http://127.0.0.1:8787",
     graphTokenFile: graphToken
   });
@@ -160,6 +165,8 @@ export function configureZ2Client({
     daemon_endpoint: "http://127.0.0.1:8765",
     key_file: key,
     token_file: token,
+    checkout_token_file: checkoutToken,
+    device_id: deviceId,
     capture_mode: "hooks_primary",
     runtime_contract_file: contractPath,
     expected_workspace_id: binding.workspaceId,
@@ -171,6 +178,8 @@ export function configureZ2Client({
     client_mode: "remote",
     daemon_endpoint: "http://127.0.0.1:8765",
     daemon_token_file: token,
+    checkout_token_file: checkoutToken,
+    device_id: deviceId,
     runtime_contract_file: contractPath,
     max_results: 20,
     expected_workspace_id: binding.workspaceId,
@@ -210,12 +219,19 @@ if (path.resolve(process.argv[1] ?? "") === path.resolve(new URL(import.meta.url
     const projectRoot = argument(argv, "--project-root", process.cwd());
     const runtimeRoot = argument(argv, "--runtime-root", path.join(os.homedir(), ".supermemory/runtime/codex"));
     const configRoot = argument(argv, "--config-root", path.join(projectRoot, ".codex/supermemory"));
+    const localBinding = resolveProjectMarkerBinding(projectRoot);
+    if (localBinding.status !== "bound") fail("z2_client_project_unbound");
     const report = configureZ2Client({
       projectRoot,
       runtimeRoot,
       configRoot,
       keyFile: argument(argv, "--key-file", path.join(runtimeRoot, "archive.key")),
       tokenFile: argument(argv, "--token-file", path.join(runtimeRoot, "daemon.token")),
+      checkoutTokenFile: argument(
+        argv,
+        "--checkout-token-file",
+        path.join(os.homedir(), ".supermemory", "credentials", `${localBinding.checkoutId}.token`)
+      ),
       graphTokenFile: argument(argv, "--graph-token-file", path.join(runtimeRoot, "graphd.token")),
       launchAgentPath: argument(
         argv,
@@ -223,6 +239,7 @@ if (path.resolve(process.argv[1] ?? "") === path.resolve(new URL(import.meta.url
         path.join(os.homedir(), "Library/LaunchAgents/com.supermemory.z2-tunnel.plist")
       ),
       sshHost: argument(argv, "--ssh-host", "z2"),
+      deviceId: argument(argv, "--device-id", "device_mac-mini-m4pro"),
       apply: argv.includes("--apply")
     });
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);

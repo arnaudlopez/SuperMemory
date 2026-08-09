@@ -50,6 +50,7 @@ if (configIndex < 0 || !process.argv[configIndex + 1]) {
         !config.daemon_endpoint || !config.daemon_token_file ||
         !config.expected_workspace_id || !config.expected_project_id || !config.expected_checkout_id
       )) ||
+      (Boolean(config.checkout_token_file) !== Boolean(config.device_id)) ||
       (!remoteClient && !config.vault_root)
     ) {
       fail("mcp_config_invalid");
@@ -123,6 +124,11 @@ if (configIndex < 0 || !process.argv[configIndex + 1]) {
         ? createSuperMemoryRecallClient({
           endpoint: config.daemon_endpoint,
           ["auth" + "Token"]: optionalSecret(config.daemon_token_file),
+          checkoutAuth: config.checkout_token_file ? {
+            checkoutId: resolution.checkoutId,
+            deviceId: config.device_id,
+            token: optionalSecret(config.checkout_token_file)
+          } : null,
           timeoutMs: config.daemon_recall_timeout_ms ?? 1_500
         })
         : Object.freeze({

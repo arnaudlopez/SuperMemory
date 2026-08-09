@@ -1,5 +1,48 @@
 # SuperMemory Production Runbook
 
+## Memory Fabric v2.3 — client Codex multi-projet
+
+Le runtime v6 ne contient plus de projet fixe. Z2 authentifie chaque checkout
+avec un jeton opaque, résout côté serveur son couple workspace/projet et garde
+un contexte mémoire borné par projet. Le rappel fusionne uniquement la mémoire
+du projet courant avec les préférences globales explicitement promues par le
+propriétaire.
+
+Installer ou actualiser le client Codex stable sur le Mac mini :
+
+```bash
+npm run plugin -- plan
+npm run plugin -- apply --plan-hash <sha256-du-plan>
+```
+
+Enrôler ensuite chaque dépôt depuis sa racine. Le plan est non-mutant ;
+l'application crée le projet/checkout sur Z2, écrit les marqueurs Git locaux
+et installe le jeton checkout avec le mode `0600` :
+
+```bash
+npm run client -- enroll-plan --project-root "$PWD"
+npm run client -- enroll-apply --project-root "$PWD" --plan-hash <sha256-du-plan>
+```
+
+Pour un dépôt déjà enrôlé mais sans jeton local, utiliser
+`npm run client -- credential-issue --project-root "$PWD"`. Un nouveau
+checkout doit être enrôlé séparément ; ne jamais copier son jeton.
+
+L'import historique reste local et explicite. Il ne lit que les événements
+Codex visibles autorisés, exclut le raisonnement, les instructions et les
+arguments/sorties d'outils, puis reprend de façon idempotente :
+
+```bash
+npm run history -- plan --project-root "$PWD"
+npm run history -- apply --project-root "$PWD" --plan-hash <sha256-du-plan>
+```
+
+Après installation du plugin ou modification de sa confiance, ouvrir une
+nouvelle session Codex. La confiance des hooks reste une décision manuelle du
+propriétaire. La production demeure un déploiement intégral : sauvegarde,
+remplacement atomique de la stack, tests de santé, rollback complet si besoin ;
+aucun canari ni rollout progressif.
+
 ## Full server runtime deployment
 
 The heavy AI, temporal-graph and continuous-improvement runtime is packaged as

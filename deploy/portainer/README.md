@@ -1,5 +1,12 @@
 # SuperMemory six-service production stack — Z2
 
+Memory Fabric v2.3 utilise le contrat runtime v6 et l'image
+`supermemory-runtime:5.0.0`. Les identifiants workspace/projet ne sont plus des
+variables globales de stack : chaque checkout Codex s'authentifie avec son
+jeton et le daemon résout son périmètre dans le registre canonique. La
+migration v5 vers v6 conserve le coffre et le graphe ; elle exige une
+sauvegarde complète avant le redéploiement direct de toute la stack.
+
 Z2 is the always-on, single-user production authority. It owns the encrypted
 canonical vault, runtime spool, backups, learned memory and temporal graph.
 The Mac mini M4 Pro is only a trusted client: Codex captures through an SSH tunnel and
@@ -92,7 +99,7 @@ second provider in parallel.
 
 ## Configuration and preflight
 
-Create a private environment file and set the real workspace and project IDs:
+Create a private environment file and install the runtime v6 contract:
 
 ```bash
 cp deploy/portainer/supermemory-ai.env.example \
@@ -103,10 +110,10 @@ chmod 0600 /opt/supermemory/config/supermemory-ai.env
 chmod 0644 /opt/supermemory/config/runtime-contract.json
 ```
 
-The v5 runtime contract at
+The v6 runtime contract at
 `/opt/supermemory/config/runtime-contract.json` must activate Working Memory,
 Topic Continuity, Temporal Retrieval, Quiet Authority, offload, Hindsight,
-GraphD and continuous improvement in full deployment mode.
+GraphD and continuous improvement with `deployment.activation=enabled`.
 It must point GraphD to `http://127.0.0.1:8787` and its token file to
 `/run/supermemory/graphd.token`.
 

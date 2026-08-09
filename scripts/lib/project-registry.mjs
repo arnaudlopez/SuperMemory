@@ -181,7 +181,7 @@ function absoluteGitPath(projectRoot, value) {
   return fs.realpathSync(resolved);
 }
 
-function inspectProjectLayout(requestedRoot) {
+export function inspectProjectLayout(requestedRoot) {
   const initialRoot = realProjectDirectory(requestedRoot);
   const topLevel = gitOutput(initialRoot, "--show-toplevel");
   if (!topLevel) {
@@ -281,7 +281,7 @@ export function resolveProjectMarkerBinding(projectRoot) {
   };
 }
 
-function rootIdentity(root) {
+export function rootIdentity(root) {
   const stat = fs.statSync(root, { bigint: true });
   return {
     device: String(stat.dev),
@@ -290,7 +290,7 @@ function rootIdentity(root) {
   };
 }
 
-function gitCommonFingerprint(layout) {
+export function gitCommonFingerprint(layout) {
   return layout.gitCommonDirectory ? `sha256:${sha256(layout.gitCommonDirectory)}` : null;
 }
 
@@ -356,6 +356,7 @@ function reduceEvents(events) {
     projects: new Map(),
     checkouts: new Map(),
     legacyMappings: new Map(),
+    owner: null,
     eventIds: new Set()
   };
 
@@ -368,6 +369,23 @@ function reduceEvents(events) {
     }
     view.eventIds.add(event.event_id);
 
+    if (event.event_type === "owner.created") {
+      assertId(event.project_id, PROJECT_ID, "project_registry_invalid");
+      assertId(event.workspace_id, WORKSPACE_ID, "project_registry_invalid");
+      if (view.owner || [...view.projects.values()].some((item) => item.workspaceId === event.workspace_id)) {
+        fail("project_registry_invalid", "Owner workspace was created twice or collides with a project.");
+      }
+      view.owner = {
+        ownerId: event.owner_id,
+        projectId: event.project_id,
+        workspaceId: event.workspace_id,
+        displayName: cleanDisplayName(event.display_name ?? "Mémoire personnelle"),
+        status: "active",
+        createdAt: event.occurred_at
+      };
+      continue;
+    }
+
     if (event.event_type === "project.created") {
       assertId(event.project_id, PROJECT_ID, "project_registry_invalid");
       assertId(event.workspace_id, WORKSPACE_ID, "project_registry_invalid");
@@ -376,6 +394,9 @@ function reduceEvents(events) {
         if (project.workspaceId === event.workspace_id) {
           fail("project_registry_invalid", "Workspace is already owned by another project.");
         }
+      }
+      if (view.owner?.workspaceId === event.workspace_id) {
+        fail("project_registry_invalid", "Workspace is already owned by the personal memory scope.");
       }
       view.projects.set(event.project_id, {
         projectId: event.project_id,
@@ -469,6 +490,7 @@ function reduceEvents(events) {
 
 function publicView(view) {
   return {
+    owner: view.owner ? { ...view.owner } : null,
     projects: [...view.projects.values()].map((project) => ({ ...project })),
     checkouts: [...view.checkouts.values()].map((checkout) => ({
       ...checkout,
@@ -600,6 +622,28 @@ export function createProjectRegistry({
   const event = createEventFactory(clock, randomBytes);
 
   const snapshot = () => publicView(reduceEvents(readEvents(paths.registry)));
+
+  const ensureOwnerScope = ({ ownerId = "owner_personal", displayName = "Mémoire personnelle" } = {}) => {
+    registryPaths(vaultReal, { create: true });
+    let created = false;
+    const nextView = mutateRegistry({
+      vaultRoot: vaultReal,
+      registryPath: paths.registry,
+      buildEvents(view) {
+        if (view.owner) return [];
+        const now = Date.parse(clock());
+        if (!Number.isFinite(now)) fail("clock_invalid", "Clock must return an RFC3339 timestamp.");
+        created = true;
+        return [event("owner.created", {
+          owner_id: String(ownerId).slice(0, 160),
+          project_id: makeId("prj", now, randomBytes),
+          workspace_id: makeId("ws", now, randomBytes),
+          display_name: cleanDisplayName(displayName)
+        })];
+      }
+    });
+    return { status: created ? "created" : "existing", ...nextView.owner };
+  };
 
   const resolveProject = (projectRoot) => {
     const layout = inspectProjectLayout(projectRoot);
@@ -948,13 +992,93 @@ export function createProjectRegistry({
     );
   };
 
+  const registerRemoteBinding = ({
+    projectId = null,
+    workspaceId = null,
+    checkoutId = null,
+    linkProjectId = null,
+    displayName,
+    rootFingerprint,
+    deviceFingerprint,
+    inode = "remote",
+    checkoutKind = "remote_git",
+    gitCommonDirectoryFingerprint = null
+  } = {}) => {
+    if (!/^sha256:[0-9a-f]{64}$/i.test(String(rootFingerprint ?? ""))) {
+      fail("remote_root_fingerprint_invalid", "Remote project root fingerprint is invalid.");
+    }
+    if (!/^[A-Za-z0-9._:-]{1,180}$/.test(String(deviceFingerprint ?? ""))) {
+      fail("remote_device_fingerprint_invalid", "Remote device fingerprint is invalid.");
+    }
+    registryPaths(vaultReal, { create: true });
+    const initial = reduceEvents(readEvents(paths.registry));
+    const linked = linkProjectId ? initial.projects.get(linkProjectId) : null;
+    if (linkProjectId && !linked) fail("linked_project_not_found", "Linked project does not exist.");
+    const now = Date.parse(clock());
+    if (!Number.isFinite(now)) fail("clock_invalid", "Clock must return an RFC3339 timestamp.");
+    const resolvedProjectId = linked?.projectId ?? projectId ?? makeId("prj", now, randomBytes);
+    const resolvedWorkspaceId = linked?.workspaceId ?? workspaceId ?? makeId("ws", now, randomBytes);
+    const resolvedCheckoutId = checkoutId ?? makeId("co", now, randomBytes);
+    assertId(resolvedProjectId, PROJECT_ID, "remote_binding_invalid");
+    assertId(resolvedWorkspaceId, WORKSPACE_ID, "remote_binding_invalid");
+    assertId(resolvedCheckoutId, CHECKOUT_ID, "remote_binding_invalid");
+    const next = mutateRegistry({
+      vaultRoot: vaultReal,
+      registryPath: paths.registry,
+      buildEvents(view) {
+        if (view.checkouts.has(resolvedCheckoutId)) {
+          const existing = view.checkouts.get(resolvedCheckoutId);
+          if (
+            existing.projectId === resolvedProjectId && existing.workspaceId === resolvedWorkspaceId &&
+            activeAlias(existing)?.pathFingerprint === rootFingerprint
+          ) return [];
+          fail("remote_binding_conflict", "Remote checkout identifier is already bound.");
+        }
+        assertNoActiveAliasCollision(view, rootFingerprint);
+        const additions = [];
+        const existingProject = view.projects.get(resolvedProjectId);
+        if (!existingProject) {
+          additions.push(event("project.created", {
+            project_id: resolvedProjectId,
+            workspace_id: resolvedWorkspaceId,
+            display_name: cleanDisplayName(displayName)
+          }));
+        } else if (existingProject.workspaceId !== resolvedWorkspaceId) {
+          fail("remote_binding_conflict", "Remote project workspace changed.");
+        }
+        additions.push(event("checkout.bound", {
+          checkout_id: resolvedCheckoutId,
+          project_id: resolvedProjectId,
+          workspace_id: resolvedWorkspaceId,
+          checkout_kind: checkoutKind,
+          git_common_dir_fingerprint: gitCommonDirectoryFingerprint,
+          alias: {
+            path_fingerprint: rootFingerprint,
+            device: deviceFingerprint,
+            inode: String(inode)
+          }
+        }));
+        return additions;
+      }
+    });
+    return {
+      status: linked ? "linked" : "created",
+      projectId: resolvedProjectId,
+      workspaceId: resolvedWorkspaceId,
+      checkoutId: resolvedCheckoutId,
+      registry: publicView(next)
+    };
+  };
+
   return {
     vaultRoot: vaultReal,
     registryPath: paths.registry,
     initProject,
+    registerRemoteBinding,
     resolveProject,
     status: resolveProject,
     snapshot,
+    ensureOwnerScope,
     detectLegacyState: () => detectLegacyState(paths.legacyState)
   };
 }

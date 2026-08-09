@@ -24,8 +24,15 @@ import { createMemoryAdmissionPolicy } from "./lib/memory-admission-policy.mjs";
 import { createMemoryAuthorityPolicy } from "./lib/memory-authority-policy.mjs";
 import { createMemoryExceptionStore } from "./lib/memory-exception-store.mjs";
 import { createWorkspaceOntologyRegistry } from "./lib/ontology-registry.mjs";
+import { createOwnerPreferenceStore } from "./lib/owner-preference-store.mjs";
+import { createCheckoutCredentialStore } from "./lib/checkout-credential-store.mjs";
+import { createProjectEnrollmentService } from "./lib/project-enrollment.mjs";
+import { createProjectRegistry } from "./lib/project-registry.mjs";
+import { createRequestScopeResolver } from "./lib/request-scope-resolver.mjs";
 import { normalizeCodexRuntimeConfig } from "./lib/codex-runtime-config.mjs";
 import { createSuperMemoryDaemon } from "./lib/supermemory-daemon.mjs";
+import { createWorkspaceRuntimeContextFactory } from "./lib/workspace-runtime-context.mjs";
+import { createWorkspaceRuntimeSupervisor } from "./lib/workspace-runtime-supervisor.mjs";
 
 function parseArguments(argv) {
   const options = {
@@ -53,7 +60,11 @@ function parseArguments(argv) {
     retrieval_max_rounds: 3,
     retrieval_max_ms: 5_000,
     retrieval_max_results: 1_000,
-    retrieval_max_tokens: 12_000
+    retrieval_max_tokens: 12_000,
+    runtime_schema: null,
+    multi_project: false,
+    max_active_project_contexts: 16,
+    context_idle_ttl_ms: 1_800_000
   };
   const values = new Set([
     "--host",
@@ -162,11 +173,34 @@ try {
     options.retrieval_max_ms = runtimeContract.temporal_retrieval.max_ms;
     options.retrieval_max_results = runtimeContract.temporal_retrieval.max_results;
     options.retrieval_max_tokens = runtimeContract.temporal_retrieval.max_tokens;
+    options.runtime_schema = runtimeContract.schema;
+    options.multi_project = runtimeContract.schema === "supermemory.codex-runtime.v6";
+    if (options.multi_project) {
+      options.max_active_project_contexts = runtimeContract.runtime_supervisor.max_active_project_contexts;
+      options.context_idle_ttl_ms = runtimeContract.runtime_supervisor.idle_ttl_ms;
+    }
   }
   const encryptionKey = loadKey(options.key_file);
   const daemonBearer = loadToken(options.token_file);
   const hindsightApiKey = options.hindsight_api_key_file ? loadToken(options.hindsight_api_key_file) : "";
-  const recallEnabled = Boolean(options.workspace_id && options.project_id);
+  const projectRegistry = options.multi_project ? createProjectRegistry({ vaultRoot: options.vault_root }) : null;
+  const credentialStore = options.multi_project ? createCheckoutCredentialStore({ vaultRoot: options.vault_root }) : null;
+  const enrollmentService = options.multi_project ? createProjectEnrollmentService({
+    registry: projectRegistry,
+    credentialStore,
+    receiptKey: encryptionKey
+  }) : null;
+  const ownerScope = options.multi_project
+    ? (options.check ? projectRegistry.snapshot().owner : projectRegistry.ensureOwnerScope())
+    : null;
+  const ownerPreferenceStore = ownerScope ? createOwnerPreferenceStore({
+    vaultRoot: options.vault_root,
+    encryptionKey,
+    ownerScope
+  }) : null;
+  // A v6 daemon must accept the first enrollment without a restart. The
+  // supervisor is therefore available even while the registry is empty.
+  const recallEnabled = options.multi_project || Boolean(options.workspace_id && options.project_id);
   const workingSetStore = recallEnabled ? createCodexWorkingSetStore({
     vaultRoot: options.vault_root,
     encryptionKey
@@ -200,7 +234,7 @@ try {
       }
     },
     workingSetStore,
-    memoryRouterFactory: recallEnabled ? ({ captureStore }) => {
+    memoryRouterFactory: !options.multi_project && recallEnabled ? ({ captureStore }) => {
       workingSetStore.migrateTemporalEpisodes({ workspaceId: options.workspace_id });
       const topicStore = options.topic_continuity ? createCodexTopicStore({
         vaultRoot: options.vault_root,
@@ -384,7 +418,7 @@ try {
         learnedPlane
       });
     } : null,
-    canonicalWorkerFactory: recallEnabled && options.continuous_improvement ? ({ captureStore, memoryRouter }) => {
+    canonicalWorkerFactory: !options.multi_project && recallEnabled && options.continuous_improvement ? ({ captureStore, memoryRouter }) => {
       return createCanonicalKnowledgeWorker({
         vaultRoot: options.vault_root,
         encryptionKey,
@@ -403,7 +437,46 @@ try {
           workspaceId, projectId, workingSetId
         }) ?? null
       });
-    } : null
+    } : null,
+    runtimeSupervisorFactory: options.multi_project && recallEnabled ? ({ captureStore }) => {
+      const createContext = createWorkspaceRuntimeContextFactory({
+        vaultRoot: options.vault_root,
+        encryptionKey,
+        captureStore,
+        workingSetStore,
+        admissionPolicy,
+        codexPipeline,
+        graphdEndpoint: options.graphd_endpoint,
+        graphdTokenFile: options.graphd_token_file,
+        hindsightEnabled: options.hindsight_enabled,
+        hindsightUrl: options.hindsight_url,
+        hindsightApiKey,
+        continuousImprovement: options.continuous_improvement,
+        topicContinuity: options.topic_continuity,
+        topicViewCapacityTokens: options.topic_view_capacity_tokens,
+        topicAutoBindThreshold: options.topic_auto_bind_threshold,
+        topicAutoBindMargin: options.topic_auto_bind_margin,
+        authorityVisibleMinAgeMs: options.authority_visible_min_age_ms,
+        retrievalMaxRounds: options.retrieval_max_rounds,
+        retrievalMaxMs: options.retrieval_max_ms,
+        retrievalMaxResults: options.retrieval_max_results,
+        retrievalMaxTokens: options.retrieval_max_tokens
+      });
+      return createWorkspaceRuntimeSupervisor({
+        registry: projectRegistry,
+        createContext,
+        ownerRecall: ownerPreferenceStore ? ownerPreferenceStore.search : null,
+        maxActiveProjectContexts: options.max_active_project_contexts,
+        idleTtlMs: options.context_idle_ttl_ms
+      });
+    } : null,
+    requestScopeResolver: options.multi_project && recallEnabled
+      ? createRequestScopeResolver({ credentialStore })
+      : null,
+    projectRegistry,
+    enrollmentService,
+    checkoutCredentialStore: credentialStore,
+    ownerPreferenceStore
   });
   if (options.check) {
     output({ ok: true, status: "configuration_valid" }, options.json);

@@ -41,6 +41,17 @@ function secureJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+function dynamicRuntimeConfig(cwd, fileName) {
+  let current = path.resolve(cwd ?? process.cwd());
+  for (;;) {
+    const candidate = path.join(current, ".codex", "supermemory", fileName);
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+}
+
 function validOutput(eventName, value) {
   if (eventName === "SessionEnd") return null;
   if (!value || typeof value !== "object") {
@@ -90,18 +101,23 @@ try {
   if (!pluginData) throw new Error("plugin_data_missing");
   const configPath = path.join(pluginData, "supermemory-plugin.json");
   const config = secureJson(configPath);
+  const dynamic = config?.scope_mode === "dynamic_cwd";
   if (
     config?.schema !== "supermemory.plugin-runtime.v1" ||
     !path.isAbsolute(config.node) ||
     !path.isAbsolute(config.hook_script) ||
-    !path.isAbsolute(config.runtime_config)
+    (!dynamic && !path.isAbsolute(config.runtime_config))
   ) {
     throw new Error("plugin_config_invalid");
   }
   const timeout = Math.min(1_500, Math.max(50, Number(config.timeout_ms ?? 750)));
+  const runtimeConfig = dynamic
+    ? dynamicRuntimeConfig(input.value?.cwd, "hook-runtime.json")
+    : config.runtime_config;
+  if (!runtimeConfig) throw new Error("project_not_enrolled");
   const child = spawnSync(
     config.node,
-    [config.hook_script, "--config", config.runtime_config],
+    [config.hook_script, "--config", runtimeConfig],
     {
       input: input.bytes,
       encoding: "utf8",

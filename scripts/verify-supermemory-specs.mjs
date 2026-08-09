@@ -37,7 +37,8 @@ const commands = [
   ["node", ["scripts/verify-enterprise-living-memory-complete.mjs"]],
   ["node", ["scripts/verify-ci-regression-suite.mjs"]],
   ["node", ["scripts/verify-identity-vault-tdd.mjs"]],
-  ["node", ["scripts/verify-enterprise-living-memory-target.mjs"]]
+  ["node", ["scripts/verify-enterprise-living-memory-target.mjs"]],
+  ["node", ["scripts/verify-memory-fabric-v23.mjs"]]
 ].filter(([, args]) => {
   if (process.env.SUPERMEMORY_SKIP_CI_REGRESSION_SUITE !== "1") return true;
   return args[0] !== "scripts/verify-ci-regression-suite.mjs";

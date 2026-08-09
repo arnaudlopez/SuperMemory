@@ -3,6 +3,7 @@ import path from "node:path";
 const LEGACY_SCHEMA = /^supermemory\.(?:codex|hook|mcp|app-server)-runtime\.v[123]$/;
 const RUNTIME_V4 = "supermemory.codex-runtime.v4";
 const RUNTIME_V5 = "supermemory.codex-runtime.v5";
+const RUNTIME_V6 = "supermemory.codex-runtime.v6";
 
 function fail(code) {
   const error = new Error(code);
@@ -141,6 +142,38 @@ function defaults(schema = RUNTIME_V5) {
     delete config.temporal_retrieval;
     delete config.authority;
   }
+  if (schema === RUNTIME_V6) {
+    config.deployment.activation = "disabled";
+    config.scope = {
+      mode: "owner_plus_current_project",
+      registry: "canonical_dynamic",
+      cross_project_mcp: false,
+      owner_promotion: "governed"
+    };
+    config.runtime_supervisor = {
+      max_active_project_contexts: 16,
+      idle_ttl_ms: 1_800_000,
+      context_start_concurrency: 4,
+      worker_concurrency: 4
+    };
+    config.enrollment = {
+      credential_mode: "opaque_per_checkout",
+      plan_ttl_ms: 600_000,
+      require_plan_hash: true
+    };
+    config.history_import = {
+      enabled: true,
+      default_capture_level: "backfill",
+      max_event_bytes: 524_288,
+      max_parallel_sessions: 4,
+      unknown_schema: "reject"
+    };
+    config.codex_integration = {
+      plugin_id: "supermemory@supermemory-local",
+      require_new_session_after_change: true,
+      auto_trust_hooks: false
+    };
+  }
   return config;
 }
 
@@ -169,7 +202,7 @@ function safeGraphEndpoint(value) {
 }
 
 function validate(config) {
-  if (![RUNTIME_V4, RUNTIME_V5].includes(config.schema)) fail("runtime_config_schema_invalid");
+  if (![RUNTIME_V4, RUNTIME_V5, RUNTIME_V6].includes(config.schema)) fail("runtime_config_schema_invalid");
   if (
     config.deployment?.strategy !== "full" || config.deployment.canary !== false ||
     config.deployment.progressive !== false
@@ -208,7 +241,7 @@ function validate(config) {
     config.hindsight?.reflect?.exclude_mental_models !== true ||
     config.hindsight?.reflect?.fail_on_unvalidated_fact !== true
   ) fail("runtime_hindsight_contract_invalid");
-  if (config.schema === RUNTIME_V5) {
+  if ([RUNTIME_V5, RUNTIME_V6].includes(config.schema)) {
     if (
       config.topic_continuity?.working_view_capacity_tokens !== 100_000 ||
       config.topic_continuity?.semantic_link_mode !== "suggest_only" ||
@@ -229,16 +262,60 @@ function validate(config) {
       !Number.isSafeInteger(config.authority.visible_exception_min_age_ms) || config.authority.visible_exception_min_age_ms < 0
     ) fail("runtime_authority_contract_invalid");
   }
-  if (config.deployment.activation === "full") {
+  if (config.schema === RUNTIME_V6) {
+    if (
+      config.scope?.mode !== "owner_plus_current_project" ||
+      config.scope?.registry !== "canonical_dynamic" ||
+      config.scope?.cross_project_mcp !== false ||
+      config.scope?.owner_promotion !== "governed"
+    ) fail("runtime_scope_contract_invalid");
+    if (
+      !Number.isSafeInteger(config.runtime_supervisor?.max_active_project_contexts) ||
+      config.runtime_supervisor.max_active_project_contexts < 1 ||
+      config.runtime_supervisor.max_active_project_contexts > 128 ||
+      !Number.isSafeInteger(config.runtime_supervisor?.idle_ttl_ms) ||
+      config.runtime_supervisor.idle_ttl_ms < 60_000 ||
+      !Number.isSafeInteger(config.runtime_supervisor?.context_start_concurrency) ||
+      config.runtime_supervisor.context_start_concurrency < 1 ||
+      config.runtime_supervisor.context_start_concurrency > 16 ||
+      !Number.isSafeInteger(config.runtime_supervisor?.worker_concurrency) ||
+      config.runtime_supervisor.worker_concurrency < 1 ||
+      config.runtime_supervisor.worker_concurrency > 32
+    ) fail("runtime_supervisor_contract_invalid");
+    if (
+      config.enrollment?.credential_mode !== "opaque_per_checkout" ||
+      config.enrollment?.require_plan_hash !== true ||
+      !Number.isSafeInteger(config.enrollment?.plan_ttl_ms) ||
+      config.enrollment.plan_ttl_ms < 60_000 ||
+      config.enrollment.plan_ttl_ms > 3_600_000
+    ) fail("runtime_enrollment_contract_invalid");
+    if (
+      config.history_import?.default_capture_level !== "backfill" ||
+      config.history_import?.unknown_schema !== "reject" ||
+      !Number.isSafeInteger(config.history_import?.max_event_bytes) ||
+      config.history_import.max_event_bytes < 1_024 ||
+      config.history_import.max_event_bytes > 4 * 1_024 * 1_024 ||
+      !Number.isSafeInteger(config.history_import?.max_parallel_sessions) ||
+      config.history_import.max_parallel_sessions < 1 ||
+      config.history_import.max_parallel_sessions > 16 ||
+      config.codex_integration?.plugin_id !== "supermemory@supermemory-local" ||
+      config.codex_integration?.require_new_session_after_change !== true ||
+      config.codex_integration?.auto_trust_hooks !== false
+    ) fail("runtime_codex_sync_contract_invalid");
+  }
+  if (["full", "enabled"].includes(config.deployment.activation)) {
     if (
       !config.working_memory.enabled || !config.memory_router.enabled ||
       !config.knowledge_graph.enabled || !config.hindsight.enabled ||
       !config.hindsight.reflect.enabled || !config.continuous_improvement.enabled ||
       config.admission.mode !== "automatic" || config.admission.human_review_default !== false
     ) fail("runtime_full_activation_incomplete");
-    if (config.schema === RUNTIME_V5 && (
+    if ([RUNTIME_V5, RUNTIME_V6].includes(config.schema) && (
       !config.topic_continuity.enabled || !config.temporal_retrieval.enabled || !config.authority.enabled
     )) fail("runtime_full_activation_incomplete");
+    if (config.schema === RUNTIME_V6 && !config.history_import.enabled) {
+      fail("runtime_full_activation_incomplete");
+    }
   }
   if (
     config.continuous_improvement?.canonical_worker !== "local" ||
@@ -265,8 +342,8 @@ export function normalizeCodexRuntimeConfig(input = {}) {
     merged.migration.source_schema = input.schema;
     return validate(merged);
   }
-  if (input.schema !== RUNTIME_V5) fail("runtime_config_schema_invalid");
-  return validate(merge(defaults(RUNTIME_V5), input));
+  if (![RUNTIME_V5, RUNTIME_V6].includes(input.schema)) fail("runtime_config_schema_invalid");
+  return validate(merge(defaults(input.schema), input));
 }
 
 export function createDisabledCodexRuntimeV4() {
@@ -322,4 +399,52 @@ export function createFullDeploymentRuntimeV5({ graphEndpoint, graphTokenFile } 
       immutable_vault_rewrite: false
     }
   });
+}
+
+export function createDisabledCodexRuntimeV6() {
+  return validate(defaults(RUNTIME_V6));
+}
+
+export function migrateCodexRuntimeV5ToV6(input = {}) {
+  if (input?.schema !== RUNTIME_V5) fail("runtime_config_schema_invalid");
+  const merged = merge(defaults(RUNTIME_V6), {
+    ...input,
+    schema: RUNTIME_V6,
+    deployment: {
+      ...input.deployment,
+      activation: input.deployment?.activation === "full" ? "enabled" : "disabled"
+    },
+    migration: {
+      ...input.migration,
+      source_schema: RUNTIME_V5,
+      compatibility_flags_off: true,
+      immutable_vault_rewrite: false
+    }
+  });
+  return validate(merged);
+}
+
+export function createFullDeploymentRuntimeV6({ graphEndpoint, graphTokenFile } = {}) {
+  return validate(merge(defaults(RUNTIME_V6), {
+    schema: RUNTIME_V6,
+    deployment: { activation: "enabled" },
+    working_memory: { enabled: true, offload: { enabled: true } },
+    memory_router: { enabled: true },
+    topic_continuity: { enabled: true },
+    temporal_retrieval: { enabled: true },
+    authority: { enabled: true },
+    knowledge_graph: {
+      enabled: true,
+      endpoint: graphEndpoint,
+      token_file: graphTokenFile
+    },
+    hindsight: { enabled: true, reflect: { enabled: true } },
+    continuous_improvement: { enabled: true },
+    admission: { mode: "automatic", human_review_default: false },
+    migration: {
+      source_schema: RUNTIME_V5,
+      compatibility_flags_off: true,
+      immutable_vault_rewrite: false
+    }
+  }));
 }

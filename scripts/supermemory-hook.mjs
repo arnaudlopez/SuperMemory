@@ -63,6 +63,7 @@ function loadConfig(filePath) {
     (config.client_mode === "remote" && (
       !config.expected_workspace_id || !config.expected_project_id || !config.expected_checkout_id
     )) ||
+    (Boolean(config.checkout_token_file) !== Boolean(config.device_id)) ||
     (config.client_mode !== "remote" && !config.vault_root)
   ) {
     throw new Error("hook_config_invalid");
@@ -131,6 +132,7 @@ try {
     const config = loadConfig(configPath);
     const stateKey = loadKey(config.key_file);
     const daemonBearer = loadBearer(config.token_file);
+    const checkoutToken = config.checkout_token_file ? loadBearer(config.checkout_token_file) : null;
     const remoteClient = config.client_mode === "remote";
     const resolution = remoteClient
       ? resolveProjectMarkerBinding(input.cwd)
@@ -153,12 +155,23 @@ try {
     const client = createSuperMemoryDaemonClient({
       endpoint: config.daemon_endpoint,
       ["auth" + "Token"]: daemonBearer,
+      encryptionKey: stateKey,
+      checkoutAuth: checkoutToken ? {
+        checkoutId: resolution.checkoutId,
+        deviceId: config.device_id,
+        token: checkoutToken
+      } : null,
       spool,
       timeoutMs: config.daemon_timeout_ms ?? 250
     });
     const recallClient = createSuperMemoryRecallClient({
       endpoint: config.daemon_endpoint,
       ["auth" + "Token"]: daemonBearer,
+      checkoutAuth: checkoutToken ? {
+        checkoutId: resolution.checkoutId,
+        deviceId: config.device_id,
+        token: checkoutToken
+      } : null,
       timeoutMs: config.working_memory?.compact_context_timeout_ms ?? 750
     });
     const workspaceStore = remoteClient ? null : createCodexWorkspaceStore({

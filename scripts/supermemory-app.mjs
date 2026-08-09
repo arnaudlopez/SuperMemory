@@ -271,21 +271,27 @@ function createDaemonProxy({ endpoint, tokenFile } = {}) {
   if (stat.isSymbolicLink() || !stat.isFile() || (stat.mode & 0o027) !== 0) throw new Error("daemon_token_file_insecure");
   const token = fs.readFileSync(tokenFile, "utf8").trim();
   if (Buffer.byteLength(token) < 32) throw new Error("daemon_token_invalid");
-  return Object.freeze({
-    async post(route, body) {
-      const response = await fetch(new URL(route, parsed), {
-        method: "POST",
-        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(30_000)
-      });
-      const result = await response.json();
-      if (!response.ok || result.ok !== true) {
-        throw new ProductError(result.error ?? "daemon_unavailable", "La mémoire de travail n’est pas disponible.", response.status);
-      }
-      const { ok, ...value } = result;
-      return value;
+  const invoke = async (method, route, body = null, { projectId = null } = {}) => {
+    const response = await fetch(new URL(route, parsed), {
+      method,
+      headers: {
+        authorization: `Bearer ${token}`,
+        ...(body === null ? {} : { "content-type": "application/json" }),
+        ...(projectId ? { "x-supermemory-owner-project-id": projectId } : {})
+      },
+      ...(body === null ? {} : { body: JSON.stringify(body) }),
+      signal: AbortSignal.timeout(30_000)
+    });
+    const result = await response.json();
+    if (!response.ok || result.ok !== true) {
+      throw new ProductError(result.error ?? "daemon_unavailable", "La mémoire de travail n’est pas disponible.", response.status);
     }
+    const { ok, ...value } = result;
+    return value;
+  };
+  return Object.freeze({
+    get: (route) => invoke("GET", route),
+    post: (route, body, options) => invoke("POST", route, body, options)
   });
 }
 
@@ -330,6 +336,11 @@ export function createSuperMemoryServer({
         send(res, 200, await store.getStatus());
         return;
       }
+      if (req.method === "GET" && pathname === "/api/projects") {
+        if (!memoryDaemon) throw new ProductError("daemon_unavailable", "Le registre de projets n’est pas configuré.", 503);
+        send(res, 200, await memoryDaemon.get("/v1/projects"));
+        return;
+      }
       if (req.method === "GET" && pathname === "/api/candidates") {
         const defaultStatus = store.admissionMode === "automatic" ? "quarantined" : "pending";
         send(res, 200, { candidates: store.listCandidates(url.searchParams.get("status") || defaultStatus) });
@@ -352,13 +363,21 @@ export function createSuperMemoryServer({
       if (req.method === "GET" && pathname === "/api/work") {
         if (!memoryDaemon) throw new ProductError("daemon_unavailable", "La mémoire de travail n’est pas configurée.", 503);
         const workingSetId = url.searchParams.get("workingSetId");
-        send(res, 200, await memoryDaemon.post("/v1/topic/context", { working_set_id: workingSetId }));
+        send(res, 200, await memoryDaemon.post(
+          "/v1/topic/context",
+          { working_set_id: workingSetId },
+          { projectId: url.searchParams.get("projectId") }
+        ));
         return;
       }
       if (req.method === "GET" && pathname === "/api/authority-exceptions") {
         if (!memoryDaemon) throw new ProductError("daemon_unavailable", "La mémoire de travail n’est pas configurée.", 503);
         const workingSetId = url.searchParams.get("workingSetId");
-        send(res, 200, await memoryDaemon.post("/v1/exceptions/query", { working_set_id: workingSetId }));
+        send(res, 200, await memoryDaemon.post(
+          "/v1/exceptions/query",
+          { working_set_id: workingSetId },
+          { projectId: url.searchParams.get("projectId") }
+        ));
         return;
       }
       if (req.method === "POST" && pathname === "/api/authority-exceptions/resolve") {
@@ -368,7 +387,7 @@ export function createSuperMemoryServer({
           working_set_id: body.workingSetId,
           fingerprint: body.fingerprint,
           decision: body.decision
-        }));
+        }, { projectId: body.projectId }));
         return;
       }
       if (req.method === "POST" && pathname === "/api/backups") {

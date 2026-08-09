@@ -93,8 +93,8 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
     path.join(root, "deploy/runtime/runtime-contract.production.json"),
     "utf8"
   ));
-  assert.equal(runtime.deployment.activation, "full");
-  assert.equal(runtime.schema, "supermemory.codex-runtime.v5");
+  assert.equal(runtime.deployment.activation, "enabled");
+  assert.equal(runtime.schema, "supermemory.codex-runtime.v6");
   assert.equal(runtime.deployment.canary, false);
   assert.equal(runtime.deployment.progressive, false);
   assert.equal(runtime.working_memory.capacity_tokens, 100_000);

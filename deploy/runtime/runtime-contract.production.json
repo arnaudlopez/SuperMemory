@@ -1,10 +1,10 @@
 {
-  "schema": "supermemory.codex-runtime.v5",
+  "schema": "supermemory.codex-runtime.v6",
   "deployment": {
     "strategy": "full",
     "canary": false,
     "progressive": false,
-    "activation": "full"
+    "activation": "enabled"
   },
   "working_memory": {
     "enabled": true,
@@ -117,8 +117,37 @@
       "destructive_ontology_change"
     ]
   },
+  "scope": {
+    "mode": "owner_plus_current_project",
+    "registry": "canonical_dynamic",
+    "cross_project_mcp": false,
+    "owner_promotion": "governed"
+  },
+  "runtime_supervisor": {
+    "max_active_project_contexts": 16,
+    "idle_ttl_ms": 1800000,
+    "context_start_concurrency": 4,
+    "worker_concurrency": 4
+  },
+  "enrollment": {
+    "credential_mode": "opaque_per_checkout",
+    "plan_ttl_ms": 600000,
+    "require_plan_hash": true
+  },
+  "history_import": {
+    "enabled": true,
+    "default_capture_level": "backfill",
+    "max_event_bytes": 524288,
+    "max_parallel_sessions": 4,
+    "unknown_schema": "reject"
+  },
+  "codex_integration": {
+    "plugin_id": "supermemory@supermemory-local",
+    "require_new_session_after_change": true,
+    "auto_trust_hooks": false
+  },
   "migration": {
-    "source_schema": "supermemory.codex-runtime.v4",
+    "source_schema": "supermemory.codex-runtime.v5",
     "compatibility_flags_off": true,
     "immutable_vault_rewrite": false
   }

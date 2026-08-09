@@ -337,6 +337,9 @@ export function createCodexInstaller({
       });
       atomicJson(path.join(pluginData, "supermemory-plugin.json"), {
         schema: "supermemory.plugin-runtime.v1",
+        scope_mode: normalizedRuntimeContract.schema === "supermemory.codex-runtime.v6"
+          ? "dynamic_cwd"
+          : "fixed_project",
         node: nodePath,
         hook_script: path.resolve(hookScript),
         runtime_config: hookRuntime,
