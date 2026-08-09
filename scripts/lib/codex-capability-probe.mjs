@@ -23,6 +23,12 @@ export function probeCodexCapabilities({ executable = "codex" } = {}) {
   const features = run(resolved, ["features", "list"]);
   const plugins = run(resolved, ["plugin", "list"]);
   const marketplaces = run(resolved, ["plugin", "marketplace", "list"]);
+  const supermemoryRow = plugins.stdout.split(/\r?\n/).find((line) => (
+    /^\s*supermemory@supermemory-local\s+/i.test(line)
+  )) ?? "";
+  const supermemoryInstalled = supermemoryRow !== "" &&
+    !/\bnot\s+installed\b/i.test(supermemoryRow) &&
+    /\binstalled\b/i.test(supermemoryRow);
   return {
     schema: "supermemory.codex-host-capability.v1",
     available: version.ok,
@@ -31,8 +37,10 @@ export function probeCodexCapabilities({ executable = "codex" } = {}) {
     plugins_supported: plugins.ok,
     hooks_supported: features.ok && /\bhooks\b[^\n]*\btrue\b/i.test(features.stdout),
     mcp_supported: true,
-    supermemory_installed: /\bsupermemory(?:@supermemory-local)?\b/i.test(plugins.stdout),
-    marketplace_installed: /\bsupermemory-local\b/i.test(marketplaces.stdout),
+    supermemory_installed: supermemoryInstalled,
+    marketplace_installed: marketplaces.stdout.split(/\r?\n/).some((line) => (
+      /^\s*supermemory-local(?:\s|$)/i.test(line)
+    )),
     new_session_required: true,
     auto_trust_hooks: false
   };
