@@ -13,6 +13,10 @@ import {
   createCodexCaptureStore,
   prepareCodexCapture
 } from "../scripts/lib/codex-capture-store.mjs";
+import {
+  canonicalJson,
+  redactCodexPayload
+} from "../scripts/lib/codex-redaction.mjs";
 import { createCodexArchiveStore } from "../scripts/lib/codex-archive-store.mjs";
 import { createCodexSpool } from "../scripts/lib/codex-spool.mjs";
 import {
@@ -167,6 +171,17 @@ test("redaction happens before encrypted payload and normalized journal persiste
   assert.equal(record.payload.password, "[REDACTED:SECRET_FIELD]");
   assert.equal(record.payload.nested.authorization, "[REDACTED:SECRET_FIELD]");
   assert.equal(record.envelope.payload_hash, payloadHash(record.payload));
+});
+
+test("redaction remains idempotent when path fingerprints expand a bounded string", () => {
+  const paths = Array.from({ length: 32 }, (_, index) => `/tmp/p${index}`).join(" ");
+  const prompt = `${"x".repeat(64 * 1024 - paths.length - 32)} ${paths} trailing text`;
+  const first = redactCodexPayload({ prompt }, { encryptionKey: KEY });
+  const rerun = redactCodexPayload(first.payload, { encryptionKey: KEY });
+
+  assert.equal(first.findings.truncated_strings, 1);
+  assert.match(first.payload.prompt, /\[PATH:hmac-sha256:[0-9a-f]{64}\]/);
+  assert.equal(canonicalJson(rerun.payload), canonicalJson(first.payload));
 });
 
 test("journal replay is idempotent and ordering is isolated per session", (t) => {

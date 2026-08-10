@@ -180,7 +180,20 @@ try {
         });
         clients.set(event.checkout_id, client);
       }
-      return client.capture(event);
+      const result = await client.capture(event);
+      if (!new Set(["delivered", "applied", "duplicate"]).has(result?.status)) {
+        process.stderr.write(`${JSON.stringify({
+          warning: "history_capture_not_delivered",
+          event_id: event.external_event_id,
+          workspace_id: event.workspace_id,
+          checkout_id: event.checkout_id,
+          status: result?.status ?? null,
+          reason: result?.reason ?? null,
+          daemon_error: result?.daemonError ?? null,
+          spool_error: result?.spoolError ?? null
+        })}\n`);
+      }
+      return result;
     };
     const result = await applyCodexHistoryImportPlan({
       plan,

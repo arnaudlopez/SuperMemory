@@ -64,7 +64,7 @@ function boundedString(value, maxStringBytes, findings) {
 }
 
 function redactString(value, encryptionKey, findings, maxStringBytes) {
-  let redacted = boundedString(value, maxStringBytes, findings);
+  let redacted = value;
   for (const secret of SECRET_PATTERNS) {
     redacted = redacted.replace(secret.pattern, () => {
       findings.secret_matches[secret.type] = (findings.secret_matches[secret.type] ?? 0) + 1;
@@ -75,7 +75,12 @@ function redactString(value, encryptionKey, findings, maxStringBytes) {
     findings.path_matches += 1;
     return `[PATH:${hmacFingerprint(match, encryptionKey, "absolute-path")}]`;
   });
-  return redacted;
+  // Bound the persisted representation, not the source representation. Path
+  // fingerprints can be longer than the paths they replace; bounding first can
+  // therefore produce output that exceeds the limit and changes on a second
+  // redaction pass. Keeping the final representation bounded makes prepared
+  // captures idempotent while preserving the fail-closed commit check.
+  return boundedString(redacted, maxStringBytes, findings);
 }
 
 export function redactCodexPayload(value, {
