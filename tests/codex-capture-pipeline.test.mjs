@@ -532,6 +532,79 @@ test("daemon acknowledges a durable Stop without waiting for memory compilation"
   await daemon.stop();
 });
 
+test("historical backfill defers compiler, topic and canonical enrichment until completion", async (t) => {
+  const { vault } = fixture(t);
+  let compilerNotifications = 0;
+  let compilerRecoveries = 0;
+  let topicResolutions = 0;
+  let workerRecoveries = 0;
+  const projectRouter = {
+    resolveTopic: async () => {
+      topicResolutions += 1;
+      return { status: "resolved" };
+    }
+  };
+  const supervisor = {
+    forScope: () => projectRouter,
+    forProject: () => projectRouter,
+    recover: async () => ({ recovered: 1, failures: [] }),
+    recoverWorkers: async () => {
+      workerRecoveries += 1;
+      return { status: "complete", recovered: 1, failures: [] };
+    },
+    status: () => ({ active_contexts: 1 }),
+    close: async () => {}
+  };
+  const memoryCompiler = {
+    notifyCapture() { compilerNotifications += 1; },
+    recover() { compilerRecoveries += 1; },
+    stop: async () => {},
+    stats: () => ({ status: "idle" })
+  };
+  const daemon = createSuperMemoryDaemon({
+    vaultRoot: vault,
+    encryptionKey: KEY,
+    authToken: TOKEN,
+    workingMemory: { enabled: true },
+    memoryCompiler,
+    runtimeSupervisor: supervisor,
+    requestScopeResolver: () => ({
+      workspaceId: WORKSPACE_ID,
+      projectId: PROJECT_ID,
+      checkoutId: CHECKOUT_ID
+    })
+  });
+  const address = await daemon.start();
+  t.after(() => daemon.stop().catch(() => {}));
+
+  const backfill = await requestJson(`${address.url}/v1/events`, {
+    method: "POST",
+    token: TOKEN,
+    body: { ...captureInput({ sequence: 0 }), capture_level: "backfill" }
+  });
+  assert.equal(backfill.status, 202);
+  assert.equal(compilerNotifications, 0);
+  assert.equal(topicResolutions, 0);
+  assert.equal(workerRecoveries, 0);
+
+  const live = await requestJson(`${address.url}/v1/events`, {
+    method: "POST",
+    token: TOKEN,
+    body: captureInput({ sequence: 1, externalEventId: "live-after-backfill" })
+  });
+  assert.equal(live.status, 202);
+  assert.equal(compilerNotifications, 1);
+  assert.equal(topicResolutions, 1);
+
+  const enrichment = await requestJson(`${address.url}/v1/admin/canonical/recover`, {
+    method: "POST",
+    token: TOKEN
+  });
+  assert.equal(enrichment.status, 202);
+  assert.equal(workerRecoveries, 1);
+  assert.equal(compilerRecoveries, 2);
+});
+
 test("daemon creates deterministic topic checkpoints on compaction and session end without a canonical worker", async (t) => {
   const { vault } = fixture(t);
   const checkpoints = [];

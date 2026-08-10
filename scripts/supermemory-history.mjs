@@ -202,7 +202,18 @@ try {
       checkpointFile,
       maxParallelProjects
     });
-    process.stdout.write(`${JSON.stringify({ ok: true, ...result }, null, 2)}\n`);
+    let enrichment = { status: "scheduled" };
+    try {
+      const response = await fetch(new URL("/v1/admin/canonical/recover", endpoint), {
+        method: "POST",
+        headers: { authorization: `Bearer ${daemonToken}` },
+        signal: AbortSignal.timeout(Math.min(timeoutMs, 10_000))
+      });
+      if (!response.ok) enrichment = { status: "degraded", error: "canonical_recovery_not_scheduled" };
+    } catch {
+      enrichment = { status: "degraded", error: "canonical_recovery_not_scheduled" };
+    }
+    process.stdout.write(`${JSON.stringify({ ok: true, ...result, enrichment }, null, 2)}\n`);
   }
 } catch (error) {
   process.stderr.write(`${JSON.stringify({ ok: false, error: error?.code ?? error?.message ?? "history_failed" })}\n`);

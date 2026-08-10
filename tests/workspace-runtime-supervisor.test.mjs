@@ -109,11 +109,15 @@ test("supervisor readiness recovery does not wait for canonical backlog processi
   const recovered = await supervisor.recover();
   assert.equal(recovered.recovered, 1);
   assert.equal(fabricRebuilds, 1);
+  assert.equal(workerRecoveries, 0);
+  assert.equal(supervisor.status().worker_recovery.status, "idle");
+
+  const backgroundRecovery = supervisor.recoverWorkers();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(workerRecoveries, 1);
   assert.equal(supervisor.status().worker_recovery.status, "running");
 
   releaseWorker();
-  await supervisor.recoverWorkers();
+  await backgroundRecovery;
   assert.equal(supervisor.status().worker_recovery.status, "complete");
 });

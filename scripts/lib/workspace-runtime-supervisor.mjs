@@ -280,7 +280,6 @@ export function createWorkspaceRuntimeSupervisor({
         failures.push({ project_id: project.projectId, error: error?.code ?? "recovery_failed" });
       }
     }
-    void recoverWorkers();
     return { recovered: registry.snapshot().projects.length - failures.length, failures };
   };
 

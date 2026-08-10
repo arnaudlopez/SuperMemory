@@ -299,6 +299,21 @@ export function createSuperMemoryDaemon({
   };
   let listening = false;
   let recoveryPromise = null;
+  let canonicalRecoveryTimer = null;
+  const cancelScheduledCanonicalRecovery = () => {
+    if (!canonicalRecoveryTimer) return;
+    clearTimeout(canonicalRecoveryTimer);
+    canonicalRecoveryTimer = null;
+  };
+  const scheduleCanonicalRecovery = (delayMs = 60_000) => {
+    if (!supervisor?.recoverWorkers || canonicalRecoveryTimer) return false;
+    canonicalRecoveryTimer = setTimeout(() => {
+      canonicalRecoveryTimer = null;
+      void supervisor.recoverWorkers();
+    }, delayMs);
+    canonicalRecoveryTimer.unref?.();
+    return true;
+  };
   let spoolReplay = {
     status: runtimeRoot ? "pending" : "disabled",
     workspaces: 0,
@@ -587,6 +602,17 @@ export function createSuperMemoryDaemon({
       }
       return;
     }
+    if (request.method === "POST" && request.url === "/v1/admin/canonical/recover") {
+      if (!supervisor?.recoverWorkers) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      cancelScheduledCanonicalRecovery();
+      compiler.recover();
+      void supervisor.recoverWorkers();
+      sendJson(response, 202, { ok: true, status: "scheduled" });
+      return;
+    }
     if (request.method === "GET" && request.url === "/v1/memory/status") {
       if (!router && !supervisor) {
         sendJson(response, 503, { ok: false, error: "backend_unavailable" });
@@ -626,10 +652,12 @@ export function createSuperMemoryDaemon({
     if (request.method === "POST" && request.url === "/v1/events") {
       try {
         const input = await readJsonBody(request, maxBodyBytes);
+        const backfill = input.capture_level === "backfill";
+        if (backfill) cancelScheduledCanonicalRecovery();
         const { activeRouter } = scopedRouter(request, input, "capture");
         const result = store.ingest(input);
         let topic = null;
-        if (typeof activeRouter?.resolveTopic === "function" && result.working?.working_set_id) {
+        if (!backfill && typeof activeRouter?.resolveTopic === "function" && result.working?.working_set_id) {
           try {
             topic = await activeRouter.resolveTopic({
               working_set_id: result.working.working_set_id,
@@ -641,8 +669,13 @@ export function createSuperMemoryDaemon({
         }
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
-        compiler.notifyCapture(input);
-        await handleWorkingLifecycle({ envelope: input, working: result.working, activeRouter });
+        if (!backfill) compiler.notifyCapture(input);
+        await handleWorkingLifecycle({
+          envelope: input,
+          working: result.working,
+          activeRouter,
+          notifyWorker: !backfill
+        });
         sendJson(response, 202, { ok: true, ...result, topic });
       } catch (error) {
         counters.rejected += 1;
@@ -656,11 +689,13 @@ export function createSuperMemoryDaemon({
     if (request.method === "POST" && request.url === "/v1/events/prepared") {
       try {
         const prepared = await readJsonBody(request, maxBodyBytes);
+        const backfill = prepared.envelope.capture_level === "backfill";
+        if (backfill) cancelScheduledCanonicalRecovery();
         const { activeRouter } = scopedRouter(request, prepared.envelope, "capture");
         const result = store.ingestPrepared(prepared);
         const envelope = prepared.envelope;
         let topic = null;
-        if (typeof activeRouter?.resolveTopic === "function" && result.working?.working_set_id) {
+        if (!backfill && typeof activeRouter?.resolveTopic === "function" && result.working?.working_set_id) {
           try {
             topic = await activeRouter.resolveTopic({
               working_set_id: result.working.working_set_id,
@@ -672,8 +707,13 @@ export function createSuperMemoryDaemon({
         }
         if (result.status === "duplicate") counters.duplicates += 1;
         else counters.applied += 1;
-        compiler.notifyCapture(envelope);
-        await handleWorkingLifecycle({ envelope, working: result.working, activeRouter });
+        if (!backfill) compiler.notifyCapture(envelope);
+        await handleWorkingLifecycle({
+          envelope,
+          working: result.working,
+          activeRouter,
+          notifyWorker: !backfill
+        });
         sendJson(response, 202, { ok: true, ...result, topic });
       } catch (error) {
         counters.rejected += 1;
@@ -748,7 +788,8 @@ export function createSuperMemoryDaemon({
           }
         }
         compiler.recover();
-        if (worker) await worker.recover();
+        if (supervisor) scheduleCanonicalRecovery();
+        else if (worker) await worker.recover();
       })();
       const completeStart = () => resolve({
         host: address.address,
@@ -780,6 +821,7 @@ export function createSuperMemoryDaemon({
   });
 
   const stop = async () => {
+    cancelScheduledCanonicalRecovery();
     await closeServer();
     if (recoveryPromise) await recoveryPromise;
     await compiler.stop();
