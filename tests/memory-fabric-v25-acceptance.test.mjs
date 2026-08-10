@@ -32,3 +32,11 @@ test("Hermes runtime v8 routes each visible turn through one canonical admission
   assert.ok(guard > 0, "missing longitudinal admission guard");
   assert.ok(legacyCompiler > guard, "legacy compiler must remain behind the longitudinal admission guard");
 });
+
+test("Personal Manager UI distinguishes pending, processed and failed consolidation work", () => {
+  const web = fs.readFileSync(new URL("../web/app.js", import.meta.url), "utf8");
+  assert.match(web, /worker\?\.pending.*en attente/);
+  assert.match(web, /worker\?\.processed.*traitée\(s\)/);
+  assert.match(web, /worker\?\.dead_letters.*erreur\(s\)/);
+  assert.match(web, /failed_retryable.*projection\(s\) à reprendre/);
+});

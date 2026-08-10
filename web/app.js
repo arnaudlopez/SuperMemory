@@ -278,7 +278,7 @@ async function loadPersonalMemories() {
     const payload = await api(`/api/personal-memories${suffix}`);
     const worker = payload.status?.longitudinal_memory;
     elements.personalManagerStatus.textContent = payload.status?.status === "ready"
-      ? `supermemory-fabric ${payload.status.provider_version ?? ""} · mémoire naturelle ${worker?.status ?? "désactivée"} · ${worker?.pending ?? 0} consolidation(s) · ${payload.status.projections?.queued ?? 0} projection(s)`
+      ? `supermemory-fabric ${payload.status.provider_version ?? ""} · mémoire naturelle ${worker?.status ?? "désactivée"} · ${worker?.pending ?? 0} en attente · ${worker?.processed ?? 0} traitée(s) · ${worker?.dead_letters ?? 0} erreur(s) · ${payload.status.projections?.failed_retryable ?? 0} projection(s) à reprendre`
       : "Personal Manager indisponible";
     elements.personalMemoryList.replaceChildren();
     if (!(payload.memories ?? []).length) {
