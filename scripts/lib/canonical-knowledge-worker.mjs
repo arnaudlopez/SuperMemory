@@ -228,7 +228,7 @@ export function createCanonicalKnowledgeWorker({
   };
 
   let lastRun = null;
-  const process = async ({ sessionId = null, session_id: snakeSessionId = null } = {}) => {
+  const processOnce = async ({ sessionId = null, session_id: snakeSessionId = null } = {}) => {
     const requestedSession = sessionId ?? snakeSessionId;
     const sources = episodeSource.listCanonicalEvidence({ workspaceId });
     await syncRevocations(sources);
@@ -420,6 +420,16 @@ export function createCanonicalKnowledgeWorker({
       extractionShape: result.results.find((item) => item.extraction_shape)?.extraction_shape ?? null
     };
     return result;
+  };
+
+  // Session-close notifications and startup recovery are both asynchronous.
+  // Serialize them per workspace so checkpoint reads/writes and graph admission
+  // can never race when a live close arrives during backlog recovery.
+  let processQueue = Promise.resolve();
+  const process = (input = {}) => {
+    const operation = processQueue.then(() => processOnce(input));
+    processQueue = operation.catch(() => {});
+    return operation;
   };
 
   const notifySessionClosed = async ({ sessionId, session_id: snakeSessionId } = {}) => {

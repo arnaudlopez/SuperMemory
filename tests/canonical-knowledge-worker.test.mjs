@@ -121,9 +121,13 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
     },
     clock: () => "2026-08-08T12:00:00.000Z"
   });
-  const firstRecovery = await worker.recover();
+  const [firstRecovery, concurrentClose] = await Promise.all([
+    worker.recover(),
+    worker.notifySessionClosed({ sessionId: "session-1" })
+  ]);
   assert.equal(firstRecovery.status, "complete");
   assert.equal(firstRecovery.sessions, 1);
+  assert.equal(concurrentClose.canonical.processed, 0);
   const first = firstRecovery.results[0].canonical;
   assert.equal(first.status, "complete");
   assert.equal(first.processed, 1);
@@ -141,11 +145,11 @@ test("Lot 4: canonical worker commits authority without depending on Hindsight o
     enabled: true,
     status: "ready",
     checkpoint: 1,
-    last_outcome: "auto_activate",
+    last_outcome: "idle",
     last_error: null,
     last_verification: null,
     last_extraction_shape: null,
-    last_processed: 1
+    last_processed: 0
   });
   assert.equal((await worker.process()).processed, 0);
 });

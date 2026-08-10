@@ -77,3 +77,43 @@ test("supervisor never evicts a context with an active invocation", async () => 
   await supervisor.invoke(B, "status", {});
   assert.deepEqual(closed, [A.projectId]);
 });
+
+test("supervisor readiness recovery does not wait for canonical backlog processing", async () => {
+  let releaseWorker;
+  const workerFinished = new Promise((resolve) => { releaseWorker = resolve; });
+  let fabricRebuilds = 0;
+  let workerRecoveries = 0;
+  const supervisor = createWorkspaceRuntimeSupervisor({
+    registry: {
+      snapshot: () => ({
+        projects: [{ projectId: A.projectId, workspaceId: A.workspaceId, status: "active" }],
+        checkouts: []
+      })
+    },
+    createContext: async ({ workspaceId, projectId }) => ({
+      workspaceId,
+      projectId,
+      router: {
+        rebuildFabric: async () => { fabricRebuilds += 1; }
+      },
+      worker: {
+        recover: async () => {
+          workerRecoveries += 1;
+          await workerFinished;
+        },
+        status: () => ({ enabled: true })
+      }
+    })
+  });
+
+  const recovered = await supervisor.recover();
+  assert.equal(recovered.recovered, 1);
+  assert.equal(fabricRebuilds, 1);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(workerRecoveries, 1);
+  assert.equal(supervisor.status().worker_recovery.status, "running");
+
+  releaseWorker();
+  await supervisor.recoverWorkers();
+  assert.equal(supervisor.status().worker_recovery.status, "complete");
+});

@@ -91,6 +91,13 @@ export function createWorkspaceRuntimeSupervisor({
   ) fail("runtime_supervisor_configuration_invalid");
   const contexts = new Map();
   const pending = new Map();
+  let closing = false;
+  let workerRecoveryPromise = null;
+  let workerRecovery = {
+    status: "idle",
+    recovered: 0,
+    failures: []
+  };
   const metrics = {
     context_start_total: 0,
     context_hit_total: 0,
@@ -229,6 +236,37 @@ export function createWorkspaceRuntimeSupervisor({
     return contexts.size;
   };
 
+  const recoverWorkers = () => {
+    if (workerRecoveryPromise) return workerRecoveryPromise;
+    const projects = registry.snapshot().projects.filter((item) => item.status === "active");
+    workerRecovery = { status: "running", recovered: 0, failures: [] };
+    workerRecoveryPromise = (async () => {
+      const failures = [];
+      let recovered = 0;
+      for (const project of projects) {
+        if (closing) break;
+        try {
+          await withContext({
+            workspaceId: project.workspaceId,
+            projectId: project.projectId
+          }, false, async (context) => {
+            if (typeof context.worker?.recover === "function") await context.worker.recover();
+          });
+          recovered += 1;
+        } catch (error) {
+          failures.push({ project_id: project.projectId, error: error?.code ?? "worker_recovery_failed" });
+        }
+      }
+      workerRecovery = {
+        status: closing ? "stopped" : failures.length ? "degraded" : "complete",
+        recovered,
+        failures
+      };
+      return workerRecovery;
+    })();
+    return workerRecoveryPromise;
+  };
+
   const recover = async () => {
     const failures = [];
     for (const project of registry.snapshot().projects.filter((item) => item.status === "active")) {
@@ -238,15 +276,16 @@ export function createWorkspaceRuntimeSupervisor({
           projectId: project.projectId
         }, { requireCheckout: false });
         if (typeof context.router.rebuildFabric === "function") await context.router.rebuildFabric({});
-        if (typeof context.worker?.recover === "function") await context.worker.recover();
       } catch (error) {
         failures.push({ project_id: project.projectId, error: error?.code ?? "recovery_failed" });
       }
     }
+    void recoverWorkers();
     return { recovered: registry.snapshot().projects.length - failures.length, failures };
   };
 
   const close = async () => {
+    closing = true;
     for (const entry of contexts.values()) {
       if (typeof entry.context.close === "function") await entry.context.close();
     }
@@ -258,6 +297,7 @@ export function createWorkspaceRuntimeSupervisor({
     active_contexts: contexts.size,
     pending_contexts: pending.size,
     max_active_contexts: maxActiveProjectContexts,
+    worker_recovery: { ...workerRecovery },
     contexts: [...contexts.values()].map(({ context, lastUsedAt, active }) => ({
       schema: "supermemory.runtime-context-status.v1",
       workspace_id: context.workspaceId,
@@ -279,6 +319,7 @@ export function createWorkspaceRuntimeSupervisor({
     notifySessionClosed,
     evictIdle,
     recover,
+    recoverWorkers,
     close,
     status
   });
