@@ -24,3 +24,11 @@ test("production topology keeps six Z2 memory services and native Home 101 Herme
   assert.match(home101, /Home 101/);
   assert.match(home101, /Z2/);
 });
+
+test("Hermes runtime v8 routes each visible turn through one canonical admission path", () => {
+  const daemon = fs.readFileSync(new URL("../scripts/supermemoryd.mjs", import.meta.url), "utf8");
+  const guard = daemon.indexOf('if (personalLongitudinalWorker) return { ...receipt, admission: "longitudinal_queued" };');
+  const legacyCompiler = daemon.indexOf("memoryCompiler.notifyCapture(stop);", guard);
+  assert.ok(guard > 0, "missing longitudinal admission guard");
+  assert.ok(legacyCompiler > guard, "legacy compiler must remain behind the longitudinal admission guard");
+});

@@ -948,6 +948,11 @@ try {
           const visibleUser = normalized.messages.find((message) => message.role === "user")?.content;
           const visibleAssistant = [...normalized.messages].reverse().find((message) => message.role === "assistant")?.content;
           if (!visibleUser || !visibleAssistant) return { ...receipt, admission: "archived_only" };
+          // Runtime v8 has one canonical admission path for Hermes turns. The
+          // longitudinal worker already owns extraction, verification and
+          // revision; forwarding the same turn to the legacy v2.4 compiler
+          // would create a second canonical memory for identical evidence.
+          if (personalLongitudinalWorker) return { ...receipt, admission: "longitudinal_queued" };
           const occurred = normalized.occurred_at;
           const sequenceBase = Math.max(0, Math.floor(Date.parse(occurred) * 2));
           const boundSessionId = personalCaptureBinding(sessionId, "ses_pm");
