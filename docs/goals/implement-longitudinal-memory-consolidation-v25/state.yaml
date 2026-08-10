@@ -76,7 +76,7 @@ agents:
   worker: installed
   judge: installed
 
-active_task: T998
+active_task: T009
 tasks:
   - id: T001
     type: scout
@@ -701,7 +701,7 @@ tasks:
   - id: T998
     type: pm
     assignee: PM
-    status: active
+    status: done
     objective: "Commit all goal-related changes and push the current branch once verification is green."
     inputs:
       - "Approved implementation and verification receipts"
@@ -722,12 +722,23 @@ tasks:
       - "push_result"
       - "committed_files"
       - "unrelated_dirty_files_left_untouched"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Published the complete v2.4/v2.5 product slice directly to origin/main after green release verification."
+      commit_sha: 9d991b1a83d0036a6424024d265af164256600ba
+      remote_branch: origin/main
+      push_result: success
+      committed_files: "124 goal-related product, deployment, integration, schema, test, web, and evidence files"
+      unrelated_dirty_files_left_untouched:
+        - ".codex/supermemory runtime state"
+        - ".playwright-cli traces"
+        - "output/playwright screenshots"
+        - "Python bytecode caches"
   - id: T009
     type: worker
     worker_kind: shipping
     assignee: Worker
-    status: queued
+    status: active
     objective: "Back up and deploy runtime v8 directly to Z2, reconcile the native Home 101 Hermes provider, and prove live capture, consolidation, recall, restart and Web behavior."
     inputs:
       - "T005 verification receipt"
@@ -735,6 +746,9 @@ tasks:
       - "T998 GitHub shipping receipt"
       - "Owner deployment authorization"
       - "T001 impact_assessment and deployment rollback"
+      - "T001 feedback_policy"
+      - "T001 test_strategy"
+      - "T001 interface_contract"
     impact_assessment_ref: T001.receipt.impact_assessment
     allowed_files:
       - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.md

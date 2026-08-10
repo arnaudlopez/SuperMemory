@@ -51,6 +51,27 @@ test("portfolio recall never claims completeness when one project fails", async 
   assert.deepEqual(result.coverage.failed_project_ids, [PROJECTS[1].projectId]);
 });
 
+test("owner recall normalizes a singular canonical citation object", async () => {
+  const orchestrator = createPersonalRecallOrchestrator({
+    projectRegistry: { snapshot: () => ({ projects: PROJECTS }) },
+    ownerRecall: async () => ({
+      results: [{
+        memory_id: "owner_longitudinal_1",
+        text: "automatic consolidation",
+        citation: { memory_id: "owner_longitudinal_1", revision: 1 }
+      }]
+    }),
+    projectRecall: async () => ({ results: [] })
+  });
+  const result = await orchestrator.recall({ scope, query: "automatic", mode: "portfolio" });
+  assert.deepEqual(result.results[0].citations, [{
+    memory_id: "owner_longitudinal_1",
+    revision: 1,
+    scope: "owner",
+    project_id: null
+  }]);
+});
+
 test("project mode rejects projects outside the resolved owner scope", async () => {
   const orchestrator = createPersonalRecallOrchestrator({
     projectRegistry: { snapshot: () => ({ projects: PROJECTS }) },

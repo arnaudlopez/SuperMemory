@@ -4,13 +4,20 @@ function fail(code) {
   throw error;
 }
 
+function citationList(item) {
+  const value = item?.citations ?? item?.citation ?? [];
+  return (Array.isArray(value) ? value.flat(Infinity) : [value])
+    .filter((citation) => citation && (typeof citation === "object" || typeof citation === "string"))
+    .map((citation) => typeof citation === "string" ? { evidence_id: citation } : citation);
+}
+
 function scoped(results, scope, project = null) {
   return (results ?? []).map((item) => ({
     ...item,
     scope,
     project_id: project?.projectId ?? item.project_id ?? null,
     project_name: project?.displayName ?? item.project_name ?? null,
-    citations: (item.citations ?? item.citation ?? []).flat().map((citation) => ({ ...citation, scope, project_id: project?.projectId ?? citation.project_id ?? null }))
+    citations: citationList(item).map((citation) => ({ ...citation, scope, project_id: project?.projectId ?? citation.project_id ?? null }))
   }));
 }
 

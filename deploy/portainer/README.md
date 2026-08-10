@@ -1,10 +1,10 @@
 # SuperMemory Personal Manager production stack — Z2
 
-Memory Fabric v2.4 utilise le contrat runtime v7 et l'image
+Memory Fabric v2.5 utilise le contrat runtime v8 et l'image
 `supermemory-runtime:5.0.0`. Les identifiants workspace/projet ne sont plus des
 variables globales de stack : chaque checkout Codex s'authentifie avec son
 jeton et le daemon résout son périmètre dans le registre canonique. La
-migration v6 vers v7 conserve le coffre et le graphe ; elle exige une
+migration v7 vers v8 conserve le coffre et le graphe ; elle exige une
 sauvegarde complète avant le redéploiement direct de toute la stack.
 
 Z2 is the always-on, single-user production authority. It owns the encrypted
@@ -146,7 +146,7 @@ npm run personal-manager:credential -- \
 
 ## Configuration and preflight
 
-Create a private environment file and install the runtime v7 contract:
+Create a private environment file and install the runtime v8 contract:
 
 ```bash
 cp deploy/portainer/supermemory-ai.env.example \
@@ -154,13 +154,15 @@ cp deploy/portainer/supermemory-ai.env.example \
 cp deploy/runtime/runtime-contract.production.json \
   /opt/supermemory/config/runtime-contract.json
 chmod 0600 /opt/supermemory/config/supermemory-ai.env
-chmod 0644 /opt/supermemory/config/runtime-contract.json
+chown root:1000 /opt/supermemory/config/runtime-contract.json
+chmod 0640 /opt/supermemory/config/runtime-contract.json
 ```
 
-The v7 runtime contract at
+The v8 runtime contract at
 `/opt/supermemory/config/runtime-contract.json` must activate Working Memory,
 Topic Continuity, Temporal Retrieval, Quiet Authority, offload, Hindsight,
-GraphD and continuous improvement with `deployment.activation=enabled`.
+GraphD, continuous improvement and longitudinal consolidation with
+`deployment.activation=full`.
 It must point GraphD to `http://127.0.0.1:8787` and its token file to
 `/run/supermemory/graphd.token`. Its Personal Manager block fixes Home 101 as
 the agent runtime, `device_home101` as its credential binding and
@@ -297,7 +299,7 @@ Restart the stack and repeat health, topic recall and authority checks to prove
 persistence.
 
 The Z2 runtime and Home 101 Hermes must report exactly the provider/model
-selected in the v7 contract and reasoning `high`. Any drift, missing
+selected in the v8 contract and reasoning `high`. Any drift, missing
 authentication, provider fallback or model substitution fails closed.
 
 ## Backup, restore and rollback
