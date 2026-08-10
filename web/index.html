@@ -124,6 +124,9 @@
         <span>6</span> Exceptions
         <b id="authority-exception-badge" hidden>0</b>
       </button>
+      <button class="tab-button" type="button" data-tab="personal-manager">
+        <span>7</span> Personal Manager
+      </button>
     </nav>
 
     <section class="panel active" id="panel-ingest" data-panel="ingest">
@@ -258,6 +261,21 @@
         <button class="button ghost" id="refresh-authority-exceptions" type="button">Actualiser</button>
       </div>
       <div class="authority-exception-list" id="authority-exception-list"></div>
+    </section>
+
+    <section class="panel" id="panel-personal-manager" data-panel="personal-manager" hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Hermes · mémoire naturelle</p>
+          <h2>Ce que votre Personal Manager a réellement retenu</h2>
+          <p>Conclusions, préférences et engagements consolidés depuis vos échanges ordinaires. Chaque souvenir reste cité, révisable et explicable.</p>
+        </div>
+        <div class="personal-manager-actions">
+          <span class="engine-label" id="personal-manager-status">Détection du provider…</span>
+          <button class="button ghost" id="refresh-personal-memories" type="button">Actualiser</button>
+        </div>
+      </div>
+      <div class="personal-memory-list" id="personal-memory-list"></div>
     </section>
   </main>
 

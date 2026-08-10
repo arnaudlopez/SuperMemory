@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -14,6 +15,7 @@ import { migrateTopicContinuity } from "./lib/codex-topic-migration.mjs";
 import { createCodexWorkspaceStore } from "./lib/codex-workspace-store.mjs";
 import { createCanonicalKnowledgeWorker, createCanonicalWorkingEpisodeSource } from "./lib/canonical-knowledge-worker.mjs";
 import { createCanonicalCodexPipeline } from "./lib/canonical-codex-pipeline.mjs";
+import { createCanonicalOpenRouterPipeline } from "./lib/canonical-openrouter-pipeline.mjs";
 import { createGraphdHttpBackend } from "./lib/graphd-http-backend.mjs";
 import { createHindsightAuthorityGateway } from "./lib/hindsight-authority-gateway.mjs";
 import { createHindsightClientV2 } from "./lib/hindsight-client-v2.mjs";
@@ -33,6 +35,29 @@ import { normalizeCodexRuntimeConfig } from "./lib/codex-runtime-config.mjs";
 import { createSuperMemoryDaemon } from "./lib/supermemory-daemon.mjs";
 import { createWorkspaceRuntimeContextFactory } from "./lib/workspace-runtime-context.mjs";
 import { createWorkspaceRuntimeSupervisor } from "./lib/workspace-runtime-supervisor.mjs";
+import { createAgentCredentialStore } from "./lib/agent-credential-store.mjs";
+import { createAgentScopeResolver } from "./lib/agent-scope-resolver.mjs";
+import { buildPersonalContextCard } from "./lib/personal-context-card.mjs";
+import { createPersonalManagerApi } from "./lib/personal-manager-api.mjs";
+import { createPersonalManagerCaptureStore, normalizePersonalManagerCapture } from "./lib/personal-manager-capture.mjs";
+import { createPersonalMemoryCommandBus } from "./lib/personal-memory-command-bus.mjs";
+import { createPersonalMemoryRevisionStore } from "./lib/personal-memory-revision-store.mjs";
+import { createPersonalMutationIntentGate } from "./lib/personal-mutation-intent-gate.mjs";
+import { createPersonalRecallOrchestrator } from "./lib/personal-recall-orchestrator.mjs";
+import { createMemorySignal, createMemorySignalStore, deriveMemorySignalsFromCapture } from "./lib/memory-signal-store.mjs";
+import { resolveMemoryEndorsement } from "./lib/memory-endorsement-resolver.mjs";
+import { createMemorySaliencePolicy } from "./lib/memory-salience-policy.mjs";
+import { createLongitudinalMemoryConsolidator } from "./lib/longitudinal-memory-consolidator.mjs";
+import { createMemoryRecallFeedbackStore } from "./lib/memory-recall-feedback.mjs";
+import { redactCodexPayload } from "./lib/codex-redaction.mjs";
+
+const PERSONAL_WORKSPACE_ID = "ws_706d0000-0000-7000-8000-000000000001";
+const PERSONAL_PROJECT_ID = "prj_706d0000-0000-7000-8000-000000000002";
+const PERSONAL_CHECKOUT_ID = "co_706d0000-0000-7000-8000-000000000003";
+
+function personalCaptureBinding(value, prefix) {
+  return `${prefix}_${crypto.createHash("sha256").update(String(value)).digest("hex").slice(0, 32)}`;
+}
 
 function parseArguments(argv) {
   const options = {
@@ -43,6 +68,8 @@ function parseArguments(argv) {
     codex_executable: process.env.SUPERMEMORY_CODEX_EXECUTABLE || "/usr/local/bin/codex",
     codex_model: process.env.SUPERMEMORY_CODEX_MODEL || "gpt-5.6-luna",
     codex_reasoning_effort: process.env.SUPERMEMORY_CODEX_REASONING_EFFORT || "high",
+    llm_provider: "openai-codex",
+    llm_credential_file: process.env.SUPERMEMORY_LLM_CREDENTIAL_FILE || null,
     compiler_timeout_ms: 120_000,
     working_memory: process.env.SUPERMEMORY_WORKING_MEMORY_ENABLED === "1",
     working_offload: process.env.SUPERMEMORY_WORKING_OFFLOAD_ENABLED === "1",
@@ -63,6 +90,10 @@ function parseArguments(argv) {
     retrieval_max_tokens: 12_000,
     runtime_schema: null,
     multi_project: false,
+    personal_manager: false,
+    longitudinal_memory: false,
+    personal_manager_device_id: "device_home101",
+    agent_token_file: process.env.SUPERMEMORY_AGENT_TOKEN_FILE || null,
     max_active_project_contexts: 16,
     context_idle_ttl_ms: 1_800_000
   };
@@ -77,6 +108,8 @@ function parseArguments(argv) {
     "--graphd-token-file",
     "--hindsight-url",
     "--hindsight-api-key-file",
+    "--llm-credential-file",
+    "--agent-token-file",
     "--port",
     "--project-id",
     "--runtime-root",
@@ -174,7 +207,15 @@ try {
     options.retrieval_max_results = runtimeContract.temporal_retrieval.max_results;
     options.retrieval_max_tokens = runtimeContract.temporal_retrieval.max_tokens;
     options.runtime_schema = runtimeContract.schema;
-    options.multi_project = runtimeContract.schema === "supermemory.codex-runtime.v6";
+    options.multi_project = ["supermemory.codex-runtime.v6", "supermemory.codex-runtime.v7", "supermemory.codex-runtime.v8"].includes(runtimeContract.schema);
+    options.personal_manager = ["supermemory.codex-runtime.v7", "supermemory.codex-runtime.v8"].includes(runtimeContract.schema) && runtimeContract.personal_manager.enabled;
+    options.longitudinal_memory = runtimeContract.schema === "supermemory.codex-runtime.v8" && runtimeContract.longitudinal_memory.enabled;
+    if (options.personal_manager) options.personal_manager_device_id = runtimeContract.personal_manager.device_id;
+    if (["supermemory.codex-runtime.v7", "supermemory.codex-runtime.v8"].includes(runtimeContract.schema)) {
+      options.llm_provider = runtimeContract.llm.provider;
+      options.codex_model = runtimeContract.llm.model;
+      options.codex_reasoning_effort = runtimeContract.llm.reasoning_effort;
+    }
     if (options.multi_project) {
       options.max_active_project_contexts = runtimeContract.runtime_supervisor.max_active_project_contexts;
       options.context_idle_ttl_ms = runtimeContract.runtime_supervisor.idle_ttl_ms;
@@ -182,7 +223,12 @@ try {
   }
   const encryptionKey = loadKey(options.key_file);
   const daemonBearer = loadToken(options.token_file);
+  if (options.personal_manager && !options.agent_token_file) throw new Error("daemon_option_required:agent_token_file");
+  const agentToken = options.personal_manager ? loadToken(options.agent_token_file) : null;
   const hindsightApiKey = options.hindsight_api_key_file ? loadToken(options.hindsight_api_key_file) : "";
+  const llmCredential = options.llm_provider === "openrouter"
+    ? loadToken(options.llm_credential_file ?? (() => { throw new Error("daemon_option_required:llm_credential_file"); })())
+    : null;
   const projectRegistry = options.multi_project ? createProjectRegistry({ vaultRoot: options.vault_root }) : null;
   const credentialStore = options.multi_project ? createCheckoutCredentialStore({ vaultRoot: options.vault_root }) : null;
   const enrollmentService = options.multi_project ? createProjectEnrollmentService({
@@ -198,6 +244,125 @@ try {
     encryptionKey,
     ownerScope
   }) : null;
+  const agentCredentialStore = options.personal_manager ? createAgentCredentialStore({ vaultRoot: options.vault_root }) : null;
+  if (agentCredentialStore && !options.check) {
+    agentCredentialStore.provision({
+      token: agentToken,
+      agentId: "agent_personal_manager",
+      ownerId: ownerScope.ownerId,
+      deviceId: options.personal_manager_device_id,
+      audience: "supermemoryd",
+      capabilities: ["pm:context", "pm:recall", "pm:capture", "pm:write", "pm:resolve"]
+    });
+  }
+  const personalRevisionStore = options.personal_manager ? createPersonalMemoryRevisionStore({
+    vaultRoot: options.vault_root,
+    encryptionKey
+  }) : null;
+  const personalCaptureStore = options.personal_manager ? createPersonalManagerCaptureStore({
+    vaultRoot: options.vault_root,
+    encryptionKey
+  }) : null;
+  const personalSignalStore = options.longitudinal_memory ? createMemorySignalStore({
+    vaultRoot: options.vault_root,
+    encryptionKey
+  }) : null;
+  const personalRecallFeedbackStore = options.longitudinal_memory ? createMemoryRecallFeedbackStore({
+    vaultRoot: options.vault_root,
+    encryptionKey
+  }) : null;
+  const personalOwnerWorkspaceStore = options.personal_manager ? createCodexWorkspaceStore({
+    vaultRoot: options.vault_root,
+    workspaceId: PERSONAL_WORKSPACE_ID,
+    projectId: PERSONAL_PROJECT_ID
+  }) : null;
+  const personalOwnerDurableRecall = personalOwnerWorkspaceStore
+    ? createCodexMemoryRecall({ workspaceStore: personalOwnerWorkspaceStore, maxLimit: 50 })
+    : null;
+  const personalOwnerHindsightGateway = options.personal_manager && options.hindsight_enabled
+    ? createHindsightAuthorityGateway({
+      workspaceId: PERSONAL_WORKSPACE_ID,
+      client: createHindsightClientV2({
+        workspaceId: PERSONAL_WORKSPACE_ID,
+        baseUrl: options.hindsight_url,
+        ["api" + "Key"]: hindsightApiKey
+      }),
+      receiptStore: createHindsightOperationReceiptStore({
+        vaultRoot: options.vault_root,
+        encryptionKey,
+        workspaceId: PERSONAL_WORKSPACE_ID
+      }),
+      authorityResolver: ({ memoryId, asOf }) => {
+        const memory = asOf
+          ? personalRevisionStore.asOf({ memoryId, asOf })
+          : personalRevisionStore.current({ memoryId });
+        if (!memory || memory.scope?.kind !== "owner" || memory.scope.owner_id !== ownerScope.ownerId) return null;
+        return {
+          workspace_id: PERSONAL_WORKSPACE_ID,
+          memory_id: memoryId,
+          authorized: memory.status === "active",
+          status: memory.status === "active" ? "active" : "revoked",
+          authority_state: memory.status === "active" ? "current" : "revoked",
+          authority_revision: memory.revision,
+          allowed_consumers: ["codex"],
+          citation: { memory_id: memoryId, revision: memory.revision, valid_from: memory.valid_from, provenance: memory.provenance }
+        };
+      }
+    })
+    : null;
+  let personalProjectionProcessor = null;
+  let personalLongitudinalWorker = null;
+  const personalOperations = personalRevisionStore ? {
+    enqueue: async (job) => {
+      const operation = personalRevisionStore.putOperation({
+      schema: "supermemory.personal-memory-operation.v1",
+      operation_id: job.operation_id,
+      status: "canonical_committed",
+      projection_status: "queued",
+      projection_attempts: 0,
+      memory_id: job.memory_id,
+      revision: job.revision,
+      operation: job.operation,
+      scope: job.scope
+      });
+      if (personalProjectionProcessor) queueMicrotask(() => personalProjectionProcessor(operation));
+      return operation;
+    }
+  } : null;
+  const personalCommandBus = personalRevisionStore ? createPersonalMemoryCommandBus({
+    revisionStore: personalRevisionStore,
+    intentGate: createPersonalMutationIntentGate(),
+    projectionQueue: personalOperations,
+    sanitizePatch: (patch) => {
+      const redacted = redactCodexPayload(patch, { encryptionKey, maxStringBytes: 64 * 1024 });
+      return { patch: redacted.payload, findings: redacted.findings };
+    }
+  }) : null;
+  const personalManagerRuntimeStatus = options.personal_manager ? () => {
+    const operations = personalRevisionStore.listOperations();
+    const credentials = agentCredentialStore.snapshot().filter((item) => item.agent_id === "agent_personal_manager");
+    return {
+      enabled: true,
+      status: credentials.some((item) => item.status === "active") ? "ready" : "revoked",
+      memory_provider: "supermemory-fabric",
+      provider_version: options.longitudinal_memory ? "2.5.0" : "2.4.0",
+      direct_hindsight_provider: false,
+      llm: { provider: options.llm_provider, model: options.codex_model, reasoning_effort: options.codex_reasoning_effort, fallback_provider: null },
+      captures: { durable: personalCaptureStore.list().length },
+      longitudinal_memory: personalLongitudinalWorker?.status?.() ?? {
+        status: options.longitudinal_memory ? "starting" : "disabled",
+        pending: 0,
+        processed: 0,
+        projection_retryable: 0
+      },
+      projections: {
+        queued: operations.filter((item) => item.projection_status === "queued").length,
+        failed_retryable: operations.filter((item) => item.projection_status === "failed_retryable").length,
+        completed: operations.filter((item) => item.projection_status === "completed").length
+      },
+      credential: credentials.at(-1) ?? null
+    };
+  } : null;
   // A v6 daemon must accept the first enrollment without a restart. The
   // supervisor is therefore available even while the registry is empty.
   const recallEnabled = options.multi_project || Boolean(options.workspace_id && options.project_id);
@@ -205,14 +370,23 @@ try {
     vaultRoot: options.vault_root,
     encryptionKey
   }) : null;
-  const codexPipeline = createCanonicalCodexPipeline({
-    executable: options.codex_executable,
-    model: options.codex_model,
-    reasoningEffort: options.codex_reasoning_effort,
-    timeoutMs: options.compiler_timeout_ms,
-    runner: options.check ? async () => ({}) : null
-  });
+  const codexPipeline = options.llm_provider === "openrouter"
+    ? createCanonicalOpenRouterPipeline({
+      ["api" + "Key"]: llmCredential,
+      model: options.codex_model,
+      reasoningEffort: options.codex_reasoning_effort,
+      timeoutMs: options.compiler_timeout_ms,
+      fetchImpl: options.check ? async () => new Response("{}", { status: 200 }) : globalThis.fetch
+    })
+    : createCanonicalCodexPipeline({
+      executable: options.codex_executable,
+      model: options.codex_model,
+      reasoningEffort: options.codex_reasoning_effort,
+      timeoutMs: options.compiler_timeout_ms,
+      runner: options.check ? async () => ({}) : null
+    });
   const admissionPolicy = createMemoryAdmissionPolicy();
+  let personalOwnerContextPromise = null;
   daemon = createSuperMemoryDaemon({
     vaultRoot: options.vault_root,
     encryptionKey,
@@ -460,8 +634,19 @@ try {
         retrievalMaxRounds: options.retrieval_max_rounds,
         retrievalMaxMs: options.retrieval_max_ms,
         retrievalMaxResults: options.retrieval_max_results,
-        retrievalMaxTokens: options.retrieval_max_tokens
+        retrievalMaxTokens: options.retrieval_max_tokens,
+        personalRevisionStore
       });
+      if (options.personal_manager && !options.check) {
+        personalOwnerContextPromise = createContext({
+          workspaceId: PERSONAL_WORKSPACE_ID,
+          projectId: PERSONAL_PROJECT_ID
+        });
+        void personalOwnerContextPromise.then(async (context) => {
+          await context.router.rebuildFabric?.({});
+          await context.worker?.recover?.();
+        }).catch(() => {});
+      }
       return createWorkspaceRuntimeSupervisor({
         registry: projectRegistry,
         createContext,
@@ -476,7 +661,437 @@ try {
     projectRegistry,
     enrollmentService,
     checkoutCredentialStore: credentialStore,
-    ownerPreferenceStore
+    ownerPreferenceStore,
+    personalManagerApiFactory: options.personal_manager ? ({ runtimeSupervisor, captureStore, memoryCompiler }) => {
+      const resolveScope = createAgentScopeResolver({ credentialStore: agentCredentialStore, projectRegistry });
+      personalProjectionProcessor = async (operation) => {
+        const attempts = Number(operation.projection_attempts ?? 0) + 1;
+        try {
+          let gateway = null;
+          let workspaceId = null;
+          if (operation.scope?.kind === "owner") {
+            gateway = personalOwnerHindsightGateway;
+            workspaceId = PERSONAL_WORKSPACE_ID;
+          } else {
+            const project = projectRegistry.snapshot().projects.find((item) => (
+              item.projectId === operation.scope?.project_id && item.status === "active"
+            ));
+            if (!project) throw Object.assign(new Error("personal_projection_project_missing"), { code: "personal_projection_project_missing" });
+            workspaceId = project.workspaceId;
+            const context = await runtimeSupervisor.getContext({
+              workspaceId: project.workspaceId,
+              projectId: project.projectId
+            }, { requireCheckout: false });
+            gateway = context.router.hindsightGateway;
+          }
+          if (!gateway) throw Object.assign(new Error("personal_projection_hindsight_unavailable"), { code: "personal_projection_hindsight_unavailable" });
+          let remote;
+          if (operation.operation === "forget") {
+            remote = await gateway.delete(operation.memory_id);
+          } else {
+            const memory = personalRevisionStore.current({ memoryId: operation.memory_id });
+            if (!memory || memory.revision !== operation.revision || memory.status !== "active") {
+              throw Object.assign(new Error("personal_projection_revision_stale"), { code: "personal_projection_revision_stale" });
+            }
+            remote = await gateway.project({
+              workspace_id: workspaceId,
+              project_id: memory.scope?.project_id ?? PERSONAL_PROJECT_ID,
+              memory_id: memory.memory_id,
+              status: "active",
+              title: memory.title,
+              text: memory.text,
+              domain: memory.domain,
+              observed_at: memory.valid_from,
+              valid_from: memory.valid_from,
+              allowed_consumers: ["codex"],
+              sensitivity: "standard",
+              authority_revision: memory.revision,
+              evidence_ids: [memory.provenance?.command_id].filter(Boolean),
+              context: `canonical personal memory revision ${memory.revision}`,
+              projection: { document_id: memory.memory_id }
+            });
+          }
+          personalRevisionStore.putOperation({
+            ...operation,
+            status: "completed",
+            projection_status: "completed",
+            projection_attempts: attempts,
+            projected_at: new Date().toISOString(),
+            remote_operation_id: remote?.operation_id ?? null,
+            graph_projection_status: "canonical_worker_only",
+            last_error: null
+          });
+        } catch (error) {
+          personalRevisionStore.putOperation({
+            ...operation,
+            status: "canonical_committed",
+            projection_status: "failed_retryable",
+            projection_attempts: attempts,
+            last_error: error?.code ?? error?.message ?? "personal_projection_failed"
+          });
+        }
+      };
+      for (const pending of personalRevisionStore.listOperations({ statuses: ["queued", "failed_retryable"] })) {
+        queueMicrotask(() => personalProjectionProcessor(pending));
+      }
+      if (options.longitudinal_memory && !personalLongitudinalWorker) {
+        personalLongitudinalWorker = createLongitudinalMemoryConsolidator({
+          vaultRoot: options.vault_root,
+          encryptionKey,
+          signalStore: personalSignalStore,
+          revisionStore: personalRevisionStore,
+          saliencePolicy: createMemorySaliencePolicy(),
+          proposer: async ({ signals, workspaceId }) => {
+            const messages = signals.map((signal) => ({
+              role: signal.authority_role === "assistant_proposal" ? "assistant" : "user",
+              content: signal.text
+            }));
+            const candidate = await codexPipeline.compilerExtractor.extract({
+              messages,
+              workspaceId,
+              projectId: PERSONAL_PROJECT_ID
+            });
+            if (!candidate) return { operation: "noop", proposed_text: "" };
+            return {
+              schema: "supermemory.longitudinal-consolidation-proposal.v1",
+              operation: "activate",
+              proposed_text: candidate.proposedText,
+              title: candidate.title,
+              domain: candidate.type
+            };
+          },
+          verifier: async ({ proposal, signals }) => {
+            const evidence = signals.flatMap((signal) => signal.evidence_ids ?? []);
+            const hasAuthoritativeSignal = signals.some((signal) => (
+              ["user_direct", "user_endorsement", "derived_pattern"].includes(signal.authority_role)
+            ));
+            const messages = signals.map((signal) => ({
+              role: signal.authority_role === "assistant_proposal" ? "assistant" : "user",
+              content: signal.text
+            }));
+            const checked = await codexPipeline.compilerVerifier.verify({
+              candidate: {
+                title: proposal.title,
+                proposedText: proposal.proposed_text,
+                type: proposal.domain,
+                confidence: proposal.salience?.score ?? 0.5,
+                uncertainty: "",
+                sensitivity: "standard"
+              },
+              messages,
+              workspaceId: PERSONAL_WORKSPACE_ID,
+              projectId: PERSONAL_PROJECT_ID
+            });
+            const supported = checked?.status === "verified" && Boolean(proposal?.proposed_text) && evidence.length > 0 && hasAuthoritativeSignal;
+            return {
+              status: supported ? "verified" : "rejected",
+              independent: true,
+              evidence_supported: supported,
+              verifier: checked?.verifier ?? "configured-provider-verifier",
+              evidence_ids: [...new Set(evidence)]
+            };
+          },
+          projector: async ({ memoryId, revision, receipt }) => personalOperations.enqueue({
+            schema: "supermemory.personal-memory-projection-job.v1",
+            operation: "consolidate",
+            operation_id: `op_${crypto.createHash("sha256").update(receipt.receipt_id).digest("base64url").slice(0, 24)}`,
+            memory_id: memoryId,
+            revision: revision.revision,
+            scope: revision.scope
+          }),
+          limits: {
+            concurrency: 1,
+            maxBatchEpisodes: 50,
+            maxClusterEpisodes: 24,
+            maxClusterTokens: 32_000
+          }
+        });
+        queueMicrotask(() => {
+          void personalLongitudinalWorker.retryProjections()
+            .then(() => personalLongitudinalWorker.drain())
+            .catch(() => {});
+        });
+        const maintenance = setInterval(() => {
+          void personalLongitudinalWorker.retryProjections()
+            .then(() => personalLongitudinalWorker.drain())
+            .catch(() => {});
+        }, 86_400_000);
+        maintenance.unref();
+      }
+      const recallOrchestrator = createPersonalRecallOrchestrator({
+        projectRegistry,
+        ownerRecall: async (input) => {
+          const [preferences, explicit, admitted] = await Promise.all([
+            ownerPreferenceStore.search(input),
+            Promise.resolve(personalRevisionStore.search({
+              query: input.query,
+              ownerId: ownerScope.ownerId,
+              includeOwner: true,
+              asOf: input.as_of,
+              limit: input.limit
+            })),
+            personalOwnerDurableRecall.search({
+              query: input.query,
+              as_of: input.as_of,
+              limit: input.limit
+            }).catch(() => ({ results: [], partial: true }))
+          ]);
+          return {
+            ...preferences,
+            results: [
+              ...explicit,
+              ...(admitted.results ?? []).map((item) => ({ ...item, text: item.excerpt ?? item.text ?? "", scope: "owner" })),
+              ...(preferences.results ?? [])
+            ],
+            partial: preferences.partial === true || admitted.partial === true
+          };
+        },
+        projectRecall: async ({ project, query, asOf, historical, limit }) => {
+          const direct = personalRevisionStore.search({ query, projectIds: [project.projectId], asOf, limit });
+          const workingSet = workingSetStore.listWorkingSets({
+            workspaceId: project.workspaceId,
+            projectId: project.projectId
+          }).at(-1);
+          if (!workingSet) return { results: direct, partial: false, source: "explicit_personal_memory" };
+          const routed = await runtimeSupervisor.forProject({
+            workspaceId: project.workspaceId,
+            projectId: project.projectId
+          }).recall({
+            working_set_id: workingSet.manifest.working_set_id,
+            query,
+            as_of: asOf,
+            historical,
+            limit
+          });
+          return { ...routed, results: [...direct, ...(routed.results ?? [])] };
+        }
+      });
+      return createPersonalManagerApi({
+        resolveScope,
+        recallOrchestrator,
+        contextCard: async ({ scope, query = "current priorities decisions preferences commitments", project_id: projectId = null, mode = null }) => {
+          const recalled = await recallOrchestrator.recall({
+            scope,
+            query,
+            projectId,
+            mode: mode ?? (projectId ? "project" : "portfolio"),
+            limit: 50
+          });
+          return { ...buildPersonalContextCard({ results: recalled.results, maxTokens: 8_000 }), coverage: recalled.coverage };
+        },
+        commandBus: personalCommandBus,
+        capture: async ({ scope, session_id: sessionId, turn_id: turnId, occurred_at: occurredAt, messages, action_receipts: actionReceipts }) => {
+          const normalized = normalizePersonalManagerCapture({
+            ownerId: scope.ownerId,
+            agentId: scope.agentId,
+            sessionId,
+            turnId,
+            occurredAt: occurredAt ?? new Date().toISOString(),
+            encryptionKey,
+            messages,
+            actionReceipts
+          });
+          const receipt = personalCaptureStore.append(normalized);
+          if (personalLongitudinalWorker && receipt.status !== "duplicate") {
+            const captured = { ...normalized, capture_id: receipt.capture_id };
+            const derived = [...await deriveMemorySignalsFromCapture(captured, { workspaceId: PERSONAL_WORKSPACE_ID })];
+            const prior = personalCaptureStore.list()
+              .filter((item) => item.session_id === sessionId && item.capture_id !== receipt.capture_id)
+              .sort((left, right) => String(right.occurred_at).localeCompare(String(left.occurred_at)))[0];
+            const acceptance = normalized.messages.find((message) => message.role === "user")?.content;
+            const priorProposal = prior?.messages ? [...prior.messages].reverse().find((message) => message.role === "assistant") : null;
+            if (acceptance && priorProposal) {
+              const endorsement = resolveMemoryEndorsement({
+                userMessage: {
+                  thread_id: sessionId,
+                  message_id: `message:${receipt.capture_id}:user`,
+                  episode_id: `episode:${receipt.capture_id}:user`,
+                  content: acceptance
+                },
+                candidateProposals: [{
+                  proposal_id: `proposal:${prior.capture_id}`,
+                  thread_id: sessionId,
+                  message_id: `message:${prior.capture_id}:assistant`,
+                  episode_id: `episode:${prior.capture_id}:assistant`,
+                  text: priorProposal.content
+                }]
+              });
+              if (endorsement.status === "endorsed") {
+                derived.push(createMemorySignal({
+                  ownerId: scope.ownerId,
+                  workspaceId: PERSONAL_WORKSPACE_ID,
+                  sessionId,
+                  episodeIds: endorsement.episode_ids,
+                  evidenceIds: endorsement.message_ids.map((id) => `evidence:${id}`),
+                  subjectKey: `endorsement:${crypto.createHash("sha256").update(endorsement.text).digest("hex").slice(0, 24)}`,
+                  memoryClass: "decision",
+                  authorityRole: "user_endorsement",
+                  text: endorsement.text,
+                  occurredAt: normalized.occurred_at,
+                  features: { user_commitment: 1, consequentiality: 0.9, future_utility: 0.9, recurrence: 0.2, stability: 0.9, reuse: 0, recency: 1 }
+                }));
+              }
+            }
+            for (const signal of derived) personalSignalStore.append(signal);
+            const allSignals = personalSignalStore.list({ ownerId: scope.ownerId, workspaceId: PERSONAL_WORKSPACE_ID, includeRevoked: false });
+            for (const subjectKey of new Set(derived.map((signal) => signal.subject_key))) {
+              const related = allSignals.filter((signal) => signal.subject_key === subjectKey).slice(-24);
+              if (!related.length) continue;
+              personalLongitudinalWorker.enqueue({
+                ownerId: scope.ownerId,
+                workspaceId: PERSONAL_WORKSPACE_ID,
+                signalIds: related.map((signal) => signal.signal_id)
+              });
+            }
+            queueMicrotask(() => { void personalLongitudinalWorker.drain().catch(() => {}); });
+          }
+          const visibleUser = normalized.messages.find((message) => message.role === "user")?.content;
+          const visibleAssistant = [...normalized.messages].reverse().find((message) => message.role === "assistant")?.content;
+          if (!visibleUser || !visibleAssistant) return { ...receipt, admission: "archived_only" };
+          const occurred = normalized.occurred_at;
+          const sequenceBase = Math.max(0, Math.floor(Date.parse(occurred) * 2));
+          const boundSessionId = personalCaptureBinding(sessionId, "ses_pm");
+          const boundTurnId = personalCaptureBinding(turnId, "turn_pm");
+          const common = {
+            adapter: "hook",
+            adapter_version: "personal-manager-v1",
+            project_id: PERSONAL_PROJECT_ID,
+            workspace_id: PERSONAL_WORKSPACE_ID,
+            checkout_id: PERSONAL_CHECKOUT_ID,
+            session_id: boundSessionId,
+            thread_id: String(sessionId).slice(0, 240),
+            turn_id: boundTurnId,
+            occurred_at: occurred,
+            capture_level: "standard"
+          };
+          try {
+            captureStore.ingest({
+              ...common,
+              external_event_id: `personal:${turnId}:user`,
+              event_type: "prompt.submitted",
+              sequence: sequenceBase,
+              payload: { prompt: visibleUser, action_receipts: normalized.action_receipts }
+            });
+            const stop = {
+              ...common,
+              external_event_id: `personal:${turnId}:assistant`,
+              event_type: "assistant.completed",
+              sequence: sequenceBase + 1,
+              payload: { last_assistant_message: visibleAssistant }
+            };
+            captureStore.ingest(stop);
+            memoryCompiler.notifyCapture(stop);
+            if (personalOwnerContextPromise) {
+              void personalOwnerContextPromise.then((context) => (
+                context.worker?.notifySessionClosed?.({ sessionId: boundSessionId })
+              )).catch(() => {});
+            }
+            return { ...receipt, admission: "queued" };
+          } catch (error) {
+            return { ...receipt, admission: "retryable", admission_error: error?.code ?? "personal_capture_admission_failed" };
+          }
+        },
+        getMemory: async ({ scope, memoryId, asOf }) => {
+          const memory = asOf
+            ? personalRevisionStore.asOf({ memoryId, asOf })
+            : personalRevisionStore.current({ memoryId });
+          const authorized = memory?.scope?.kind === "owner"
+            ? memory.scope.owner_id === scope.ownerId
+            : scope.allowedProjectIds.includes(memory?.scope?.project_id);
+          return memory && authorized ? memory : null;
+        },
+        lineage: async ({ scope, memoryId }) => {
+          const memory = personalRevisionStore.current({ memoryId });
+          const authorized = memory?.scope?.kind === "owner"
+            ? memory.scope.owner_id === scope.ownerId
+            : scope.allowedProjectIds.includes(memory?.scope?.project_id);
+          if (!authorized) return null;
+          return { memory, ...(personalLongitudinalWorker?.lineage({ memoryId }) ?? { episode_ids: [], evidence_ids: [] }) };
+        },
+        pinMemory: async ({ scope, memoryId, pinned }) => {
+          const memory = personalRevisionStore.current({ memoryId });
+          const authorized = memory?.scope?.kind === "owner"
+            ? memory.scope.owner_id === scope.ownerId
+            : scope.allowedProjectIds.includes(memory?.scope?.project_id);
+          if (!authorized) return null;
+          return personalRevisionStore.pin({
+            memoryId,
+            expectedRevision: memory.revision,
+            pinned,
+            provenance: { source: "personal-manager-pin", owner_id: scope.ownerId, agent_id: scope.agentId }
+          });
+        },
+        recordRecallFeedback: async ({ scope, memory_id: memoryId, revision, outcome, session_id: feedbackSessionId, occurred_at: feedbackOccurredAt }) => {
+          const memory = personalRevisionStore.current({ memoryId });
+          const authorized = memory?.scope?.kind === "owner"
+            ? memory.scope.owner_id === scope.ownerId
+            : scope.allowedProjectIds.includes(memory?.scope?.project_id);
+          if (!authorized || !personalRecallFeedbackStore) throw Object.assign(new Error("personal_memory_not_found"), { code: "personal_memory_not_found" });
+          return personalRecallFeedbackStore.record({
+            ownerId: scope.ownerId,
+            agentId: scope.agentId,
+            sessionId: feedbackSessionId,
+            memoryId,
+            revision: revision ?? memory.revision,
+            outcome,
+            occurredAt: feedbackOccurredAt ?? new Date().toISOString()
+          });
+        },
+        consolidationStatus: () => personalLongitudinalWorker?.status() ?? { status: "disabled" },
+        operationStatus: ({ scope, operationId }) => {
+          const operation = personalRevisionStore.getOperation(operationId);
+          if (!operation) return null;
+          const authorized = operation.scope?.kind === "owner"
+            ? operation.scope.owner_id === scope.ownerId
+            : scope.allowedProjectIds.includes(operation.scope?.project_id);
+          return authorized ? operation : null;
+        },
+        status: ({ scope }) => ({
+          schema: "supermemory.personal-manager-status.v1",
+          ...personalManagerRuntimeStatus(),
+          agent_id: scope.agentId,
+          authorized_projects: scope.allowedProjectIds.length
+        })
+      });
+    } : null,
+    personalManagerStatus: personalManagerRuntimeStatus,
+    personalManagerAdmin: personalRevisionStore ? {
+      list: ({ projectIds }) => [
+        ...personalRevisionStore.list({ projectIds, ownerId: ownerScope.ownerId, includeOwner: true }),
+        ...personalOwnerWorkspaceStore.listActiveMemories({ consumer: "codex" }).map((memory) => {
+          const candidate = personalOwnerWorkspaceStore.getCandidate(memory.candidate_id);
+          return {
+            ...memory,
+            revision: 1,
+            domain: candidate.type,
+            scope: { kind: "owner", owner_id: ownerScope.ownerId },
+            provenance: { source: "personal-manager-admission", candidate_id: memory.candidate_id }
+          };
+        })
+      ],
+      lineage: ({ memoryId }) => {
+        const memory = personalRevisionStore.current({ memoryId });
+        if (!memory) return null;
+        return { memory, ...(personalLongitudinalWorker?.lineage({ memoryId }) ?? { episode_ids: [], evidence_ids: [], revisions: [] }) };
+      },
+      pin: ({ memoryId, pinned }) => {
+        const memory = personalRevisionStore.current({ memoryId });
+        if (!memory) return null;
+        return { memory: personalRevisionStore.pin({
+          memoryId,
+          expectedRevision: memory.revision,
+          pinned,
+          provenance: { source: "local-operator-ui", owner_id: ownerScope.ownerId }
+        }) };
+      },
+      receipts: () => personalLongitudinalWorker?.receipts() ?? [],
+      runConsolidation: async () => {
+        if (!personalLongitudinalWorker) return { status: "disabled" };
+        const projections = await personalLongitudinalWorker.retryProjections();
+        const consolidation = await personalLongitudinalWorker.drain();
+        return { status: "completed", projections, consolidation, worker: personalLongitudinalWorker.status() };
+      }
+    } : null
   });
   if (options.check) {
     output({ ok: true, status: "configuration_valid" }, options.json);

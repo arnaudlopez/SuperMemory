@@ -3,6 +3,15 @@ node_modules/
 .env
 .env.*
 !.env.example
+__pycache__/
+*.py[cod]
+
+# Local browser and generated visual-verification artifacts
+.playwright-cli/
+output/playwright/
+
+# Machine-specific SuperMemory runtime state
+.codex/supermemory/
 
 # Local GoalBuddy board cache/artifacts
 docs/goals/**/.goalbuddy-board/

@@ -56,7 +56,7 @@ test("Mac mini M4 Pro config is a remote-only Z2 client with a persistent tunnel
   assert.equal(hook.expected_workspace_id, binding.workspaceId);
   assert.equal(mcp.expected_project_id, binding.projectId);
   assert.equal(contract.deployment.activation, "enabled");
-  assert.equal(contract.schema, "supermemory.codex-runtime.v6");
+  assert.equal(contract.schema, "supermemory.codex-runtime.v7");
   assert.equal(hook.checkout_token_file, checkoutToken);
   assert.equal(mcp.device_id, "device_mac-mini-m4pro");
   assert.equal(contract.deployment.canary, false);

@@ -1,0 +1,17 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "done",
+  "summary": "Le profil réel n'est pas déployé : le runtime Desktop 0.146 découvre SuperMemory sans l'installer, le projet est unbound, le daemon/LaunchAgent sont absents et deux hooks Codex legacy restent actifs. Le package sûr doit ajouter plan hashé, cutover TOML ciblé, bootstrap secret, binding, LaunchAgent, activation App Server, doctor et rollback sans toucher au vault.",
+  "evidence": [
+    "notes/T001-real-profile-audit.md",
+    "scripts/lib/codex-installer.mjs",
+    "scripts/supermemory-doctor.mjs",
+    "scripts/run-codex-integration-canary.mjs",
+    "plugins/supermemory/.codex-plugin/plugin.json",
+    "official Codex manual: hooks, plugins, MCP, Remote connections"
+  ],
+  "spawned_tasks": [
+    "T002"
+  ],
+  "harness": "codex"
+}

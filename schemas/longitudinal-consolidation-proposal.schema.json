@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supermemory.local/schemas/longitudinal-consolidation-proposal.schema.json",
+  "title": "LongitudinalConsolidationProposal v1",
+  "type": "object",
+  "required": ["schema", "proposal_id", "cluster_id", "operation", "proposed_text", "evidence_ids", "episode_ids"],
+  "properties": {
+    "schema": { "const": "supermemory.longitudinal-consolidation-proposal.v1" },
+    "operation": { "enum": ["observe", "activate", "reinforce", "revise", "supersede", "deemphasize", "noop"] }
+  },
+  "additionalProperties": true
+}

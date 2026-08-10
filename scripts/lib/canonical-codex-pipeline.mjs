@@ -90,24 +90,20 @@ function createCodexRunner({ executable, model, reasoningEffort, timeoutMs, spaw
   });
 }
 
-export function createCanonicalCodexPipeline({
-  executable = "/usr/local/bin/codex",
-  model = "gpt-5.6-luna",
+export function createCanonicalStructuredPipeline({
+  provider,
+  model,
   reasoningEffort = "high",
-  timeoutMs = 120_000,
-  runner = null
+  invoke
 } = {}) {
-  if (model !== "gpt-5.6-luna") fail("canonical_codex_model_invalid");
-  if (reasoningEffort !== "high") fail("canonical_codex_reasoning_invalid");
-  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10_000 || timeoutMs > 300_000) {
-    fail("canonical_codex_timeout_invalid");
+  if (!new Set(["openai-codex", "openrouter"]).has(provider) || typeof model !== "string" || !model.trim()) {
+    fail("canonical_llm_provider_invalid");
   }
-  const invoke = runner ?? createCodexRunner({
-    executable: safeExecutable(executable), model, reasoningEffort, timeoutMs
-  });
+  if (reasoningEffort !== "high") fail("canonical_codex_reasoning_invalid");
+  if (typeof invoke !== "function") fail("canonical_llm_runner_invalid");
 
   const extractor = Object.freeze({
-    identity: { provider: "openai-codex", model, prompt_version: "canonical-extract-v5" },
+    identity: { provider, model, prompt_version: "canonical-extract-v5" },
     extract: ({ episode, payload }) => invoke({
       schemaPath: path.join(schemasRoot, "canonical-extraction.schema.json"),
       system: [
@@ -126,7 +122,7 @@ export function createCanonicalCodexPipeline({
   });
 
   const verifier = Object.freeze({
-    identity: { provider: "openai-codex", model, prompt_version: "canonical-verify-v4", independent: true },
+    identity: { provider, model, prompt_version: "canonical-verify-v4", independent: true },
     verify: async ({ episode, evidence, payload, extraction }) => {
       const ownerStatement = evidence?.kind === "prompt.submitted" &&
         ["hook", "app_server"].includes(evidence?.source_adapter);
@@ -154,7 +150,7 @@ export function createCanonicalCodexPipeline({
   });
 
   const compilerExtractor = Object.freeze({
-    provider: "openai-codex",
+    provider,
     model,
     reasoningEffort,
     promptVersion: "memory-candidate-v2",
@@ -175,7 +171,7 @@ export function createCanonicalCodexPipeline({
   });
 
   const compilerVerifier = Object.freeze({
-    identity: { provider: "openai-codex", model, prompt_version: "memory-candidate-verify-v2", independent: true },
+    identity: { provider, model, prompt_version: "memory-candidate-verify-v2", independent: true },
     verify: async ({ candidate, messages, workspaceId, projectId }) => {
       const result = await invoke({
         schemaPath: path.join(schemasRoot, "canonical-verification.schema.json"),
@@ -189,13 +185,29 @@ export function createCanonicalCodexPipeline({
     }
   });
 
-  return Object.freeze({
+  return Object.freeze({ provider, model, reasoningEffort, compilerExtractor, compilerVerifier, extractor, verifier });
+}
+
+export function createCanonicalCodexPipeline({
+  executable = "/usr/local/bin/codex",
+  model = "gpt-5.6-luna",
+  reasoningEffort = "high",
+  timeoutMs = 120_000,
+  runner = null
+} = {}) {
+  if (model !== "gpt-5.6-luna") fail("canonical_codex_model_invalid");
+  if (reasoningEffort !== "high") fail("canonical_codex_reasoning_invalid");
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10_000 || timeoutMs > 300_000) {
+    fail("canonical_codex_timeout_invalid");
+  }
+  const invoke = runner ?? createCodexRunner({
+    executable: safeExecutable(executable), model, reasoningEffort, timeoutMs
+  });
+
+  return createCanonicalStructuredPipeline({
     provider: "openai-codex",
     model,
     reasoningEffort,
-    compilerExtractor,
-    compilerVerifier,
-    extractor,
-    verifier
+    invoke
   });
 }

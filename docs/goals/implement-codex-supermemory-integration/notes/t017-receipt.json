@@ -1,0 +1,89 @@
+{
+  "result": "done",
+  "summary": "Les six écarts T016 sont fermés. Codex 0.125 découvre et active réellement le plugin depuis une marketplace repo fusionnée et réversible. Un canari sacrificiel unique prouve identité stable, capture chiffrée avec spool/replay, redaction, revue, projection, recall MCP cité, invalidation source fail-closed, suppression attestée et rollback. La matrice relie désormais chacun des 80 AC à des scénarios et gates précis. Les preuves legacy sont matérialisées, immuables et vérifiées par hash d'intégrité. Le README et le runbook distinguent explicitement disponibilité, configuration et observation, et ne revendiquent aucune UI non pilotée.",
+  "changed_files": [
+    ".agents/plugins/marketplace.json",
+    "README.md",
+    "docs/README.md",
+    "docs/production-runbook.md",
+    "package.json",
+    "plugins/supermemory/skills/supermemory/SKILL.md",
+    "scripts/lib/codex-app-server-adapter.mjs",
+    "scripts/lib/codex-installer.mjs",
+    "scripts/lib/codex-turn-snapshot.mjs",
+    "scripts/lib/codex-workspace-store.mjs",
+    "scripts/lib/codex-memory-governance.mjs",
+    "scripts/lib/codex-memory-recall.mjs",
+    "scripts/lib/codex-migration.mjs",
+    "scripts/run-codex-integration-canary.mjs",
+    "scripts/supermemory-app-server.mjs",
+    "scripts/supermemory-codex.mjs",
+    "scripts/supermemory-doctor.mjs",
+    "scripts/verify-codex-supermemory-release.mjs",
+    "tests/codex-installer.test.mjs",
+    "tests/codex-app-server-adapter.test.mjs",
+    "tests/codex-memory-governance.test.mjs",
+    "tests/codex-hindsight-recall.test.mjs",
+    "tests/codex-mcp-server.test.mjs",
+    "tests/codex-migration.test.mjs",
+    "tests/codex-lifecycle.test.mjs",
+    "tests/codex-integration-canary.test.mjs",
+    "tests/codex-release-canary.test.mjs",
+    "tests/supermemory-doctor.test.mjs"
+  ],
+  "commands": [
+    {
+      "cmd": "node --test tests/codex-installer.test.mjs tests/codex-app-server-adapter.test.mjs tests/codex-memory-governance.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-mcp-server.test.mjs tests/codex-migration.test.mjs tests/codex-lifecycle.test.mjs tests/codex-integration-canary.test.mjs tests/codex-release-canary.test.mjs tests/supermemory-doctor.test.mjs",
+      "status": "pass",
+      "detail": "45/45"
+    },
+    {
+      "cmd": "node scripts/run-codex-integration-canary.mjs --json",
+      "status": "pass",
+      "detail": "Codex CLI 0.125.0: discovery et activation plugin observées; 8/8 étapes; rollback vérifié"
+    },
+    {
+      "cmd": "node scripts/verify-codex-supermemory-release.mjs --json",
+      "status": "pass",
+      "detail": "80/80 AC couverts sémantiquement; release-candidate; production_ready=false avant audit final"
+    },
+    {
+      "cmd": "npm test",
+      "status": "pass",
+      "detail": "124/124"
+    },
+    {
+      "cmd": "node scripts/verify-supermemory-specs.mjs",
+      "status": "pass"
+    },
+    {
+      "cmd": "node scripts/verify-supermemory-release-readiness.mjs",
+      "status": "pass",
+      "detail": "contract-ready; runtime/production restent gouvernés par preuves et approbation explicites"
+    },
+    {
+      "cmd": "node scripts/verify-secret-hygiene.mjs",
+      "status": "pass",
+      "detail": "478 fichiers, 0 finding"
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "evidence": [
+    "Le vrai App Server Codex plugin/list découvre la marketplace repo; plugin/install puis plugin/list prouvent installed=true et enabled=true dans un profil temporaire.",
+    "L'installateur fusionne la marketplace existante, sauvegarde chaque cible et la restaure byte-for-byte sans toucher config.toml ni la confiance projet.",
+    "Une copie de même hash sans preuve de rename reçoit une identité distincte et review_required; un rename observé conserve source_id.",
+    "Le remplacement d'une source marque la mémoire stale avant toute suppression Hindsight, donc un échec de projection ne la rend jamais rappelable.",
+    "Les citations migrées résolvent un artefact legacy local dont l'intégrité est recalculée; une altération devient citation_unresolved.",
+    "Le canari n'utilise ni données client, ni profil utilisateur réel, ni banque durable, ni écriture cloud, et efface sa fixture temporaire.",
+    "Le rapport conserve desktop_ui_observed=false, ide_ui_observed=false et cloud_web=not_covered."
+  ],
+  "limitations": [
+    "Les hooks seuls ont une couverture partielle; la capture riche exige qu'un client utilise réellement le wrapper App Server configuré.",
+    "Aucune UI Desktop ou IDE tierce n'a été pilotée; seuls la CLI et le protocole App Server réels ont été observés.",
+    "Le profil Codex utilisateur et son niveau de confiance n'ont volontairement pas été modifiés."
+  ],
+  "note_needed": false
+}

@@ -39,7 +39,8 @@ export function createWorkspaceRuntimeContextFactory({
   retrievalMaxRounds = 3,
   retrievalMaxMs = 5_000,
   retrievalMaxResults = 1_000,
-  retrievalMaxTokens = 12_000
+  retrievalMaxTokens = 12_000,
+  personalRevisionStore = null
 } = {}) {
   if (!captureStore || !workingSetStore || !admissionPolicy || !codexPipeline) {
     throw new Error("runtime_context_factory_invalid");
@@ -151,6 +152,27 @@ export function createWorkspaceRuntimeContextFactory({
       receiptStore: createHindsightOperationReceiptStore({ vaultRoot, encryptionKey, workspaceId }),
       authorityResolver: ({ memoryId, asOf, consumer }) => {
         if (!memoryId) return null;
+        if (memoryId.startsWith("mem_") && personalRevisionStore) {
+          const personal = asOf
+            ? personalRevisionStore.asOf({ memoryId, asOf })
+            : personalRevisionStore.current({ memoryId });
+          if (!personal || personal.scope?.kind !== "project" || personal.scope.project_id !== projectId) return null;
+          return {
+            workspace_id: workspaceId,
+            memory_id: memoryId,
+            authorized: personal.status === "active",
+            status: personal.status === "active" ? "active" : "revoked",
+            authority_state: personal.status === "active" ? "current" : "revoked",
+            authority_revision: personal.revision,
+            allowed_consumers: ["codex"],
+            citation: {
+              memory_id: memoryId,
+              revision: personal.revision,
+              valid_from: personal.valid_from,
+              provenance: personal.provenance
+            }
+          };
+        }
         if (memoryId.startsWith("memory:")) {
           const claim = graphAdapter.readAuthorizedState({
             workspaceId,

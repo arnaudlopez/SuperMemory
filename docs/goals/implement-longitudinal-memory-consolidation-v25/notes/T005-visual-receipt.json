@@ -1,0 +1,23 @@
+{
+  "schema": "supermemory.visual-verification-receipt.v1",
+  "status": "pass",
+  "date": "2026-08-10",
+  "tool": "playwright-cli",
+  "origin": "loopback-fixture",
+  "page": "Personal Manager / Mémoire naturelle",
+  "interactions": [
+    "open product",
+    "select Personal Manager",
+    "load longitudinal memories",
+    "open Pourquoi retenue lineage"
+  ],
+  "assertions": {
+    "provider_version": "2.5.0",
+    "worker_status": "ready",
+    "pin_controls_visible": true,
+    "lineage_visible": true,
+    "revision_path_visible": true,
+    "layout_defect": false
+  },
+  "screenshot": "output/playwright/memory-fabric-v25-natural-memory.png"
+}

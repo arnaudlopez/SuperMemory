@@ -1,36 +1,39 @@
-# SuperMemory six-service production stack — Z2
+# SuperMemory Personal Manager production stack — Z2
 
-Memory Fabric v2.3 utilise le contrat runtime v6 et l'image
+Memory Fabric v2.4 utilise le contrat runtime v7 et l'image
 `supermemory-runtime:5.0.0`. Les identifiants workspace/projet ne sont plus des
 variables globales de stack : chaque checkout Codex s'authentifie avec son
 jeton et le daemon résout son périmètre dans le registre canonique. La
-migration v5 vers v6 conserve le coffre et le graphe ; elle exige une
+migration v6 vers v7 conserve le coffre et le graphe ; elle exige une
 sauvegarde complète avant le redéploiement direct de toute la stack.
 
 Z2 is the always-on, single-user production authority. It owns the encrypted
 canonical vault, runtime spool, backups, learned memory and temporal graph.
-The Mac mini M4 Pro is only a trusted client: Codex captures through an SSH tunnel and
-the browser displays the two private interfaces.
+Home 101 runs the existing native Hermes Personal Manager and its action
+connectors. It reaches the Z2 daemon through a restricted SSH local forward.
+The Mac mini M4 Pro is only a trusted work client: Codex captures through its
+own SSH tunnel and the browser displays the two private interfaces.
 
-The six Compose services are:
+The six Compose services on Z2 are:
 
 1. `hindsight` 0.9.0 for learned memory and its Control Plane;
 2. `neo4j` 5.26 LTS for the canonical temporal projection;
 3. `neo4j-migrate` for idempotent graph constraints;
 4. `supermemory-graphd` for authenticated workspace-scoped graph access;
-5. `supermemory-daemon` for capture, recall and canonical compilation;
+5. `supermemory-daemon` for capture, governed Personal Manager APIs, recall and canonical compilation;
 6. `supermemory-web` for the SuperMemory product interface.
 
-There is exactly one generative provider and one model across the runtime:
-OpenAI through the ChatGPT/Codex subscription, `gpt-5.6-luna`, reasoning
-`high`. There is no Ollama, local generative model, OpenRouter fallback,
-provider failover. There is no canary or progressive rollout. Hindsight and the daemon
-share the same private Codex authentication directory. Local embedding and
-reranking inside Hindsight remain non-generative infrastructure.
+There is exactly one generative provider and one model across the native
+Hermes installation on Home 101, Hindsight and the canonical pipeline on Z2.
+The `llm` block is the desired-state contract: Home 101 must match its provider,
+model and `high` reasoning settings. `fallback_provider` remains `null`. There
+is no Ollama, local generative model, provider failover, canary or progressive
+rollout. Local embedding and reranking inside Hindsight remain non-generative
+infrastructure.
 
 ## Capacity gate
 
-The default hard memory limits total about 11.5 GiB before Docker and operating
+The default hard memory limits total about 9.5 GiB before Docker and operating
 system overhead. Require at least 16 GiB genuinely available RAM and 35 GiB
 free disk; 32 GiB RAM gives comfortable room for the vault, indexes and
 backups. No GPU or NVIDIA driver is required by this stack.
@@ -59,6 +62,8 @@ The required secret files are:
 | `graphd_token` | GraphD root token | `root:1000 0440` |
 | `archive_key` | 32-byte capture/vault encryption key | `root:1000 0440` |
 | `daemon_token` | daemon bearer, at least 32 bytes | `root:1000 0440` |
+| `agent_token` | owner-bound Home 101 Hermes token, at least 32 bytes | `root:1000 0440` |
+| `hermes_llm_credential` | OpenRouter key when selected; inert placeholder for Codex OAuth | `root:1000 0440` |
 
 Generate new Neo4j and GraphD credentials only for a fresh installation. The
 archive key and daemon token must be copied from the current canonical Mac mini
@@ -71,10 +76,18 @@ printf 'neo4j/%s\n' "$NEO4J_PASSWORD_VALUE" | \
   sudo tee /opt/supermemory/secrets/neo4j_auth >/dev/null
 openssl rand -hex 32 | \
   sudo tee /opt/supermemory/secrets/graphd_token >/dev/null
+AGENT_TOKEN_VALUE="sma_$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=\n')"
+printf '%s\n' "$AGENT_TOKEN_VALUE" | \
+  sudo tee /opt/supermemory/secrets/agent_token >/dev/null
+sudo install -m 0440 -o root -g 1000 /dev/null \
+  /opt/supermemory/secrets/hermes_llm_credential
 sudo chown root:7474 /opt/supermemory/secrets/neo4j_auth
-sudo chown root:1000 /opt/supermemory/secrets/graphd_token
+sudo chown root:1000 \
+  /opt/supermemory/secrets/graphd_token \
+  /opt/supermemory/secrets/agent_token \
+  /opt/supermemory/secrets/hermes_llm_credential
 sudo chmod 0440 /opt/supermemory/secrets/*
-unset NEO4J_PASSWORD_VALUE
+unset NEO4J_PASSWORD_VALUE AGENT_TOKEN_VALUE
 ```
 
 Never put secret values or `auth.json` in Portainer variables, `.env`, Git,
@@ -93,13 +106,47 @@ sudo chmod 0600 /opt/supermemory/codex-auth/auth.json
 ```
 
 This credential grants model usage through the personal subscription and must
-be treated as a high-value secret. Both Hindsight 0.9.0 and the pinned Codex
-CLI refresh it in the shared directory. Do not configure an API key or a
+be treated as a high-value secret. On Z2 it is used by Hindsight 0.9.0 and the
+pinned Codex CLI. Hermes keeps its own existing OpenAI Codex OAuth session under
+the dedicated `agent` account on Home 101. Do not configure an API key or a
 second provider in parallel.
+
+For OpenRouter, set the single provider and model only in
+`runtime-contract.json`, write the key to
+`/opt/supermemory/secrets/hermes_llm_credential`, and leave Codex OAuth unused.
+The Z2 credential is consumed by Hindsight and the canonical pipeline; Home 101
+must be configured with the same single OpenRouter provider separately.
+
+## Personal Manager credential operations
+
+The browser shows credential status but never receives the agent token. Rotate
+by first replacing the protected `agent_token` file, copying it securely to
+Home 101, then adopting its hash and Home 101 device binding in the canonical
+credential ledger before restarting Hermes:
+
+```bash
+npm run personal-manager:credential -- \
+  --vault-root /opt/supermemory/vault \
+  --rotate-from-file \
+  --agent-token-file /opt/supermemory/secrets/agent_token \
+  --device-id device_home101 \
+  --confirm 'ROTATE personal-manager credential'
+```
+
+Emergency revocation is immediate and invalidates context, recall, capture and
+mutation calls. It intentionally requires a later operator rotation to restore
+service:
+
+```bash
+npm run personal-manager:credential -- \
+  --vault-root /opt/supermemory/vault \
+  --revoke \
+  --confirm 'REVOKE personal-manager credential'
+```
 
 ## Configuration and preflight
 
-Create a private environment file and install the runtime v6 contract:
+Create a private environment file and install the runtime v7 contract:
 
 ```bash
 cp deploy/portainer/supermemory-ai.env.example \
@@ -110,12 +157,22 @@ chmod 0600 /opt/supermemory/config/supermemory-ai.env
 chmod 0644 /opt/supermemory/config/runtime-contract.json
 ```
 
-The v6 runtime contract at
+The v7 runtime contract at
 `/opt/supermemory/config/runtime-contract.json` must activate Working Memory,
 Topic Continuity, Temporal Retrieval, Quiet Authority, offload, Hindsight,
 GraphD and continuous improvement with `deployment.activation=enabled`.
 It must point GraphD to `http://127.0.0.1:8787` and its token file to
-`/run/supermemory/graphd.token`.
+`/run/supermemory/graphd.token`. Its Personal Manager block fixes Home 101 as
+the agent runtime, `device_home101` as its credential binding and
+`http://127.0.0.1:18765` as the tunnel-local endpoint.
+
+## Home 101 Hermes runtime
+
+Hermes is installed and operated outside this Compose stack under the dedicated
+`agent` account on Home 101. Follow `deploy/home101/README.md` to install the
+`supermemory-fabric` user plugin, restricted SSH tunnel, agent token and native
+Hermes gateway system service. Z2 port `8765` remains bound to loopback and is
+never exposed on the LAN.
 
 Run the non-mutating structural gates:
 
@@ -123,6 +180,7 @@ Run the non-mutating structural gates:
 npm ci --ignore-scripts
 npm run verify:memory-fabric-v2
 npm run verify:memory-fabric-v22
+npm run verify:memory-fabric-v24
 npm run verify:secrets
 docker compose \
   --env-file /opt/supermemory/config/supermemory-ai.env \
@@ -164,7 +222,8 @@ docker compose \
 
 The dependency chain is deterministic: Hindsight and Neo4j become healthy,
 the graph migration completes, GraphD becomes healthy, the daemon starts, then
-the web interface starts. Deploy the complete artifact; do not release selected
+the web interface starts. Home 101 Hermes reconnects through its independent
+systemd tunnel. Deploy the complete Z2 artifact; do not release selected Z2
 services individually.
 
 At daemon startup, Working Set temporal metadata, Topic memberships and graph
@@ -207,7 +266,7 @@ configuration and the LaunchAgent. Unload the retired local daemon before
 bootstrapping the tunnel because both use local port `8765`.
 
 - `http://127.0.0.1:4310` is the SuperMemory product UI: sources, cited search,
-  backups, **Travail** and silent **Exceptions**. Travail accepts only a bound
+  backups, **Personal Manager**, **Travail** and silent **Exceptions**. Travail accepts only a bound
   `working_set_id`; the browser never lists or selects a raw `topic_id`.
 - `http://127.0.0.1:9999` is the Hindsight Control Plane: banks, entities,
   relationships, Constellation graph, operations and recall/reflect tests.
@@ -237,9 +296,9 @@ hybrid cited recall, evidence-coverage audit and visualization in both UIs.
 Restart the stack and repeat health, topic recall and authority checks to prove
 persistence.
 
-The runtime must report only provider `openai-codex`, model `gpt-5.6-luna` and
-reasoning `high`. Any drift, missing authentication, provider fallback or model
-substitution fails closed.
+The Z2 runtime and Home 101 Hermes must report exactly the provider/model
+selected in the v7 contract and reasoning `high`. Any drift, missing
+authentication, provider fallback or model substitution fails closed.
 
 ## Backup, restore and rollback
 
@@ -271,5 +330,5 @@ run two writable canonical vaults.
 - The runtime image pins the Codex CLI version and runs as uid/gid 1000.
 - GraphD keeps an explicit major image and contract version.
 - Any image change requires backup, Compose validation, complete-stack deploy
-  and all-service health verification.
+  and six-service health verification.
 - `neo4j-migrate` is idempotent; migration failure blocks GraphD and the daemon.

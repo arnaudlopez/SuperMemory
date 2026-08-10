@@ -1,16 +1,20 @@
 services:
   hindsight:
-    image: ${HINDSIGHT_IMAGE:-ghcr.io/vectorize-io/hindsight@sha256:6364c3c5f1e551447976d6c3ab369040d0237c0980f10f911d76d981290913b6}
-    pull_policy: if_not_present
+    image: ${HINDSIGHT_IMAGE:-supermemory-hindsight:0.9.0}
+    build:
+      context: ../..
+      dockerfile: deploy/hindsight/Dockerfile
+      args:
+        HINDSIGHT_BASE_IMAGE: ${HINDSIGHT_BASE_IMAGE:-ghcr.io/vectorize-io/hindsight@sha256:6364c3c5f1e551447976d6c3ab369040d0237c0980f10f911d76d981290913b6}
+    pull_policy: build
     restart: unless-stopped
     ports:
       - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:8888:8888"
       - "${SUPERMEMORY_SERVER_BIND:-127.0.0.1}:9999:9999"
     environment:
       CODEX_HOME: "/var/lib/supermemory-codex"
-      HINDSIGHT_API_LLM_PROVIDER: "openai-codex"
-      HINDSIGHT_API_LLM_MODEL: "gpt-5.6-luna"
-      HINDSIGHT_API_LLM_REASONING_EFFORT: "high"
+      SUPERMEMORY_RUNTIME_CONTRACT: "/run/supermemory/runtime-contract.json"
+      SUPERMEMORY_LLM_CREDENTIAL_FILE: "/run/supermemory/llm.credential"
       HINDSIGHT_API_LLM_MAX_CONCURRENT: "1"
       HINDSIGHT_API_ENABLE_OBSERVATIONS: "true"
       HINDSIGHT_API_ENABLE_AUTO_CONSOLIDATION: "false"
@@ -22,6 +26,9 @@ services:
       - hindsight_database_v090:/home/hindsight/.pg0
       - hindsight_cache_v090:/home/hindsight/.cache
       - ${SUPERMEMORY_CODEX_AUTH_DIR:-/opt/supermemory/codex-auth}:/var/lib/supermemory-codex
+      - ${SUPERMEMORY_CONFIG_DIR:-/opt/supermemory/config}/runtime-contract.json:/run/supermemory/runtime-contract.json:ro
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/hermes_llm_credential:/run/supermemory/llm.credential:ro
+    group_add: ["1000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/health', timeout=5).read()"]
       interval: 15s
@@ -151,25 +158,27 @@ services:
       - /run/supermemory/archive.key
       - --token-file
       - /run/supermemory/daemon.token
+      - --agent-token-file
+      - /run/supermemory/agent.token
       - --runtime-contract
       - /run/supermemory/runtime-contract.json
       - --hindsight-url
       - http://127.0.0.1:8888
       - --codex-executable
       - /usr/local/bin/codex
-      - --codex-model
-      - gpt-5.6-luna
-      - --codex-reasoning-effort
-      - high
       - --compiler-timeout-ms
       - "${SUPERMEMORY_CODEX_TIMEOUT_MS:-120000}"
+      - --llm-credential-file
+      - /run/supermemory/llm.credential
     volumes:
       - ${SUPERMEMORY_VAULT_DIR:-/opt/supermemory/vault}:/data/vault
       - ${SUPERMEMORY_RUNTIME_DIR:-/opt/supermemory/runtime}:/data/runtime
       - ${SUPERMEMORY_CODEX_AUTH_DIR:-/opt/supermemory/codex-auth}:/var/lib/supermemory-codex
       - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/archive_key:/run/supermemory/archive.key:ro
       - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/daemon_token:/run/supermemory/daemon.token:ro
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/agent_token:/run/supermemory/agent.token:ro
       - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/graphd_token:/run/supermemory/graphd.token:ro
+      - ${SUPERMEMORY_SECRETS_DIR:-/opt/supermemory/secrets}/hermes_llm_credential:/run/supermemory/llm.credential:ro
       - ${SUPERMEMORY_CONFIG_DIR:-/opt/supermemory/config}/runtime-contract.json:/run/supermemory/runtime-contract.json:ro
     depends_on:
       hindsight: { condition: service_healthy }

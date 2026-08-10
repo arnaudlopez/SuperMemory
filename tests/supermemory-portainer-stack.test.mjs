@@ -29,7 +29,7 @@ function close(server) {
   return new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 }
 
-test("Portainer artifact is one complete six-service private brain stack", () => {
+test("Portainer artifact is one complete Personal Manager private brain stack", () => {
   const config = composeConfig();
   const required = ["hindsight", "neo4j", "neo4j-migrate", "supermemory-graphd", "supermemory-daemon", "supermemory-web"];
   assert.deepEqual(Object.keys(config.services).sort(), required.sort());
@@ -53,9 +53,9 @@ test("Portainer artifact is one complete six-service private brain stack", () =>
   assert.equal(config.services["supermemory-web"].network_mode, "host");
   assert.equal(config.services["supermemory-daemon"].depends_on.hindsight.condition, "service_healthy");
   assert.equal(config.services["supermemory-web"].depends_on["supermemory-daemon"].condition, "service_healthy");
-  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_PROVIDER, "openai-codex");
-  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_MODEL, "gpt-5.6-luna");
-  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_REASONING_EFFORT, "high");
+  assert.equal(config.services.hindsight.environment.SUPERMEMORY_RUNTIME_CONTRACT, "/run/supermemory/runtime-contract.json");
+  assert.equal(config.services["supermemory-web"].depends_on.hermes, undefined);
+  assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_PROVIDER, undefined);
   assert.equal(config.services.hindsight.environment.HINDSIGHT_API_LLM_MAX_CONCURRENT, "1");
 });
 
@@ -79,12 +79,13 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
   const env = fs.readFileSync(envPath, "utf8");
   assert.doesNotMatch(env, /PASSWORD\s*=|TOKEN\s*=/);
   assert.match(env, /NEO4J_IMAGE=neo4j:5\.26\.28/);
-  assert.match(env, /HINDSIGHT_IMAGE=ghcr\.io\/vectorize-io\/hindsight@sha256:6364c3c5/);
+  assert.match(env, /HINDSIGHT_BASE_IMAGE=ghcr\.io\/vectorize-io\/hindsight@sha256:6364c3c5/);
+  assert.doesNotMatch(env, /^HERMES_(?:IMAGE|BASE_IMAGE|UID|GID|MEMORY_LIMIT|CPUS)=/m);
   assert.equal(config.services.hindsight.environment.HINDSIGHT_API_ENABLE_OBSERVATIONS, "true");
   assert.equal(config.services.hindsight.environment.HINDSIGHT_API_ENABLE_AUTO_CONSOLIDATION, "false");
   const compose = fs.readFileSync(composePath, "utf8");
-  assert.doesNotMatch(compose, /\bollama\b|qwen-model|openrouter/i);
-  assert.match(compose, /gpt-5\.6-luna/);
+  assert.doesNotMatch(compose, /\bollama\b|qwen-model/i);
+  assert.doesNotMatch(compose, /HERMES_LLM_PROVIDER|HINDSIGHT_API_LLM_PROVIDER/);
   const runtimeDockerfile = fs.readFileSync(path.join(root, "deploy/runtime/Dockerfile"), "utf8");
   assert.match(runtimeDockerfile, /apt-get install --yes --no-install-recommends ca-certificates/);
   assert.match(runtimeDockerfile, /@openai\/codex@\$\{CODEX_CLI_VERSION\}/);
@@ -93,16 +94,22 @@ test("stack uses two mounted secrets, persistent data and pinned Hindsight 0.9.0
     path.join(root, "deploy/runtime/runtime-contract.production.json"),
     "utf8"
   ));
-  assert.equal(runtime.deployment.activation, "enabled");
-  assert.equal(runtime.schema, "supermemory.codex-runtime.v6");
+  assert.equal(runtime.deployment.activation, "full");
+  assert.equal(runtime.schema, "supermemory.codex-runtime.v8");
   assert.equal(runtime.deployment.canary, false);
   assert.equal(runtime.deployment.progressive, false);
   assert.equal(runtime.working_memory.capacity_tokens, 100_000);
   assert.equal(runtime.working_memory.map_max_tokens, 8_000);
   assert.equal(runtime.admission.mode, "automatic");
   assert.equal(runtime.topic_continuity.enabled, true);
+  assert.equal(runtime.longitudinal_memory.enabled, true);
+  assert.equal(runtime.longitudinal_memory.activation, "full");
+  assert.equal(runtime.longitudinal_memory.explicit_remember_behavior, "pin");
   assert.equal(runtime.temporal_retrieval.max_rounds, 3);
   assert.equal(runtime.authority.mode, "quiet");
+  assert.equal(runtime.personal_manager.enabled, true);
+  assert.equal(runtime.llm.provider_mode, "single");
+  assert.equal(runtime.llm.fallback_provider, null);
 });
 
 test("GraphD v2 is non-root and exposes only bounded authenticated Neo4j operations", () => {
@@ -137,10 +144,24 @@ test("offline backup and exact-confirmation restore remain explicit and deployme
   assert.match(backup, /chown 7474:7474 \/backups/);
   assert.match(restore, /RESTORE neo4j/);
   assert.match(restore, /database load/);
-  assert.match(readme, /six-service/i);
+  assert.match(readme, /six Compose services/i);
   assert.match(readme, /docker compose[\s\S]*config/);
   assert.match(readme, /rollback/i);
-  assert.match(readme, /no canary or progressive rollout/i);
+  assert.match(readme, /no Ollama[\s\S]*canary or[\s\S]*progressive\s+rollout/i);
+});
+
+test("Home 101 runs Hermes behind a restricted loopback SSH tunnel", () => {
+  const unit = fs.readFileSync(path.join(root, "deploy/home101/supermemory-z2-tunnel.service"), "utf8");
+  const dropIn = fs.readFileSync(path.join(root, "deploy/home101/hermes-gateway-supermemory.conf"), "utf8");
+  const env = fs.readFileSync(path.join(root, "deploy/home101/home101.env.example"), "utf8");
+  assert.match(unit, /User=agent/);
+  assert.match(unit, /-L 127\.0\.0\.1:18765:127\.0\.0\.1:8765/);
+  assert.match(unit, /StrictHostKeyChecking=yes/);
+  assert.match(unit, /NoNewPrivileges=true/);
+  assert.match(dropIn, /Requires=supermemory-z2-tunnel\.service/);
+  assert.match(env, /^SUPERMEMORY_AGENT_DEVICE=device_home101$/m);
+  assert.match(env, /^SUPERMEMORY_ENDPOINT=http:\/\/127\.0\.0\.1:18765$/m);
+  assert.doesNotMatch(env, /TOKEN=/);
 });
 
 test("GraphD v2 enforces workspace auth, rejects raw Cypher and talks directly to Neo4j", async (t) => {

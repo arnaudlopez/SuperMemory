@@ -1,0 +1,789 @@
+version: 2
+goal:
+  slug: "implement-memory-fabric-v2-5-longitudinal-memory-consolidation"
+  title: "Implement Memory Fabric v2.5 — Longitudinal Memory Consolidation"
+  status: active
+  created_at: "2026-08-10"
+  updated_at: "2026-08-10"
+  kind: specific
+  original_request: "# Implement Memory Fabric v2.5 — Longitudinal Memory Consolidation\n\n## Intent\n\nImplement the complete product and technical blueprint in\n`docs/longitudinal-memory-consolidation-blueprint.md` on top of the deployed Memory Fabric\nv2.4 architecture. Ordinary governed Hermes and Codex conversations must become episodic\nevidence automatically. The Z2 runtime must consolidate clear user conclusions, contextual\nendorsements, repeated preferences and evolving project state without requiring the phrase\n`retiens que`.\n\nThe canonical vault remains authoritative. Hindsight 0.9.0 and GraphD/Neo4j remain derived,\nrebuildable planes. `retiens que` becomes an immediate governed pin. Longitudinal processing\nmust be asynchronous, bounded, encrypted, idempotent, cited, temporally aware and recoverable.\nThe final runtime contract is v8 and is deployed directly to Z2 with full activation,\n`canary=false` and `progressive=false`. Hermes remains native on Home 101 and reaches Z2 only\nthrough the existing restricted tunnel.\n\n- Do not create a new vector engine, graph engine, agent orchestrator or standalone service.\n- Do not replace Hindsight, Neo4j, GraphD or the canonical vault.\n- Do not let Hindsight or an assistant proposal activate canonical truth by itself.\n- Do not retain system prompts, hidden reasoning, credentials, attachments or raw tool output.\n- Do not infer sensitive psychological or personal traits from weak behavioral evidence.\n- Do not authorize Gmail, Calendar or another external action from recalled memory alone.\n- Do not physically delete an old memory merely because its recall priority decays.\n- Do not add a second LLM provider, fallback model, canary or progressive deployment.\n- Do not broaden a Codex checkout identity beyond its enrolled project.\n- Do not require human review for ordinary independently verified consolidations.\n- Do not overwrite or revert unrelated existing worktree changes.\n\nBuild and test the production artifacts, back up the current Z2 deployment, deploy runtime v8\ndirectly without a canary, verify the six memory services, verify the Home 101 tunnel and\nnative Hermes provider, execute the live consolidation/recall/restart smoke, and leave a\nrecoverable deployment receipt. Do not move Hermes back to Z2.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nMemory Fabric v2.5 consolide automatiquement les conclusions et préférences longitudinales sans commande retiens que, garde une lignée citée, respecte autorité/fraîcheur/scope, transforme retiens que en épinglage, passe les 22 critères d'acceptation et les régressions v2-v2.4, puis runtime v8 est déployé intégralement sur Z2 sans canari.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Automated evidence must prove all 22 acceptance criteria from section 23 of the blueprint:\n- A natural user conclusion is admitted without `retiens que`.\n- A mundane conversation is archived without active-memory pollution.\n- An unendorsed assistant suggestion cannot become a user preference.\n- A valid short endorsement cites both the proposal and user acceptance.\n- An ambiguous short endorsement is not activated.\n- A behavioral preference requires three concordant episodes in at least two sessions.\n- One Gmail draft receipt does not create a style preference.\n- Confirmation reinforces without duplicating canonical memory.\n- A direct new preference creates a temporal revision of the old one.\n- Decay deprioritizes but does not delete historical memory.\n- `retiens que` creates or updates a governed pinned memory.\n- Fresh current memory outranks salient stale memory.\n- Lineage explains episodes, verification, admission, reinforcement and revisions.\n- Forgetting evidence transitively recalculates or revokes dependent syntheses.\n- Hindsight outage leaves durable retryable work and never activates unvalidated output.\n- Z2 restart resumes without loss, duplicate admission or partial cluster commit.\n- Owner and checkout scopes remain isolated as designed.\n- Signals and receipts contain no hidden or raw sensitive payloads.\n- Historical Codex backfill and consolidation are idempotent.\n- Worker batches, tokens, concurrency and capture latency remain bounded.\n- Every generative function uses the one configured provider/model with no fallback.\n- Runtime v8 is fully active on Z2 with no canary or progressive mode.\n- Additional required evidence:\n- New v2.5 verifier and acceptance matrix pass exactly.\n- Focused unit, integration, security and restart tests pass.\n- Existing v2, v2.2, v2.3 and v2.4 verification suites pass.\n- Hindsight-native, specs, release, production and secret-hygiene checks remain green.\n- A real E2E covers Hermes Home 101 -> Z2 capture -> consolidation -> cited recall.\n- A real Z2 restart preserves worker state and recall.\n- Web UI visual verification succeeds from the Mac through the existing tunnel.\n- Deployment receipts show the existing six-service Z2 stack and native Home 101 Hermes only.\n- The first automated test must exercise a natural user conclusion through capture, signal,\n- consolidation, canonical admission and cited recall without an explicit memory command. The\n- first negative tests must prove that a mundane conversation, an unendorsed assistant\n- suggestion, an ambiguous `OK` and one Gmail receipt do not activate personal truth. Final\n- manual and shipping proof must include browser inspection, a real Home 101 Hermes round trip,\n- a Z2 restart, six-service health, source-backed runtime v8 configuration and a recoverable\n- deployment receipt.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- Reuse current AEAD, redaction, admission, revision, command bus, Hindsight gateway, GraphD,\n- `WorkspaceRuntimeSupervisor`, Personal Context Card and scope resolvers.\n- Preserve canonical-vault-first and read-after-write semantics.\n- Treat repetition as salience evidence, never as factual verification.\n- Treat an assistant message as low-authority evidence until directly endorsed by the user.\n- Make the worker internal to `supermemoryd`; add no port, public credential or container.\n- Keep capture ACK outside the consolidation critical path.\n- Limit default worker concurrency to one, batch size to 50 episodes, cluster size to 24\n- episodes and cluster context to 32,000 tokens.\n- Keep the Personal Context Card at or below 8,000 tokens.\n- Preserve all unrelated user changes already present in the dirty worktree.\n- Refresh Codebase Memory after material changes and verify exact source before final claims.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/implement-longitudinal-memory-consolidation-v25/brief.md --mode implementation --oracle \"Memory Fabric v2.5 consolide automatiquement les conclusions et préférences longitudinales sans commande retiens que, garde une lignée citée, respecte autorité/fraîcheur/scope, transforme retiens que en épinglage, passe les 22 critères d'acceptation et les régressions v2-v2.4, puis runtime v8 est déployé intégralement sur Z2 sans canari.\" --out docs/goals/implement-memory-fabric-v2-5-longitudinal-memory-consolidation\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/goals/implement-longitudinal-memory-consolidation-v25-spec.md\n\n> # Implement Memory Fabric v2.5 — Longitudinal Memory Consolidation\n> \n> ## Intent\n> \n> Implement the complete product and technical blueprint in\n> `docs/longitudinal-memory-consolidation-blueprint.md` on top of the deployed Memory Fabric\n> v2.4 architecture. Ordinary governed Hermes and Codex conversations must become episodic\n> evidence automatically. The Z2 runtime must consolidate clear user conclusions, contextual\n> endorsements, repeated preferences and evolving project state without requiring the phrase\n> `retiens que`.\n> \n> The canonical vault remains authoritative. Hindsight 0.9.0 and GraphD/Neo4j remain derived,\n> rebuildable planes. `retiens que` becomes an immediate governed pin. Longitudinal processing\n> must be asynchronous, bounded, encrypted, idempotent, cited, temporally aware and recoverable.\n> The final runtime contract is v8 and is deployed directly to Z2 with full activation,\n> `canary=false` and `progressive=false`. Hermes remains native on Home 101 and reaches Z2 only\n> through the existing restricted tunnel.\n> \n> ## Non-Goals\n> \n> - Do not create a new vector engine, graph engine, agent orchestrator or standalone service.\n> - Do not replace Hindsight, Neo4j, GraphD or the canonical vault.\n> - Do not let Hindsight or an assistant proposal activate canonical truth by itself.\n> - Do not retain system prompts, hidden reasoning, credentials, attachments or raw tool output.\n> - Do not infer sensitive psychological or personal traits from weak behavioral evidence.\n> - Do not authorize Gmail, Calendar or another external action from recalled memory alone.\n> - Do not physically delete an old memory merely because its recall priority decays.\n> - Do not add a second LLM provider, fallback model, canary or progressive deployment.\n> - Do not broaden a Codex checkout identity beyond its enrolled project.\n> - Do not require human review for ordinary independently verified consolidations.\n> - Do not overwrite or revert unrelated existing worktree changes.\n> \n> ## Required Capabilities\n> \n> - `MemorySignal v1` with explicit authority role, scope, temporal class and evidence lineage.\n> - Contextual endorsement resolution for short user acceptance of one preceding visible proposal.\n> - Deterministic evidence clustering bounded by owner, workspace, subject, tokens and episode count.\n> - A recoverable longitudinal consolidator supporting observe, activate, reinforce, revise,\n>   supersede, deemphasize and noop.\n> - Versioned `salience-v1` policy whose deterministic score uses user commitment,\n>   consequentiality, future utility, recurrence, stability, reuse and recency.\n> - Independent verification and canonical commit-before-projection for every activation or\n>   revision.\n> - Class-aware non-destructive decay and freshness-aware recall ranking.\n> - Pin/unpin, lineage explanation and bounded recall feedback for the Personal Manager.\n> - Recalculation of dependent syntheses after correction, revocation or forgetting.\n> - Runtime contract v8, Web visibility, metrics and an encrypted worker checkpoint.\n> - Historical Codex import by idempotent bounded batches after project-binding resolution.\n> \n> ## Proposed Oracle\n> \n> Memory Fabric v2.5 consolidates natural user conclusions and longitudinal preferences without\n> requiring `retiens que`, preserves cited lineage and authority/freshness/scope, treats explicit\n> remembering as pinning, passes the 22 blueprint acceptance criteria and all v2-v2.4\n> regressions, then runs as fully active runtime v8 on Z2 without canary or progressive mode.\n> \n> ## Acceptance\n> \n> Automated evidence must prove all 22 acceptance criteria from section 23 of the blueprint:\n> \n> 1. A natural user conclusion is admitted without `retiens que`.\n> 2. A mundane conversation is archived without active-memory pollution.\n> 3. An unendorsed assistant suggestion cannot become a user preference.\n> 4. A valid short endorsement cites both the proposal and user acceptance.\n> 5. An ambiguous short endorsement is not activated.\n> 6. A behavioral preference requires three concordant episodes in at least two sessions.\n> 7. One Gmail draft receipt does not create a style preference.\n> 8. Confirmation reinforces without duplicating canonical memory.\n> 9. A direct new preference creates a temporal revision of the old one.\n> 10. Decay deprioritizes but does not delete historical memory.\n> 11. `retiens que` creates or updates a governed pinned memory.\n> 12. Fresh current memory outranks salient stale memory.\n> 13. Lineage explains episodes, verification, admission, reinforcement and revisions.\n> 14. Forgetting evidence transitively recalculates or revokes dependent syntheses.\n> 15. Hindsight outage leaves durable retryable work and never activates unvalidated output.\n> 16. Z2 restart resumes without loss, duplicate admission or partial cluster commit.\n> 17. Owner and checkout scopes remain isolated as designed.\n> 18. Signals and receipts contain no hidden or raw sensitive payloads.\n> 19. Historical Codex backfill and consolidation are idempotent.\n> 20. Worker batches, tokens, concurrency and capture latency remain bounded.\n> 21. Every generative function uses the one configured provider/model with no fallback.\n> 22. Runtime v8 is fully active on Z2 with no canary or progressive mode.\n> \n> Additional required evidence:\n> \n> - New v2.5 verifier and acceptance matrix pass exactly.\n> - Focused unit, integration, security and restart tests pass.\n> - Existing v2, v2.2, v2.3 and v2.4 verification suites pass.\n> - Hindsight-native, specs, release, production and secret-hygiene checks remain green.\n> - A real E2E covers Hermes Home 101 -> Z2 capture -> consolidation -> cited recall.\n> - A real Z2 restart preserves worker state and recall.\n> - Web UI visual verification succeeds from the Mac through the existing tunnel.\n> - Deployment receipts show the existing six-service Z2 stack and native Home 101 Hermes only.\n> \n> The first automated test must exercise a natural user conclusion through capture, signal,\n> consolidation, canonical admission and cited recall without an explicit memory command. The\n> first negative tests must prove that a mundane conversation, an unendorsed assistant\n> suggestion, an ambiguous `OK` and one Gmail receipt do not activate personal truth. Final\n> manual and shipping proof must include browser inspection, a real Home 101 Hermes round trip,\n> a Z2 restart, six-service health, source-backed runtime v8 configuration and a recoverable\n> deployment receipt.\n> \n> ## Constraints\n> \n> - Reuse current AEAD, redaction, admission, revision, command bus, Hindsight gateway, GraphD,\n>   `WorkspaceRuntimeSupervisor`, Personal Context Card and scope resolvers.\n> - Preserve canonical-vault-first and read-after-write semantics.\n> - Treat repetition as salience evidence, never as factual verification.\n> - Treat an assistant message as low-authority evidence until directly endorsed by the user.\n> - Make the worker internal to `supermemoryd`; add no port, public credential or container.\n> - Keep capture ACK outside the consolidation critical path.\n> - Limit default worker concurrency to one, batch size to 50 episodes, cluster size to 24\n>   episodes and cluster context to 32,000 tokens.\n> - Keep the Personal Context Card at or below 8,000 tokens.\n> - Preserve all unrelated user changes already present in the dirty worktree.\n> - Refresh Codebase Memory after material changes and verify exact source before final claims.\n> \n> ## Deployment Outcome\n> \n> Build and test the production artifacts, back up the current Z2 deployment, deploy runtime v8\n> directly without a canary, verify the six memory services, verify the Home 101 tunnel and\n> native Hermes provider, execute the live consolidation/recall/restart smoke, and leave a\n> recoverable deployment receipt. Do not move Hermes back to Z2."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Implement Memory Fabric v2.5 — Longitudinal Memory Consolidation."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "Memory Fabric v2.5 consolide automatiquement les conclusions et préférences longitudinales sans commande retiens que, garde une lignée citée, respecte autorité/fraîcheur/scope, transforme retiens que en épinglage, passe les 22 critères d'acceptation et les régressions v2-v2.4, puis runtime v8 est déployé intégralement sur Z2 sans canari."
+  oracle:
+    signal: "Memory Fabric v2.5 consolide automatiquement les conclusions et préférences longitudinales sans commande retiens que, garde une lignée citée, respecte autorité/fraîcheur/scope, transforme retiens que en épinglage, passe les 22 critères d'acceptation et les régressions v2-v2.4, puis runtime v8 est déployé intégralement sur Z2 sans canari."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: T998
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Read-only mapping completed. v2.5 is an internal daemon worker layered over existing encrypted episodes, independent admission, canonical revisions, Hindsight projections, GraphD, owner recall and Web status; no new service or authority plane is required."
+      design_concept: "Episode-by-default, canon-selectively: visible governed Hermes/Codex turns remain immutable evidence; a bounded longitudinal worker emits role-aware signals, resolves only unambiguous user endorsements, clusters evidence deterministically, proposes one cited operation, verifies independently, applies versioned salience and commits through existing canonical stores before projection. Explicit remember becomes pinning, while decay changes recall priority only."
+      ubiquitous_language:
+        Episode: "Immutable encrypted governed turn or reduced action receipt; never canonical truth by existence alone."
+        MemorySignal: "Non-authoritative, cited, role-aware feature extraction from one or more episodes."
+        EvidenceCluster: "Deterministic owner/workspace/subject bounded group used for one consolidation decision."
+        EndorsementLink: "User-visible acceptance linked to exactly one preceding visible assistant proposal in the same thread."
+        ConsolidationProposal: "Cited observe/activate/reinforce/revise/supersede/deemphasize/noop request; never a commit."
+        Salience: "Deterministic recall importance vector; not factual confidence."
+        Pin: "Explicit governed priority requested by the user; synonym for retain is forbidden in implementation."
+        CanonicalMemory: "Versioned vault-authoritative memory committed only after policy/authority checks."
+        Deemphasize: "Lower recall priority without deletion or factual invalidation."
+        ForbiddenSynonyms: "Do not call an episode a memory truth, salience confidence, Hindsight authority, or decay deletion."
+      module_map:
+        capture_boundary:
+          - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+          - scripts/lib/personal-manager-capture.mjs
+          - scripts/lib/codex-memory-compiler.mjs
+        canonical_boundary:
+          - scripts/lib/memory-admission-policy.mjs
+          - scripts/lib/canonical-knowledge-worker.mjs
+          - scripts/lib/personal-memory-command-bus.mjs
+          - scripts/lib/personal-memory-revision-store.mjs
+        recall_boundary:
+          - scripts/lib/personal-recall-orchestrator.mjs
+          - scripts/lib/codex-memory-router.mjs
+          - scripts/lib/personal-context-card.mjs
+        derived_planes:
+          - scripts/lib/hindsight-learned-plane.mjs
+          - scripts/lib/knowledge-graph-adapter.mjs
+          - scripts/lib/hindsight-authority-gateway.mjs
+        runtime_and_api:
+          - scripts/supermemoryd.mjs
+          - scripts/lib/supermemory-daemon.mjs
+          - scripts/lib/personal-manager-api.mjs
+          - scripts/lib/codex-runtime-config.mjs
+          - deploy/runtime/runtime-contract.production.json
+        ui_and_deploy:
+          - scripts/supermemory-app.mjs
+          - web/app.js
+          - web/index.html
+          - web/styles.css
+          - deploy/portainer/supermemory-ai-stack.yml
+          - "deploy/home101/*"
+        new_deep_modules:
+          - memory-signal-store
+          - memory-endorsement-resolver
+          - memory-salience-policy
+          - longitudinal-memory-consolidator
+          - memory-recall-feedback
+        shallow_module_risks: "Avoid wrappers that merely rename existing admission/revision calls. Keep clustering/checkpoint/operation state cohesive in the consolidator; keep pure authority/endorsement/salience decisions independently testable."
+      interface_contract:
+        capture: "ACK remains asynchronous; captures activate_memory=false and contain only visible user/final assistant and reduced receipts."
+        authority: "Assistant proposal alone and repetition alone cannot activate personal truth; direct user statement or valid endorsement may."
+        operations: "observe/activate/reinforce/revise/supersede/deemphasize/noop are idempotent and cited; commit precedes derived projection."
+        recall: "Authority and freshness precede salience; pin raises priority but cannot bypass scope or revocation."
+        api: "Owner-only lineage/pin/unpin/feedback/status routes; operator run/rebuild with plan hash; checkout identities rejected."
+        deployment: "Runtime v8 full activation in existing six-service Z2 stack; native Hermes stays on Home 101."
+      test_strategy:
+        first_red_e2e: "Natural user conclusion -> capture -> signal -> cluster -> verified consolidation -> canonical memory -> cited recall, with no explicit memory command."
+        negatives:
+          - "mundane conversation archive_only"
+          - "unendorsed assistant proposal rejected"
+          - "ambiguous OK rejected"
+          - "single Gmail draft cannot infer preference"
+          - "sensitive weak inference rejected"
+          - "stale salient result loses to fresh current result"
+          - "checkout cross-project call rejected"
+        units:
+          - "signal schema/redaction/idempotence"
+          - "endorsement resolution"
+          - "salience-v1 and class-aware decay"
+          - "cluster identity/bounds"
+          - "canonical operation transitions"
+          - "lineage recalculation"
+        integration:
+          - "Hermes capture pipeline"
+          - "Codex episode pipeline"
+          - "Hindsight outage/retry"
+          - "GraphD projection"
+          - restart/checkpoint
+          - "forget/revoke transitively"
+        shipping:
+          - "v2.5 exact matrix"
+          - "v2-v2.4 regressions"
+          - spec/release/production/secrets
+          - "real Home101->Z2 E2E"
+          - "Z2 restart"
+          - "browser visual inspection"
+      feedback_policy: "Run focused red/green tests after each module, v2.5 suite at each integration boundary, v2-v2.4 plus Hindsight/specs/secrets before deployment, then build images, back up Z2, deploy directly, run live API/Hermes/restart/browser checks, and only then final audit."
+      acceptance_contract_updates: "Treat the 22 ACs as exact matrix entries. Add explicit gates for assistant non-authority, contextual endorsement ambiguity, evidence diversity for inferred preferences, non-destructive decay, transitive forget, worker bounds, six-service topology, native Home 101 Hermes, and runtime v8 canary=false/progressive=false."
+      dirty_worktree_risk_map: "v2.4 and production deployment files are already modified or untracked, including supermemoryd, daemon, runtime config, Compose, Web UI, package.json, Personal Manager modules/tests and Home101 artifacts. They are prerequisite user work, not disposable noise. Snapshot hashes/baseline diffs before touching overlaps; add v2.5 changes incrementally; never reset, checkout or rewrite unrelated files. Generated .playwright-cli, output and __pycache__ stay outside implementation scope."
+      impact_assessment:
+        db_schema_migrations: "No database migration. Additive encrypted vault schemas and revision metadata require versioned readers and recovery tests."
+        data_backfill: "Yes: plan/hash/checkpoint bounded signal generation and Codex-history consolidation after binding resolution; no automatic unbounded apply."
+        env_secrets: "No new secrets. Reuse daemon/agent/checkout/GraphD/OpenAI credentials; never print them."
+        auth_permissions: "Add owner lineage/pin/unpin/feedback/status and local operator run/rebuild permissions; preserve checkout isolation."
+        api_contract: "Add Personal Manager lineage/pin/unpin/feedback/status plus local operator consolidation endpoints and compatible status fields."
+        ui_routes: "Extend existing Web API and Memory views; no new public origin."
+        background_jobs: "New concurrency-1 internal daemon worker, session-close notification, daily maintenance, encrypted checkpoint and retry/dead-letter."
+        external_services: "Reuse Hindsight 0.9.0 and GraphD/Neo4j only; no additional service."
+        deploy_rollback: "Backup Z2 app/vault/config; runtime flag stops worker; rollback images/config while preserving additive receipts; derived planes rebuildable."
+        observability: "Backlog, cluster decisions, operation counts, latency, retries, token bounds, false-positive corrections and checkpoint status without raw content."
+        docs: "Blueprint/spec, runtime v8 docs, production runbook and deployment receipt."
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Acceptance contract approved. The largest safe useful slice is the complete v2.5 vertical path, specified first by red tests."
+      architecture_review: "Approved: one internal supermemoryd worker; no new service, authority plane, provider, secret or port. Capture stays asynchronous, canonical commit precedes projection, salience is not factual confidence, decay is non-destructive, and owner/checkout isolation remains."
+      design_concept: "Episode-by-default, canon-selectively, with deterministic bounded consolidation and optional pinning."
+      ubiquitous_language: "Use Episode, MemorySignal, EvidenceCluster, EndorsementLink, ConsolidationProposal, CanonicalMemory, Salience, Pin and Deemphasize as approved in T001."
+      feedback_policy: "Focused red/green per module, exact v2.5 suite at boundaries, full regressions predeploy, then live Home101/Z2/restart/browser evidence."
+      test_strategy: "Write executable red evidence for the natural conclusion E2E and the authority, ambiguity, Gmail, decay, restart, scope and topology negatives before implementation."
+      module_map: "Approved T001 module map; new deep modules integrate through existing capture, canonical, derived, runtime and Web boundaries."
+      interface_contract: "Owner-only longitudinal API; operator-only rebuild; no checkout widening; no action authorization from recalled memory."
+      exact_worker_objective: "Write the failing v2.5 acceptance package for implicit consolidation and all high-risk negative/lifecycle cases without product implementation."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/memory-signal-store.test.mjs
+            - tests/memory-endorsement-resolver.test.mjs
+            - tests/memory-salience-policy.test.mjs
+            - tests/longitudinal-memory-consolidator.test.mjs
+            - tests/memory-recall-feedback.test.mjs
+            - tests/memory-fabric-v25-e2e.test.mjs
+            - tests/codex-runtime-v8.test.mjs
+            - tests/memory-fabric-v25-acceptance.test.mjs
+            - tests/personal-manager-api.test.mjs
+            - tests/personal-recall-orchestrator.test.mjs
+            - tests/supermemory-portainer-stack.test.mjs
+            - integrations/hermes/tests/test_supermemory_fabric.py
+            - tests/fixtures/memory-fabric-v25/acceptance.v1.json
+            - tests/fixtures/longitudinal-memory/corpus.v1.json
+          verify:
+            - "node --test --test-concurrency=1 tests/memory-signal-store.test.mjs tests/memory-endorsement-resolver.test.mjs tests/memory-salience-policy.test.mjs tests/longitudinal-memory-consolidator.test.mjs tests/memory-recall-feedback.test.mjs tests/memory-fabric-v25-e2e.test.mjs tests/codex-runtime-v8.test.mjs tests/memory-fabric-v25-acceptance.test.mjs tests/personal-manager-api.test.mjs tests/personal-recall-orchestrator.test.mjs tests/supermemory-portainer-stack.test.mjs"
+            - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need DB migration, encrypted schema change, data backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback or production-data work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/lib/memory-signal-store.mjs
+            - scripts/lib/memory-endorsement-resolver.mjs
+            - scripts/lib/memory-salience-policy.mjs
+            - scripts/lib/longitudinal-memory-consolidator.mjs
+            - scripts/lib/memory-recall-feedback.mjs
+            - scripts/lib/personal-manager-capture.mjs
+            - scripts/lib/codex-memory-compiler.mjs
+            - scripts/lib/canonical-knowledge-worker.mjs
+            - scripts/lib/memory-admission-policy.mjs
+            - scripts/lib/personal-memory-revision-store.mjs
+            - scripts/lib/personal-memory-command-bus.mjs
+            - scripts/lib/personal-recall-orchestrator.mjs
+            - scripts/lib/codex-memory-router.mjs
+            - scripts/lib/hindsight-learned-plane.mjs
+            - scripts/lib/knowledge-graph-adapter.mjs
+            - scripts/lib/personal-manager-api.mjs
+            - scripts/lib/supermemory-daemon.mjs
+            - scripts/lib/codex-runtime-config.mjs
+            - scripts/supermemoryd.mjs
+            - scripts/supermemory-app.mjs
+            - scripts/verify-memory-fabric-v25.mjs
+            - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+            - integrations/hermes/plugins/memory/supermemory_fabric/schemas.py
+            - integrations/hermes/tests/test_supermemory_fabric.py
+            - schemas/memory-signal.schema.json
+            - schemas/longitudinal-consolidation-proposal.schema.json
+            - schemas/consolidation-receipt.schema.json
+            - deploy/runtime/runtime-contract.production.json
+            - deploy/portainer/supermemory-ai-stack.yml
+            - deploy/portainer/supermemory-ai.env.example
+            - deploy/portainer/README.md
+            - deploy/home101/README.md
+            - web/app.js
+            - web/index.html
+            - web/styles.css
+            - package.json
+            - docs/README.md
+            - docs/production-runbook.md
+            - docs/longitudinal-memory-consolidation-blueprint.md
+            - tests/memory-signal-store.test.mjs
+            - tests/memory-endorsement-resolver.test.mjs
+            - tests/memory-salience-policy.test.mjs
+            - tests/longitudinal-memory-consolidator.test.mjs
+            - tests/memory-recall-feedback.test.mjs
+            - tests/memory-fabric-v25-e2e.test.mjs
+            - tests/codex-runtime-v8.test.mjs
+            - tests/memory-fabric-v25-acceptance.test.mjs
+            - tests/personal-manager-api.test.mjs
+            - tests/personal-recall-orchestrator.test.mjs
+            - tests/supermemory-portainer-stack.test.mjs
+            - tests/fixtures/memory-fabric-v25/acceptance.v1.json
+            - tests/fixtures/longitudinal-memory/corpus.v1.json
+          verify:
+            - "npm run verify:memory-fabric-v25"
+            - "node --test --test-concurrency=1 tests/memory-signal-store.test.mjs tests/memory-endorsement-resolver.test.mjs tests/memory-salience-policy.test.mjs tests/longitudinal-memory-consolidator.test.mjs tests/memory-recall-feedback.test.mjs tests/memory-fabric-v25-e2e.test.mjs tests/codex-runtime-v8.test.mjs tests/memory-fabric-v25-acceptance.test.mjs tests/personal-manager-api.test.mjs tests/personal-recall-orchestrator.test.mjs tests/supermemory-portainer-stack.test.mjs"
+            - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+            - "npm test"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need DB migration, encrypted schema change, data backfill, env/secret, auth/RLS/permission, external service, new container, deploy or rollback work outside allowed_files."
+            - "Verification fails twice without a clear bounded fix."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-verification.md
+            - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-visual-receipt.json
+            - output/playwright/memory-fabric-v25-natural-memory.png
+          verify:
+            - "npm run verify:memory-fabric-v25"
+            - "npm run verify:memory-fabric-v2"
+            - "npm run verify:memory-fabric-v22"
+            - "npm run verify:memory-fabric-v23"
+            - "npm run verify:memory-fabric-v24"
+            - "npm run verify:hindsight-native"
+            - "npm run verify:specs"
+            - "npm run verify:secrets"
+            - "npm test"
+            - "git diff --check"
+          stop_if:
+            - "Need product implementation changes outside allowed_files."
+            - "Need DB migration, schema change, data backfill, env/secret, auth/RLS/permission, external service, background job, deploy or rollback work outside allowed_files."
+            - "Any acceptance or regression verification fails twice without understood cause."
+            - "Browser or six-service topology evidence cannot be obtained."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/memory-signal-store.test.mjs
+      - tests/memory-endorsement-resolver.test.mjs
+      - tests/memory-salience-policy.test.mjs
+      - tests/longitudinal-memory-consolidator.test.mjs
+      - tests/memory-recall-feedback.test.mjs
+      - tests/memory-fabric-v25-e2e.test.mjs
+      - tests/codex-runtime-v8.test.mjs
+      - tests/memory-fabric-v25-acceptance.test.mjs
+      - tests/personal-manager-api.test.mjs
+      - tests/personal-recall-orchestrator.test.mjs
+      - tests/supermemory-portainer-stack.test.mjs
+      - integrations/hermes/tests/test_supermemory_fabric.py
+      - tests/fixtures/memory-fabric-v25/acceptance.v1.json
+      - tests/fixtures/longitudinal-memory/corpus.v1.json
+    verify:
+      - "node --test --test-concurrency=1 tests/memory-signal-store.test.mjs tests/memory-endorsement-resolver.test.mjs tests/memory-salience-policy.test.mjs tests/longitudinal-memory-consolidator.test.mjs tests/memory-recall-feedback.test.mjs tests/memory-fabric-v25-e2e.test.mjs tests/codex-runtime-v8.test.mjs tests/memory-fabric-v25-acceptance.test.mjs tests/personal-manager-api.test.mjs tests/personal-recall-orchestrator.test.mjs tests/supermemory-portainer-stack.test.mjs"
+      - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need DB migration, encrypted schema change, data backfill, env/secret, auth/RLS/permission, external service, background job, deploy, rollback or production-data work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Added the v2.5 red acceptance package: exact 22-criterion matrix, authority/convergence corpus, signal/endorsement/salience/consolidator/feedback tests, owner API tests, runtime v8 tests and topology checks. Production code was not changed."
+      changed_files:
+        - tests/fixtures/longitudinal-memory/corpus.v1.json
+        - tests/fixtures/memory-fabric-v25/acceptance.v1.json
+        - tests/memory-signal-store.test.mjs
+        - tests/memory-endorsement-resolver.test.mjs
+        - tests/memory-salience-policy.test.mjs
+        - tests/memory-recall-feedback.test.mjs
+        - tests/longitudinal-memory-consolidator.test.mjs
+        - tests/memory-fabric-v25-e2e.test.mjs
+        - tests/codex-runtime-v8.test.mjs
+        - tests/memory-fabric-v25-acceptance.test.mjs
+      red_evidence:
+        command: "node --test --test-concurrency=1 tests/memory-signal-store.test.mjs tests/memory-endorsement-resolver.test.mjs tests/memory-salience-policy.test.mjs tests/longitudinal-memory-consolidator.test.mjs tests/memory-recall-feedback.test.mjs tests/memory-fabric-v25-e2e.test.mjs tests/codex-runtime-v8.test.mjs tests/memory-fabric-v25-acceptance.test.mjs tests/personal-manager-api.test.mjs tests/personal-recall-orchestrator.test.mjs tests/supermemory-portainer-stack.test.mjs"
+        result: "failed as expected"
+        failure: "10 meaningful failures: five new production modules absent, runtime remains v7, v2.5 verifier/script absent, and owner lineage/pin/feedback/consolidation routes absent. Existing v2.4 Personal Manager and six-service topology tests continue to pass."
+      verify:
+        - "Red command exit 1 with 13 pass / 10 fail."
+        - "Topology parser corrected before receipt so secrets are not misclassified as services."
+        - "No product files changed."
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: blocked
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/lib/memory-signal-store.mjs
+      - scripts/lib/memory-endorsement-resolver.mjs
+      - scripts/lib/memory-salience-policy.mjs
+      - scripts/lib/longitudinal-memory-consolidator.mjs
+      - scripts/lib/memory-recall-feedback.mjs
+      - scripts/lib/personal-manager-capture.mjs
+      - scripts/lib/codex-memory-compiler.mjs
+      - scripts/lib/canonical-knowledge-worker.mjs
+      - scripts/lib/memory-admission-policy.mjs
+      - scripts/lib/personal-memory-revision-store.mjs
+      - scripts/lib/personal-memory-command-bus.mjs
+      - scripts/lib/personal-recall-orchestrator.mjs
+      - scripts/lib/codex-memory-router.mjs
+      - scripts/lib/hindsight-learned-plane.mjs
+      - scripts/lib/knowledge-graph-adapter.mjs
+      - scripts/lib/personal-manager-api.mjs
+      - scripts/lib/supermemory-daemon.mjs
+      - scripts/lib/codex-runtime-config.mjs
+      - scripts/supermemoryd.mjs
+      - scripts/supermemory-app.mjs
+      - scripts/verify-memory-fabric-v25.mjs
+      - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+      - integrations/hermes/plugins/memory/supermemory_fabric/schemas.py
+      - integrations/hermes/tests/test_supermemory_fabric.py
+      - schemas/memory-signal.schema.json
+      - schemas/longitudinal-consolidation-proposal.schema.json
+      - schemas/consolidation-receipt.schema.json
+      - deploy/runtime/runtime-contract.production.json
+      - deploy/portainer/supermemory-ai-stack.yml
+      - deploy/portainer/supermemory-ai.env.example
+      - deploy/portainer/README.md
+      - deploy/home101/README.md
+      - web/app.js
+      - web/index.html
+      - web/styles.css
+      - package.json
+      - docs/README.md
+      - docs/production-runbook.md
+      - docs/longitudinal-memory-consolidation-blueprint.md
+      - tests/memory-signal-store.test.mjs
+      - tests/memory-endorsement-resolver.test.mjs
+      - tests/memory-salience-policy.test.mjs
+      - tests/longitudinal-memory-consolidator.test.mjs
+      - tests/memory-recall-feedback.test.mjs
+      - tests/memory-fabric-v25-e2e.test.mjs
+      - tests/codex-runtime-v8.test.mjs
+      - tests/memory-fabric-v25-acceptance.test.mjs
+      - tests/personal-manager-api.test.mjs
+      - tests/personal-recall-orchestrator.test.mjs
+      - tests/supermemory-portainer-stack.test.mjs
+      - tests/fixtures/memory-fabric-v25/acceptance.v1.json
+      - tests/fixtures/longitudinal-memory/corpus.v1.json
+    verify:
+      - "npm run verify:memory-fabric-v25"
+      - "node --test --test-concurrency=1 tests/memory-signal-store.test.mjs tests/memory-endorsement-resolver.test.mjs tests/memory-salience-policy.test.mjs tests/longitudinal-memory-consolidator.test.mjs tests/memory-recall-feedback.test.mjs tests/memory-fabric-v25-e2e.test.mjs tests/codex-runtime-v8.test.mjs tests/memory-fabric-v25-acceptance.test.mjs tests/personal-manager-api.test.mjs tests/personal-recall-orchestrator.test.mjs tests/supermemory-portainer-stack.test.mjs"
+      - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+      - "npm test"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need DB migration, encrypted schema change, data backfill, env/secret, auth/RLS/permission, external service, new container, deploy or rollback work outside allowed_files."
+      - "Verification fails twice without a clear bounded fix."
+    receipt:
+      result: blocked
+      summary: "Implemented the approved v2.5 vertical slice. The exact v2.5 verifier is green at 22/22; focused Node and Hermes suites are green. Full npm test reaches 335/341 pass and is blocked only because legacy v2.2/v2.3/v2.4 verifier/tests hard-code production runtime v7/enabled while the approved production contract is now v8/full."
+      changed_files:
+        - scripts/lib/memory-signal-store.mjs
+        - scripts/lib/memory-endorsement-resolver.mjs
+        - scripts/lib/memory-salience-policy.mjs
+        - scripts/lib/longitudinal-memory-consolidator.mjs
+        - scripts/lib/memory-recall-feedback.mjs
+        - scripts/lib/personal-memory-revision-store.mjs
+        - scripts/lib/personal-memory-command-bus.mjs
+        - scripts/lib/personal-manager-api.mjs
+        - scripts/lib/supermemory-daemon.mjs
+        - scripts/lib/codex-runtime-config.mjs
+        - scripts/supermemoryd.mjs
+        - scripts/supermemory-app.mjs
+        - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+        - integrations/hermes/plugins/memory/supermemory_fabric/schemas.py
+        - integrations/hermes/tests/test_supermemory_fabric.py
+        - web/app.js
+        - web/index.html
+        - web/styles.css
+        - deploy/runtime/runtime-contract.production.json
+        - scripts/verify-memory-fabric-v25.mjs
+        - package.json
+        - tests/longitudinal-memory-consolidator.test.mjs
+        - tests/memory-fabric-v25-e2e.test.mjs
+        - tests/supermemory-portainer-stack.test.mjs
+      verification:
+        green:
+          - "npm run verify:memory-fabric-v25 (22/22; 35/35 Node; 6/6 Python)"
+          - "node --check scripts/supermemoryd.mjs"
+          - "targeted v2.5 tests"
+        blocked: "npm test: legacy v7 literals in tests/memory-fabric-v22-acceptance.test.mjs, tests/memory-fabric-v24-acceptance.test.mjs, scripts/verify-memory-fabric-v22.mjs and scripts/verify-memory-fabric-v23.mjs require edits outside T004 allowed_files"
+      stop_condition: "Need files outside allowed_files"
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: done
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-verification.md
+      - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-visual-receipt.json
+      - output/playwright/memory-fabric-v25-natural-memory.png
+      - tests/memory-fabric-v25-e2e.test.mjs
+    verify:
+      - "npm run verify:memory-fabric-v25"
+      - "npm run verify:memory-fabric-v2"
+      - "npm run verify:memory-fabric-v22"
+      - "npm run verify:memory-fabric-v23"
+      - "npm run verify:memory-fabric-v24"
+      - "npm run verify:hindsight-native"
+      - "npm run verify:specs"
+      - "npm run verify:secrets"
+      - "npm test"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need product implementation changes outside allowed_files."
+      - "Need DB migration, schema change, data backfill, env/secret, auth/RLS/permission, external service, background job, deploy or rollback work outside allowed_files."
+      - "Any acceptance or regression verification fails twice without understood cause."
+      - "Browser or six-service topology evidence cannot be obtained."
+    receipt:
+      result: done
+      summary: "Full verification and local visual inspection passed. Production live checks remain assigned to the authorized deployment stage."
+      impact_assessment_ref: T001.receipt.impact_assessment
+      green_test:
+        command: "npm test"
+        result: "pass: 340 passed, 0 failed, 1 skipped"
+      verify:
+        - "npm run verify:memory-fabric-v25: pass 22/22"
+        - "npm run verify:memory-fabric-v2: pass 45/45"
+        - "npm run verify:memory-fabric-v22: pass 42/42"
+        - "npm run verify:memory-fabric-v23: pass"
+        - "npm run verify:memory-fabric-v24: pass"
+        - "npm run verify:hindsight-native: pass 24/24"
+        - "npm run verify:specs: pass"
+        - "npm run verify:secrets: pass 753 files, 0 findings"
+        - "git diff --check: pass"
+        - "Playwright Personal Manager natural-memory view and lineage: pass; screenshot output/playwright/memory-fabric-v25-natural-memory.png"
+      browser_verification:
+        status: pass
+        receipt: docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-visual-receipt.json
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Architecture and spec-fidelity review approves direct shipping. The implementation satisfies the 22-point oracle, preserves canonical-vault-first authority, keeps one provider and one internal worker, and has complete regression/security/visual evidence."
+      design_delta:
+        - "Hermes captures emit explicit MemorySignal records; Codex continues through its already-governed episode/compiler/canonical-worker path instead of duplicating a second project-memory authority pipeline."
+        - "The sole configured Luna/OpenRouter provider proposes uncommitted consolidations; Hindsight remains derived and rebuildable because Reflect cannot safely ground evidence that has not yet passed canonical admission."
+        - "Consolidation support/reinforcement/revision lineage is canonical in the encrypted revision/consolidator stores; GraphD continues to receive the corresponding canonical claims through the existing worker."
+        - "Operator run and receipt routes are implemented; exact-confirmation recovery remains covered by the existing canonical fabric rebuild and backup/restore controls rather than a second destructive longitudinal rebuild endpoint."
+      architecture_review: "approved: one internal concurrency-1 bounded worker, encrypted signals/checkpoint/receipts, independent verification, commit-before-projection, no new service/port/provider/secret, six Z2 services, native Home 101 Hermes."
+      oracle_coverage:
+        acceptance: "LM-AC01..LM-AC22 pass exactly"
+        regression: "v2 45/45; v2.2 42/42; v2.3 pass; v2.4 pass; Hindsight 24/24; npm test 340/0/1"
+        security: "secret hygiene 753 files, zero findings; owner and checkout paths remain isolated"
+        visual: "Playwright natural-memory, lineage and pin controls pass"
+      remaining_risks:
+        - "Live OAuth/model availability, actual Home 101 provider reconciliation and Z2 restart are shipping-time checks."
+        - "Hermes subagents can inherit owner-readable memory; dedicated per-agent read scopes are intentionally the next product tranche, while non-primary contexts remain write-disabled now."
+        - "Direct GraphD visualization of reinforcement edges can be enriched later; canonical lineage and authority do not depend on it."
+      whether_another_worker_slice_is_needed: false
+      next_recommendation: "Commit and push the verified source, then execute the authorized Z2/Home101 production deployment task."
+      impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T007
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Resume after owner approval and migrate legacy v2.2-v2.4 production assertions to accept the additive v8/full contract without weakening their original guarantees."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 blocked receipt"
+      - "Owner resume instruction: Go enchaine"
+      - "Runtime v8 production contract"
+      - "T001 feedback_policy"
+      - "T001 test_strategy"
+      - "T001 interface_contract"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/verify-memory-fabric-v22.mjs
+      - scripts/verify-memory-fabric-v23.mjs
+      - scripts/verify-memory-fabric-v24.mjs
+      - tests/memory-fabric-v22-acceptance.test.mjs
+      - tests/memory-fabric-v24-acceptance.test.mjs
+    verify:
+      - "npm run verify:memory-fabric-v22"
+      - "npm run verify:memory-fabric-v23"
+      - "npm run verify:memory-fabric-v24"
+      - "npm test"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "A failing regression requires files outside allowed_files."
+      - "Compatibility would require weakening scope, provider, service-count, authority, canary or progressive-deployment guarantees."
+      - "Need migration, backfill, env/secret, auth/RLS/permission, external service, deploy or rollback changes in this compatibility-only task."
+    receipt:
+      result: done
+      summary: "Owner-authorized compatibility migration completed with green_test evidence. Legacy v2.2-v2.4 checks accept additive v8/full while retaining original guarantees."
+      impact_assessment_ref: T001.receipt.impact_assessment
+      changed_files:
+        - scripts/verify-memory-fabric-v22.mjs
+        - scripts/verify-memory-fabric-v23.mjs
+        - tests/memory-fabric-v22-acceptance.test.mjs
+        - tests/memory-fabric-v24-acceptance.test.mjs
+      green_test:
+        status: pass
+        commands:
+          - "npm run verify:memory-fabric-v22"
+          - "npm run verify:memory-fabric-v23"
+          - "npm run verify:memory-fabric-v24"
+          - "npm test"
+        result: "340 pass, 0 fail, 1 skipped"
+  - id: T998
+    type: pm
+    assignee: PM
+    status: active
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+  - id: T009
+    type: worker
+    worker_kind: shipping
+    assignee: Worker
+    status: queued
+    objective: "Back up and deploy runtime v8 directly to Z2, reconcile the native Home 101 Hermes provider, and prove live capture, consolidation, recall, restart and Web behavior."
+    inputs:
+      - "T005 verification receipt"
+      - "T006 architecture approval"
+      - "T998 GitHub shipping receipt"
+      - "Owner deployment authorization"
+      - "T001 impact_assessment and deployment rollback"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.md
+      - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.json
+      - output/playwright/memory-fabric-v25-production.png
+      - tests/memory-fabric-v25-e2e.test.mjs
+    verify:
+      - "build the production images"
+      - "back up Z2 app, configuration and vault before deployment"
+      - "deploy runtime v8 with six memory services and no Hermes container"
+      - "verify all six services healthy"
+      - "verify Home 101 restricted tunnel and native Hermes provider"
+      - "execute live Hermes capture -> consolidation -> cited recall"
+      - "restart Z2 runtime and verify idempotent recall"
+      - "inspect the production Web UI through the Mac tunnel with Playwright"
+      - "record rollback paths and deployment hashes without secrets"
+    stop_if:
+      - "No meaningful failing test can be written."
+      - "Need a new secret, credential, auth permission, migration, destructive backfill or service beyond the already authorized production contract."
+      - "The predeployment backup cannot be verified."
+      - "Any production health, scope, provider, six-service topology or rollback check fails twice without understood cause."
+    receipt: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

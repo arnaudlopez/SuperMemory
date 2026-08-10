@@ -1,0 +1,62 @@
+{
+  "schema": "supermemory.longitudinal-memory-corpus.v1",
+  "cases": [
+    {
+      "id": "direct_decision",
+      "authority_role": "user_direct",
+      "text": "On part sur Home 101 pour Hermes et Z2 pour la mémoire.",
+      "episodes": 1,
+      "sessions": 1,
+      "expected": "auto_activate"
+    },
+    {
+      "id": "endorsed_proposal",
+      "authority_role": "user_endorsement",
+      "proposal": "Home 101 exécute Hermes et Z2 conserve le vault canonique.",
+      "text": "OK, on part là-dessus.",
+      "episodes": 2,
+      "sessions": 1,
+      "expected": "auto_activate"
+    },
+    {
+      "id": "assistant_only",
+      "authority_role": "assistant_proposal",
+      "text": "Tu préfères probablement des emails courts.",
+      "episodes": 1,
+      "sessions": 1,
+      "expected": "archive_only"
+    },
+    {
+      "id": "inferred_preference_weak",
+      "authority_role": "derived_pattern",
+      "text": "Préférence pour les emails courts.",
+      "episodes": 2,
+      "sessions": 1,
+      "expected": "observe"
+    },
+    {
+      "id": "inferred_preference_converged",
+      "authority_role": "derived_pattern",
+      "text": "Préférence pour les emails courts et directs.",
+      "episodes": 3,
+      "sessions": 2,
+      "expected": "auto_activate"
+    },
+    {
+      "id": "single_gmail_receipt",
+      "authority_role": "action_receipt",
+      "text": "gmail.draft_created",
+      "episodes": 1,
+      "sessions": 1,
+      "expected": "archive_only"
+    },
+    {
+      "id": "mundane_chat",
+      "authority_role": "user_direct",
+      "text": "Merci, à demain.",
+      "episodes": 1,
+      "sessions": 1,
+      "expected": "archive_only"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "result": "done",
+  "summary": "S7 livre un cycle de vie fail-closed (tombstone, rétention, legal hold, purge attestée et rotation de clé), une migration v1 planifiée/sauvegardée/idempotente/réversible, un installateur Codex plan/confirmation/backup/rollback, doctor --codex, un packaging plugin et un gate de release daté. Le gate annonce honnêtement CLI observé, contrats Desktop/IDE seulement et aucune couverture cloud.",
+  "changed_files": [
+    "scripts/lib/codex-archive-store.mjs",
+    "scripts/lib/codex-workspace-store.mjs",
+    "scripts/lib/codex-lifecycle.mjs",
+    "scripts/lib/codex-migration.mjs",
+    "scripts/lib/codex-installer.mjs",
+    "scripts/supermemory-codex.mjs",
+    "scripts/supermemory-doctor.mjs",
+    "scripts/verify-codex-supermemory-release.mjs",
+    "tests/codex-lifecycle.test.mjs",
+    "tests/codex-migration.test.mjs",
+    "tests/codex-installer.test.mjs",
+    "tests/codex-release-canary.test.mjs",
+    "tests/supermemory-doctor.test.mjs",
+    "plugins/supermemory/.codex-plugin/plugin.json",
+    "plugins/supermemory/.mcp.json",
+    "plugins/supermemory/hooks/hooks.json",
+    "plugins/supermemory/scripts/hook.mjs",
+    "plugins/supermemory/scripts/mcp.mjs",
+    "docs/README.md",
+    "docs/production-runbook.md",
+    "package.json"
+  ],
+  "commands": [
+    {
+      "cmd": "node --test tests/codex-lifecycle.test.mjs tests/codex-migration.test.mjs tests/codex-installer.test.mjs tests/codex-release-canary.test.mjs tests/supermemory-doctor.test.mjs",
+      "status": "pass",
+      "detail": "18/18"
+    },
+    {
+      "cmd": "node --test tests/supermemory-doctor.test.mjs tests/codex-mcp-server.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-memory-governance.test.mjs",
+      "status": "pass",
+      "detail": "18/18"
+    },
+    {
+      "cmd": "node scripts/verify-codex-supermemory-release.mjs --json",
+      "status": "pass",
+      "detail": "80/80 contrats, release-candidate, production_ready=false"
+    },
+    {
+      "cmd": "npm test",
+      "status": "pass",
+      "detail": "117/117"
+    },
+    {
+      "cmd": "node scripts/verify-supermemory-specs.mjs",
+      "status": "pass"
+    },
+    {
+      "cmd": "node scripts/verify-supermemory-release-readiness.mjs --json",
+      "status": "pass",
+      "detail": "contract-ready, runtime_ready=false"
+    },
+    {
+      "cmd": "node scripts/verify-secret-hygiene.mjs",
+      "status": "pass",
+      "detail": "472 files, 0 finding"
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "pass"
+    }
+  ],
+  "evidence": [
+    "La suppression retire l'autorité canonique avant toute tentative Hindsight et reste retryable si la projection est indisponible.",
+    "Les attestations sont content-free et la purge physique respecte la rétention et le legal hold.",
+    "La rotation conserve les anciennes archives lisibles via le keyring et chiffre les nouvelles avec la clé courante.",
+    "La migration refuse workspace:local sans mapping owner et les collisions similaires sans revue.",
+    "L'installation refuse les secrets non 0600, sauvegarde les cibles et ne modifie pas config.toml.",
+    "Le rollback d'installation et de migration préserve le vault et ne réactive pas une double capture.",
+    "Le canary est sacrificiel et local, sans données client ni écriture cloud."
+  ],
+  "limitations": [
+    "La matrice de 80 AC doit encore être auditée sémantiquement par T016, pas seulement comptée.",
+    "Aucune session UI Desktop ou IDE n'est déclarée observée par le gate automatisé.",
+    "Le rapport produit existant reste contract-ready tant qu'une preuve runtime locale récente n'est pas examinée."
+  ],
+  "note_needed": false
+}

@@ -290,7 +290,7 @@ function createDaemonProxy({ endpoint, tokenFile } = {}) {
     return value;
   };
   return Object.freeze({
-    get: (route) => invoke("GET", route),
+    get: (route, options) => invoke("GET", route, null, options),
     post: (route, body, options) => invoke("POST", route, body, options)
   });
 }
@@ -333,7 +333,13 @@ export function createSuperMemoryServer({
       const { pathname } = url;
 
       if (req.method === "GET" && pathname === "/api/status") {
-        send(res, 200, await store.getStatus());
+        const productStatus = await store.getStatus();
+        let runtime = null;
+        if (memoryDaemon) {
+          try { runtime = await memoryDaemon.get("/health"); }
+          catch (error) { runtime = { status: "unavailable", error: error.code ?? "daemon_unavailable" }; }
+        }
+        send(res, 200, { ...productStatus, runtime });
         return;
       }
       if (req.method === "GET" && pathname === "/api/projects") {
@@ -348,6 +354,22 @@ export function createSuperMemoryServer({
       }
       if (req.method === "GET" && pathname === "/api/memories") {
         send(res, 200, { memories: store.listMemories() });
+        return;
+      }
+      if (req.method === "GET" && pathname === "/api/personal-memories") {
+        if (!memoryDaemon) throw new ProductError("daemon_unavailable", "Le Personal Manager n’est pas configuré.", 503);
+        const projectId = url.searchParams.get("projectId");
+        const query = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+        send(res, 200, await memoryDaemon.get(`/v1/admin/personal-memories${query}`));
+        return;
+      }
+      const personalMemoryAction = pathname.match(/^\/api\/personal-memories\/([^/]+)\/(lineage|pin|unpin)$/);
+      if (personalMemoryAction) {
+        if (!memoryDaemon) throw new ProductError("daemon_unavailable", "Le Personal Manager n’est pas configuré.", 503);
+        const expectedMethod = personalMemoryAction[2] === "lineage" ? "GET" : "POST";
+        if (req.method !== expectedMethod) throw new ProductError("method_not_allowed", "Méthode non autorisée.", 405);
+        const route = `/v1/admin/personal-memories/${encodeURIComponent(decodeURIComponent(personalMemoryAction[1]))}/${personalMemoryAction[2]}`;
+        send(res, 200, expectedMethod === "GET" ? await memoryDaemon.get(route) : await memoryDaemon.post(route, {}));
         return;
       }
       if (req.method === "GET" && pathname === "/api/sources") {

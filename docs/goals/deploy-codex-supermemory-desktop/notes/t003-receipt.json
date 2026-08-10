@@ -1,0 +1,51 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "done",
+  "task_id": "T003",
+  "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/deploy-codex-supermemory-desktop/state.yaml",
+  "changed_files": [
+    "scripts/lib/codex-desktop-deployment.mjs",
+    "scripts/supermemory-desktop.mjs",
+    "scripts/lib/codex-installer.mjs",
+    "scripts/supermemory-doctor.mjs",
+    "tests/codex-desktop-deployment.test.mjs",
+    "tests/codex-installer.test.mjs",
+    "tests/supermemory-doctor.test.mjs",
+    "package.json",
+    "docs/production-runbook.md"
+  ],
+  "commands": [
+    {
+      "cmd": "node --test tests/codex-installer.test.mjs tests/codex-desktop-deployment.test.mjs tests/supermemory-doctor.test.mjs",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:codex",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run verify:secrets",
+      "status": "pass"
+    },
+    {
+      "cmd": "git diff --check -- scripts/lib/codex-desktop-deployment.mjs scripts/supermemory-desktop.mjs scripts/lib/codex-installer.mjs scripts/supermemory-doctor.mjs tests/codex-desktop-deployment.test.mjs tests/codex-installer.test.mjs tests/supermemory-doctor.test.mjs package.json docs/production-runbook.md",
+      "status": "pass"
+    },
+    {
+      "cmd": "node --check scripts/lib/codex-desktop-deployment.mjs && node --check scripts/supermemory-desktop.mjs && node --check scripts/supermemory-doctor.mjs",
+      "status": "pass"
+    }
+  ],
+  "summary": "Le package macOS réversible est implémenté. Il produit un plan hashé, reconnaît et retire uniquement les hooks Codex legacy, génère des secrets 0600, lie le projet, installe le plugin par App Server, gère un LaunchAgent loopback-only, diagnostique le runtime Desktop et refuse tout rollback sur état divergent. Les simulations apply/rollback restaurent le profil byte-for-byte et préservent vault/binding; 18 tests ciblés et les gates Codex/secrets passent.",
+  "deviations": [
+    "Le goal_worker dédié a été interrompu après timeout sans modification visible; le PM a exécuté le package dans les allowed_files.",
+    "Le binding est volontairement conservé au rollback comme métadonnée canonique; aucun contenu du vault n'est supprimé."
+  ],
+  "remaining_blockers": [
+    "Appliquer le plan au vrai profil et approuver humainement la confiance des hooks dans Codex Desktop.",
+    "Exécuter capture, approbation, recall MCP cité et redémarrage dans la vraie application."
+  ],
+  "verification_attempts": 2,
+  "stopped_because": null,
+  "harness": "codex"
+}

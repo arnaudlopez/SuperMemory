@@ -1,0 +1,22 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "blocked",
+  "decision": "revise",
+  "full_outcome_complete": false,
+  "rationale": "Le canari Desktop réel ne peut pas commencer tant que Codex classe les 7 hooks SuperMemory comme untrusted. Ce même verrou humain a été confirmé durant trois tours consécutifs. Le plugin reste installé et activé, le daemon, le compilateur et le replay du spool sont sains, mais aucune capture n'a été produite. Contourner cette décision avec un mode dangereux violerait la frontière de confiance explicite du goal.",
+  "evidence": [
+    "Codex Desktop plugin: installed=true, enabled=true",
+    "hooks/list: count=7, trusted=false, statuses=[untrusted]",
+    "daemon /health: status=ready, compiler=ready, retryable=0, spool_replay=complete",
+    "capture events=0"
+  ],
+  "blocking_condition": "Le propriétaire doit ouvrir /hooks dans Codex Desktop et accorder explicitement sa confiance aux 7 hooks SuperMemory.",
+  "resume_condition": "Répondre « hooks approuvés » après la validation; reprendre T007 avec un nouveau canari Desktop dans le projet SuperMemory.",
+  "missing_evidence": [
+    "Capture d'une nouvelle tâche Desktop réelle",
+    "Archive et candidat issus de cette capture",
+    "Approbation explicite du seul candidat canari",
+    "Recall MCP cité après redémarrage"
+  ],
+  "harness": "codex"
+}

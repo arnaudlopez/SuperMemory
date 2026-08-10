@@ -1,0 +1,424 @@
+version: 2
+
+goal:
+  title: "Concevoir l’intégration technique Codex ↔ SuperMemory"
+  slug: "design-codex-supermemory-integration"
+  kind: existing_plan
+  tranche: "Produire et faire auditer une conception technique implémentable, sans modifier le produit."
+  status: done
+  oracle:
+    signal: "Le document technique mappe chaque exigence approuvée à des contrats, flux, schémas, stratégies d’échec et critères d’acceptation."
+    cadence: "après la rédaction initiale, après revue et à l’audit final"
+    final_proof: "Receipt Judge final avec full_outcome_complete: true, git diff --check vert et aucune ambiguïté bloquante."
+  intake:
+    original_request: "Maintenant, passe à la conception technique."
+    interpreted_outcome: "Fournir le blueprint technique complet de l’intégration Codex-SuperMemory prête à implémenter."
+    input_shape: existing_plan
+    audience: "mainteneur et futurs implémenteurs de SuperMemory"
+    authority: approved
+    proof_type: artifact
+    completion_proof: "Document versionné et revu couvrant architecture, contrats, données, sécurité, migrations, observabilité et acceptation."
+    likely_misfire: "Concevoir une intégration théorique incompatible avec le store actuel ou insuffisamment gouvernée."
+    blind_spots_considered:
+      - "Déplacement, renommage, worktrees et projets multi-dossiers."
+      - "Collisions du workspace mono-projet actuel."
+      - "Secrets et données sensibles dans les transcripts et sorties outils."
+      - "Limites des hooks et outils hébergés."
+      - "Double source de vérité avec les Memories natives de Codex."
+      - "Migration de l’ancien claude-memory-compiler."
+    existing_plan_facts:
+      - "Project resolver stable fondé sur une identité persistante, avec les chemins comme alias."
+      - "Journal détaillé distinct des mémoires gouvernées et projetées."
+      - "Hooks pour la capture et MCP pour le recall à la demande."
+      - "SessionStart injecte seulement un contexte court et borné."
+      - "Vault canonique, Hindsight reconstruisible."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41738/design-codex-supermemory-integration/"
+    command: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.4.1/skills/goal-prep/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal docs/goals/design-codex-supermemory-integration --port 41738"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Établir la carte d’évidence minimale du store SuperMemory actuel et des surfaces Codex officielles nécessaires à la conception."
+    inputs:
+      - "README.md"
+      - "scripts/lib/product-store.mjs"
+      - "scripts/lib/product-hindsight.mjs"
+      - "scripts/supermemory-app.mjs"
+      - "tests"
+      - "Documentation OpenAI officielle via le skill openai-docs"
+      - "Ancien claude-memory-compiler en lecture seule pour la migration"
+    constraints:
+      - "Lecture seule."
+      - "Ne pas rédiger la conception."
+      - "Ne pas modifier de configuration utilisateur."
+      - "Citer les chemins et contrats exacts."
+    expected_output:
+      - "Carte du modèle actuel et des incompatibilités multi-projets."
+      - "Inventaire Hooks, MCP, App Server et Memories natives."
+      - "Contraintes de sécurité et de migration."
+      - "Matrice exigences vers décisions à prendre."
+    receipt:
+      result: done
+      task_id: T001
+      board_path: "/Users/arnaud/Documents/SuperMemory/docs/goals/design-codex-supermemory-integration/state.yaml"
+      summary: "Le vault est déjà canonique, snapshoté et gouverné, mais le produit local utilise un workspace par défaut unique et une identité de source dérivée du chemin. Codex expose des hooks multi-couches, un MCP partagé entre clients locaux, un App Server structuré et des Memories natives expérimentales. La conception doit donc introduire une identité projet persistante, séparer archive et mémoire active, traiter les hooks comme capture dégradée et réserver l’App Server au chemin d’intégration riche."
+      evidence:
+        - "scripts/lib/product-store.mjs:215-228 — état canonique workspace/sources/snapshots/candidates/memories."
+        - "scripts/lib/product-store.mjs:299-317 — workspaceId par défaut workspace:local et état dans le vault."
+        - "scripts/lib/product-store.mjs:348-377 — snapshots SHA-256 et mémoires Markdown dans le vault."
+        - "scripts/lib/product-store.mjs:422-440 — changement de source rend les mémoires stale et programme la révocation."
+        - "scripts/lib/product-store.mjs:688-790 — ingestion bornée; sourceId dérivé de workspaceId + relativePath."
+        - "scripts/lib/product-store.mjs:900-937 — folderName sert à l’inventaire et écrase le libellé du workspace."
+        - "scripts/lib/product-store.mjs:1125-1192 — seule une candidate approuvée devient mémoire active et est projetée."
+        - "scripts/lib/product-hindsight.mjs:17-33 — Hindsight strictement loopback."
+        - "scripts/lib/product-hindsight.mjs:44-76 — tags et métadonnées actuels limités au consumer supermemory."
+        - "README.md:20,73-77 — vault source de vérité; Hindsight projection reconstruisible et fallback local."
+        - "https://learn.chatgpt.com/docs/hooks — événements, champs communs et caractère non stable de transcript_path."
+        - "https://learn.chatgpt.com/docs/extend/mcp — configuration MCP partagée Desktop/CLI/IDE et portée projet possible."
+        - "https://learn.chatgpt.com/docs/app-server — threads/turns/items structurés; item/completed autoritatif."
+        - "https://learn.chatgpt.com/docs/config-file/config-reference — hooks, history.persistence et Memories désactivées par défaut."
+        - "/Users/arnaud/Documents/claude-memory-compiler/hooks/stop.py:212-286 — migration possible du Stop hook incrémental."
+        - "/Users/arnaud/Documents/claude-memory-compiler/hooks/session-start.py:1-35 — précédent d’injection de contexte borné."
+      facts:
+        - "Le chemin ne peut pas rester l’identité primaire: renommages, déplacements et worktrees créeraient des doublons."
+        - "Une archive de conversation détaillée doit rester distincte des mémoires approuvées."
+        - "Les hooks se cumulent entre couches et peuvent doubler les événements; les hooks projet exigent la confiance."
+        - "transcript_path est pratique mais son format n’est pas un contrat stable."
+        - "PostToolUse ne constitue pas une preuve exhaustive de toutes les actions hébergées."
+        - "Le MCP est le contrat de recall le plus portable pour les clients Codex locaux."
+        - "L’App Server est le meilleur flux structuré pour une intégration hôte, avec reprise et déduplication nécessaires."
+        - "Les Memories natives Codex ne doivent pas devenir une seconde source de vérité."
+      contradictions:
+        - "Le README décrit une architecture multi-workspace gouvernée, tandis que le store produit instancie workspace:local par défaut."
+        - "La projection Hindsight n’autorise aujourd’hui que consumer:supermemory, pas Codex."
+      ambiguity_requiring_judge:
+        - "Choisir l’algorithme exact de project_id et la gestion des worktrees/aliases."
+        - "Définir la priorité App Server versus hooks selon le client Codex."
+        - "Définir le niveau de détail archivé, la redaction, le chiffrement, la rétention et la suppression."
+        - "Définir le contrat MCP exact, son isolation et son budget d’injection."
+        - "Définir la coexistence ou la désactivation des Memories natives."
+        - "Définir la migration idempotente de l’ancien claude-memory-compiler et des hooks existants."
+      commands:
+        - "rg/nl ciblés sur README.md, product-store.mjs, product-hindsight.mjs, supermemory-app.mjs et tests."
+        - "Inspection en lecture seule de /Users/arnaud/Documents/claude-memory-compiler."
+        - "Recherche et lecture via openaiDeveloperDocs des pages Hooks, MCP, App Server et config reference."
+      note_needed: false
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Arbitrer les choix structurants et définir le contrat exact du document de conception à partir des preuves Scout."
+    inputs:
+      - "T001 receipt"
+      - "Objectif et contraintes du goal.md"
+    constraints:
+      - "Lecture seule."
+      - "Ne pas implémenter."
+      - "Trancher explicitement identité projet, isolation workspace, capture, recall, sécurité, migration et modes dégradés."
+      - "Distinguer les décisions fermes des alternatives rejetées et des questions réellement bloquantes."
+    expected_output:
+      - "Décisions techniques retenues et alternatives rejetées."
+      - "Plan normatif du document."
+      - "Schémas et séquences obligatoires."
+      - "Critères d’acceptation et stratégie de test."
+      - "Exact Worker objective, allowed_files, verify et stop_if."
+    receipt:
+      result: done
+      task_id: T002
+      board_path: "/Users/arnaud/Documents/SuperMemory/docs/goals/design-codex-supermemory-integration/state.yaml"
+      decision: approved
+      full_outcome_complete: false
+      rationale: "Les preuves suffisent pour un contrat sans ambiguïté bloquante. L’architecture retenue est un daemon local SuperMemory avec vault canonique, journal append-only, identité projet persistante, capture structurée App Server quand disponible, hooks comme filet de sécurité, et MCP comme seul chemin de recall agent. Les archives brutes, candidates et mémoires actives sont des niveaux distincts. Hindsight reste une projection reconstruisible."
+      worker_package:
+        objective: "Rédiger un blueprint normatif et implémentable. Il doit fixer: project_id UUID persistant avec aliases et relations worktree; workspace_id stable séparé des chemins; event envelope versionné et journal append-only; priorité App Server > hooks > import history; déduplication et checkpoints; archive chiffrée séparée des candidates/mémoires; aucune capture du raisonnement caché; redaction avant persistance/projection; promotion owner-governed; snapshots de fichiers et de tours; MCP read-only scoped avec citations, budgets et fail-closed; coexistence avec Memories natives désactivées ou non autoritatives; migration idempotente de l’ancien compiler; offline/replay/backpressure; observabilité, rollout, rollback et matrice d’acceptation Desktop/CLI/IDE."
+        allowed_files:
+          - "docs/codex-supermemory-technical-design.md"
+          - "docs/README.md"
+        verify:
+          - "test -s docs/codex-supermemory-technical-design.md"
+          - "rg -n '^## (Contexte|Décisions|Architecture|Identité|Modèle de données|Capture Codex|Versioning|Recall MCP|Sécurité|Migration|Observabilité|Déploiement|Tests et acceptation)' docs/codex-supermemory-technical-design.md"
+          - "rg -n 'learn.chatgpt.com/docs/(hooks|extend/mcp|app-server|config-file/config-reference)' docs/codex-supermemory-technical-design.md"
+          - "git diff --check"
+          - "npm test"
+        stop_if:
+          - "Une décision structurante ci-dessous ne peut pas être exprimée comme contrat testable."
+          - "Une modification hors docs/codex-supermemory-technical-design.md ou docs/README.md serait nécessaire."
+          - "Une source officielle contredit un contrat retenu."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "Identité: project_id est un UUID SuperMemory persistant; root_id/fingerprint servent à l’attachement initial; tous les chemins sont des aliases historisés. Un worktree possède son propre checkout_id mais hérite du project_id via l’identité Git commune et une validation owner en cas d’ambiguïté."
+        - "Isolation: workspace_id est stable et obligatoire sur chaque événement, archive, source, snapshot, candidate, mémoire et requête; aucune requête cross-workspace implicite."
+        - "Capture: App Server item/completed est autoritatif pour une intégration hôte; hooks SessionStart/UserPromptSubmit/PostToolUse/PreCompact/PostCompact/Stop/SessionEnd assurent le chemin portable; history/transcript import est un backfill explicite, jamais un parsing supposé stable en continu."
+        - "Déduplication: event_id déterministe par source_adapter + session/thread + turn + item + payload_hash; journal append-only, cursor/checkpoint par adapter et au moins une fois avec application idempotente."
+        - "Contenu: archive détaillée chiffrée et à rétention bornée; sorties volumineuses tronquées ou externalisées par hash; redaction de secrets avant écriture; candidates séparées; mémoires actives uniquement après gouvernance."
+        - "Versioning: snapshot de tour immuable relié aux événements; snapshot fichier content-addressed; rename = nouvel alias de la même source quand l’identité est prouvée, sinon review; changement rend les dérivés stale avant reprojection."
+        - "Recall: serveur MCP SuperMemory local expose status, resolve_project, search_memory, get_memory et explain_citation en lecture seule; scope issu du cwd/project binding et confirmé par workspace; résultats bornés, cités, filtrés et fail-closed."
+        - "Injection: SessionStart ne fournit qu’un bref contexte de navigation et l’instruction d’utiliser MCP à la demande; aucun dump automatique d’archive."
+        - "Hindsight: consumer:codex peut être ajouté seulement à la projection approuvée; l’autorisation est recalculée depuis le vault avant chaque résultat; indisponibilité Hindsight déclenche fallback local explicite."
+        - "Memories natives: optionnelles et non canoniques; recommandation initiale features.memories=false pour éviter la double source de vérité. Si activées ultérieurement, aucune synchronisation bidirectionnelle sans nouvelle décision."
+        - "Sécurité: boucle locale, permissions 0700/0600, clé en keychain/secret store, chiffrement AEAD par record/blob, redaction versionnée, TTL par classe, suppression tombstone + purge projection + compactage attesté."
+        - "Migration: inventaire/backup, désactivation atomique des anciens hooks, import idempotent archive/inbox/briefs avec legacy_id, rapport de collisions, comparaison en shadow, cutover et rollback."
+        - "Dégradation: Desktop/IDE hôte App Server riche; CLI/IDE sans hôte via hooks; tout client bénéficie du MCP partagé; offline met en file locale, backpressure ne bloque jamais Codex, crash reprend au checkpoint."
+        - "Schémas obligatoires: diagramme composants, séquences capture/recall/suppression, tables ProjectBinding/EventEnvelope/ConversationArchive/TurnSnapshot/Candidate/Memory/ProjectionCheckpoint/Tombstone."
+        - "Tests obligatoires: identité rename/move/worktree/multi-root, doublons hooks+App Server, ordre/replay/crash, secrets/troncature/chiffrement/TTL/purge, scope denial, stale/revoke, Hindsight offline, MCP indisponible, migration/rollback, matrices Desktop/CLI/IDE."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker documentaire; pas de parallélisme d’écriture."
+      blocked_tasks: []
+      missing_evidence: []
+      required_board_updates:
+        - "Marquer T002 done."
+        - "Activer T003."
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Rédiger la conception technique complète Codex-SuperMemory selon le contrat validé par T002."
+    inputs:
+      - "T001 receipt"
+      - "T002 receipt"
+      - "docs/goals/design-codex-supermemory-integration/goal.md"
+    constraints:
+      - "Conception uniquement ; aucun code produit ni configuration utilisateur."
+      - "Préserver la terminologie canonique SuperMemory."
+      - "Citer les fichiers locaux et les pages OpenAI officielles pertinentes."
+      - "Inclure modèles de données, APIs, hooks, MCP, séquences, sécurité, migrations, observabilité, rollout et tests."
+    allowed_files:
+      - "docs/codex-supermemory-technical-design.md"
+      - "docs/README.md"
+    verify:
+      - "test -s docs/codex-supermemory-technical-design.md"
+      - "rg -n '^## (Contexte|Décisions|Architecture|Identité|Modèle de données|Capture Codex|Versioning|Recall MCP|Sécurité|Migration|Observabilité|Déploiement|Tests et acceptation)' docs/codex-supermemory-technical-design.md"
+      - "git diff --check"
+      - "npm test"
+    stop_if:
+      - "Une décision structurante reste ambiguë après T002."
+      - "Le document nécessiterait une modification hors allowed_files."
+      - "La conception contredit un contrat runtime observé sans arbitrage."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      task_id: T003
+      board_path: "/Users/arnaud/Documents/SuperMemory/docs/goals/design-codex-supermemory-integration/state.yaml"
+      changed_files:
+        - "docs/codex-supermemory-technical-design.md"
+        - "docs/README.md"
+      commands:
+        - command: "test -s docs/codex-supermemory-technical-design.md"
+          status: pass
+        - command: "rg -n des 13 titres H2 obligatoires"
+          status: pass
+        - command: "rg -n des quatre sources OpenAI officielles"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+        - command: "npm test"
+          status: pass
+      summary: "Blueprint normatif rédigé: exigences R01-R13, décisions D01-D16, architecture et séquences, identité persistante, schémas, capture App Server/hooks, versioning, MCP, sécurité, migration, observabilité, rollout et critères AC. L’index documentaire pointe vers le nouvel artefact. Tous les contrôles passent, dont 55/55 tests."
+      deviations: []
+      remaining_blockers: []
+      verification_attempts: 1
+      stopped_because: null
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Faire une revue adversariale de la conception pour détecter collisions, pertes d’événements, fuites de secrets, doubles sources de vérité et contrats non testables."
+    inputs:
+      - "T001-T003 receipts"
+      - "docs/codex-supermemory-technical-design.md"
+      - "Dernières vérifications"
+    constraints:
+      - "Lecture seule."
+      - "Ne pas accepter une section qui ne débouche pas sur un contrat ou un critère observable."
+      - "Vérifier explicitement multi-dossiers, worktrees, renommages, offline, reprise, déduplication et suppression."
+    expected_output:
+      - "approve | revise"
+      - "Écarts classés bloquant, important ou amélioration."
+      - "Corrections exactes pour T005."
+      - "Évaluation de l’implémentabilité."
+    receipt:
+      result: done
+      task_id: T004
+      board_path: "/Users/arnaud/Documents/SuperMemory/docs/goals/design-codex-supermemory-integration/state.yaml"
+      decision: rejected
+      full_outcome_complete: false
+      rationale: "Révision ciblée requise. Le blueprint est largement implémentable, mais quatre ambiguïtés de sécurité/compatibilité restent importantes: le cwd fourni par le modèle ne peut pas être une frontière MCP; la priorité entre App Server et hooks doit être verrouillée par session; le passage du store workspace:local/path-derived au nouveau schéma manque; un transcript de format inconnu ne peut pas conserver une couverture standard. Aucun changement de code n’est requis."
+      worker_package:
+        objective: "Corriger uniquement les écarts T004: (1) lier chaque instance MCP de recall à un project_id/workspace_id au lancement depuis une configuration projet de confiance, supprimer cwd comme autorité et garder un serveur global limité au diagnostic; (2) définir un capture_mode par session, App Server primary avec hooks shadow, promotion contrôlée du shadow seulement après gap; définir logical_event_id sans heuristique; (3) ajouter la migration transactionnelle du state.json mono-workspace et des IDs source path-derived, ainsi qu’une banque Hindsight dédiée par workspace; (4) classer partial tout transcript inconnu et définir l’option sealed raw; (5) corriger le nombre de critères AC et ajouter les tests correspondants."
+        allowed_files:
+          - "docs/codex-supermemory-technical-design.md"
+          - "docs/README.md"
+        verify:
+          - "test -s docs/codex-supermemory-technical-design.md"
+          - "rg -n 'bound MCP|shadow|workspace:local|sealed|banque Hindsight' docs/codex-supermemory-technical-design.md"
+          - "git diff --check"
+          - "npm test"
+        stop_if:
+          - "La correction exigerait du code produit ou une configuration utilisateur."
+          - "Une correction contredirait une source OpenAI officielle."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "Important — MCP: supermemory_search accepte cwd et prétend le comparer à un binding de session, mais le contrat MCP officiel ne garantit pas de métadonnée appelant/session utilisable par un serveur STDIO partagé. Le modèle ne doit pas choisir sa frontière de lecture."
+        - "Important — déduplication: EventEquivalence est décrite mais le basculement App Server/hooks et le cas d’IDs différents restent trop heuristiques pour un effet métier sûr."
+        - "Important — migration: la section couvre l’ancien compiler, pas le state.json courant avec workspace:local ni les sourceId dérivés du chemin."
+        - "Important — isolation Hindsight: tags + revalidation vault sont nécessaires, mais une banque par workspace réduit le rayon d’une erreur de filtre."
+        - "Important — couverture: standard ne doit être annoncé que si les messages assistant ont été normalisés depuis un schéma reconnu; sinon partial."
+        - "Amélioration — le receipt T003 annonce 83 AC alors que la matrice en contient 74."
+        - "Approuvé — identité marqueur/aliases/worktrees, journal au moins une fois, archive/candidate/mémoire séparées, redaction/chiffrement/TTL, tombstone/purge, Memories natives et rollout sont contractuels et testables."
+      subgoal_contract: null
+      parallel_safety: "Une seule correction documentaire dans les deux fichiers autorisés."
+      blocked_tasks: []
+      missing_evidence: []
+      required_board_updates:
+        - "Marquer T004 done avec décision rejected pour révision."
+        - "Activer T005."
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Appliquer les corrections de conception demandées par T004, ou enregistrer une preuve no-change si la revue approuve sans réserve."
+    inputs:
+      - "T004 receipt"
+      - "docs/codex-supermemory-technical-design.md"
+    constraints:
+      - "Aucun élargissement vers l’implémentation."
+      - "Ne traiter que les écarts sourcés par la revue."
+    allowed_files:
+      - "docs/codex-supermemory-technical-design.md"
+      - "docs/README.md"
+    verify:
+      - "test -s docs/codex-supermemory-technical-design.md"
+      - "git diff --check"
+      - "npm test"
+    stop_if:
+      - "La correction exige une décision owner non couverte par l’approbation actuelle."
+      - "La correction exige un fichier hors allowed_files."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      task_id: T005
+      board_path: "/Users/arnaud/Documents/SuperMemory/docs/goals/design-codex-supermemory-integration/state.yaml"
+      changed_files:
+        - "docs/codex-supermemory-technical-design.md"
+      commands:
+        - command: "test -s docs/codex-supermemory-technical-design.md"
+          status: pass
+        - command: "rg des contrats scope/shadow/migration/sealed/bank"
+          status: pass
+        - command: "80 identifiants AC uniques"
+          status: pass
+        - command: "git diff --check"
+          status: pass
+        - command: "npm test"
+          status: pass
+      summary: "Les quatre écarts importants T004 et l’amélioration de comptage sont corrigés. Le MCP de contenu est lié à un scope immuable au lancement; App Server est primaire et hooks shadow; la migration du store courant et la banque Hindsight par workspace sont normées; les transcripts inconnus passent partial avec sealed raw opt-in; six AC ciblés portent la matrice à 80. 55/55 tests passent."
+      deviations: []
+      remaining_blockers: []
+      verification_attempts: 1
+      stopped_because: null
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer la conception finale contre l’objectif owner et l’oracle, puis décider si la tranche technique est réellement terminée."
+    inputs:
+      - "Tous les receipts T001-T005"
+      - "docs/codex-supermemory-technical-design.md"
+      - "Dernières vérifications"
+      - "Diff courant"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter la complétion si une exigence approuvée n’a pas de contrat et de critère d’acceptation."
+      - "Rejeter la complétion si une ambiguïté empêcherait de découper l’implémentation."
+      - "Ne pas confondre conception terminée et produit implémenté."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Mapping exigences vers sections et preuves."
+      - "Risques résiduels."
+      - "Prochaine commande de goal pour l’implémentation, sans la lancer."
+    receipt:
+      result: done
+      task_id: T999
+      board_path: "/Users/arnaud/Documents/SuperMemory/docs/goals/design-codex-supermemory-integration/state.yaml"
+      decision: complete
+      full_outcome_complete: true
+      rationale: "L’oracle de la tranche conception est satisfait. R01-R13 sont chacune reliées à un contrat, une stratégie d’échec et un ou plusieurs AC; D01-D16 ferment les choix structurants; les schémas, séquences et slices S1-S7 permettent le découpage d’implémentation. Les corrections adversariales sont présentes, le scope est docs-only, git diff --check passe et 55/55 tests restent verts. Le produit n’est pas encore implémenté."
+      worker_package:
+        objective: "Aucun Worker supplémentaire dans cette tranche."
+        allowed_files: []
+        verify: []
+        stop_if: []
+      evidence:
+        - "R01-R02 — Identité: Project, ProjectRootBinding, resolver, aliases, worktrees, multi-root; AC-ID-01 à 05; slice S1."
+        - "R03 — Capture visible: App Server, hooks, capture_mode, shadow/failover, spool et couverture; AC-CAP-01 à 11; slices S2-S4."
+        - "R04 — Versioning: EventEnvelope, TurnSnapshot, snapshots fichiers, continuité et invalidation; AC-VER-01 à 06; slices S2/S4."
+        - "R05 — Archive/candidate/mémoire: modèles séparés, evidence obligatoire et revue owner; AC-GOV-01 à 05; slice S5."
+        - "R06 — Recall MCP: process lié au projet, outils read-only, revalidation vault, citations et fallback; AC-MCP-01 à 10; slice S6."
+        - "R07 — Clients: matrice Desktop/CLI/IDE/cloud et dégradation explicite; AC-CLI-01 à 06; slices S3/S4/S6."
+        - "R08 — Vault/Hindsight: vault autoritatif, banque par workspace, projection/rebuild/delete; AC-HIN-01 à 06; slice S6."
+        - "R09-R10 — Sécurité/suppression: redaction, AEAD, clés, TTL, tombstone et purge; AC-SEC-01 à 12 et AC-DEL-01 à 06; transversal S1-S7."
+        - "R11 — Migration: store courant, ancien compiler, idempotence, cutover et rollback; AC-MIG-01 à 10; slice S7."
+        - "R12 — Memories natives: désactivées/non autoritatives, sans synchronisation implicite; AC-MEM-01 à 03; slice S7."
+        - "R13 — Raisonnement caché: interdit; seul résumé visible autorisé; AC-SEC-09; slices S2-S4."
+        - "Audit mécanique: 13 exigences, 16 décisions, 80 AC uniques, 13 sections obligatoires et scope docs-only."
+        - "Vérifications: git diff --check pass; npm test 55/55 pass après T005; check-goal-state pass avant clôture."
+        - "Risques résiduels non bloquants: cycle réel des process MCP par client, compatibilité App Server installée, secret stores multi-OS et performance des banques Hindsight seront prouvés pendant les slices."
+        - "Prochaine commande sans exécution: /goal Implémenter S1 de docs/codex-supermemory-technical-design.md : registre projet/workspace, resolver, CLI init/status et tests AC-ID-01 à AC-ID-05."
+      subgoal_contract: null
+      parallel_safety: "Tranche close; démarrer un nouveau goal pour S1."
+      blocked_tasks: []
+      missing_evidence: []
+      required_board_updates:
+        - "Marquer T999 done."
+        - "Mettre goal.status à done et active_task à null."
+
+checks:
+  dirty_fingerprint: "sha256:04bfb11b2c168efd667d96aec741325e181364e7d82e5e4a974363117c3d3d31"
+  last_verification:
+    result: passed
+    task: T001
+    commands:
+      - "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.4.1/skills/goal-prep/scripts/check-goal-state.mjs docs/goals/design-codex-supermemory-integration"
+      - "git diff --check"

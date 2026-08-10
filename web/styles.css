@@ -577,6 +577,37 @@ main {
 .empty-state span { margin-top: 7px; max-width: 420px; font-size: 12px; line-height: 1.6; }
 
 .engine-label { color: #c7b7f5; border-color: #473b65; background: #211936; }
+.engine-label.unavailable { color: #f2d99d; border-color: #5c4a2b; background: #211b10; }
+.personal-manager-actions { display: flex; align-items: center; gap: 9px; }
+.personal-memory-list { display: grid; gap: 11px; }
+.personal-memory-card {
+  padding: 18px;
+  border: 1px solid #315542;
+  border-radius: 14px;
+  display: grid;
+  gap: 9px;
+  background: linear-gradient(145deg, #101f1b, #0c1720);
+}
+.personal-memory-card.do_not_use { border-color: #6a3543; opacity: .72; }
+.personal-memory-card header { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.personal-memory-card header strong { font-size: 14px; }
+.personal-memory-card header span { color: var(--mint); font-size: 10px; font-weight: 700; }
+.personal-memory-card p { margin: 0; color: #cbd6e4; font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+.personal-memory-card small { color: var(--muted); font-size: 10px; }
+.personal-memory-card code { color: #7690b3; font-size: 9px; overflow-wrap: anywhere; }
+.personal-memory-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.button.compact { min-height: 30px; padding: 5px 10px; font-size: 10px; }
+.personal-memory-lineage {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid rgba(118, 144, 179, .22);
+  border-radius: 10px;
+  background: rgba(8, 15, 26, .58);
+}
+.personal-memory-lineage[hidden] { display: none; }
+.personal-memory-lineage p { color: #dce8f5; font-size: 11px; }
+.personal-memory-lineage small { line-height: 1.55; }
 .search-form { margin-bottom: 24px; }
 .search-form label { display: block; margin-bottom: 9px; color: var(--muted); font-size: 11px; font-weight: 700; }
 .search-form > div { display: grid; grid-template-columns: 1fr auto; gap: 9px; }
@@ -692,6 +723,7 @@ footer {
   .search-heading { align-items: flex-start; }
   .topic-dashboard { grid-template-columns: 1fr; }
   .authority-exception { align-items: stretch; flex-direction: column; }
+  .personal-manager-actions { align-items: stretch; flex-direction: column; }
 }
 
 @media (max-width: 520px) {

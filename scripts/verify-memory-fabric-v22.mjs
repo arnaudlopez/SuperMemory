@@ -64,8 +64,8 @@ for (const module of requiredModules) {
   if (!fs.existsSync(path.join(root, "scripts/lib", `${module}.mjs`))) failures.push(`module_missing:${module}`);
 }
 const runtime = JSON.parse(fs.readFileSync(path.join(root, "deploy/runtime/runtime-contract.production.json"), "utf8"));
-if (runtime.schema !== "supermemory.codex-runtime.v6") failures.push("runtime_schema_invalid");
-if (runtime.deployment.canary !== false || runtime.deployment.progressive !== false || runtime.deployment.activation !== "enabled") {
+if (!["supermemory.codex-runtime.v6", "supermemory.codex-runtime.v7", "supermemory.codex-runtime.v8"].includes(runtime.schema)) failures.push("runtime_schema_invalid");
+if (runtime.deployment.canary !== false || runtime.deployment.progressive !== false || !["enabled", "full"].includes(runtime.deployment.activation)) {
   failures.push("runtime_not_direct_full");
 }
 const report = {

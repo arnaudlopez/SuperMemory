@@ -13,6 +13,7 @@
     "doctor": "node scripts/supermemory-doctor.mjs",
     "project": "node scripts/supermemory-project.mjs",
     "daemon": "node scripts/supermemoryd.mjs",
+    "personal-manager:credential": "node scripts/personal-manager-credential.mjs",
     "hook": "node scripts/supermemory-hook.mjs",
     "app-server": "node scripts/supermemory-app-server.mjs",
     "mcp": "node scripts/supermemory-mcp.mjs",
@@ -35,6 +36,8 @@
     "verify:memory-fabric-v2": "node scripts/verify-memory-fabric-v2.mjs && node --test tests/memory-fabric-v2-acceptance.test.mjs tests/memory-fabric-v2-e2e.test.mjs tests/memory-fabric-v2-performance.test.mjs",
     "verify:memory-fabric-v22": "node scripts/verify-memory-fabric-v22.mjs && node --test tests/codex-topic-store.test.mjs tests/codex-topic-resolver.test.mjs tests/codex-topic-migration.test.mjs tests/codex-topic-view.test.mjs tests/codex-topic-checkpoint.test.mjs tests/codex-topic-working-recall.test.mjs tests/codex-temporal-normalizer.test.mjs tests/codex-retrieval-plan.test.mjs tests/codex-evidence-coverage.test.mjs tests/memory-authority-policy.test.mjs tests/memory-exception-store.test.mjs tests/memory-fabric-v22-acceptance.test.mjs",
     "verify:memory-fabric-v23": "node scripts/verify-memory-fabric-v23.mjs && node --test --test-concurrency=1 tests/codex-runtime-v6.test.mjs tests/checkout-credential-store.test.mjs tests/project-enrollment.test.mjs tests/owner-preference-store.test.mjs tests/workspace-runtime-supervisor.test.mjs tests/codex-history-import.test.mjs tests/codex-capability-probe.test.mjs tests/codex-client-launcher.test.mjs tests/z2-client-config.test.mjs tests/codex-mcp-server.test.mjs tests/supermemory-daemon-multi-project.test.mjs",
+    "verify:memory-fabric-v24": "node scripts/verify-memory-fabric-v24.mjs && node --test --test-concurrency=1 tests/agent-credential-store.test.mjs tests/agent-scope-resolver.test.mjs tests/personal-recall-orchestrator.test.mjs tests/personal-context-card.test.mjs tests/personal-memory-command-bus.test.mjs tests/personal-manager-capture.test.mjs tests/personal-action-receipt.test.mjs tests/personal-manager-api.test.mjs tests/codex-runtime-v7.test.mjs tests/canonical-openrouter-pipeline.test.mjs tests/hermes-supermemory-provider.test.mjs tests/memory-fabric-v24-acceptance.test.mjs tests/supermemory-portainer-stack.test.mjs && python3 -m unittest integrations.hermes.tests.test_supermemory_fabric",
+    "verify:memory-fabric-v25": "node scripts/verify-memory-fabric-v25.mjs && node --test --test-concurrency=1 tests/memory-signal-store.test.mjs tests/memory-endorsement-resolver.test.mjs tests/memory-salience-policy.test.mjs tests/longitudinal-memory-consolidator.test.mjs tests/memory-recall-feedback.test.mjs tests/memory-fabric-v25-e2e.test.mjs tests/codex-runtime-v8.test.mjs tests/memory-fabric-v25-acceptance.test.mjs tests/personal-manager-api.test.mjs tests/personal-recall-orchestrator.test.mjs tests/supermemory-portainer-stack.test.mjs && python3 -m unittest integrations.hermes.tests.test_supermemory_fabric",
     "verify:hindsight-native": "node scripts/verify-hindsight-native-plane.mjs && node --test tests/hindsight-native-plane-acceptance.test.mjs tests/hindsight-native-memory-plane.test.mjs tests/hindsight-native-migration.test.mjs tests/memory-fabric-v2-e2e.test.mjs",
     "verify:secrets": "node scripts/verify-secret-hygiene.mjs"
   },

@@ -169,7 +169,11 @@ export function createSuperMemoryDaemon({
   enrollmentService = null,
   checkoutCredentialStore = null,
   historyImportService = null,
-  ownerPreferenceStore = null
+  ownerPreferenceStore = null,
+  personalManagerApi = null,
+  personalManagerApiFactory = null,
+  personalManagerStatus = null,
+  personalManagerAdmin = null
 } = {}) {
   if (!LOOPBACK_HOSTS.has(host)) fail("daemon_host_not_loopback");
   if (!Number.isInteger(port) || port < 0 || port > 65_535) fail("daemon_port_invalid");
@@ -225,6 +229,11 @@ export function createSuperMemoryDaemon({
     typeof supervisor.recover !== "function" || typeof supervisor.status !== "function" ||
     typeof supervisor.close !== "function" || typeof requestScopeResolver !== "function"
   )) fail("daemon_runtime_supervisor_invalid");
+  const personalApi = personalManagerApi ?? (typeof personalManagerApiFactory === "function"
+    ? personalManagerApiFactory({ runtimeSupervisor: supervisor, captureStore: store, memoryCompiler: compiler })
+    : null);
+  if (personalApi && typeof personalApi.handle !== "function") fail("daemon_personal_manager_api_invalid");
+  if (personalManagerAdmin && typeof personalManagerAdmin.list !== "function") fail("daemon_personal_manager_admin_invalid");
   const recallRoutes = new Map([
     ["/v1/recall", "recall"],
     ["/v1/reflect", "reflect"],
@@ -356,6 +365,27 @@ export function createSuperMemoryDaemon({
       sendJson(response, 421, { ok: false, error: "daemon_host_rejected" });
       return;
     }
+    if ((request.url ?? "").startsWith("/v1/personal-manager")) {
+      if (!personalApi) {
+        counters.rejected += 1;
+        sendJson(response, 404, { error: "personal_manager_disabled" });
+        return;
+      }
+      const recovering = [spoolReplay.status, fabricRecovery.status]
+        .some((status) => ["pending", "running"].includes(status));
+      if (recovering) {
+        sendJson(response, 503, { error: "daemon_recovering", retryable: true });
+        return;
+      }
+      try {
+        const body = request.method === "GET" ? {} : await readJsonBody(request, maxBodyBytes);
+        const result = await personalApi.handle({ method: request.method, path: request.url, headers: request.headers, body });
+        sendJson(response, result?.status ?? 404, result?.body ?? { error: "route_not_found" });
+      } catch (error) {
+        sendJson(response, errorStatus(error), { error: error?.code ?? error?.message ?? "personal_manager_request_failed" });
+      }
+      return;
+    }
     if (!authorized(request.headers.authorization, authToken)) {
       counters.rejected += 1;
       sendJson(response, 401, { ok: false, error: "daemon_unauthorized" });
@@ -388,6 +418,9 @@ export function createSuperMemoryDaemon({
             : { status: "disabled" },
         fabric_rebuild: { ...fabricRecovery },
         spool_replay: { ...spoolReplay },
+        personal_manager: typeof personalManagerStatus === "function"
+          ? personalManagerStatus()
+          : { enabled: false, status: "disabled" },
         counters: { ...counters }
       });
       return;
@@ -398,6 +431,67 @@ export function createSuperMemoryDaemon({
         return;
       }
       sendJson(response, 200, { ok: true, ...projectRegistry.snapshot() });
+      return;
+    }
+    const personalAdminAction = new URL(request.url ?? "/", "http://127.0.0.1").pathname
+      .match(/^\/v1\/admin\/personal-memories\/([^/]+)\/(lineage|pin|unpin)$/);
+    if (personalAdminAction && ["GET", "POST"].includes(request.method)) {
+      if (!personalManagerAdmin) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      const expectedMethod = personalAdminAction[2] === "lineage" ? "GET" : "POST";
+      if (request.method !== expectedMethod) {
+        sendJson(response, 405, { ok: false, error: "method_not_allowed" });
+        return;
+      }
+      try {
+        const memoryId = decodeURIComponent(personalAdminAction[1]);
+        const result = personalAdminAction[2] === "lineage"
+          ? personalManagerAdmin.lineage?.({ memoryId })
+          : personalManagerAdmin.pin?.({ memoryId, pinned: personalAdminAction[2] === "pin" });
+        const resolved = await result;
+        sendJson(response, resolved ? 200 : 404, resolved ? { ok: true, ...resolved } : { ok: false, error: "personal_memory_not_found" });
+      } catch (error) {
+        sendJson(response, recallErrorStatus(error), recallErrorBody(error));
+      }
+      return;
+    }
+    if (request.method === "GET" && request.url === "/v1/operator/consolidation/receipts") {
+      if (!personalManagerAdmin?.receipts) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      sendJson(response, 200, { ok: true, receipts: await personalManagerAdmin.receipts() });
+      return;
+    }
+    if (request.method === "POST" && request.url === "/v1/operator/consolidation/run") {
+      if (!personalManagerAdmin?.runConsolidation) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      try {
+        sendJson(response, 200, { ok: true, ...(await personalManagerAdmin.runConsolidation()) });
+      } catch (error) {
+        sendJson(response, recallErrorStatus(error), recallErrorBody(error));
+      }
+      return;
+    }
+    if (request.method === "GET" && (request.url ?? "").startsWith("/v1/admin/personal-memories")) {
+      if (!personalManagerAdmin || !projectRegistry) {
+        sendJson(response, 503, { ok: false, error: "backend_unavailable" });
+        return;
+      }
+      try {
+        const url = new URL(request.url, "http://127.0.0.1");
+        const requestedProjectId = url.searchParams.get("projectId");
+        const activeProjects = projectRegistry.snapshot().projects.filter((item) => item.status === "active");
+        if (requestedProjectId && !activeProjects.some((item) => item.projectId === requestedProjectId)) fail("not_authorized");
+        const projectIds = requestedProjectId ? [requestedProjectId] : activeProjects.map((item) => item.projectId);
+        sendJson(response, 200, { ok: true, memories: personalManagerAdmin.list({ projectIds }), status: personalManagerStatus?.() ?? null });
+      } catch (error) {
+        sendJson(response, recallErrorStatus(error), recallErrorBody(error));
+      }
       return;
     }
     if (request.method === "GET" && request.url === "/v1/owner/preferences") {
@@ -772,6 +866,7 @@ export function createSuperMemoryDaemon({
     canonicalWorker: worker,
     memoryRouter: router,
     runtimeSupervisor: supervisor,
+    personalManagerApi: personalApi,
     start,
     stop,
     replaySpool,

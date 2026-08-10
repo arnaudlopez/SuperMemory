@@ -1,0 +1,67 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "done",
+  "summary": "La boucle de compilation mémoire production est implémentée et chargée dans le LaunchAgent réel. Un Stop durable est acquitté sans attendre Ollama, puis produit un snapshot immuable, une archive chiffrée et au plus un candidat pending extrait localement. Les pannes Ollama et le spool d'indisponibilité sont rejouables au redémarrage sans doublons. Health et doctor exposent des compteurs sans contenu. Aucun candidat n'est activé automatiquement.",
+  "changed_files": [
+    "scripts/lib/codex-memory-compiler.mjs",
+    "scripts/lib/codex-capture-store.mjs",
+    "scripts/lib/codex-memory-governance.mjs",
+    "scripts/lib/codex-workspace-store.mjs",
+    "scripts/lib/supermemory-daemon.mjs",
+    "scripts/supermemoryd.mjs",
+    "scripts/supermemory-doctor.mjs",
+    "scripts/lib/codex-desktop-deployment.mjs",
+    "scripts/verify-codex-supermemory-release.mjs",
+    "tests/codex-memory-compiler.test.mjs",
+    "tests/codex-capture-pipeline.test.mjs",
+    "tests/supermemory-doctor.test.mjs",
+    "tests/codex-desktop-deployment.test.mjs",
+    "docs/production-runbook.md"
+  ],
+  "commands": [
+    {
+      "cmd": "node --test tests/codex-memory-compiler.test.mjs tests/codex-capture-pipeline.test.mjs tests/supermemory-doctor.test.mjs tests/codex-desktop-deployment.test.mjs",
+      "status": "pass",
+      "detail": "27 tests"
+    },
+    {
+      "cmd": "npm run verify:codex",
+      "status": "pass",
+      "detail": "80/80 acceptance, canari sacrificiel, secrets et diff"
+    },
+    {
+      "cmd": "npm run verify:secrets",
+      "status": "pass",
+      "detail": "files=498 findings=0"
+    },
+    {
+      "cmd": "LaunchAgent kickstart puis /health authentifié",
+      "status": "pass",
+      "detail": "daemon ready, compiler ready, spool_replay complete"
+    },
+    {
+      "cmd": "extracteur Ollama réel sur marqueur fictif non persistant",
+      "status": "pass",
+      "detail": "llama3:latest structured candidate returned locally"
+    },
+    {
+      "cmd": "doctor réel --codex",
+      "status": "pass",
+      "detail": "tous les checks passent sauf codex_plugin_hooks_trusted=untrusted"
+    }
+  ],
+  "evidence": [
+    "Hook path returns durable 202 without waiting for extraction",
+    "Ollama endpoint and daemon remain loopback-only; structured JSON schema and temperature=0",
+    "Ollama failure leaves one encrypted archive retryable, then creates one candidate after recovery",
+    "Startup drains encrypted outage spools before scheduling compilation",
+    "Candidate count remains zero in active memory until explicit review",
+    "Real runtime: capture events=0, compiler pending=0 retryable=0, spool failed=0"
+  ],
+  "remaining_blockers": [
+    "L'utilisateur doit accorder la confiance aux 7 hooks SuperMemory dans /hooks.",
+    "Après confiance, une nouvelle tâche Desktop doit prouver capture, candidat, approbation, recall cité et redémarrage."
+  ],
+  "harness": "codex",
+  "fallback_reason": "goal_worker timeout antérieur; package Worker exécuté par le PM conformément au contrat"
+}

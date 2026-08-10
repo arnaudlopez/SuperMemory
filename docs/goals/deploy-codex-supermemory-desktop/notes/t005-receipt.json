@@ -1,0 +1,56 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "done",
+  "decision": "revise",
+  "full_outcome_complete": false,
+  "rationale": "Le déploiement réel est réversible et le bridge MCP répond, mais le canari ne peut pas être accepté. Les 7 hooks du plugin restent untrusted, donc aucune capture Desktop réelle n'existe. Surtout, l'audit du code montre que le daemon persiste uniquement les événements chiffrés : les snapshots de tour, archives et candidats ne sont créés que par le canari isolé. Il faut ajouter un compilateur local asynchrone et rejouable avant de revendiquer la boucle mémoire automatique.",
+  "evidence": [
+    "État réel: plugin installé/activé, daemon et LaunchAgent ready, binding bound, 0 hook legacy, 7 hooks plugin untrusted",
+    "Bridge MCP réel: status/search/get/explain disponibles, workspace lié et projection Hindsight ready",
+    "Workspace réel: 0 événement, 0 candidat et 0 mémoire active",
+    "Migration dry-run: nothing_to_migrate",
+    "Recherche de code: archiveTurn/createTurnSnapshot/createCandidate ne sont appelés en chaîne que dans scripts/run-codex-integration-canary.mjs"
+  ],
+  "missing_evidence": [
+    "Confiance humaine des 7 hooks SuperMemory dans Codex Desktop",
+    "Capture d'une nouvelle tâche réelle dans l'UI Desktop",
+    "Compilation production capture -> snapshot -> archive -> candidat",
+    "Approbation puis recall MCP cité après redémarrage"
+  ],
+  "worker_package": {
+    "objective": "Implémenter un compilateur mémoire local de production dans le daemon. Après persistance durable d'un assistant.completed, regrouper le tour, créer un snapshot immuable et une archive chiffrée, puis utiliser Ollama loopback avec sortie JSON structurée pour proposer au plus un candidat inactif. La réponse hook doit rester immédiate; les échecs sont rejouables au redémarrage, idempotents et visibles dans health/doctor. Aucune activation automatique et aucun fallback distant.",
+    "allowed_files": [
+      "scripts/lib/codex-memory-compiler.mjs",
+      "scripts/lib/codex-capture-store.mjs",
+      "scripts/lib/codex-memory-governance.mjs",
+      "scripts/lib/codex-workspace-store.mjs",
+      "scripts/lib/supermemory-daemon.mjs",
+      "scripts/supermemoryd.mjs",
+      "scripts/supermemory-doctor.mjs",
+      "scripts/verify-codex-supermemory-release.mjs",
+      "scripts/lib/codex-desktop-deployment.mjs",
+      "tests/codex-memory-compiler.test.mjs",
+      "tests/codex-capture-pipeline.test.mjs",
+      "tests/supermemory-doctor.test.mjs",
+      "tests/codex-desktop-deployment.test.mjs",
+      "docs/production-runbook.md",
+      "package.json"
+    ],
+    "verify": [
+      "node --test tests/codex-memory-compiler.test.mjs tests/codex-capture-pipeline.test.mjs tests/supermemory-doctor.test.mjs tests/codex-desktop-deployment.test.mjs",
+      "npm run verify:codex",
+      "npm run verify:secrets",
+      "git diff --check"
+    ],
+    "stop_if": [
+      "La chaîne ralentit le hook en attendant Ollama.",
+      "Une mémoire devient active sans approbation humaine.",
+      "Un endpoint non-loopback est accepté pour Ollama, le daemon ou Hindsight.",
+      "Un secret ou le contenu d'un transcript est écrit en clair dans les journaux, états ou diagnostics.",
+      "Une panne Ollama peut perdre une capture ou empêcher son rejeu.",
+      "Une vérification échoue deux fois."
+    ]
+  },
+  "harness": "codex",
+  "fallback_reason": "goal_judge timeout après 60 secondes; revue Judge exécutée par le PM conformément au contrat"
+}

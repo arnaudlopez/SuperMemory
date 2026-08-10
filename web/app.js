@@ -4,6 +4,7 @@ const supportedExtensions = new Set([...textExtensions, ...binaryExtensions]);
 
 const elements = {
   projectSelector: document.querySelector("#project-selector"),
+  runtimePill: document.querySelector("#runtime-pill"),
   sourceCount: document.querySelector("#source-count"),
   candidateCount: document.querySelector("#candidate-count"),
   candidateCountLabel: document.querySelector("#candidate-count-label"),
@@ -42,6 +43,9 @@ const elements = {
   authorityExceptionList: document.querySelector("#authority-exception-list"),
   refreshAuthorityExceptions: document.querySelector("#refresh-authority-exceptions"),
   authorityExceptionBadge: document.querySelector("#authority-exception-badge"),
+  personalManagerStatus: document.querySelector("#personal-manager-status"),
+  personalMemoryList: document.querySelector("#personal-memory-list"),
+  refreshPersonalMemories: document.querySelector("#refresh-personal-memories"),
   toast: document.querySelector("#toast")
 };
 
@@ -125,6 +129,7 @@ function showTab(name) {
   if (name === "manage") Promise.all([loadSources(), loadBackups()]);
   if (name === "work") loadWork();
   if (name === "exceptions") loadAuthorityExceptions();
+  if (name === "personal-manager") loadPersonalMemories();
 }
 
 function emptyState(title, message) {
@@ -183,6 +188,107 @@ async function loadStatus() {
   elements.engineLabel.textContent = ready
     ? "Hindsight local gouverné"
     : "Repli local déterministe";
+  const personal = status.runtime?.personal_manager;
+  const personalReady = personal?.enabled === true && personal.status === "ready";
+  elements.personalManagerStatus.textContent = personalReady
+    ? `supermemory-fabric ${personal.provider_version ?? ""} · ${personal.llm?.provider ?? "LLM configuré"} · prêt`
+    : "Personal Manager indisponible";
+  elements.personalManagerStatus.classList.toggle("unavailable", !personalReady);
+  const runtimeLabel = elements.runtimePill?.querySelector("span:last-child");
+  if (runtimeLabel) runtimeLabel.textContent = status.runtime?.status === "ready"
+    ? "Z2 · runtime prêt"
+    : "Z2 · état dégradé";
+}
+
+function personalMemoryCard(memory) {
+  const article = document.createElement("article");
+  article.className = `personal-memory-card ${memory.status}`;
+  const header = document.createElement("header");
+  const title = document.createElement("strong");
+  title.textContent = memory.title || "Mémoire sans titre";
+  const revision = document.createElement("span");
+  revision.textContent = `${memory.pinned ? "épinglée · " : ""}révision ${memory.revision}`;
+  header.append(title, revision);
+  const text = document.createElement("p");
+  text.textContent = memory.text;
+  const meta = document.createElement("small");
+  const date = memory.valid_from ? new Date(memory.valid_from).toLocaleString("fr-FR") : "date inconnue";
+  const salience = Number.isFinite(Number(memory.salience_score)) ? ` · saillance ${Math.round(Number(memory.salience_score) * 100)} %` : "";
+  const freshness = memory.freshness_class ? ` · fraîcheur ${memory.freshness_class}` : "";
+  meta.textContent = `${memory.domain} · ${memory.status}${salience}${freshness} · ${date}`;
+  const id = document.createElement("code");
+  id.textContent = memory.memory_id;
+  const actions = document.createElement("div");
+  actions.className = "personal-memory-card-actions";
+  const why = document.createElement("button");
+  why.type = "button";
+  why.className = "button ghost compact";
+  why.textContent = "Pourquoi retenue ?";
+  const pin = document.createElement("button");
+  pin.type = "button";
+  pin.className = "button ghost compact";
+  pin.textContent = memory.pinned ? "Désépingler" : "Épingler";
+  const details = document.createElement("div");
+  details.className = "personal-memory-lineage";
+  details.hidden = true;
+  why.addEventListener("click", async () => {
+    if (details.dataset.loaded === "true") {
+      details.hidden = !details.hidden;
+      return;
+    }
+    why.disabled = true;
+    try {
+      const lineage = await api(`/api/personal-memories/${encodeURIComponent(memory.memory_id)}/lineage`);
+      const summary = document.createElement("p");
+      summary.textContent = `${lineage.episode_ids?.length ?? 0} épisode(s) · ${lineage.evidence_ids?.length ?? 0} preuve(s) · vérification ${lineage.verification?.status ?? "historique"}`;
+      const revisions = document.createElement("small");
+      revisions.textContent = (lineage.revisions ?? []).length
+        ? `Parcours : ${lineage.revisions.map((item) => `${item.operation} r${item.revision}`).join(" → ")}`
+        : "Mémoire ajoutée explicitement, sans consolidation longitudinale.";
+      details.append(summary, revisions);
+      details.dataset.loaded = "true";
+      details.hidden = false;
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      why.disabled = false;
+    }
+  });
+  pin.addEventListener("click", async () => {
+    pin.disabled = true;
+    try {
+      await api(`/api/personal-memories/${encodeURIComponent(memory.memory_id)}/${memory.pinned ? "unpin" : "pin"}`, { method: "POST", body: "{}" });
+      showToast(memory.pinned ? "Mémoire désépinglée." : "Mémoire épinglée.", "success");
+      await loadPersonalMemories();
+    } catch (error) {
+      pin.disabled = false;
+      showToast(error.message, "error");
+    }
+  });
+  actions.append(why, pin);
+  article.append(header, text, meta, id, actions, details);
+  return article;
+}
+
+async function loadPersonalMemories() {
+  elements.personalMemoryList.replaceChildren(emptyState("Chargement…", "Lecture du journal canonique du projet."));
+  try {
+    const projectId = boundProject();
+    const suffix = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const payload = await api(`/api/personal-memories${suffix}`);
+    const worker = payload.status?.longitudinal_memory;
+    elements.personalManagerStatus.textContent = payload.status?.status === "ready"
+      ? `supermemory-fabric ${payload.status.provider_version ?? ""} · mémoire naturelle ${worker?.status ?? "désactivée"} · ${worker?.pending ?? 0} consolidation(s) · ${payload.status.projections?.queued ?? 0} projection(s)`
+      : "Personal Manager indisponible";
+    elements.personalMemoryList.replaceChildren();
+    if (!(payload.memories ?? []).length) {
+      elements.personalMemoryList.append(emptyState("Aucune mémoire consolidée", "Parlez normalement à Hermes : les conclusions durables apparaîtront ici automatiquement."));
+      return;
+    }
+    for (const memory of payload.memories) elements.personalMemoryList.append(personalMemoryCard(memory));
+  } catch (error) {
+    elements.personalMemoryList.replaceChildren(emptyState("Mémoire indisponible", error.message));
+  }
 }
 
 function sourceUrl(candidate) {
@@ -792,12 +898,14 @@ elements.workingBindingForm.addEventListener("submit", (event) => {
 });
 elements.refreshWork.addEventListener("click", loadWork);
 elements.refreshAuthorityExceptions.addEventListener("click", loadAuthorityExceptions);
+elements.refreshPersonalMemories.addEventListener("click", loadPersonalMemories);
 elements.projectSelector.addEventListener("change", () => {
   localStorage.setItem("supermemory.project_id", elements.projectSelector.value);
   const url = new URL(window.location.href);
   url.searchParams.set("projectId", elements.projectSelector.value);
   window.history.replaceState({}, "", url);
   if (boundWorkingSet()) Promise.allSettled([loadWork(), loadAuthorityExceptions()]);
+  loadPersonalMemories();
 });
 
 elements.workingSetInput.value = new URLSearchParams(window.location.search).get("workingSetId") ||

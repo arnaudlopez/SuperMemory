@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supermemory.local/schemas/consolidation-receipt.schema.json",
+  "title": "ConsolidationReceipt v1",
+  "type": "object",
+  "required": ["schema", "receipt_id", "cluster_id", "memory_id", "operation", "decision", "episode_ids", "evidence_ids", "verification", "salience"],
+  "properties": {
+    "schema": { "const": "supermemory.consolidation-receipt.v1" }
+  },
+  "additionalProperties": true
+}

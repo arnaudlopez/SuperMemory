@@ -1,10 +1,10 @@
 {
-  "schema": "supermemory.codex-runtime.v6",
+  "schema": "supermemory.codex-runtime.v8",
   "deployment": {
     "strategy": "full",
     "canary": false,
     "progressive": false,
-    "activation": "enabled"
+    "activation": "full"
   },
   "working_memory": {
     "enabled": true,
@@ -146,8 +146,49 @@
     "require_new_session_after_change": true,
     "auto_trust_hooks": false
   },
+  "personal_manager": {
+    "enabled": true,
+    "memory_provider": "supermemory-fabric",
+    "direct_hindsight_provider": false,
+    "runtime_host": "home101",
+    "device_id": "device_home101",
+    "transport": "ssh_local_forward",
+    "endpoint": "http://127.0.0.1:18765",
+    "context_budget_tokens": 8000,
+    "capture_level": "governed",
+    "mutation_authority": "explicit_signed_turn"
+  },
+  "action_connectors": {
+    "mode": "hermes_native",
+    "supermemory_reimplements_connectors": false,
+    "retain_reduced_receipts": true
+  },
+  "llm": {
+    "provider_mode": "single",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "fallback_provider": null
+  },
+  "longitudinal_memory": {
+    "enabled": true,
+    "activation": "full",
+    "canary": false,
+    "progressive": false,
+    "worker_concurrency": 1,
+    "max_batch_episodes": 50,
+    "max_cluster_episodes": 24,
+    "max_cluster_tokens": 32000,
+    "daily_maintenance": true,
+    "session_close_consolidation": true,
+    "salience_policy": "salience-v1",
+    "endorsement_policy": "endorsement-v1",
+    "decay_policy": "class-aware-v1",
+    "explicit_remember_behavior": "pin",
+    "authority": "canonical-vault-first"
+  },
   "migration": {
-    "source_schema": "supermemory.codex-runtime.v5",
+    "source_schema": "supermemory.codex-runtime.v7",
     "compatibility_flags_off": true,
     "immutable_vault_rewrite": false
   }

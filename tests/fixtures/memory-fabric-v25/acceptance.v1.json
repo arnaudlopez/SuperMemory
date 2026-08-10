@@ -1,0 +1,30 @@
+{
+  "schema": "supermemory.memory-fabric-v2.5-acceptance.v1",
+  "version": "2.5.0",
+  "runtime_schema": "supermemory.codex-runtime.v8",
+  "activation": { "strategy": "full", "canary": false, "progressive": false },
+  "criteria": [
+    { "id": "LM-AC01", "proof": "natural conclusion without explicit remember" },
+    { "id": "LM-AC02", "proof": "mundane episode archives without activation" },
+    { "id": "LM-AC03", "proof": "assistant proposal is non-authoritative" },
+    { "id": "LM-AC04", "proof": "short endorsement cites proposal and acceptance" },
+    { "id": "LM-AC05", "proof": "ambiguous endorsement does not activate" },
+    { "id": "LM-AC06", "proof": "derived preference requires three episodes and two sessions" },
+    { "id": "LM-AC07", "proof": "single Gmail receipt cannot create preference" },
+    { "id": "LM-AC08", "proof": "reinforcement does not duplicate memory" },
+    { "id": "LM-AC09", "proof": "direct correction creates temporal revision" },
+    { "id": "LM-AC10", "proof": "decay is non-destructive" },
+    { "id": "LM-AC11", "proof": "explicit remember pins memory" },
+    { "id": "LM-AC12", "proof": "freshness outranks stale salience" },
+    { "id": "LM-AC13", "proof": "lineage is complete and cited" },
+    { "id": "LM-AC14", "proof": "forget transitively recalculates syntheses" },
+    { "id": "LM-AC15", "proof": "Hindsight outage stays retryable" },
+    { "id": "LM-AC16", "proof": "restart resumes idempotently" },
+    { "id": "LM-AC17", "proof": "owner and checkout scopes remain isolated" },
+    { "id": "LM-AC18", "proof": "signals exclude hidden and raw payloads" },
+    { "id": "LM-AC19", "proof": "historical backfill is idempotent" },
+    { "id": "LM-AC20", "proof": "worker load and capture latency are bounded" },
+    { "id": "LM-AC21", "proof": "one LLM provider and no fallback" },
+    { "id": "LM-AC22", "proof": "runtime v8 full direct Z2 activation" }
+  ]
+}

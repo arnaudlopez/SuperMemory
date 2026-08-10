@@ -1,0 +1,12 @@
+name: supermemory-fabric
+version: 2.4.0
+description: "Governed, cited and temporal Personal Manager memory through supermemoryd."
+pip_dependencies: []
+requires_env:
+  - name: SUPERMEMORY_ENDPOINT
+    description: "Loopback or TLS endpoint of supermemoryd."
+    password: false
+  - name: SUPERMEMORY_AGENT_TOKEN_FILE
+    description: "Path to the owner-bound agent token file."
+    password: false
+hooks: []

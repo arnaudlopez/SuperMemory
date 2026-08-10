@@ -1,0 +1,10 @@
+# Keep implementation and deployment sources in the Codebase Memory graph.
+# Negations override ordinary built-in directory filters used by fast/moderate
+# indexing modes. Safety-core directories such as .git and node_modules remain
+# excluded by codebase-memory-mcp.
+!scripts/
+!deploy/
+!docs/
+!plugins/
+!plugins/supermemory/
+!plugins/supermemory/scripts/

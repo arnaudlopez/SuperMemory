@@ -1,0 +1,98 @@
+{
+  "result": "done",
+  "decision": "revise",
+  "full_outcome_complete": false,
+  "summary": "La pré-release est saine par composants mais ne prouve pas encore l'oracle complet. Le rapport marque les 80 AC couverts dès que les suites globales passent, sans lien AC→test vérifiable. Aucun canary unique n'enchaîne installation découverte par Codex, capture, gouvernance, recall cité, invalidation, suppression et rollback.",
+  "blocking_gaps": [
+    {
+      "id": "plugin_discovery",
+      "detail": "L'installateur copie ~/.codex/plugins/supermemory mais ne crée ni ne fusionne de marketplace local. Un app-server Codex 0.125 isolé ne découvre aucun marketplace SuperMemory sans .agents/plugins/marketplace.json."
+    },
+    {
+      "id": "oracle_canary",
+      "detail": "Le release gate agrège des tests séparés et étiquette chaque AC avec une preuve générique; il ne produit pas la preuve runtime end-to-end demandée."
+    },
+    {
+      "id": "versioning_invalidation",
+      "detail": "Le store Codex n'a pas de transition active→stale/superseded reliée au remplacement d'un snapshot. AC-VER-03/05 et AC-MCP-03 ne sont donc pas fermés pour le nouveau store."
+    },
+    {
+      "id": "migration_citations",
+      "detail": "L'import legacy place des src_* et snapshot IDs dans evidence sans matérialiser une chaîne de citation v2 résoluble. AC-MIG-10 reste insuffisamment prouvé."
+    },
+    {
+      "id": "operator_runbook",
+      "detail": "Le runbook lance npm run daemon sans arguments obligatoires et documente MIGRATE <plan-hash> alors que la CLI exige APPLY <migration-id>."
+    },
+    {
+      "id": "packaging",
+      "detail": "Le plugin ne contient pas encore le skill d'usage/diagnostic prévu par le blueprint."
+    }
+  ],
+  "evidence": [
+    "codex-cli 0.125.0 expose plugin/list via App Server et recherche les marketplaces repo avec le paramètre cwds.",
+    "Le test de release vérifie uniquement la présence de 80 chaînes uniques et assigne covered à toutes si les checks globaux passent.",
+    "createTurnSnapshotStore fingerprint les chemins mais ne gère ni source_id stable ni transition rename/review.",
+    "createCodexWorkspaceStore filtre status=active mais n'expose aucune invalidation stale.",
+    "createCodexMigration importe des références legacy sans artefact v2 vérifié.",
+    "117 tests globaux, specs, secrets et gates existants restent verts; les écarts sont des preuves/fonctionnalités manquantes, pas des régressions."
+  ],
+  "worker_package": {
+    "objective": "Fermer les écarts pré-release : rendre le plugin réellement découvrable dans un profil/projet Codex isolé, implémenter continuité/invalidation source fail-closed et citations legacy résolubles, ajouter un canary oracle end-to-end et remplacer la matrice AC générique par des preuves AC→tests explicites, puis corriger le runbook.",
+    "allowed_files": [
+      ".agents/plugins/marketplace.json",
+      "README.md",
+      "docs/README.md",
+      "docs/production-runbook.md",
+      "package.json",
+      "plugins/supermemory/**",
+      "scripts/lib/codex-app-server-adapter.mjs",
+      "scripts/lib/codex-installer.mjs",
+      "scripts/lib/codex-turn-snapshot.mjs",
+      "scripts/lib/codex-workspace-store.mjs",
+      "scripts/lib/codex-memory-governance.mjs",
+      "scripts/lib/codex-memory-recall.mjs",
+      "scripts/lib/codex-migration.mjs",
+      "scripts/lib/codex-lifecycle.mjs",
+      "scripts/run-codex-integration-canary.mjs",
+      "scripts/supermemory-app-server.mjs",
+      "scripts/supermemory-codex.mjs",
+      "scripts/supermemory-doctor.mjs",
+      "scripts/verify-codex-supermemory-release.mjs",
+      "tests/codex-installer.test.mjs",
+      "tests/codex-app-server-adapter.test.mjs",
+      "tests/codex-memory-governance.test.mjs",
+      "tests/codex-hindsight-recall.test.mjs",
+      "tests/codex-mcp-server.test.mjs",
+      "tests/codex-migration.test.mjs",
+      "tests/codex-lifecycle.test.mjs",
+      "tests/codex-integration-canary.test.mjs",
+      "tests/codex-release-canary.test.mjs"
+      ,"tests/supermemory-doctor.test.mjs"
+    ],
+    "verify": [
+      "node --test tests/codex-installer.test.mjs tests/codex-app-server-adapter.test.mjs tests/codex-memory-governance.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-migration.test.mjs tests/codex-lifecycle.test.mjs tests/codex-integration-canary.test.mjs tests/codex-release-canary.test.mjs",
+      "node scripts/run-codex-integration-canary.mjs --json",
+      "node scripts/verify-codex-supermemory-release.mjs --json",
+      "node scripts/verify-secret-hygiene.mjs",
+      "git diff --check",
+      "npm test",
+      "node scripts/verify-supermemory-specs.mjs",
+      "node scripts/verify-supermemory-release-readiness.mjs --json"
+    ],
+    "stop_if": [
+      "Besoin d'écrire dans le vrai ~/.codex, un vault réel ou une banque durable.",
+      "La marketplace existante devrait être remplacée au lieu d'être fusionnée et sauvegardée.",
+      "Une source ambiguë serait fusionnée automatiquement sur nom ou hash seul.",
+      "Une mémoire stale resterait rappelable pendant l'échec de suppression Hindsight.",
+      "Une citation legacy ne peut pas être reliée à un artefact canonique vérifiable.",
+      "Le canary doit utiliser des données client, une UI non observable ou une écriture cloud.",
+      "Une preuve AC ne peut pas pointer vers un test/scénario précis.",
+      "Une vérification échoue deux fois."
+    ]
+  },
+  "missing_evidence": [
+    "Observation UI Desktop et IDE reste distincte des contrats App Server/hooks; le rapport final doit conserver cette limite s'il ne pilote pas ces interfaces."
+  ],
+  "note_needed": false
+}

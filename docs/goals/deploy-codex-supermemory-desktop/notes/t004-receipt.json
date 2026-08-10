@@ -1,0 +1,51 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "done",
+  "task_id": "T004",
+  "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/deploy-codex-supermemory-desktop/state.yaml",
+  "summary": "Le vrai profil macOS est déployé après sauvegarde vérifiée. Le premier apply a lié le projet, retiré 2 hooks Codex legacy, installé/activé le plugin et démarré le daemon. Un rollback réel a restauré le profil byte-for-byte, arrêté le service et préservé vault/binding; un second plan propre a ensuite redéployé. Doctor est vert sauf la confiance humaine obligatoire des 7 hooks plugin, tous actuellement untrusted.",
+  "evidence": [
+    "Vault backup vérifié: backup-2026-07-25T07-41-22-089Z-2fe4a53f",
+    "Premier install: desktop_707f050f52cda2e8a27f61e, backup_verified=true",
+    "Rollback réel: profile_restored=true, runtime_safety_copy=true, binding_preserved=true, vault_preserved=true, daemon arrêté et plugin désinstallé",
+    "Install final: desktop_9bbb405bf07f077f38b7958, backup_verified=true",
+    "État final: binding=bound, plugin installed/enabled, daemon ready, LaunchAgent loaded, legacy Codex hooks=0",
+    "Migration dry-run: status=nothing_to_migrate",
+    "Doctor: unique blocker codex_plugin_hooks_trusted=untrusted"
+  ],
+  "commands": [
+    {
+      "cmd": "vault backup create + verify",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run desktop -- apply (reviewed plan 707f…52c6)",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run desktop -- rollback (desktop_707f…)",
+      "status": "pass"
+    },
+    {
+      "cmd": "out-of-band rollback status, binding, LaunchAgent and daemon checks",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run desktop -- apply (reviewed final plan 9bbb…d346)",
+      "status": "pass"
+    },
+    {
+      "cmd": "npm run doctor -- --codex --json",
+      "status": "pass_with_expected_human_trust_blocker"
+    }
+  ],
+  "remaining_blockers": [
+    "Dans Codex Desktop, l'utilisateur doit ouvrir /hooks, examiner les 7 hooks source=plugin SuperMemory et leur accorder la confiance. Le système ne fournit aucune API sûre pour automatiser cette décision."
+  ],
+  "manifest": {
+    "path": "/Users/arnaud/.supermemory/backups/codex-desktop/desktop_9bbb405bf07f077f38b7958/manifest.json",
+    "secrets_recorded": false,
+    "rollback_confirmation": "ROLLBACK desktop_9bbb405bf07f077f38b7958"
+  },
+  "harness": "codex"
+}

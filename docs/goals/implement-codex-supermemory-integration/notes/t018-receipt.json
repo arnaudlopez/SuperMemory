@@ -1,0 +1,40 @@
+{
+  "result": "done",
+  "decision": "approve",
+  "full_outcome_complete": false,
+  "review_mode": "pm_fallback_after_goal_judge_timeout",
+  "rationale": "Les six blockers T016 sont fermés par du comportement rejoué, pas par des déclarations. Le canari appelle le vrai App Server Codex 0.125 pour découvrir puis activer le plugin dans un profil isolé, invoque le bridge réellement installé, et enchaîne l'oracle complet jusqu'au rollback. Les 80 AC ont chacun une preuve nommée et les critères multi-composants exigent plusieurs gates. Les limitations client restent explicites et n'empêchent pas l'audit terminal du produit local-first.",
+  "evidence": [
+    "node scripts/run-codex-integration-canary.mjs --json: pass, 8/8 étapes, plugin_discovered_by_codex=true, plugin_activation_observed_by_codex=true, Codex 0.125.0.",
+    "node scripts/verify-codex-supermemory-release.mjs --json: pass, 80/80 AC, 9/9 gates, rollback vérifié, aucun secret ni donnée client.",
+    "npm test: 124/124; specs, secret hygiene, release readiness et git diff --check passent.",
+    "La marketplace est fusionnée avec les entrées existantes et restaurée byte-for-byte; config.toml et la confiance projet ne sont pas modifiés.",
+    "Le suivi de source conserve l'identité uniquement sur rename fortement observé; une copie ambiguë reste distincte et review_required.",
+    "L'invalidation marque mémoire/candidat stale ou superseded avant l'appel de suppression dérivée, avec retry visible en cas d'échec.",
+    "Les citations legacy pointent vers un artefact local immutable dont integrity_hash est recalculé au rappel; le test d'altération échoue fermé.",
+    "Le runbook utilise les arguments daemon obligatoires et APPLY <migration-id>; il distingue App Server disponible, configuré et observé.",
+    "Le plugin contient hooks, MCP, manifeste et skill d'usage; le verifier exige ces artefacts."
+  ],
+  "matrix_audit": {
+    "total": 80,
+    "covered": 80,
+    "generic_evidence_remaining": false,
+    "failed_or_blocked": 0,
+    "multi_gate_examples": [
+      "AC-VER-05 exige s5_s6_acceptance et oracle_canary.",
+      "AC-CLI-03 exige oracle_canary et codex_cli.",
+      "AC-SEC-12 exige secret_hygiene et oracle_canary."
+    ]
+  },
+  "risks": [
+    "La capture hook-only reste partielle; la capture riche dépend d'un host utilisant réellement le wrapper App Server.",
+    "Le canari n'a piloté ni UI Desktop ni UI IDE tierce; aucune affirmation d'observation UI n'est autorisée.",
+    "Codex web/cloud et ses conversations restent hors périmètre.",
+    "Le niveau de confiance projet demeure une décision utilisateur, conformément à l'absence de mutation silencieuse."
+  ],
+  "missing_evidence": [
+    "Une observation UI Desktop/IDE serait une preuve additionnelle de compatibilité client, pas une condition de vérité du produit local-first CLI/protocole livré."
+  ],
+  "authorization": "T999 peut être activé pour l'audit terminal.",
+  "note_needed": false
+}

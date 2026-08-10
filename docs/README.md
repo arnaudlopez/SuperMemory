@@ -4,13 +4,34 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
 
 ## Lecture recommandee
 
-1. `topic-continuity-quiet-authority-blueprint.md`
+1. `longitudinal-memory-consolidation-blueprint.md`
+   - Blueprint produit/tech de la prochaine tranche Memory Fabric v2.5.
+   - Capture episodique automatique, consolidation longitudinale et saillance explicable.
+   - Decisions naturelles retenues sans commande, preferences implicites apprises par
+     convergence et `retiens que` reduit a un epinglage.
+   - Renforcement, revision, decroissance non destructive et lignee citee.
+
+2. `personal-manager-hermes-blueprint.md`
+   - Blueprint produit/tech de la tranche Memory Fabric v2.4.
+   - Personal Manager Hermes omniscient dans le perimetre du proprietaire.
+   - Provider unique `supermemory-fabric`, derive de l'integration Hindsight officielle mais
+     connecte exclusivement a `supermemoryd`.
+   - Recall owner + tous projets, mutations explicites immediates et audit depuis le Mac.
+   - Composition avec Gmail, Calendar et les autres connecteurs natifs Hermes, avec capture
+     gouvernee des recus d'action.
+
+3. `multi-project-codex-session-sync-blueprint.md`
+   - Blueprint parent de la tranche Memory Fabric v2.3.
+   - Registre owner/projets, isolation par workspace, client Codex universel et import de
+     sessions.
+
+4. `topic-continuity-quiet-authority-blueprint.md`
    - Blueprint produit/tech de la tranche Memory Fabric v2.2.
    - Dossier de sujet persistant au-dessus de plusieurs sessions.
    - Topic Working View 100K, checkpoints cites et Working Map <= 8K.
    - Autorite canonique silencieuse et interruptions reservees aux actions reellement bloquees.
 
-2. `hindsight-native-memory-plane-blueprint.md`
+5. `hindsight-native-memory-plane-blueprint.md`
    - Blueprint produit/tech de la tranche Memory Fabric v2.1.
    - Retrait immediat de Graphiti et `supermemory-improved`.
    - Hindsight natif pour observations, operations, recall enrichi et Reflect.
@@ -20,44 +41,44 @@ Ce dossier contient la base de travail pour le systeme de memoire personnelle et
    - Etat de livraison :
      [`hindsight-native-release-receipt.md`](hindsight-native-release-receipt.md).
 
-3. `codex-supermemory-technical-design.md`
+6. `codex-supermemory-technical-design.md`
    - Conception normative de l'integration Codex Desktop, CLI et IDE.
    - Identite stable des projets, capture App Server/hooks et versioning.
    - Recall MCP gouverne, securite, migration, deploiement et acceptation.
 
-4. `audit-memoire-agentique-v2.md`
+7. `audit-memoire-agentique-v2.md`
    - Decision d'adoption de Hindsight.
    - Repartition entre moteur memoire et gouvernance SuperMemory.
    - Features Hindsight a utiliser par phase.
 
-5. `prd-memoire-agentique-v2.md`
+8. `prd-memoire-agentique-v2.md`
    - Plan produit cible avec Hindsight.
    - Contrat de promotion vers Hindsight.
    - Evals et milestones V2.
 
-6. `golden-case-implementation-roadmap.md`
+9. `golden-case-implementation-roadmap.md`
    - Decoupage des tranches d'implementation.
    - Objectifs intermediaires et oracles menant au Golden Case enterprise.
    - Ordre recommande entre contrats, Hindsight, source lifecycle, agents, acces, ports et CI.
 
-7. `golden-case-tdd-matrix.md`
+10. `golden-case-tdd-matrix.md`
    - Tests rouges precis par tranche.
    - Fixtures, commandes ciblees et criteres de passage.
    - Backlog TDD pour driver le developpement jusqu'au Golden Case.
 
-8. `audit-memoire-agentique.md`
+11. `audit-memoire-agentique.md`
    - Pourquoi cette architecture existe.
    - Decisions critiques.
    - Risques, angles morts, gouvernance et recherche academique.
    - Contexte V1 conserve pour historique.
 
-9. `prd-memoire-agentique.md`
+12. `prd-memoire-agentique.md`
    - Ce que le produit doit faire.
    - Structure cible du vault.
    - Protocoles d'ingestion, navigation, revue, publication, monitoring et multi-agent.
    - Contexte V1 conserve pour historique.
 
-10. `evaluation-comparative-retrieval-rappel.md`
+13. `evaluation-comparative-retrieval-rappel.md`
    - Comparaison avec les benchmarks et architectures retrieval/RAG.
    - Estimation de rappel et vitesse.
    - Trajectoire BM25, embeddings, hybrid retrieval, reranking, graph.
@@ -77,6 +98,10 @@ Le systeme cible est maintenant :
 - ontologie metier evolutive, creee a la demande ;
 - snapshots immuables pour les sources externes ou mutables ;
 - memoire vivante : fraicheur, revision, historisation, interdiction ;
+- capture episodique automatique et consolidation longitudinale selective ;
+- decisions naturelles retenues sans mot-cle et preferences implicites exigeant une
+  convergence multi-session ;
+- `retiens que` comme epinglage volontaire, pas comme prerequis a la memorisation ;
 - evals simples pour verifier que les deux couches respectent les permissions, la provenance et la qualite de recall.
 
 Architecture de principe :
@@ -247,7 +272,7 @@ Memory Fabric v2.2 est implementee directement dans le runtime production v5.
 La prochaine etape est operationnelle :
 
 1. sauvegarder puis synchroniser le vault canonique vers Z2 ;
-2. deployer la stack complete a six services, sans canari ni second provider ;
+2. deployer les six services memoire sur Z2 et Hermes natif sur Home 101, sans canari ni second provider ;
 3. verifier les migrations atomiques Topic, temporalite et authority au demarrage ;
 4. executer le smoke authentifie capture -> topic -> recall temporel cite ;
 5. controler les vues locales Travail et Exceptions depuis le Mac mini M4 Pro.

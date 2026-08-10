@@ -1,0 +1,58 @@
+{
+  "schema": "goalbuddy_receipt_v1",
+  "result": "done",
+  "task_id": "T002",
+  "board_path": "/Users/arnaud/Documents/SuperMemory/docs/goals/deploy-codex-supermemory-desktop/state.yaml",
+  "decision": "approved",
+  "full_outcome_complete": false,
+  "rationale": "L'audit est cohérent avec hooks/list et plugin/list du runtime Desktop. Le canari sacrificiel passe aussi avec le binaire embarqué 0.146. Le plus grand slice sûr est un orchestrateur macOS entièrement testable sur racines isolées : plan hashé, cutover legacy ciblé, secrets privés, LaunchAgent, activation App Server observable, doctor et rollback. L'application au vrai profil reste une tâche PM séparée. La confiance des hooks reste une action UI humaine et les hooks Claude restent hors du cutover Codex.",
+  "worker_package": {
+    "objective": "Implémenter et documenter un déploiement Codex Desktop macOS réversible, testable sans modifier le vrai profil : audit/plan sans écriture, détection structurée et cutover des seuls hooks Codex legacy, bootstrap de secrets 0600, binding explicite, installation plugin, LaunchAgent loopback-only, client App Server pour list/install/uninstall/hooks, diagnostic Desktop et rollback préservant le vault.",
+    "allowed_files": [
+      "scripts/lib/codex-desktop-deployment.mjs",
+      "scripts/supermemory-desktop.mjs",
+      "scripts/lib/codex-installer.mjs",
+      "scripts/supermemory-doctor.mjs",
+      "tests/codex-desktop-deployment.test.mjs",
+      "tests/codex-installer.test.mjs",
+      "tests/supermemory-doctor.test.mjs",
+      "package.json",
+      "docs/production-runbook.md"
+    ],
+    "verify": [
+      "node --test tests/codex-installer.test.mjs tests/codex-desktop-deployment.test.mjs tests/supermemory-doctor.test.mjs",
+      "npm run verify:codex",
+      "npm run verify:secrets",
+      "git diff --check -- scripts/lib/codex-desktop-deployment.mjs scripts/supermemory-desktop.mjs scripts/lib/codex-installer.mjs scripts/supermemory-doctor.mjs tests/codex-desktop-deployment.test.mjs tests/codex-installer.test.mjs tests/supermemory-doctor.test.mjs package.json docs/production-runbook.md"
+    ],
+    "stop_if": [
+      "Le package nécessite d'écrire hors des allowed_files.",
+      "Une transformation ne peut pas identifier structurellement et exclusivement les hooks claude-memory-compiler.",
+      "Un secret, contenu mémoire ou transcript apparaîtrait dans le repo, le manifest ou les logs.",
+      "L'activation nécessite de contourner la confiance humaine des hooks.",
+      "Le rollback supprimerait ou réécrirait le contenu canonique du vault au-delà des métadonnées de binding sauvegardées.",
+      "Le runtime Desktop embarqué ne supporte pas les méthodes App Server observées.",
+      "Une commande verify échoue deux fois."
+    ]
+  },
+  "evidence": [
+    "docs/goals/deploy-codex-supermemory-desktop/notes/T001-real-profile-audit.md",
+    "runtime Desktop hooks/list: deux hooks legacy utilisateur trusted",
+    "runtime Desktop plugin/list: supermemory discovered, installed=false, enabled=false",
+    "canari sacrificiel avec codex-cli 0.146.0-alpha.3.1: pass, activation et rollback observés",
+    "manuel Codex courant: plugin hooks non trusted automatiquement, MCP partagé par hôte, Remote dépend de l'hôte"
+  ],
+  "missing_evidence": [
+    "Aucune capture issue d'une nouvelle tâche dans l'UI Desktop réelle.",
+    "Aucun trust utilisateur du hook SuperMemory observé.",
+    "Aucun redémarrage réel du Desktop avec recall MCP cité observé."
+  ],
+  "required_board_updates": [
+    "Copier worker_package sur T003 et l'activer.",
+    "Conserver T004 comme unique phase de mutation du vrai profil.",
+    "Exiger dans T004 une sauvegarde hors vault et un manifest redigé avant apply."
+  ],
+  "blocked_tasks": [],
+  "harness": "codex",
+  "fallback_reason": "goal_judge timeout après 60 secondes; revue Judge exécutée par le PM conformément au contrat"
+}

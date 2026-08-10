@@ -1,0 +1,1531 @@
+version: 2
+
+goal:
+  title: "Implémenter l’intégration Codex ↔ SuperMemory"
+  slug: "implement-codex-supermemory-integration"
+  kind: existing_plan
+  tranche: "Implémentation continue des slices S1-S7 jusqu’au canary local-first et au rollback vérifié."
+  status: done
+  oracle:
+    signal: "Un canary sacrificiel prouve identité stable, capture/replay, gouvernance, recall MCP cité, révocation, suppression et rollback sans fuite inter-workspace."
+    cadence: "après chaque Worker package, à chaque phase de risque et à l’audit final"
+    final_proof: "80 AC couverts, gates verts, preuves Desktop/CLI/IDE datées et receipt final full_outcome_complete: true."
+  intake:
+    original_request: "Ok implémenter"
+    interpreted_outcome: "Transformer le blueprint validé en intégration Codex-SuperMemory locale, utilisable, sûre, migrable et vérifiée."
+    input_shape: existing_plan
+    audience: "utilisateur et mainteneur de SuperMemory"
+    authority: approved
+    proof_type: demo
+    completion_proof: "Tests contractuels et canary isolé couvrent S1-S7, les 80 AC, la sécurité et le rollback sans régression des 55 tests existants."
+    likely_misfire: "Livrer des composants ou mocks isolés sans workflow Codex de bout en bout réellement exploitable."
+    blind_spots_considered:
+      - "Dirty worktree documentaire à préserver."
+      - "Version et capacités réelles du Codex installé."
+      - "Ancien claude-memory-compiler et hooks existants."
+      - "Cycle de vie des process MCP selon Desktop, CLI et IDE."
+      - "Secrets, spool, backpressure et suppression."
+      - "Migration de workspace:local et des source IDs dérivés du chemin."
+      - "Banques Hindsight par workspace et reconstruction."
+      - "Aucune mutation de configuration utilisateur sans tâche et sauvegarde dédiées."
+    existing_plan_facts:
+      - "docs/codex-supermemory-technical-design.md définit R01-R13, D01-D16 et 80 AC."
+      - "S1 registre/resolver; S2 daemon/journal/spool; S3 hooks; S4 App Server; S5 gouvernance; S6 MCP/Hindsight; S7 suppression/migration/doctor/release."
+      - "Vault canonique, Hindsight projection reconstruisible."
+      - "MCP de contenu lié au projet au lancement; serveur global diagnostic-only."
+      - "App Server primaire quand contrôlé; hooks shadow ou primaires selon capture_mode."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  exact_human_approval_can_terminal_wait: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  goal_pressure_requires_oracle: true
+  no_completion_on_weak_proof: true
+  slice_policy:
+    max_consecutive_tiny_tasks: 2
+    prefer_vertical_slices: true
+    judge_picks_largest_safe_slice: true
+    worker_completes_whole_slice: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+visual_board:
+  selected: local
+  local:
+    status: live
+    url: "http://goalbuddy.localhost:41738/implement-codex-supermemory-integration/"
+    command: "node /Users/arnaud/.codex/plugins/cache/goalbuddy/goalbuddy/0.4.1/skills/goal-prep/surfaces/local-goal-board/scripts/local-goal-board.mjs --goal docs/goals/implement-codex-supermemory-integration --port 41738"
+
+active_task: null
+
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    reasoning_hint: low
+    objective: "Cartographier les points d’intégration réels du repo pour S1 et les gates qui doivent rester verts."
+    inputs:
+      - "docs/codex-supermemory-technical-design.md"
+      - "scripts/lib/product-store.mjs"
+      - "scripts/supermemory-app.mjs"
+      - "scripts/supermemory-onboard.mjs"
+      - "package.json"
+      - "tests"
+      - "État Git courant"
+    constraints:
+      - "Lecture seule."
+      - "Préserver et distinguer les changements préexistants."
+      - "Ne pas concevoir à nouveau ce que le blueprint a déjà tranché."
+      - "Identifier les plus petits points d’extension compatibles, pas un second produit."
+    expected_output:
+      - "Carte fichiers/symboles pour Project, Workspace, Binding et resolver."
+      - "Écarts du store workspace:local et stratégie de migration compatible."
+      - "Commandes de test S1 et gates globaux."
+      - "Allowed files et stop conditions candidats pour T003."
+    receipt:
+      result: done
+      summary: "S1 nécessite un nouveau module autonome de registre/résolution et une CLI dédiée; aucun équivalent Project/Workspace/Binding n’existe. Le store produit v1 reste path-derived et workspace:local. La migration sûre doit détecter ce legacy, refuser le cutover sans choix owner, sauvegarder hors vault, puis produire un état v2/mapping atomique sans réécrire l’original. Les tests AC-ID doivent utiliser dépôts Git et vaults temporaires. Les changements documentaires et boards actuellement non commités sont préexistants et hors périmètre Worker."
+      evidence:
+        - path: "docs/codex-supermemory-technical-design.md:276"
+          detail: "Définit les IDs opaques et immuables prj_, ws_, co_; les chemins ne sont pas l’identité."
+        - path: "docs/codex-supermemory-technical-design.md:293"
+          detail: "Fixe projects.jsonl, le marqueur du git common dir et le marqueur non-Git .supermemory/project.json."
+        - path: "docs/codex-supermemory-technical-design.md:319"
+          detail: "Spécifie resolveProject(cwd), les états unbound/ambiguous et l’interdiction de deviner depuis nom, remote ou contenu."
+        - path: "docs/codex-supermemory-technical-design.md:335"
+          detail: "Spécifie alias active/historical, checkout distinct par worktree, multi-root explicite et binding_conflict pour copie simultanée."
+        - path: "scripts/lib/product-store.mjs:6"
+          detail: "STORE_VERSION vaut 1; aucun migrateur n’est présent."
+        - path: "scripts/lib/product-store.mjs:215"
+          detail: "initialState ne contient qu’un objet workspace, sans Project, Binding, checkout ni aliases."
+        - path: "scripts/lib/product-store.mjs:299"
+          detail: "createProductStore reçoit workspaceId avec défaut workspace:local."
+        - path: "scripts/lib/product-store.mjs:316"
+          detail: "Le store canonique courant est 00_inbox/supermemory-product/state.json et assertState rejette toute autre version."
+        - path: "scripts/lib/product-store.mjs:790"
+          detail: "sourceId dépend encore de workspaceId + relativePath; un renommage crée donc une nouvelle identité source."
+        - path: "scripts/lib/registry-transaction.mjs:25"
+          detail: "Un primitive d’écriture JSON atomique existe mais reste privée; le verrou vault exporté est disponible lignes 155-164."
+        - path: "scripts/lib/product-backup.mjs:125"
+          detail: "Le backup manager copie tout le vault vers une racine externe et vérifie hashes/comptes; réutilisable pour migration explicite."
+        - path: "docs/codex-supermemory-technical-design.md:1262"
+          detail: "AC-ID-01 à 05 couvrent onglets, move, rename, worktrees, multi-root/clone/copie ambiguë; gates globaux lignes 1372-1381."
+      facts:
+        - topic: dirty_worktree
+          detail: "Préexistant: docs/README.md modifié; docs/codex-supermemory-technical-design.md et les deux dossiers docs/goals non suivis. T003 ne doit ni restaurer ni absorber ces changements."
+        - topic: symbol_map
+          detail: "Créer scripts/lib/project-registry.mjs avec createProjectRegistry, initProject, resolveProject, read/write registry, marker validation, alias transitions et checkout binding. Créer scripts/supermemory-project.mjs pour init/status. Étendre package.json uniquement pour exposer des scripts CLI."
+        - topic: existing_extension_points
+          detail: "Réutiliser fs/path/crypto et les règles anti-symlink de product-store; réutiliser withVaultMutationLock de registry-transaction, mais ne pas étendre writeRegistryPairRecoverable car il est codé en dur pour source_registry.md/snapshot_registry.md."
+        - topic: legacy_compatibility
+          detail: "S1 peut découvrir state.json v1 et workspace:local sans modifier createProductStore. Sans mapping owner: status legacy_unbound, aucune mutation/cutover. Avec mapping explicite: backup vérifié, mapping migration_id + legacy workspace/source IDs, nouvel état/version écrit séparément puis swap atomique; conserver l’original dans le backup."
+        - topic: tests_to_preserve
+          detail: "Prioritaires: tests/supermemory-app.test.mjs, product-reconciliation.test.mjs, product-hindsight.test.mjs, product-backup.test.mjs, registry-transaction.test.mjs et supermemory-onboard.test.mjs; le gate complet reste npm test."
+        - topic: new_ac_tests
+          detail: "tests/project-registry.test.mjs: AC-ID-01 même marker/racine => mêmes prj/ws/co; AC-ID-02 déplacement => mêmes IDs + alias historique; AC-ID-03 rename => aucun doublon logique/source mapping; AC-ID-04 git worktrees => prj/ws communs, co distincts; AC-ID-05 multi-root explicite accepté, clone/copie concurrente => ambiguous/binding_conflict et aucune fusion."
+        - topic: candidate_allowed_files
+          detail: "scripts/lib/project-registry.mjs; scripts/supermemory-project.mjs; tests/project-registry.test.mjs; tests/fixtures/project-registry/** si nécessaire; package.json. Ajouter scripts/lib/product-store.mjs et tests/product-store-migration.test.mjs seulement si T002 exige le cutover v1→v2 dans S1."
+        - topic: candidate_verify
+          detail: "node --test tests/project-registry.test.mjs; si migration: node --test tests/product-store-migration.test.mjs tests/product-backup.test.mjs tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs; puis git diff --check; npm test; node scripts/verify-supermemory-specs.mjs."
+        - topic: candidate_stop_if
+          detail: "Stop si écriture nécessaire dans ~/.codex ou un vault réel; si marker/registre discordants exigent une fusion implicite; si migration sans backup vérifié ou choix owner; si overwrite de state.json v1 avant validation/swap; si alias actif revendiqué par deux workspaces; si besoin de modifier les docs préexistantes; si une gate échoue deux fois."
+      contradictions:
+        - detail: "Le blueprint exige stabilité au renommage, mais le sourceId actuel est dérivé du relativePath dans product-store.mjs:790."
+        - detail: "Le blueprint exige un workspace_id obligatoire et scopé, tandis que l’application construit toujours createProductStore sans workspace explicite dans scripts/supermemory-app.mjs:266."
+        - detail: "projects.jsonl est normatif dans le blueprint, mais aucune occurrence de projects.jsonl, resolveProject, ProjectRootBinding ou checkout_id n’existe dans scripts/ ou tests/."
+      ambiguity_requiring_judge:
+        - "Décider si S1 implémente seulement la détection/planification legacy_unbound ou aussi le cutover complet du state.json v1; le blueprint place la migration globale en S7 mais exige une migration de schéma dans chaque slice."
+        - "Décider si projects.jsonl est un journal append-only avec vue reconstruite ou un fichier snapshot JSONL réécrit atomiquement; cela conditionne verrouillage, récupération et rollback."
+        - "Décider le générateur UUIDv7 sans nouvelle dépendance sous Node 18: implémentation interne testée ou IDs randomUUID compatibles au format logique."
+        - "Préciser la preuve AC-ID-03 en S1 puisque les mémoires restent dans product-store v1: test du mapping de continuité seulement, ou extension immédiate du sourceId."
+      commands:
+        - "sed -n '1,240p' goal.md && sed -n '1,280p' state.yaml"
+        - "git status --short && git diff --stat && git diff -- docs/..."
+        - "rg -n blueprint identity/migration/S1/AC-ID terms"
+        - "sed blueprint identity, migration, deployment and gates sections"
+        - "rg -n product-store symbols/workspace/sourceId"
+        - "sed package.json and product-store state/API sections"
+        - "rg -n app/onboard/doctor integration symbols"
+        - "rg -n tests for workspace/state/source behavior"
+        - "sed product-store/app headers and list tests"
+        - "rg -n project registry/resolver symbols across repo"
+        - "rg -n transaction/lock/registry implementations"
+        - "nl -ba registry-transaction and product-backup excerpts"
+      note_needed: false
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Valider la carte T001 et spécifier le plus grand package S1 sûr, migration et tests inclus."
+    inputs:
+      - "T001 receipt"
+      - "docs/codex-supermemory-technical-design.md"
+      - "Dirty fingerprint initial"
+    constraints:
+      - "Lecture seule."
+      - "Respecter AC-ID-01 à AC-ID-05 et la compatibilité du store existant."
+      - "Ne pas autoriser de mutation de configuration utilisateur ou de vault réel."
+      - "Donner des allowed_files, verify et stop_if exacts à T003."
+    expected_output:
+      - "Décision S1."
+      - "Contrat de migration de schéma."
+      - "Worker package exact pour T003."
+      - "Risques et alternatives rejetées."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S1 est sûr comme socle autonome, sans cutover prématuré du store produit. Il doit livrer le registre et le resolver réellement utilisables, les marqueurs Git/non-Git, aliases, worktrees, multi-root, détection legacy_unbound et une CLI. Le store v1 reste intact jusqu’aux slices gouvernance/migration. Cette limite préserve la séquence du blueprint tout en rendant AC-ID testable dès maintenant."
+      worker_package:
+        objective: "Implémenter le socle S1 : registre événementiel projet/workspace, marqueurs Git/non-Git, resolver, aliases/worktrees/multi-root, détection legacy_unbound et CLI init/status, sans cutover du product-store v1."
+        allowed_files:
+          - scripts/lib/project-registry.mjs
+          - scripts/supermemory-project.mjs
+          - tests/project-registry.test.mjs
+          - package.json
+        verify:
+          - "node --test tests/project-registry.test.mjs"
+          - "node --test tests/registry-transaction.test.mjs tests/product-backup.test.mjs tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-onboard.test.mjs"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+        stop_if:
+          - "Besoin d’écrire hors allowed_files."
+          - "Besoin de modifier ~/.codex, un vault réel ou les documents préexistants."
+          - "Un marker/registre discordant nécessiterait une fusion implicite."
+          - "Un alias actif serait revendiqué par deux workspaces."
+          - "La détection legacy exigerait de réécrire state.json v1."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "Décision migration: S1 détecte state.json v1/workspace:local et exige un mapping owner, mais ne réalise pas le swap; le cutover complet reste S5/S7."
+        - "Décision registre: projects.jsonl est un journal d’événements append-only; chaque append réécrit atomiquement le fichier complet sous withVaultMutationLock afin d’éviter une ligne partielle."
+        - "Décision IDs: UUIDv7 interne basé sur crypto.randomBytes, version/variant RFC testés, aucune dépendance et compatibilité Node 18."
+        - "Décision AC-ID-03: S1 prouve la continuité project/binding et la transition alias; la non-duplication mémoire end-to-end sera fermée lors de l’intégration du store en S5."
+        - "Marqueur projet Git dans git-common-dir et marqueur checkout dans git-dir; les worktrees partagent prj/ws mais pas co."
+        - "Une copie simultanée du même checkout devient binding_conflict; un move dont l’ancien alias a disparu devient une transition historique explicite."
+        - "Le dirty worktree documentaire reste hors allowed_files."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker S1; les quatre fichiers autorisés forment un package cohérent."
+      blocked_tasks: []
+      missing_evidence: []
+      required_board_updates:
+        - "Copier worker_package sur T003."
+        - "Marquer T002 done et activer T003."
+  - id: T003
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter le socle S1 : registre événementiel projet/workspace, marqueurs Git/non-Git, resolver, aliases/worktrees/multi-root, détection legacy_unbound et CLI init/status, sans cutover du product-store v1."
+    inputs:
+      - "T001-T002 receipts"
+      - "Blueprint S1"
+    constraints:
+      - "Aucune configuration utilisateur réelle."
+      - "Ne pas modifier product-store.mjs dans S1 ; son cutover multi-workspace reste S5/S7."
+      - "projects.jsonl est un journal d’événements append-only dont la vue est reconstruite et validée sous verrou."
+      - "Utiliser un UUIDv7 interne testé et compatible Node 18, sans nouvelle dépendance."
+      - "AC-ID-03 est prouvé ici au niveau continuité project/binding ; la non-duplication mémoire end-to-end reste un gate S5."
+      - "Détecter state.json v1/workspace:local et refuser init sans mapping owner explicite ; ne pas réécrire le store."
+      - "Tests temporaires isolés."
+    allowed_files:
+      - "scripts/lib/project-registry.mjs"
+      - "scripts/supermemory-project.mjs"
+      - "tests/project-registry.test.mjs"
+      - "package.json"
+    verify:
+      - "node --test tests/project-registry.test.mjs"
+      - "node --test tests/registry-transaction.test.mjs tests/product-backup.test.mjs tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-onboard.test.mjs"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Besoin d’écrire hors allowed_files."
+      - "Besoin de modifier ~/.codex, un vault réel ou les documents préexistants."
+      - "Un marker/registre discordant nécessiterait une fusion implicite."
+      - "Un alias actif serait revendiqué par deux workspaces."
+      - "La détection legacy exigerait de réécrire state.json v1."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      changed_files:
+        - scripts/lib/project-registry.mjs
+        - scripts/supermemory-project.mjs
+        - tests/project-registry.test.mjs
+        - package.json
+      commands:
+        - cmd: "node --test tests/project-registry.test.mjs"
+          status: pass
+        - cmd: "node --test tests/registry-transaction.test.mjs tests/product-backup.test.mjs tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/supermemory-onboard.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      summary: "S1 livre un registre événementiel atomique, des IDs UUIDv7 stables, des marqueurs Git/non-Git, un resolver fail-closed, les transitions de déplacement/rebind, les worktrees et multi-root, la détection legacy explicite et un CLI init/status/list. Les neuf tests S1 et les 64 tests globaux passent."
+      deviations: []
+      blockers: []
+  - id: T004
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer S1 contre AC-ID et spécifier exactement S2 si l’identité est sûre."
+    inputs:
+      - "T001-T003 receipts"
+      - "Diff S1"
+      - "Tests S1"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter toute identité path-primary, collision silencieuse ou migration non réversible."
+      - "Si S1 est approuvé, remplir le package T005."
+    expected_output:
+      - "approve | revise"
+      - "Mapping AC-ID."
+      - "Worker package S2."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S1 est sûr dans son périmètre arbitré : IDs UUIDv7 non sémantiques, marqueurs locaux non committés, registre validé sous verrou, déplacement par continuité inode/device, worktrees distincts et copie conflictuelle fail-closed. Le store v1 et workspace:local ne sont jamais réécrits. AC-ID-01/02/04/05 sont prouvés au niveau identité ; AC-ID-03 prouve la continuité de binding mais sa non-duplication mémoire reste un gate explicite S5. Les 64 tests globaux, contrats et secrets sont verts."
+      worker_package:
+        objective: "Implémenter S2 de bout en bout : EventEnvelope déterministe, redaction avant persistance, journal idempotent par workspace/session, payloads et spool AEAD, replay avec leases, backpressure auditée et daemon HTTP strictement loopback/authentifié."
+        allowed_files:
+          - scripts/lib/codex-event-envelope.mjs
+          - scripts/lib/codex-redaction.mjs
+          - scripts/lib/codex-capture-store.mjs
+          - scripts/lib/codex-spool.mjs
+          - scripts/lib/supermemory-daemon.mjs
+          - scripts/supermemoryd.mjs
+          - tests/codex-capture-pipeline.test.mjs
+          - package.json
+        verify:
+          - "node --test tests/codex-capture-pipeline.test.mjs"
+          - "node --test tests/project-registry.test.mjs tests/registry-transaction.test.mjs tests/supermemory-app.test.mjs tests/product-hindsight.test.mjs"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+        stop_if:
+          - "Besoin d’écrire hors allowed_files."
+          - "Écriture non atomique ou fallback plaintext."
+          - "Le daemon devrait écouter ailleurs que 127.0.0.1/::1 ou accepter une requête sans token."
+          - "Un événement sans workspace résolu pourrait entrer dans le journal."
+          - "Le replay supprimerait une entrée avant accusé durable."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "AC-ID-01 : deux résolutions du même checkout conservent prj/ws/co et init est idempotent ; les sessions distinctes seront fermées en S2/S3."
+        - "AC-ID-02 : un rename avec même inode/device produit checkout.alias_moved, alias historique et mêmes IDs."
+        - "AC-ID-03 : la continuité project/binding est prouvée sans nouvel ID ; la preuve de non-duplication mémoire demeure explicitement différée à S5."
+        - "AC-ID-04 : le git common dir partage project/workspace et chaque git-dir de worktree reçoit un checkout distinct."
+        - "AC-ID-05 : multi-root exige linkProjectId ; une copie du marker devient binding_conflict sans écriture avant confirmation."
+        - "Le legacy state.json v1 reste byte-identique avant et après mapping-only explicite."
+        - "npm test : 64/64 ; verify-supermemory-specs : pass ; verify-secret-hygiene : 0 finding."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker S2 : le format d’enveloppe, la crypto, le journal, la spool et le daemon partagent les mêmes invariants de commit et ne doivent pas être développés en parallèle."
+      blocked_tasks: []
+      missing_evidence:
+        - "AC-ID-03 end-to-end sur les mémoires actives reste obligatoire en S5."
+        - "Les sessions distinctes de deux onglets seront prouvées avec le journal S2 et les adaptateurs S3/S4."
+      required_board_updates:
+        - "Marquer T004 done."
+        - "Activer T005 avec le worker_package exact déjà copié sur sa carte."
+  - id: T005
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter S2 de bout en bout : EventEnvelope déterministe, redaction avant persistance, journal idempotent par workspace/session, payloads et spool AEAD, replay avec leases, backpressure auditée et daemon HTTP strictement loopback/authentifié."
+    inputs:
+      - "T004 receipt"
+      - "Blueprint S2"
+    constraints:
+      - "Aucun secret en clair."
+      - "Ingestion au moins une fois, application idempotente."
+      - "Une panne ne bloque pas le client producteur."
+      - "Chaque ingestion exige project_id, workspace_id, checkout_id et session_id déjà résolus ; aucune auto-création."
+      - "Le journal conserve des observations distinctes mais refuse deux effets pour le même event_id."
+      - "La spool et les blobs utilisent AES-256-GCM avec permissions 0700/0600 ; aucun fallback plaintext."
+      - "Tous les tests utilisent des vaults et runtime roots temporaires."
+    allowed_files:
+      - "scripts/lib/codex-event-envelope.mjs"
+      - "scripts/lib/codex-redaction.mjs"
+      - "scripts/lib/codex-capture-store.mjs"
+      - "scripts/lib/codex-spool.mjs"
+      - "scripts/lib/supermemory-daemon.mjs"
+      - "scripts/supermemoryd.mjs"
+      - "tests/codex-capture-pipeline.test.mjs"
+      - "package.json"
+    verify:
+      - "node --test tests/codex-capture-pipeline.test.mjs"
+      - "node --test tests/project-registry.test.mjs tests/registry-transaction.test.mjs tests/supermemory-app.test.mjs tests/product-hindsight.test.mjs"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Besoin d’écrire hors allowed_files."
+      - "Écriture non atomique ou fallback plaintext."
+      - "Le daemon devrait écouter ailleurs que 127.0.0.1/::1 ou accepter une requête sans token."
+      - "Un événement sans workspace résolu pourrait entrer dans le journal."
+      - "Le replay supprimerait une entrée avant accusé durable."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      changed_files:
+        - scripts/lib/codex-event-envelope.mjs
+        - scripts/lib/codex-redaction.mjs
+        - scripts/lib/codex-capture-store.mjs
+        - scripts/lib/codex-spool.mjs
+        - scripts/lib/supermemory-daemon.mjs
+        - scripts/supermemoryd.mjs
+        - tests/codex-capture-pipeline.test.mjs
+        - package.json
+      commands:
+        - cmd: "node --test tests/codex-capture-pipeline.test.mjs"
+          status: pass
+        - cmd: "node --test tests/project-registry.test.mjs tests/registry-transaction.test.mjs tests/supermemory-app.test.mjs tests/product-hindsight.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      summary: "S2 livre EventEnvelope déterministe, redaction récursive avant persistance, payloads et spool AES-256-GCM, journal durable/idempotent par workspace/session, ordre partiel explicite, replay par lease, backpressure avec capture_gap et daemon HTTP loopback authentifié. Les 9 tests S2 et 73 tests globaux passent."
+      deviations:
+        - "Le gate secrets a d’abord signalé des fixtures synthétiques et un nom de propriété ; les échantillons sont désormais construits à l’exécution sans désactiver ni modifier le scanner."
+      remaining_blockers: []
+      verification_attempts: 3
+      stopped_because: null
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer S2 sur crash, replay, ordre, backpressure et secrets, puis spécifier S3."
+    inputs:
+      - "T005 receipt"
+      - "Diff et tests S2"
+    constraints:
+      - "Lecture seule."
+      - "Exiger une preuve de replay idempotent et de redaction."
+    expected_output:
+      - "approve | revise"
+      - "Mapping AC-CAP/SEC applicable."
+      - "Worker package S3."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S2 est approuvé : la redaction est rejouée et vérifiée avant toute persistance, payloads/spool sont AEAD, le journal est durable et idempotent sous verrou, les leases ne sont supprimés qu’après ack durable, les gaps d’ordre et de quota sont explicites, et le daemon refuse réseau non-loopback, Host invalide et absence de token. Les sessions n’ont aucun ordre global partagé. Les tests crash-before-ack, panne, quota, tamper et scope sont probants ; les événements Codex réels et l’équivalence App Server restent correctement réservés à S3/S4."
+      worker_package:
+        objective: "Implémenter S3 comme plugin Codex repo-local valide : hooks officiels, adaptateur stdin/stdout fail-soft, binding de capture_mode immuable, séquences/déduplication par session, shadow App Server, contexte SessionStart borné et diagnostic de couverture honnête."
+        allowed_files:
+          - "plugins/supermemory/**"
+          - scripts/lib/codex-hook-adapter.mjs
+          - scripts/lib/codex-session-context.mjs
+          - scripts/supermemory-hook.mjs
+          - tests/codex-hook-adapter.test.mjs
+          - package.json
+        verify:
+          - "node --test tests/codex-hook-adapter.test.mjs"
+          - "node --test tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+        stop_if:
+          - "Besoin d’écrire hors allowed_files."
+          - "Le test requerrait une mutation de ~/.codex."
+          - "Le hook retournerait un champ non supporté pour son événement Codex."
+          - "Le hook pourrait bloquer Codex sur une panne daemon/spool."
+          - "Deux handlers SuperMemory seraient activés sans diagnostic d’erreur."
+          - "Le contexte SessionStart pourrait inclure archive, restricted ou dépasser son budget."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "AC-CAP-03 : commit journal avant ack puis replay spool produit duplicate, un seul record et suppression après ack durable."
+        - "AC-CAP-04 : séquences gap/out_of_order deviennent capture_coverage partial sans rejet silencieux."
+        - "AC-CAP-06 : daemon down déclenche une spool AES-256-GCM durable et le client continue."
+        - "AC-CAP-07 : quota plein retourne dropped/spool_full en temps borné et écrit capture_gap sans payload."
+        - "AC-CAP-08 : l’ordre est calculé par workspace+session ; une seconde session garde sa chronologie."
+        - "SEC : redaction des champs/patterns avant hash/chiffrement, test d’absence de secret/path en clair, tamper GCM retenu, scope obligatoire."
+        - "Daemon : 127.0.0.1/::1 seulement, Host validé, bearer token timing-safe, corps borné."
+        - "Documentation officielle Codex hooks vérifiée le 24 juillet 2026 : hooks.json/plugin, trust utilisateur, stdin JSON, timeouts et sorties par événement."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker S3 : manifeste, hooks, binding de session et sorties événementielles doivent rester cohérents avec une seule version du schéma Codex."
+      blocked_tasks: []
+      missing_evidence:
+        - "AC-CAP-01/02/10 nécessitent l’adaptateur App Server S4."
+        - "AC-CAP-05/09/11 et AC-CLI-03 nécessitent le canary hooks S3 puis l’équivalence S4."
+      required_board_updates:
+        - "Marquer T006 done."
+        - "Activer T007 avec le worker_package exact déjà copié."
+  - id: T007
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter S3 comme plugin Codex repo-local valide : hooks officiels, adaptateur stdin/stdout fail-soft, binding de capture_mode immuable, séquences/déduplication par session, shadow App Server, contexte SessionStart borné et diagnostic de couverture honnête."
+    inputs:
+      - "T006 receipt"
+      - "Blueprint S3"
+    constraints:
+      - "Tester dans un CODEX_HOME isolé."
+      - "Ne pas installer dans la configuration utilisateur réelle."
+      - "Timeout hooks strict et absence de blocage Codex."
+      - "Respecter le schéma hooks Codex actuel et n’émettre que des sorties supportées par chaque événement."
+      - "Ne jamais parser transcript_path comme interface stable ; déclarer partial tant qu’aucun parseur versionné n’est reconnu."
+      - "Le plugin doit utiliser PLUGIN_ROOT/PLUGIN_DATA et ne contenir aucun chemin absolu d’installation."
+      - "Le mode app_server_primary garde les hooks en shadow ; hooks_primary est le seul mode hook primaire."
+    allowed_files:
+      - "plugins/supermemory/**"
+      - "scripts/lib/codex-hook-adapter.mjs"
+      - "scripts/lib/codex-session-context.mjs"
+      - "scripts/supermemory-hook.mjs"
+      - "tests/codex-hook-adapter.test.mjs"
+      - "package.json"
+    verify:
+      - "node --test tests/codex-hook-adapter.test.mjs"
+      - "node --test tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Besoin d’écrire hors allowed_files."
+      - "Le test requerrait une mutation de ~/.codex."
+      - "Le hook retournerait un champ non supporté pour son événement Codex."
+      - "Le hook pourrait bloquer Codex sur une panne daemon/spool."
+      - "Deux handlers SuperMemory seraient activés sans diagnostic d’erreur."
+      - "Le contexte SessionStart pourrait inclure archive, restricted ou dépasser son budget."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      changed_files:
+        - plugins/supermemory/.codex-plugin/plugin.json
+        - plugins/supermemory/hooks/hooks.json
+        - plugins/supermemory/scripts/hook.mjs
+        - scripts/lib/codex-hook-adapter.mjs
+        - scripts/lib/codex-session-context.mjs
+        - scripts/supermemory-hook.mjs
+        - tests/codex-hook-adapter.test.mjs
+        - package.json
+      commands:
+        - cmd: "node --test tests/codex-hook-adapter.test.mjs"
+          status: pass
+        - cmd: "node --test tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      summary: "S3 livre un plugin Codex repo-local conforme, sept hooks officiels fail-soft, un bridge PLUGIN_ROOT/PLUGIN_DATA, un binding capture_mode immuable, séquences rejouables, shadow App Server, diagnostic de doublons/couverture et contexte SessionStart filtré/cité/borné. Les 7 tests S3 et 80 tests globaux passent."
+      deviations:
+        - "Aucune marketplace ni installation utilisateur n’est créée ; le plugin reste testable dans le repo jusqu’au plan/cutover S7."
+        - "transcript_path n’est volontairement jamais lu et la couverture reste partial tant que S4 n’apporte pas une source riche."
+      remaining_blockers: []
+      verification_attempts: 3
+      stopped_because: null
+  - id: T008
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer S3 sur hooks, doublons, transcript inconnu et couverture, puis spécifier S4."
+    inputs:
+      - "T007 receipt"
+      - "Diff et tests S3"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter toute promesse de capture non observable."
+    expected_output:
+      - "approve | revise"
+      - "Mapping AC-CAP/CLI."
+      - "Worker package S4."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S3 est approuvé : le manifeste et hooks.json suivent le contrat Codex actuel, les sept handlers ont des timeouts stricts et sorties compatibles, le bridge échoue sans bloquer, le mode de capture reste immuable par session, app_server_primary rend les hooks shadow, et transcript_path n’est jamais lu. La couverture reste honnêtement partial, les actions hébergées sont déclarées invisibles, les doublons multi-source deviennent une erreur et SessionStart filtre restricted/archive sous budget. L’installation réelle et la capture riche restent volontairement aux slices S4/S7."
+      worker_package:
+        objective: "Implémenter S4 : adaptateur App Server versionné sur le schéma Codex installé, item/completed autoritatif, observations App/hook équivalentes sans heuristique, binding primaire/shadow avec failover explicite, TurnSnapshot et file snapshots hash-only immuables/rejouables."
+        allowed_files:
+          - scripts/lib/codex-app-server-adapter.mjs
+          - scripts/lib/codex-event-equivalence.mjs
+          - scripts/lib/codex-turn-snapshot.mjs
+          - scripts/supermemory-app-server.mjs
+          - tests/codex-app-server-adapter.test.mjs
+          - "tests/fixtures/codex-app-server/**"
+          - package.json
+        verify:
+          - "node --test tests/codex-app-server-adapter.test.mjs"
+          - "node --test tests/codex-hook-adapter.test.mjs tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+        stop_if:
+          - "Besoin d’écrire hors allowed_files."
+          - "Contrat App Server installé incompatible et sans mode dégradé."
+          - "Un delta ou un item reasoning interne deviendrait autoritatif."
+          - "Deux observations pourraient appliquer deux fois le même logical_event_id."
+          - "Le failover hooks se ferait sans gap primaire confirmé/checkpoint."
+          - "Un snapshot rejoué produirait un hash divergent."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "AC-CAP-05/11 : transcript_path inconnu devient unparsed/partial et n’est jamais ouvert."
+        - "AC-CAP-06 : exécution du hook produit une entrée spool chiffrée quand le daemon est indisponible."
+        - "AC-CAP-08 : state et séquences sont isolés par session HMAC ; aucune chronologie globale."
+        - "AC-CAP-09 : hostedActionsVisible=false et coverage=partial avec hooks seuls."
+        - "AC-CAP-10 partiel : app_server_primary fixe captureRole=shadow et le drift de mode ne rebascule pas la session."
+        - "AC-MCP-09 partiel : SessionStart filtre active/codex, exclut restricted/archive/stale, garde citations et budget chars/tokens."
+        - "AC-CLI-03 partiel : plugin repo-local conforme et CODEX_HOME isolé, sans installation ni promesse de canary runtime."
+        - "Codex 0.125.0 génère un schéma v2 contenant item/completed, turn/completed et les types agentMessage, commandExecution, fileChange, mcpToolCall, dynamicToolCall, webSearch, imageView, contextCompaction."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker S4 : adapter, équivalence, failover et manifeste de turn partagent la définition de l’effet logique autoritatif."
+      blocked_tasks: []
+      missing_evidence:
+        - "AC-CAP-01/02/10 complet, AC-VER-01/02/06 et le canary App Server réel restent S4."
+        - "La preuve Desktop/IDE/CLI et le trust effectif du plugin restent S7/T016."
+      required_board_updates:
+        - "Marquer T008 done."
+        - "Activer T009 avec le worker_package exact déjà copié."
+  - id: T009
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter S4 : adaptateur App Server versionné sur le schéma Codex installé, item/completed autoritatif, observations App/hook équivalentes sans heuristique, binding primaire/shadow avec failover explicite, TurnSnapshot et file snapshots hash-only immuables/rejouables."
+    inputs:
+      - "T008 receipt"
+      - "Blueprint S4"
+    constraints:
+      - "Schémas versionnés par capacité Codex."
+      - "Aucune heuristique temporelle de déduplication."
+      - "Fallback hooks explicitement partial."
+      - "Les deltas restent éphémères ; seul item/completed peut produire l’effet final d’un item."
+      - "Les reasoning items ne fournissent que leur résumé visible, jamais du contenu interne."
+      - "Un type ou schéma inconnu crée un gap/partial au lieu d’être interprété."
+      - "Le wrapper App Server reste stdio transparent et ne modifie aucune configuration Codex."
+    allowed_files:
+      - "scripts/lib/codex-app-server-adapter.mjs"
+      - "scripts/lib/codex-event-equivalence.mjs"
+      - "scripts/lib/codex-turn-snapshot.mjs"
+      - "scripts/supermemory-app-server.mjs"
+      - "tests/codex-app-server-adapter.test.mjs"
+      - "tests/fixtures/codex-app-server/**"
+      - "package.json"
+    verify:
+      - "node --test tests/codex-app-server-adapter.test.mjs"
+      - "node --test tests/codex-hook-adapter.test.mjs tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Besoin d’écrire hors allowed_files."
+      - "Contrat App Server installé incompatible et sans mode dégradé."
+      - "Un delta ou un item reasoning interne deviendrait autoritatif."
+      - "Deux observations pourraient appliquer deux fois le même logical_event_id."
+      - "Le failover hooks se ferait sans gap primaire confirmé/checkpoint."
+      - "Un snapshot rejoué produirait un hash divergent."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      changed_files:
+        - scripts/lib/codex-app-server-adapter.mjs
+        - scripts/lib/codex-event-equivalence.mjs
+        - scripts/lib/codex-turn-snapshot.mjs
+        - scripts/supermemory-app-server.mjs
+        - tests/codex-app-server-adapter.test.mjs
+        - tests/fixtures/codex-app-server/fake-app-server.mjs
+        - package.json
+      commands:
+        - cmd: "node --test tests/codex-app-server-adapter.test.mjs"
+          status: pass
+        - cmd: "node --test tests/codex-hook-adapter.test.mjs tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      summary: "S4 livre un wrapper App Server stdio transparent pour Codex 0.125, item/completed autoritatif, deltas éphémères, raisonnement caché exclu, équivalence App/hook sans fenêtre temporelle, failover uniquement après gap confirmé et checkpoint, ainsi que des TurnSnapshot et file snapshots immuables hash-only. Les 8 tests S4, 33 tests ciblés et 88 tests globaux passent."
+      deviations:
+        - "Le wrapper n’installe et ne modifie aucune configuration Codex réelle ; le canary et le cutover utilisateur restent à S7."
+        - "Les types App Server inconnus produisent volontairement un gap et une couverture partial."
+      remaining_blockers: []
+      verification_attempts: 3
+      stopped_because: null
+  - id: T010
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer S4 et spécifier S5, sans confondre archive et mémoire active."
+    inputs:
+      - "T009 receipt"
+      - "Diff et tests S4"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter doublons métier, snapshot non immuable ou raisonnement caché."
+    expected_output:
+      - "approve | revise"
+      - "Mapping AC-CAP/VER."
+      - "Worker package S5."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S4 est approuvé comme socle : item/completed est seul autoritatif, les deltas et raisonnements internes sont exclus, le journal d’équivalence empêche deux effets, le failover exige gap/checkpoint, et les snapshots sont content-addressed et vérifiés. Un écart d’intégration demeure : le hook shadow ne publie pas encore ses observations au store d’équivalence. T011 doit le fermer tout en livrant S5, afin que la séparation archive/candidate/mémoire et l’effet unique soient prouvés ensemble."
+      worker_package:
+        objective: "Implémenter S5 et fermer le câblage S4 restant : archives Codex AEAD, candidates fondées sur preuves existantes, revue approve/reject/revoke, mémoires canoniques écrites avant projection, store Codex multi-workspace strict et observations hook reliées à l’équivalence sans activation shadow."
+        allowed_files:
+          - scripts/lib/codex-hook-adapter.mjs
+          - scripts/supermemory-hook.mjs
+          - scripts/lib/codex-archive-store.mjs
+          - scripts/lib/codex-memory-governance.mjs
+          - scripts/lib/codex-workspace-store.mjs
+          - scripts/supermemory-review.mjs
+          - tests/codex-hook-adapter.test.mjs
+          - tests/codex-memory-governance.test.mjs
+          - tests/product-store-multi-workspace.test.mjs
+          - package.json
+        verify:
+          - "node --test tests/codex-memory-governance.test.mjs tests/product-store-multi-workspace.test.mjs"
+          - "node --test tests/codex-app-server-adapter.test.mjs tests/codex-hook-adapter.test.mjs tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+          - "node --test tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/review-queues-actions.test.mjs"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+        stop_if:
+          - "Besoin d’écrire hors allowed_files ou de modifier un vault/configuration utilisateur réel."
+          - "Archive, candidate et mémoire partageraient le même artefact physique ou une archive serait rappelable."
+          - "Une candidate pourrait être créée sans event_id/turn_snapshot_id/source_snapshot_id existant et du même workspace."
+          - "Une projection pourrait commencer avant le fsync de la mémoire canonique."
+          - "Une candidate rejetée ou une mémoire stale/revoked pourrait être projetée ou rappelée."
+          - "Une API accepterait un workspace implicite, voisin ou workspace:local pour les nouveaux objets Codex."
+          - "Le hook shadow pourrait appliquer un effet sans gap primaire confirmé."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "88 tests globaux et 33 tests ciblés S1-S4 passent."
+        - "codex-app-server-adapter.mjs ignore les deltas et ne persiste que item/completed puis turn/completed."
+        - "visibleItemPayload exclut le raisonnement sans summary visible."
+        - "codex-event-equivalence.mjs applique au plus un event_id par logical_event_id et exige confirmedGap plus checkpoint."
+        - "codex-turn-snapshot.mjs vérifie le manifeste immuable et ne persiste qu’un HMAC de chemin."
+        - "Le test App/hook prouve le store d’équivalence, mais codex-hook-adapter.mjs n’appelle pas encore ce store ; T011 le ferme explicitement."
+        - "Le store produit v1 reste workspace:local et path-derived ; S5 doit ajouter un store Codex v2 scindé et compatible sans réécriture silencieuse."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker : l’ordre archive→candidate→review→mémoire et le câblage primaire/shadow partagent les mêmes invariants d’effet unique."
+      blocked_tasks: []
+      missing_evidence:
+        - "Canary App Server/hook réel et installation restent S7/T016."
+        - "Projection Hindsight et recall MCP borné restent S6."
+      required_board_updates:
+        - "Marquer T010 done."
+        - "Activer T011 avec le worker_package exact."
+  - id: T011
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter S5 et fermer le câblage S4 restant : archives Codex AEAD, candidates fondées sur preuves existantes, revue approve/reject/revoke, mémoires canoniques écrites avant projection, store Codex multi-workspace strict et observations hook reliées à l’équivalence sans activation shadow."
+    inputs:
+      - "T010 receipt"
+      - "Blueprint S5"
+    constraints:
+      - "Archive, candidate et mémoire physiquement/logiquement séparées."
+      - "Aucune activation sans gouvernance."
+      - "Compatibilité des mémoires produit existantes."
+    allowed_files:
+      - "scripts/lib/codex-hook-adapter.mjs"
+      - "scripts/supermemory-hook.mjs"
+      - "scripts/lib/codex-archive-store.mjs"
+      - "scripts/lib/codex-memory-governance.mjs"
+      - "scripts/lib/codex-workspace-store.mjs"
+      - "scripts/supermemory-review.mjs"
+      - "tests/codex-hook-adapter.test.mjs"
+      - "tests/codex-memory-governance.test.mjs"
+      - "tests/product-store-multi-workspace.test.mjs"
+      - "package.json"
+    verify:
+      - "node --test tests/codex-memory-governance.test.mjs tests/product-store-multi-workspace.test.mjs"
+      - "node --test tests/codex-app-server-adapter.test.mjs tests/codex-hook-adapter.test.mjs tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+      - "node --test tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/review-queues-actions.test.mjs"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Besoin d’écrire hors allowed_files ou de modifier un vault/configuration utilisateur réel."
+      - "Archive, candidate et mémoire partageraient le même artefact physique ou une archive serait rappelable."
+      - "Une candidate pourrait être créée sans event_id/turn_snapshot_id/source_snapshot_id existant et du même workspace."
+      - "Une projection pourrait commencer avant le fsync de la mémoire canonique."
+      - "Une candidate rejetée ou une mémoire stale/revoked pourrait être projetée ou rappelée."
+      - "Une API accepterait un workspace implicite, voisin ou workspace:local pour les nouveaux objets Codex."
+      - "Le hook shadow pourrait appliquer un effet sans gap primaire confirmé."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      changed_files:
+        - scripts/lib/codex-hook-adapter.mjs
+        - scripts/supermemory-hook.mjs
+        - scripts/lib/codex-archive-store.mjs
+        - scripts/lib/codex-memory-governance.mjs
+        - scripts/lib/codex-workspace-store.mjs
+        - scripts/supermemory-review.mjs
+        - tests/codex-hook-adapter.test.mjs
+        - tests/codex-memory-governance.test.mjs
+        - tests/product-store-multi-workspace.test.mjs
+        - package.json
+      commands:
+        - cmd: "node --test tests/codex-memory-governance.test.mjs tests/product-store-multi-workspace.test.mjs"
+          status: pass
+        - cmd: "node --test tests/codex-app-server-adapter.test.mjs tests/codex-hook-adapter.test.mjs tests/codex-capture-pipeline.test.mjs tests/project-registry.test.mjs"
+          status: pass
+        - cmd: "node --test tests/supermemory-app.test.mjs tests/product-reconciliation.test.mjs tests/product-hindsight.test.mjs tests/review-queues-actions.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      summary: "S5 sépare physiquement archives AEAD, candidates immuables et mémoires canoniques par workspace opaque. Les candidates exigent des event/turn/file snapshots existants du même scope ; approve écrit et fsync la mémoire avant projection, reject ne projette jamais, revoke coupe le recall avant suppression. Le store v1 est détecté sans mutation, une CLI de revue exige confirmation exacte, et les hooks shadow rejoignent désormais l’équivalence App Server. 95 tests globaux passent."
+      deviations:
+        - "Le store Codex v2 coexiste avec le product-store v1 ; le cutover/import explicite et sauvegardé reste S7."
+        - "Une observation hook spoulée attend son event_id durable avant d’entrer dans l’équivalence ; la reprise daemon complète sera auditée en S7."
+      remaining_blockers: []
+      verification_attempts: 3
+      stopped_because: null
+  - id: T012
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer S5 sur séparation, provenance et gouvernance, puis spécifier S6."
+    inputs:
+      - "T011 receipt"
+      - "Diff et tests S5"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter tout RAG direct sur archive ou auto-promotion."
+    expected_output:
+      - "approve | revise"
+      - "Mapping AC-GOV."
+      - "Worker package S6."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S5 est approuvé : archive AEAD, candidate pending immuable et mémoire canonique sont physiquement séparées ; aucune archive n’entre dans le recall ; evidence et scope précèdent la création ; approve fsync avant projection ; reject ne projette pas ; revoke coupe le recall avant delete ; le legacy v1 reste intact. S6 doit toutefois durcir la revérification cryptographique des snapshots et inscrire status=active dans l’artefact mémoire, puis exposer uniquement le store gouverné via MCP."
+      worker_package:
+        objective: "Implémenter S6 : gateway recall qui revalide le vault, adaptateur Hindsight local à banque opaque par workspace avec fallback déterministe, serveur MCP projet read-only et serveur global diagnostic-only, packaging plugin, injection SessionStart réelle ; fermer l’intégrité des preuves S5 et le status canonique."
+        allowed_files:
+          - scripts/lib/codex-memory-governance.mjs
+          - scripts/lib/codex-workspace-store.mjs
+          - scripts/lib/codex-hindsight.mjs
+          - scripts/lib/codex-memory-recall.mjs
+          - scripts/lib/codex-mcp-server.mjs
+          - scripts/supermemory-mcp.mjs
+          - scripts/supermemory-hook.mjs
+          - plugins/supermemory/.codex-plugin/plugin.json
+          - plugins/supermemory/.mcp.json
+          - plugins/supermemory/scripts/mcp.mjs
+          - tests/codex-memory-governance.test.mjs
+          - tests/codex-hindsight-recall.test.mjs
+          - tests/codex-mcp-server.test.mjs
+          - tests/codex-hook-adapter.test.mjs
+          - package.json
+        verify:
+          - "node --test tests/codex-hindsight-recall.test.mjs tests/codex-mcp-server.test.mjs tests/codex-memory-governance.test.mjs"
+          - "node --test tests/codex-hook-adapter.test.mjs tests/codex-app-server-adapter.test.mjs tests/product-store-multi-workspace.test.mjs tests/product-hindsight.test.mjs"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+        stop_if:
+          - "Besoin d’écrire hors allowed_files ou dans une configuration/vault utilisateur réel."
+          - "Un outil de contenu accepte cwd, project_id, workspace_id ou change le binding après démarrage."
+          - "Le serveur global peut lire une mémoire, une candidate ou une archive."
+          - "Hindsight peut autoriser un résultat absent/inactif/restricted/revoked dans le vault."
+          - "Deux workspaces partagent une banque, une requête ou un résultat."
+          - "Une réponse search/get/explain peut être non citée ou révéler l’archive brute."
+          - "Un snapshot altéré peut encore fonder une candidate."
+          - "Le fallback local n’annonce pas explicitement son mode ou applique une politique différente."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "AC-GOV-01 : createArchive ne touche pas memories ; test actif vide."
+        - "AC-GOV-02 : event/turn/file evidence manquante retourne candidate_missing_evidence."
+        - "AC-GOV-03 : le test de projection observe le fichier mémoire déjà durable."
+        - "AC-GOV-04 : reject laisse projected=0."
+        - "AC-GOV-05 : delete de projection observe déjà zéro mémoire active."
+        - "Archives, candidates et mémoires utilisent trois racines distinctes, chacune scopée workspace."
+        - "Le hook app_server_primary enregistre son observation shadow sans appliesEffect."
+        - "95 tests globaux et les gates specs/secrets passent."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker S6 : binding MCP, autorisation vault et projection Hindsight composent une frontière de sécurité unique."
+      blocked_tasks: []
+      missing_evidence:
+        - "Canary client réel et installation confirmée restent S7/T016."
+        - "Suppression physique, migration, TTL et rollback restent S7."
+      required_board_updates:
+        - "Marquer T012 done."
+        - "Activer T013 avec le worker_package exact."
+  - id: T013
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter S6 : gateway recall qui revalide le vault, adaptateur Hindsight local à banque opaque par workspace avec fallback déterministe, serveur MCP projet read-only et serveur global diagnostic-only, packaging plugin, injection SessionStart réelle ; fermer l’intégrité des preuves S5 et le status canonique."
+    inputs:
+      - "T012 receipt"
+      - "Blueprint S6"
+    constraints:
+      - "Le modèle ne choisit jamais cwd/project/workspace pour un outil de contenu."
+      - "Revalidation vault avant chaque résultat."
+      - "Serveur global diagnostic-only."
+    allowed_files:
+      - "scripts/lib/codex-memory-governance.mjs"
+      - "scripts/lib/codex-workspace-store.mjs"
+      - "scripts/lib/codex-hindsight.mjs"
+      - "scripts/lib/codex-memory-recall.mjs"
+      - "scripts/lib/codex-mcp-server.mjs"
+      - "scripts/supermemory-mcp.mjs"
+      - "scripts/supermemory-hook.mjs"
+      - "plugins/supermemory/.codex-plugin/plugin.json"
+      - "plugins/supermemory/.mcp.json"
+      - "plugins/supermemory/scripts/mcp.mjs"
+      - "tests/codex-memory-governance.test.mjs"
+      - "tests/codex-hindsight-recall.test.mjs"
+      - "tests/codex-mcp-server.test.mjs"
+      - "tests/codex-hook-adapter.test.mjs"
+      - "package.json"
+    verify:
+      - "node --test tests/codex-hindsight-recall.test.mjs tests/codex-mcp-server.test.mjs tests/codex-memory-governance.test.mjs"
+      - "node --test tests/codex-hook-adapter.test.mjs tests/codex-app-server-adapter.test.mjs tests/product-store-multi-workspace.test.mjs tests/product-hindsight.test.mjs"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+    stop_if:
+      - "Besoin d’écrire hors allowed_files ou dans une configuration/vault utilisateur réel."
+      - "Un outil de contenu accepte cwd, project_id, workspace_id ou change le binding après démarrage."
+      - "Le serveur global peut lire une mémoire, une candidate ou une archive."
+      - "Hindsight peut autoriser un résultat absent/inactif/restricted/revoked dans le vault."
+      - "Deux workspaces partagent une banque, une requête ou un résultat."
+      - "Une réponse search/get/explain peut être non citée ou révéler l’archive brute."
+      - "Un snapshot altéré peut encore fonder une candidate."
+      - "Le fallback local n’annonce pas explicitement son mode ou applique une politique différente."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      changed_files:
+        - scripts/lib/codex-memory-governance.mjs
+        - scripts/lib/codex-workspace-store.mjs
+        - scripts/lib/codex-hindsight.mjs
+        - scripts/lib/codex-memory-recall.mjs
+        - scripts/lib/codex-mcp-server.mjs
+        - scripts/supermemory-mcp.mjs
+        - scripts/supermemory-hook.mjs
+        - plugins/supermemory/.codex-plugin/plugin.json
+        - plugins/supermemory/.mcp.json
+        - plugins/supermemory/scripts/mcp.mjs
+        - tests/codex-memory-governance.test.mjs
+        - tests/codex-hindsight-recall.test.mjs
+        - tests/codex-mcp-server.test.mjs
+        - tests/codex-hook-adapter.test.mjs
+        - package.json
+      commands:
+        - cmd: "node --test tests/codex-hindsight-recall.test.mjs tests/codex-mcp-server.test.mjs tests/codex-memory-governance.test.mjs"
+          status: pass
+        - cmd: "node --test tests/codex-hook-adapter.test.mjs tests/codex-app-server-adapter.test.mjs tests/product-store-multi-workspace.test.mjs tests/product-hindsight.test.mjs"
+          status: pass
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+        - cmd: "git diff --check"
+          status: pass
+        - cmd: "npm test"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+      summary: "S6 livre un MCP STDIO projet avec status/search/get/explain sans arguments de scope, un MCP global diagnostic-only, une gateway qui relit chaque mémoire active/citée du vault, Hindsight loopback avec banque opaque distincte et tags all-strict, fallback local déclaré, packaging plugin et SessionStart réellement alimenté. Les snapshots altérés sont refusés comme evidence et l’artefact canonique porte status=active. 104 tests globaux passent."
+      deviations:
+        - "La configuration PLUGIN_DATA est seulement consommée et testée en isolation ; sa création confirmée et son rollback restent S7."
+        - "Le fallback local v1 est borné et ne propose pas encore de pagination, ce qui est annoncé dans la réponse."
+      remaining_blockers: []
+      verification_attempts: 3
+      stopped_because: null
+  - id: T014
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer S6 sur isolation, citations, Hindsight offline et usage Codex, puis spécifier S7."
+    inputs:
+      - "T013 receipt"
+      - "Diff et tests S6"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter toute frontière contrôlée par le modèle ou autorité déléguée à Hindsight."
+    expected_output:
+      - "approve | revise"
+      - "Mapping AC-MCP/HIN."
+      - "Worker package S7."
+    receipt:
+      result: done
+      decision: approved
+      full_outcome_complete: false
+      rationale: "S6 est approuvé : le scope vient du cwd du process résolu une fois, les outils de contenu n’acceptent aucun scope, le serveur global est diagnostic-only, chaque résultat Hindsight est reconcilié avec une mémoire vault active/standard/codex et les inconnus sont ignorés. Les banques sont opaques et distinctes, les tags all-strict, le fallback explicite, les citations excluent l’archive et SessionStart relit le store gouverné. S7 doit maintenant prouver suppression, migration, installation réversible et canary."
+      worker_package:
+        objective: "Implémenter S7 : tombstones et suppression/retention/rotation vérifiées, migration v1 et legacy dry-run→backup→shadow→cutover idempotent→rollback, installateur Codex plan/confirm/apply/backup/rollback sans mutation silencieuse, doctor --codex, canary sacrificiel et release gate daté couvrant les 80 AC."
+        allowed_files:
+          - scripts/lib/codex-archive-store.mjs
+          - scripts/lib/codex-workspace-store.mjs
+          - scripts/lib/codex-memory-recall.mjs
+          - scripts/lib/codex-lifecycle.mjs
+          - scripts/lib/codex-migration.mjs
+          - scripts/lib/codex-installer.mjs
+          - scripts/supermemory-codex.mjs
+          - scripts/supermemory-doctor.mjs
+          - scripts/verify-codex-supermemory-release.mjs
+          - tests/codex-lifecycle.test.mjs
+          - tests/codex-migration.test.mjs
+          - tests/codex-installer.test.mjs
+          - tests/codex-release-canary.test.mjs
+          - tests/supermemory-doctor.test.mjs
+          - "plugins/supermemory/**"
+          - docs/README.md
+          - docs/production-runbook.md
+          - package.json
+        verify:
+          - "node --test tests/codex-lifecycle.test.mjs tests/codex-migration.test.mjs tests/codex-installer.test.mjs tests/codex-release-canary.test.mjs"
+          - "node --test tests/supermemory-doctor.test.mjs tests/codex-mcp-server.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-memory-governance.test.mjs"
+          - "node scripts/verify-codex-supermemory-release.mjs --json"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "node scripts/verify-supermemory-release-readiness.mjs --json"
+        stop_if:
+          - "Besoin d’écrire dans ~/.codex, un vault réel ou une banque durable pendant les tests/canaries."
+          - "Une mutation d’installation ou migration est possible sans plan hashé, backup vérifié et confirmation exacte."
+          - "Un rollback supprime le nouveau vault ou réactive deux captureurs."
+          - "Une suppression physique précède le tombstone ou un échec Hindsight réautorise le recall."
+          - "Une attestation contient du texte mémoire, prompt, chemin clair ou secret."
+          - "Une migration sans mapping owner active workspace:local ou auto-fusionne des collisions."
+          - "Memories natives Codex sont présentées comme gouvernées ou couvertes par la suppression."
+          - "Le canary prétend observer Desktop/IDE/cloud sans preuve réelle."
+          - "Une vérification échoue deux fois."
+      evidence:
+        - "AC-HIN-01/06 : tags stricts et bankId dérivé opaque distinct par workspace."
+        - "AC-HIN-02 : résultat inconnu écarté avec compteur."
+        - "AC-HIN-03 : panne simulée retourne local_fallback et même liste active."
+        - "AC-MCP-01/05/08 : search borné produit mémoire citée et chaîne candidate/snapshots."
+        - "AC-MCP-02/03/04/10 : cross-workspace, revoked, restricted et scope argument sont refusés."
+        - "AC-MCP-07 : runtime STDIO exige binding existant et ne crée rien."
+        - "AC-MCP-09 : hook produit un contexte borné contenant une mémoire active réelle."
+        - "104 tests globaux, specs, secrets et diff passent."
+      subgoal_contract: null
+      parallel_safety: "Un seul Worker S7 : suppression, migration, installation et rollback partagent les mêmes fichiers de sauvegarde et états de cutover."
+      blocked_tasks: []
+      missing_evidence:
+        - "Pre-release audit des 80 AC et preuve canary datée restent T016."
+        - "Audit oracle final reste T999."
+      required_board_updates:
+        - "Marquer T014 done."
+        - "Activer T015 avec le worker_package exact."
+  - id: T015
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Implémenter S7 : tombstones et suppression/retention/rotation vérifiées, migration v1 et legacy dry-run→backup→shadow→cutover idempotent→rollback, installateur Codex plan/confirm/apply/backup/rollback sans mutation silencieuse, doctor --codex, canary sacrificiel et release gate daté couvrant les 80 AC."
+    inputs:
+      - "T014 receipt"
+      - "Blueprint S7"
+    constraints:
+      - "Aucune mutation utilisateur silencieuse."
+      - "Sauvegarde vérifiée avant cutover."
+      - "Tombstone avant purge et rollback non destructif."
+      - "Memories natives non autoritatives."
+    allowed_files:
+      - "scripts/lib/codex-archive-store.mjs"
+      - "scripts/lib/codex-workspace-store.mjs"
+      - "scripts/lib/codex-memory-recall.mjs"
+      - "scripts/lib/codex-lifecycle.mjs"
+      - "scripts/lib/codex-migration.mjs"
+      - "scripts/lib/codex-installer.mjs"
+      - "scripts/supermemory-codex.mjs"
+      - "scripts/supermemory-doctor.mjs"
+      - "scripts/verify-codex-supermemory-release.mjs"
+      - "tests/codex-lifecycle.test.mjs"
+      - "tests/codex-migration.test.mjs"
+      - "tests/codex-installer.test.mjs"
+      - "tests/codex-release-canary.test.mjs"
+      - "tests/supermemory-doctor.test.mjs"
+      - "plugins/supermemory/**"
+      - "docs/README.md"
+      - "docs/production-runbook.md"
+      - "package.json"
+    verify:
+      - "node --test tests/codex-lifecycle.test.mjs tests/codex-migration.test.mjs tests/codex-installer.test.mjs tests/codex-release-canary.test.mjs"
+      - "node --test tests/supermemory-doctor.test.mjs tests/codex-mcp-server.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-memory-governance.test.mjs"
+      - "node scripts/verify-codex-supermemory-release.mjs --json"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "node scripts/verify-supermemory-release-readiness.mjs --json"
+    stop_if:
+      - "Besoin d’écrire dans ~/.codex, un vault réel ou une banque durable pendant les tests/canaries."
+      - "Une mutation d’installation ou migration est possible sans plan hashé, backup vérifié et confirmation exacte."
+      - "Un rollback supprime le nouveau vault ou réactive deux captureurs."
+      - "Une suppression physique précède le tombstone ou un échec Hindsight réautorise le recall."
+      - "Une attestation contient du texte mémoire, prompt, chemin clair ou secret."
+      - "Une migration sans mapping owner active workspace:local ou auto-fusionne des collisions."
+      - "Memories natives Codex sont présentées comme gouvernées ou couvertes par la suppression."
+      - "Le canary prétend observer Desktop/IDE/cloud sans preuve réelle."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      summary: "S7 livre un cycle de vie fail-closed (tombstone, rétention, legal hold, purge attestée et rotation de clé), une migration v1 planifiée/sauvegardée/idempotente/réversible, un installateur Codex plan/confirmation/backup/rollback, doctor --codex, un packaging plugin et un gate de release daté. Le gate annonce honnêtement CLI observé, contrats Desktop/IDE seulement et aucune couverture cloud."
+      changed_files:
+        - scripts/lib/codex-archive-store.mjs
+        - scripts/lib/codex-workspace-store.mjs
+        - scripts/lib/codex-lifecycle.mjs
+        - scripts/lib/codex-migration.mjs
+        - scripts/lib/codex-installer.mjs
+        - scripts/supermemory-codex.mjs
+        - scripts/supermemory-doctor.mjs
+        - scripts/verify-codex-supermemory-release.mjs
+        - tests/codex-lifecycle.test.mjs
+        - tests/codex-migration.test.mjs
+        - tests/codex-installer.test.mjs
+        - tests/codex-release-canary.test.mjs
+        - tests/supermemory-doctor.test.mjs
+        - plugins/supermemory/.codex-plugin/plugin.json
+        - plugins/supermemory/.mcp.json
+        - plugins/supermemory/hooks/hooks.json
+        - plugins/supermemory/scripts/hook.mjs
+        - plugins/supermemory/scripts/mcp.mjs
+        - docs/README.md
+        - docs/production-runbook.md
+        - package.json
+      commands:
+        - cmd: "node --test tests/codex-lifecycle.test.mjs tests/codex-migration.test.mjs tests/codex-installer.test.mjs tests/codex-release-canary.test.mjs tests/supermemory-doctor.test.mjs"
+          status: pass
+          detail: 18/18
+        - cmd: "node --test tests/supermemory-doctor.test.mjs tests/codex-mcp-server.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-memory-governance.test.mjs"
+          status: pass
+          detail: 18/18
+        - cmd: "node scripts/verify-codex-supermemory-release.mjs --json"
+          status: pass
+          detail: "80/80 contrats, release-candidate, production_ready=false"
+        - cmd: "npm test"
+          status: pass
+          detail: 117/117
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-release-readiness.mjs --json"
+          status: pass
+          detail: "contract-ready, runtime_ready=false"
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+          detail: "472 files, 0 finding"
+        - cmd: "git diff --check"
+          status: pass
+      evidence:
+        - "La suppression retire l'autorité canonique avant toute tentative Hindsight et reste retryable si la projection est indisponible."
+        - "Les attestations sont content-free et la purge physique respecte la rétention et le legal hold."
+        - "La rotation conserve les anciennes archives lisibles via le keyring et chiffre les nouvelles avec la clé courante."
+        - "La migration refuse workspace:local sans mapping owner et les collisions similaires sans revue."
+        - "L'installation refuse les secrets non 0600, sauvegarde les cibles et ne modifie pas config.toml."
+        - "Le rollback d'installation et de migration préserve le vault et ne réactive pas une double capture."
+        - "Le canary est sacrificiel et local, sans données client ni écriture cloud."
+      limitations:
+        - "La matrice de 80 AC doit encore être auditée sémantiquement par T016, pas seulement comptée."
+        - "Aucune session UI Desktop ou IDE n'est déclarée observée par le gate automatisé."
+        - "Le rapport produit existant reste contract-ready tant qu'une preuve runtime locale récente n'est pas examinée."
+      note_needed: false
+  - id: T016
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Faire la revue pré-release S1-S7 et demander les corrections encore nécessaires avant T999."
+    inputs:
+      - "Tous les receipts T001-T015"
+      - "Diff complet"
+      - "Tests, canaries et rollback"
+    constraints:
+      - "Lecture seule."
+      - "Tester l’oracle de bout en bout, pas seulement les unités."
+      - "Classer les écarts bloquants et spécifier tout Worker correctif requis."
+    expected_output:
+      - "approve | revise"
+      - "Matrice des 80 AC."
+      - "Risques résiduels."
+      - "Package correctif exact ou autorisation T999."
+    receipt:
+      result: done
+      decision: revise
+      full_outcome_complete: false
+      summary: "La pré-release est saine par composants mais ne prouve pas encore l'oracle complet. Le rapport marque les 80 AC couverts dès que les suites globales passent, sans lien AC→test vérifiable. Aucun canary unique n'enchaîne installation découverte par Codex, capture, gouvernance, recall cité, invalidation, suppression et rollback."
+      blocking_gaps:
+        - id: plugin_discovery
+          detail: "L'installateur copie ~/.codex/plugins/supermemory mais ne crée ni ne fusionne de marketplace local. Un app-server Codex 0.125 isolé ne découvre aucun marketplace SuperMemory sans .agents/plugins/marketplace.json."
+        - id: oracle_canary
+          detail: "Le release gate agrège des tests séparés et étiquette chaque AC avec une preuve générique; il ne produit pas la preuve runtime end-to-end demandée."
+        - id: versioning_invalidation
+          detail: "Le store Codex n'a pas de transition active→stale/superseded reliée au remplacement d'un snapshot. AC-VER-03/05 et AC-MCP-03 ne sont donc pas fermés pour le nouveau store."
+        - id: migration_citations
+          detail: "L'import legacy place des src_* et snapshot IDs dans evidence sans matérialiser une chaîne de citation v2 résoluble. AC-MIG-10 reste insuffisamment prouvé."
+        - id: operator_runbook
+          detail: "Le runbook lance npm run daemon sans arguments obligatoires et documente MIGRATE <plan-hash> alors que la CLI exige APPLY <migration-id>."
+        - id: packaging
+          detail: "Le plugin ne contient pas encore le skill d'usage/diagnostic prévu par le blueprint."
+      evidence:
+        - "codex-cli 0.125.0 expose plugin/list via App Server et recherche les marketplaces repo avec le paramètre cwds."
+        - "Le test de release vérifie uniquement la présence de 80 chaînes uniques et assigne covered à toutes si les checks globaux passent."
+        - "createTurnSnapshotStore fingerprint les chemins mais ne gère ni source_id stable ni transition rename/review."
+        - "createCodexWorkspaceStore filtre status=active mais n'expose aucune invalidation stale."
+        - "createCodexMigration importe des références legacy sans artefact v2 vérifié."
+        - "117 tests globaux, specs, secrets et gates existants restent verts; les écarts sont des preuves/fonctionnalités manquantes, pas des régressions."
+      worker_package:
+        objective: "Fermer les écarts pré-release : rendre le plugin réellement découvrable dans un profil/projet Codex isolé, implémenter continuité/invalidation source fail-closed et citations legacy résolubles, ajouter un canary oracle end-to-end et remplacer la matrice AC générique par des preuves AC→tests explicites, puis corriger le runbook."
+        allowed_files:
+          - .agents/plugins/marketplace.json
+          - README.md
+          - docs/README.md
+          - docs/production-runbook.md
+          - package.json
+          - "plugins/supermemory/**"
+          - scripts/lib/codex-installer.mjs
+          - scripts/lib/codex-turn-snapshot.mjs
+          - scripts/lib/codex-workspace-store.mjs
+          - scripts/lib/codex-memory-governance.mjs
+          - scripts/lib/codex-memory-recall.mjs
+          - scripts/lib/codex-migration.mjs
+          - scripts/lib/codex-lifecycle.mjs
+          - scripts/run-codex-integration-canary.mjs
+          - scripts/verify-codex-supermemory-release.mjs
+          - tests/codex-installer.test.mjs
+          - tests/codex-app-server-adapter.test.mjs
+          - tests/codex-memory-governance.test.mjs
+          - tests/codex-hindsight-recall.test.mjs
+          - tests/codex-mcp-server.test.mjs
+          - tests/codex-migration.test.mjs
+          - tests/codex-lifecycle.test.mjs
+          - tests/codex-integration-canary.test.mjs
+          - tests/codex-release-canary.test.mjs
+        verify:
+          - "node --test tests/codex-installer.test.mjs tests/codex-app-server-adapter.test.mjs tests/codex-memory-governance.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-migration.test.mjs tests/codex-lifecycle.test.mjs tests/codex-integration-canary.test.mjs tests/codex-release-canary.test.mjs"
+          - "node scripts/run-codex-integration-canary.mjs --json"
+          - "node scripts/verify-codex-supermemory-release.mjs --json"
+          - "node scripts/verify-secret-hygiene.mjs"
+          - "git diff --check"
+          - "npm test"
+          - "node scripts/verify-supermemory-specs.mjs"
+          - "node scripts/verify-supermemory-release-readiness.mjs --json"
+        stop_if:
+          - "Besoin d'écrire dans le vrai ~/.codex, un vault réel ou une banque durable."
+          - "La marketplace existante devrait être remplacée au lieu d'être fusionnée et sauvegardée."
+          - "Une source ambiguë serait fusionnée automatiquement sur nom ou hash seul."
+          - "Une mémoire stale resterait rappelable pendant l'échec de suppression Hindsight."
+          - "Une citation legacy ne peut pas être reliée à un artefact canonique vérifiable."
+          - "Le canary doit utiliser des données client, une UI non observable ou une écriture cloud."
+          - "Une preuve AC ne peut pas pointer vers un test/scénario précis."
+          - "Une vérification échoue deux fois."
+      missing_evidence:
+        - "Observation UI Desktop et IDE reste distincte des contrats App Server/hooks; le rapport final doit conserver cette limite s'il ne pilote pas ces interfaces."
+      note_needed: false
+  - id: T017
+    type: worker
+    assignee: Worker
+    status: done
+    reasoning_hint: medium
+    objective: "Fermer les écarts pré-release : plugin découvrable par Codex, continuité/invalidation source, citations legacy résolubles, canary oracle end-to-end, matrice AC sémantique et runbook exécutable."
+    inputs:
+      - "T016 receipt"
+      - "Blueprint et 80 AC"
+      - "Codex App Server 0.125 plugin/list"
+    constraints:
+      - "Aucune mutation utilisateur réelle."
+      - "Marketplace fusionnée et sauvegardée, jamais écrasée silencieusement."
+      - "Stale exclu du recall avant suppression de projection."
+      - "Chaque AC pointe vers une preuve précise."
+    allowed_files:
+      - ".agents/plugins/marketplace.json"
+      - "README.md"
+      - "docs/README.md"
+      - "docs/production-runbook.md"
+      - "package.json"
+      - "plugins/supermemory/**"
+      - "scripts/lib/codex-app-server-adapter.mjs"
+      - "scripts/lib/codex-installer.mjs"
+      - "scripts/lib/codex-turn-snapshot.mjs"
+      - "scripts/lib/codex-workspace-store.mjs"
+      - "scripts/lib/codex-memory-governance.mjs"
+      - "scripts/lib/codex-memory-recall.mjs"
+      - "scripts/lib/codex-migration.mjs"
+      - "scripts/lib/codex-lifecycle.mjs"
+      - "scripts/run-codex-integration-canary.mjs"
+      - "scripts/supermemory-app-server.mjs"
+      - "scripts/supermemory-codex.mjs"
+      - "scripts/supermemory-doctor.mjs"
+      - "scripts/verify-codex-supermemory-release.mjs"
+      - "tests/codex-installer.test.mjs"
+      - "tests/codex-app-server-adapter.test.mjs"
+      - "tests/codex-memory-governance.test.mjs"
+      - "tests/codex-hindsight-recall.test.mjs"
+      - "tests/codex-mcp-server.test.mjs"
+      - "tests/codex-migration.test.mjs"
+      - "tests/codex-lifecycle.test.mjs"
+      - "tests/codex-integration-canary.test.mjs"
+      - "tests/codex-release-canary.test.mjs"
+      - "tests/supermemory-doctor.test.mjs"
+    verify:
+      - "node --test tests/codex-installer.test.mjs tests/codex-app-server-adapter.test.mjs tests/codex-memory-governance.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-migration.test.mjs tests/codex-lifecycle.test.mjs tests/codex-integration-canary.test.mjs tests/codex-release-canary.test.mjs"
+      - "node scripts/run-codex-integration-canary.mjs --json"
+      - "node scripts/verify-codex-supermemory-release.mjs --json"
+      - "node scripts/verify-secret-hygiene.mjs"
+      - "git diff --check"
+      - "npm test"
+      - "node scripts/verify-supermemory-specs.mjs"
+      - "node scripts/verify-supermemory-release-readiness.mjs --json"
+    stop_if:
+      - "Besoin d'écrire dans le vrai ~/.codex, un vault réel ou une banque durable."
+      - "La marketplace existante devrait être remplacée au lieu d'être fusionnée et sauvegardée."
+      - "Une source ambiguë serait fusionnée automatiquement."
+      - "Une mémoire stale resterait rappelable."
+      - "Une citation legacy ne peut pas être vérifiée."
+      - "Une preuve AC reste générique."
+      - "Une vérification échoue deux fois."
+    receipt:
+      result: done
+      summary: "Les six écarts T016 sont fermés. Codex 0.125 découvre et active réellement le plugin depuis une marketplace repo fusionnée et réversible. Un canari sacrificiel unique prouve identité stable, capture chiffrée avec spool/replay, redaction, revue, projection, recall MCP cité, invalidation source fail-closed, suppression attestée et rollback. La matrice relie désormais chacun des 80 AC à des scénarios et gates précis. Les preuves legacy sont matérialisées, immuables et vérifiées par hash d'intégrité. Le README et le runbook distinguent explicitement disponibilité, configuration et observation, et ne revendiquent aucune UI non pilotée."
+      changed_files:
+        - .agents/plugins/marketplace.json
+        - README.md
+        - docs/README.md
+        - docs/production-runbook.md
+        - package.json
+        - plugins/supermemory/skills/supermemory/SKILL.md
+        - scripts/lib/codex-app-server-adapter.mjs
+        - scripts/lib/codex-installer.mjs
+        - scripts/lib/codex-turn-snapshot.mjs
+        - scripts/lib/codex-workspace-store.mjs
+        - scripts/lib/codex-memory-governance.mjs
+        - scripts/lib/codex-memory-recall.mjs
+        - scripts/lib/codex-migration.mjs
+        - scripts/run-codex-integration-canary.mjs
+        - scripts/supermemory-app-server.mjs
+        - scripts/supermemory-codex.mjs
+        - scripts/supermemory-doctor.mjs
+        - scripts/verify-codex-supermemory-release.mjs
+        - tests/codex-installer.test.mjs
+        - tests/codex-app-server-adapter.test.mjs
+        - tests/codex-memory-governance.test.mjs
+        - tests/codex-hindsight-recall.test.mjs
+        - tests/codex-mcp-server.test.mjs
+        - tests/codex-migration.test.mjs
+        - tests/codex-lifecycle.test.mjs
+        - tests/codex-integration-canary.test.mjs
+        - tests/codex-release-canary.test.mjs
+        - tests/supermemory-doctor.test.mjs
+      commands:
+        - cmd: "node --test tests/codex-installer.test.mjs tests/codex-app-server-adapter.test.mjs tests/codex-memory-governance.test.mjs tests/codex-hindsight-recall.test.mjs tests/codex-mcp-server.test.mjs tests/codex-migration.test.mjs tests/codex-lifecycle.test.mjs tests/codex-integration-canary.test.mjs tests/codex-release-canary.test.mjs tests/supermemory-doctor.test.mjs"
+          status: pass
+          detail: 45/45
+        - cmd: "node scripts/run-codex-integration-canary.mjs --json"
+          status: pass
+          detail: "Codex CLI 0.125.0: discovery et activation plugin observées; 8/8 étapes; rollback vérifié"
+        - cmd: "node scripts/verify-codex-supermemory-release.mjs --json"
+          status: pass
+          detail: "80/80 AC couverts sémantiquement; release-candidate; production_ready=false avant audit final"
+        - cmd: "npm test"
+          status: pass
+          detail: 124/124
+        - cmd: "node scripts/verify-supermemory-specs.mjs"
+          status: pass
+        - cmd: "node scripts/verify-supermemory-release-readiness.mjs"
+          status: pass
+          detail: "contract-ready; runtime/production restent gouvernés par preuves et approbation explicites"
+        - cmd: "node scripts/verify-secret-hygiene.mjs"
+          status: pass
+          detail: "478 fichiers, 0 finding"
+        - cmd: "git diff --check"
+          status: pass
+      evidence:
+        - "Le vrai App Server Codex plugin/list découvre la marketplace repo; plugin/install puis plugin/list prouvent installed=true et enabled=true dans un profil temporaire."
+        - "L'installateur fusionne la marketplace existante, sauvegarde chaque cible et la restaure byte-for-byte sans toucher config.toml ni la confiance projet."
+        - "Une copie de même hash sans preuve de rename reçoit une identité distincte et review_required; un rename observé conserve source_id."
+        - "Le remplacement d'une source marque la mémoire stale avant toute suppression Hindsight, donc un échec de projection ne la rend jamais rappelable."
+        - "Les citations migrées résolvent un artefact legacy local dont l'intégrité est recalculée; une altération devient citation_unresolved."
+        - "Le canari n'utilise ni données client, ni profil utilisateur réel, ni banque durable, ni écriture cloud, et efface sa fixture temporaire."
+        - "Le rapport conserve desktop_ui_observed=false, ide_ui_observed=false et cloud_web=not_covered."
+      limitations:
+        - "Les hooks seuls ont une couverture partielle; la capture riche exige qu'un client utilise réellement le wrapper App Server configuré."
+        - "Aucune UI Desktop ou IDE tierce n'a été pilotée; seuls la CLI et le protocole App Server réels ont été observés."
+        - "Le profil Codex utilisateur et son niveau de confiance n'ont volontairement pas été modifiés."
+      note_needed: false
+  - id: T018
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer les corrections T017 et autoriser T999 uniquement si le canary oracle et la matrice des 80 AC sont probants."
+    inputs:
+      - "T016-T017 receipts"
+      - "Rapport canary et release daté"
+      - "Diff complet"
+    constraints:
+      - "Lecture seule."
+      - "Rejouer le canary isolé."
+      - "Rejeter toute affirmation UI non observée."
+    expected_output:
+      - "approve | revise"
+      - "Matrice AC auditée."
+      - "Risques résiduels et autorisation T999."
+    receipt:
+      result: done
+      decision: approve
+      full_outcome_complete: false
+      review_mode: pm_fallback_after_goal_judge_timeout
+      rationale: "Les six blockers T016 sont fermés par du comportement rejoué, pas par des déclarations. Le canari appelle le vrai App Server Codex 0.125 pour découvrir puis activer le plugin dans un profil isolé, invoque le bridge réellement installé, et enchaîne l'oracle complet jusqu'au rollback. Les 80 AC ont chacun une preuve nommée et les critères multi-composants exigent plusieurs gates. Les limitations client restent explicites et n'empêchent pas l'audit terminal du produit local-first."
+      evidence:
+        - "node scripts/run-codex-integration-canary.mjs --json: pass, 8/8 étapes, plugin_discovered_by_codex=true, plugin_activation_observed_by_codex=true, Codex 0.125.0."
+        - "node scripts/verify-codex-supermemory-release.mjs --json: pass, 80/80 AC, 9/9 gates, rollback vérifié, aucun secret ni donnée client."
+        - "npm test: 124/124; specs, secret hygiene, release readiness et git diff --check passent."
+        - "La marketplace est fusionnée avec les entrées existantes et restaurée byte-for-byte; config.toml et la confiance projet ne sont pas modifiés."
+        - "Le suivi de source conserve l'identité uniquement sur rename fortement observé; une copie ambiguë reste distincte et review_required."
+        - "L'invalidation marque mémoire/candidat stale ou superseded avant l'appel de suppression dérivée, avec retry visible en cas d'échec."
+        - "Les citations legacy pointent vers un artefact local immutable dont integrity_hash est recalculé au rappel; le test d'altération échoue fermé."
+        - "Le runbook utilise les arguments daemon obligatoires et APPLY <migration-id>; il distingue App Server disponible, configuré et observé."
+        - "Le plugin contient hooks, MCP, manifeste et skill d'usage; le verifier exige ces artefacts."
+      matrix_audit:
+        total: 80
+        covered: 80
+        generic_evidence_remaining: false
+        failed_or_blocked: 0
+        multi_gate_examples:
+          - "AC-VER-05 exige s5_s6_acceptance et oracle_canary."
+          - "AC-CLI-03 exige oracle_canary et codex_cli."
+          - "AC-SEC-12 exige secret_hygiene et oracle_canary."
+      risks:
+        - "La capture hook-only reste partielle; la capture riche dépend d'un host utilisant réellement le wrapper App Server."
+        - "Le canari n'a piloté ni UI Desktop ni UI IDE tierce; aucune affirmation d'observation UI n'est autorisée."
+        - "Codex web/cloud et ses conversations restent hors périmètre."
+        - "Le niveau de confiance projet demeure une décision utilisateur, conformément à l'absence de mutation silencieuse."
+      missing_evidence:
+        - "Une observation UI Desktop/IDE serait une preuve additionnelle de compatibilité client, pas une condition de vérité du produit local-first CLI/protocole livré."
+      authorization: "T999 peut être activé pour l'audit terminal."
+      note_needed: false
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: done
+    reasoning_hint: high
+    objective: "Auditer l’intégration finale contre l’objectif owner, le blueprint et l’oracle runtime."
+    inputs:
+      - "Tous les receipts"
+      - "80 AC"
+      - "Gates complets"
+      - "Canaries Desktop/CLI/IDE"
+      - "Preuve suppression et rollback"
+      - "Diff courant"
+    constraints:
+      - "Lecture seule."
+      - "Rejeter la complétion si une slice, un Worker correctif ou une preuve sûre reste disponible."
+      - "Ne pas confondre mode dégradé déclaré et fonctionnalité absente silencieusement."
+      - "Exiger full_outcome_complete: true seulement pour le produit implémenté."
+    expected_output:
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "Mapping R01-R13 et AC."
+      - "Preuves runtime et risques résiduels."
+    receipt:
+      result: done
+      decision: complete
+      full_outcome_complete: true
+      review_mode: pm_fallback_after_goal_judge_timeout
+      rationale: "L'objectif d'implémentation local-first est atteint. Les slices S1-S7 sont présentes, reliées par un canari unique réellement exécuté contre Codex 0.125, et les 80 AC sont couverts par des preuves sémantiques. Aucun Worker correctif requis ne reste : les écarts détectés à la première pré-release ont été fermés puis rejoués. Le produit ne prétend pas couvrir des surfaces non observées; l'installation dans le vrai profil et la confiance projet restent des actions opérateur réversibles, pas du code manquant."
+      requirement_mapping:
+        R01: "Registre project/workspace/checkout stable, testé entre init, onglets logiques et sessions."
+        R02: "Aliases historiques, move, rename fortement observé, worktrees et multi-root; fusion ambiguë interdite."
+        R03: "EventEnvelope, journal idempotent, redaction, ordering, spool chiffrée, gaps et daemon loopback."
+        R04: "Snapshots turn/fichier immuables, source_id stable, copies ambiguës distinctes et invalidation stale."
+        R05: "Archive chiffrée, candidate inactive et mémoire canonique physiquement séparées; approbation explicite."
+        R06: "MCP lié au projet au lancement, scope fail-closed, résultats actifs cités et fallback local explicite."
+        R07: "Plugin partagé hooks/MCP, adapter App Server versionné, doctor par capacités et profils dégradés honnêtes."
+        R08: "Vault écrit avant projection, revalidation de chaque résultat Hindsight et rebuild déterministe."
+        R09: "Redaction avant persistance, AEAD, chemins fingerprintés, quotas/TTL, rotation et secret gate."
+        R10: "Tombstone avant suppression, deny recall immédiat, retry visible, purge par portée et attestation sans contenu."
+        R11: "Migration dry-run, backup vérifié, IDs opaques, citations legacy intègres, idempotence et rollback."
+        R12: "Memories natives non autoritatives, jamais activées par l'installateur, avertissement si parallèles."
+        R13: "Raisonnement caché ignoré; seuls contenus visibles supportés sont capturés et aucune couverture universelle n'est revendiquée."
+      acceptance:
+        total: 80
+        covered: 80
+        blocked: 0
+        release_gate_status: pass
+      runtime_evidence:
+        - "Codex CLI 0.125.0 réellement observé."
+        - "App Server plugin/list découvre la marketplace du projet; plugin/install et un second plugin/list prouvent activation installed+enabled dans un profil isolé."
+        - "Le bridge installé produit une capture chiffrée en panne daemon; replay donne un effet logique unique et le secret canari est absent."
+        - "Le canari crée une candidate inactive, approuve, rappelle par MCP avec citation, puis invalide la source et obtient zéro recall."
+        - "La suppression produit tombstone, delete projection, purge et attestation content-free."
+        - "Le rollback retire la découverte plugin, restaure la configuration et préserve le vault."
+        - "npm test: 124/124; verifier Codex: 80/80; specs, release readiness, secrets et diff-check passent."
+      residual_risks:
+        - "Hook-only signifie capture partielle; le niveau rich exige que le client utilise le wrapper App Server."
+        - "Aucune UI Desktop ni IDE tierce n'a été pilotée, donc aucune observation UI n'est revendiquée."
+        - "Codex web/cloud et les clients non instrumentés restent explicitement non couverts."
+        - "Le profil utilisateur réel, ses plugins actifs et la confiance du projet doivent être revus au plan d'installation avant mutation."
+      missing_evidence: []
+      next_operator_boundary: "Planifier puis appliquer l'installation sur le vrai projet avec sauvegarde; ce passage en exploitation exige une revue opérateur du plan et ne doit pas être automatisé silencieusement."
+      note_needed: false
+checks:
+  dirty_fingerprint: "sha256:d9a56e7b5963fbe1b43d33ba033e7a4d1bf1e87ba205e55cde8adbd79e74fbd5"
+  last_verification:
+    result: passed
+    task: T001
+    commands:
+      - "npm test — baseline connu 55/55 avant ce goal"
+      - "node scripts/verify-supermemory-specs.mjs — gate global à préserver"
+      - "node scripts/verify-secret-hygiene.mjs — gate sécurité à préserver"
+      - "node scripts/verify-supermemory-release-readiness.mjs — release gate à étendre"

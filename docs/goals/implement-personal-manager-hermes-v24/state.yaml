@@ -1,0 +1,693 @@
+version: 2
+goal:
+  slug: "implement-personal-manager-hermes-v2-4"
+  title: "Implement Personal Manager Hermes v2.4"
+  status: active
+  created_at: "2026-08-10"
+  updated_at: "2026-08-10"
+  kind: specific
+  original_request: "# Implement Personal Manager Hermes v2.4\n\n## Intent\n\nImplémenter intégralement le blueprint `docs/personal-manager-hermes-blueprint.md` dans\nSuperMemory. Hermes sur Z2 doit utiliser `supermemory-fabric` comme unique provider mémoire,\nrecevoir une carte personnelle citée et bornée, rappeler la mémoire owner et tous les projets,\nmuter la mémoire canonique sur demande explicite, capturer les tours de façon gouvernée et\ncomposer avec les connecteurs d'action Hermes sans les réimplémenter.\n\n- Ne pas activer le provider mémoire Hindsight natif de Hermes en parallèle.\n- Ne pas donner à Hermes un accès direct à Hindsight, Neo4j, GraphD ou au filesystem du vault.\n- Ne pas réimplémenter Gmail, Calendar ou d'autres connecteurs Hermes dans SuperMemory.\n- Ne pas autoriser une action externe à partir d'une mémoire rappelée seule.\n- Ne pas mémoriser le raisonnement caché, les prompts système, credentials, pièces jointes ou\n  sorties brutes des connecteurs.\n- Ne pas construire un nouveau moteur vectoriel, graphe, orchestrateur d'agents ou routeur\n  multi-LLM.\n- Ne pas modifier les frontières du MCP projet Codex ni permettre un recall cross-project à\n  une identité checkout.\n- Ne pas ajouter de canari, de déploiement progressif ou de second provider LLM.\n- Ne pas effectuer de déploiement live Z2 ou d'action Gmail réelle sans credentials et demande\n  opérateur distincte ; fournir les artefacts et smokes mockés/sandboxés nécessaires.\n\n## Non-Goals\n\n- TODO: Name what this goal must not change.\n\n## Proposed Oracle\n\nHermes sur Z2 utilise uniquement supermemory-fabric comme provider mémoire, rappelle owner plus tous projets avec citations, exécute add/update/resolve/supersede de façon gouvernée, compose avec les connecteurs d'action et passe la matrice v2.4 complète.\n\n## Suggested Mode\n\nimplementation\n\n## Acceptance Hints\n\n- Un vérificateur `npm run verify:memory-fabric-v24` contrôle les contrats, la configuration\n- v7, le provider unique, les routes et l'absence d'accès direct aux moteurs.\n- Les tests de credential agent prouvent émission, auth constante, capacités, rotation,\n- révocation et refus d'un token checkout.\n- Les tests de scope prouvent que seul l'agent propriétaire peut parcourir tous les projets et\n- que le MCP checkout reste mono-projet.\n- Les tests de recall prouvent `auto`, `project`, `portfolio`, `historical`, citations,\n- pagination, couverture `complete|partial|abstain` et concurrence bornée.\n- La Personal Context Card est citée, autorisée et inférieure ou égale à 8 000 tokens.\n- Les tests du command bus prouvent add, update, resolve, supersede, forget plan/apply,\n- idempotence, expected revision, historique `as_of` et read-after-write.\n- Les tests de sécurité prouvent qu'un nonce rejoué, un scope forgé, une instruction rappelée,\n- une sortie d'outil et une mutation massive non confirmée sont refusés.\n- Les routes `/v1/personal-manager/*` sont testées avec auth, limites, erreurs fail-closed et\n- séparation des routes checkout.\n- La suite Python du provider Hermes couvre initialize, prefetch, queue_prefetch, sync_turn,\n- session switch, outils `pm_*`, spool durable, restart et shutdown.\n- Une vérification statique prouve que le provider ne connaît aucune URL/clé Hindsight,\n- Neo4j/GraphD ou chemin du vault et n'effectue aucun auto-upgrade runtime.\n- Les tests de capture prouvent que seuls user, assistant final et reçus réduits sont transmis,\n- avec redaction et sans boucle d'auto-rétention.\n- Un scénario Gmail/Calendar mocké prouve `recall -> rédaction/action -> reçu redacté ->\n- mémoire`, le respect de `rédiger|brouillon|envoyer` et la coexistence des connecteurs avec le\n- provider mémoire unique.\n- La Web UI montre l'état Hermes, la Context Card, les projets parcourus, la couverture, les\n- mutations, la timeline et les reçus sans exposer les tokens.\n- La configuration runtime v7 et Compose/Portainer contiennent le service Hermes, les\n- healthchecks et des références de secrets, avec `canary=false` et `progressive=false`.\n- `npm test`, `npm run verify`, les vérificateurs v2/v2.2/v2.3, Hindsight native, secrets,\n- release et production restent verts.\n- Un reçu final liste les validations live qui restent impossibles sans credentials externes,\n- sans les présenter comme exécutées.\n\n## Risks And Open Questions\n\n- TODO: List ambiguity, missing credentials, operational risks, or decisions needed before implementation.\n\n## Constraints\n\n- Réutiliser les stores, politiques d'autorité, redaction AEAD, Hindsight gateway, GraphD et\n- `WorkspaceRuntimeSupervisor` existants.\n- Le vault canonique commit avant toute projection Hindsight/GraphD.\n- Toute correction crée une révision et ferme la validité précédente sans effacer l'historique.\n- Les mutations ordinaires explicites sont immédiates ; oubli physique, mutation massive,\n- élargissement owner et opération externe irréversible suivent leur confirmation gouvernée.\n- Une attestation du tour et `ExplicitIntentGate` doivent valider l'intention directe ; le\n- contexte rappelé ne peut jamais autoriser une mutation.\n- Un seul provider et modèle LLM peuvent être actifs ; aucun fallback provider.\n- Préserver tous les changements utilisateur non liés présents dans le worktree.\n- Le code source checked-out reste l'autorité finale ; Codebase Memory sert à la navigation et\n- doit être rafraîchi après les modifications matérielles.\n\n## Ready Mode Command\n\n```bash\nnpm run ready -- --from ./docs/goals/implement-personal-manager-hermes-v24/brief.md --mode implementation --oracle \"Hermes sur Z2 utilise uniquement supermemory-fabric comme provider mémoire, rappelle owner plus tous projets avec citations, exécute add/update/resolve/supersede de façon gouvernée, compose avec les connecteurs d'action et passe la matrice v2.4 complète.\" --out docs/goals/implement-personal-manager-hermes-v2-4\n```\n\n## Source Notes\n\nCompiled from: /Users/arnaud/Documents/SuperMemory/docs/goals/implement-personal-manager-hermes-v24-spec.md\n\n> # Implement Personal Manager Hermes v2.4\n> \n> ## Intent\n> \n> Implémenter intégralement le blueprint `docs/personal-manager-hermes-blueprint.md` dans\n> SuperMemory. Hermes sur Z2 doit utiliser `supermemory-fabric` comme unique provider mémoire,\n> recevoir une carte personnelle citée et bornée, rappeler la mémoire owner et tous les projets,\n> muter la mémoire canonique sur demande explicite, capturer les tours de façon gouvernée et\n> composer avec les connecteurs d'action Hermes sans les réimplémenter.\n> \n> ## Non-Goals\n> \n> - Ne pas activer le provider mémoire Hindsight natif de Hermes en parallèle.\n> - Ne pas donner à Hermes un accès direct à Hindsight, Neo4j, GraphD ou au filesystem du vault.\n> - Ne pas réimplémenter Gmail, Calendar ou d'autres connecteurs Hermes dans SuperMemory.\n> - Ne pas autoriser une action externe à partir d'une mémoire rappelée seule.\n> - Ne pas mémoriser le raisonnement caché, les prompts système, credentials, pièces jointes ou\n>   sorties brutes des connecteurs.\n> - Ne pas construire un nouveau moteur vectoriel, graphe, orchestrateur d'agents ou routeur\n>   multi-LLM.\n> - Ne pas modifier les frontières du MCP projet Codex ni permettre un recall cross-project à\n>   une identité checkout.\n> - Ne pas ajouter de canari, de déploiement progressif ou de second provider LLM.\n> - Ne pas effectuer de déploiement live Z2 ou d'action Gmail réelle sans credentials et demande\n>   opérateur distincte ; fournir les artefacts et smokes mockés/sandboxés nécessaires.\n> \n> ## Oracle\n> \n> Hermes sur Z2 utilise uniquement `supermemory-fabric` comme provider mémoire, rappelle owner\n> plus tous les projets avec citations et couverture, exécute add/update/resolve/supersede de\n> façon gouvernée et cohérente, capture les conversations et reçus d'action redactés, compose\n> avec les connecteurs Hermes, expose la visualisation Web et passe la matrice v2.4 complète sans\n> régression v2.3.\n> \n> ## Acceptance\n> \n> - Un vérificateur `npm run verify:memory-fabric-v24` contrôle les contrats, la configuration\n>   v7, le provider unique, les routes et l'absence d'accès direct aux moteurs.\n> - Les tests de credential agent prouvent émission, auth constante, capacités, rotation,\n>   révocation et refus d'un token checkout.\n> - Les tests de scope prouvent que seul l'agent propriétaire peut parcourir tous les projets et\n>   que le MCP checkout reste mono-projet.\n> - Les tests de recall prouvent `auto`, `project`, `portfolio`, `historical`, citations,\n>   pagination, couverture `complete|partial|abstain` et concurrence bornée.\n> - La Personal Context Card est citée, autorisée et inférieure ou égale à 8 000 tokens.\n> - Les tests du command bus prouvent add, update, resolve, supersede, forget plan/apply,\n>   idempotence, expected revision, historique `as_of` et read-after-write.\n> - Les tests de sécurité prouvent qu'un nonce rejoué, un scope forgé, une instruction rappelée,\n>   une sortie d'outil et une mutation massive non confirmée sont refusés.\n> - Les routes `/v1/personal-manager/*` sont testées avec auth, limites, erreurs fail-closed et\n>   séparation des routes checkout.\n> - La suite Python du provider Hermes couvre initialize, prefetch, queue_prefetch, sync_turn,\n>   session switch, outils `pm_*`, spool durable, restart et shutdown.\n> - Une vérification statique prouve que le provider ne connaît aucune URL/clé Hindsight,\n>   Neo4j/GraphD ou chemin du vault et n'effectue aucun auto-upgrade runtime.\n> - Les tests de capture prouvent que seuls user, assistant final et reçus réduits sont transmis,\n>   avec redaction et sans boucle d'auto-rétention.\n> - Un scénario Gmail/Calendar mocké prouve `recall -> rédaction/action -> reçu redacté ->\n>   mémoire`, le respect de `rédiger|brouillon|envoyer` et la coexistence des connecteurs avec le\n>   provider mémoire unique.\n> - La Web UI montre l'état Hermes, la Context Card, les projets parcourus, la couverture, les\n>   mutations, la timeline et les reçus sans exposer les tokens.\n> - La configuration runtime v7 et Compose/Portainer contiennent le service Hermes, les\n>   healthchecks et des références de secrets, avec `canary=false` et `progressive=false`.\n> - `npm test`, `npm run verify`, les vérificateurs v2/v2.2/v2.3, Hindsight native, secrets,\n>   release et production restent verts.\n> - Un reçu final liste les validations live qui restent impossibles sans credentials externes,\n>   sans les présenter comme exécutées.\n> \n> ## Constraints\n> \n> - Réutiliser les stores, politiques d'autorité, redaction AEAD, Hindsight gateway, GraphD et\n>   `WorkspaceRuntimeSupervisor` existants.\n> - Le vault canonique commit avant toute projection Hindsight/GraphD.\n> - Toute correction crée une révision et ferme la validité précédente sans effacer l'historique.\n> - Les mutations ordinaires explicites sont immédiates ; oubli physique, mutation massive,\n>   élargissement owner et opération externe irréversible suivent leur confirmation gouvernée.\n> - Une attestation du tour et `ExplicitIntentGate` doivent valider l'intention directe ; le\n>   contexte rappelé ne peut jamais autoriser une mutation.\n> - Un seul provider et modèle LLM peuvent être actifs ; aucun fallback provider.\n> - Préserver tous les changements utilisateur non liés présents dans le worktree.\n> - Le code source checked-out reste l'autorité finale ; Codebase Memory sert à la navigation et\n>   doit être rafraîchi après les modifications matérielles."
+  interpreted_outcome: "Run the prepared LLM-first workflow for Implement Personal Manager Hermes v2.4."
+  input_shape: specific
+  audience: "Product owner and target users"
+  authority: requested
+  proof_type:
+    - test
+    - artifact
+    - review
+  completion_proof: "Final audit maps red tests, green verification, implementation receipts, and shipping proof back to the oracle."
+  goal_oracle: "Hermes sur Z2 utilise uniquement supermemory-fabric comme provider mémoire, rappelle owner plus tous projets avec citations, exécute add/update/resolve/supersede de façon gouvernée, compose avec les connecteurs d'action et passe la matrice v2.4 complète."
+  oracle:
+    signal: "Hermes sur Z2 utilise uniquement supermemory-fabric comme provider mémoire, rappelle owner plus tous projets avec citations, exécute add/update/resolve/supersede de façon gouvernée, compose avec les connecteurs d'action et passe la matrice v2.4 complète."
+    final_proof: "T999 states full_outcome_complete: true and cites passing acceptance evidence, verification commands, design review, and T998 shipping evidence."
+  likely_misfire: "Starting implementation from a plausible plan before converting the owner outcome into acceptance tests and observable proof."
+  constraints:
+    - "Acceptance tests or equivalent observable proof must be written before production implementation."
+    - "Implementation must stay inside Judge-approved allowed_files."
+    - "Unrelated dirty worktree changes must remain untouched."
+
+rules:
+  pm_owns_state: true
+  one_active_task: true
+  max_write_workers: 1
+  no_implementation_without_worker_or_pm_task: true
+  no_completion_without_judge_or_pm_audit: true
+  planning_is_not_completion: true
+  queued_required_worker_blocks_completion: true
+  continuous_until_full_outcome: true
+  missing_input_or_credentials_do_not_stop_goal: true
+  preserve_and_validate_existing_plan: true
+  intake_misfire_must_be_audited: true
+  allow_read_only_goal_without_shipping: true
+  require_quality_checker: true
+  require_tdd_worker_flow: true
+  require_github_ship_task: true
+  require_impact_assessment: true
+  goal_pressure_requires_oracle: true
+
+goal_policy:
+  mode: implementation
+  requires_tdd: true
+  requires_impact_assessment: true
+  requires_shipping: true
+  requires_visual_verification: false
+  requires_migration_proof: false
+  requires_infra_proof: false
+  requires_dependency_review: false
+  requires_dirty_worktree_guard: true
+  requires_refactor_proof: false
+  rationale: "Ready Mode is for app-code or product-behavior work after an LLM-first spec conversation has converged."
+
+workflow_safeguards:
+  requires_design_concept: true
+  requires_ubiquitous_language: true
+  requires_feedback_policy: true
+  requires_test_strategy: true
+  requires_module_map: true
+  requires_interface_contract: true
+  requires_architecture_review: true
+  requires_design_delta: true
+  require_t998_shipping: true
+  require_t999_final_audit: true
+  protect_unrelated_dirty_worktree: true
+
+agents:
+  scout: installed
+  worker: installed
+  judge: installed
+
+active_task: null
+tasks:
+  - id: T001
+    type: scout
+    assignee: Scout
+    status: done
+    objective: "Turn the mature request into a concrete acceptance contract before any implementation work."
+    inputs:
+      - "goal.md"
+      - "acceptance-contract.md"
+      - "Current repository source, tests, scripts, docs, and dirty worktree status"
+    constraints:
+      - "Read-only."
+      - "Do not edit product files."
+      - "Do not start implementation."
+      - "Prefer observable owner outcomes over internal task completion."
+    expected_output:
+      - "design_concept: shared understanding, non-goals, and decision dependencies"
+      - "ubiquitous_language: domain terms, overloaded words, and forbidden synonyms"
+      - "module_map: relevant deep modules, boundaries, and shallow-module risks"
+      - "interface_contract: public behavior and boundaries that tests should target"
+      - "test_strategy: acceptance tests, unit/integration boundaries, mocks, browser or visual checks if relevant"
+      - "feedback_policy: targeted test cadence, typecheck, browser checks, and full-suite timing"
+      - "acceptance_contract_updates: exact end-state evidence and failure modes"
+      - "dirty_worktree_risk_map: unrelated files that must stay untouched"
+      - "impact_assessment covering db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs"
+    receipt:
+      result: done
+      summary: "Read-only Scout mapping completed against the checked-out source and Codebase Memory project SuperMemory (10188 nodes, 16948 edges). The safest architecture adds deep Personal Manager modules beside the existing v2.3 seams instead of extending the 641-line daemon or owner preference store with all policy."
+      design_concept: "Hermes has one memory provider, supermemory-fabric, and any number of independent action connectors. The provider is an untrusted edge adapter that talks only to a dedicated Personal Manager API. Server-side AgentScope, ExplicitIntentGate, canonical revision command bus, portfolio recall and governed capture preserve authority. Canonical commit precedes Hindsight and GraphD projections. Action connectors consume memory context but retain their own permissions; only reduced redacted receipts flow back to memory."
+      ubiquitous_language:
+        Memory Plane: "supermemory-fabric plus governed Personal Manager API; never a synonym for all Hermes tools"
+        Action Plane: "Hermes-native Gmail, Calendar and other connectors; not implemented by SuperMemory"
+        AgentCredential: "owner-bound Z2 credential with pm capabilities; distinct from checkout and daemon tokens"
+        ResolvedAgentScope: "immutable server-derived owner and allowed-project set"
+        Personal Context Card: "cited authorized prefetch projection capped at 8000 tokens"
+        portfolio recall: "bounded fan-out over owner plus every active owned project with explicit coverage"
+        explicit mutation: "add, update, resolve or supersede entailed by the current direct user message"
+        canonical revision: "append-only current-state revision with temporal supersession links"
+        action receipt: "reduced redacted connector outcome; not the raw connector payload"
+        forbidden_synonyms:
+          - "provider unique = outil unique"
+          - "omniscient = bypass workspace isolation"
+          - "retain = canonical commit"
+          - "memory context = execution authorization"
+      module_map:
+        identity_and_scope:
+          - "scripts/lib/checkout-credential-store.mjs as cryptographic/storage pattern"
+          - "scripts/lib/request-scope-resolver.mjs as fail-closed assertion pattern"
+          - "scripts/lib/project-registry.mjs owner and active-project source"
+        runtime_and_recall:
+          - "scripts/lib/workspace-runtime-supervisor.mjs context cache and owner/project merge"
+          - "scripts/lib/workspace-runtime-context.mjs workspace-bound router factory"
+          - "scripts/lib/codex-evidence-coverage.mjs and codex-retrieval-plan.mjs for coverage semantics"
+        canonical_mutation:
+          - "scripts/lib/codex-workspace-store.mjs canonical memory/evidence substrate"
+          - "scripts/lib/memory-authority-policy.mjs temporal authority"
+          - "scripts/lib/registry-transaction.mjs locking"
+          - "scripts/lib/hindsight-authority-gateway.mjs projection and recall revalidation"
+        capture:
+          - "scripts/lib/codex-redaction.mjs shared redaction"
+          - "scripts/lib/codex-spool.mjs AEAD durable queue"
+          - "scripts/lib/codex-capture-store.mjs evidence journal"
+          - "scripts/lib/canonical-knowledge-worker.mjs governed promotion"
+        api:
+          - "scripts/lib/supermemory-daemon.mjs composition root and HTTP boundary"
+          - "new scripts/lib/personal-manager-api.mjs should own route dispatch and limits to avoid growing the high-risk daemon hotspot"
+        provider:
+          - "new integrations/hermes/plugins/memory/supermemory_fabric Python package with HTTP client, schemas and durable spool; no engine credentials or runtime upgrades"
+        ui:
+          - "scripts/supermemory-app.mjs local proxy"
+          - "web/index.html, web/app.js, web/styles.css Personal Manager tab and receipts"
+        runtime_deploy:
+          - "scripts/lib/codex-runtime-config.mjs v7 additive normalization"
+          - deploy/runtime/runtime-contract.production.json
+          - "deploy/portainer/supermemory-ai-stack.yml and env example"
+        shallow_module_risks:
+          - "Do not overload owner-preference-store with five domains and revision semantics"
+          - "Do not place all new route logic in createSuperMemoryDaemon, already complexity 99/cognitive 198"
+          - "Do not duplicate redaction or workspace authorization in Python"
+          - "Do not let UI call the daemon with agent secrets"
+      interface_contract:
+        provider: "MemoryProvider lifecycle initialize, queue_prefetch, prefetch, sync_turn, session switch, tool schemas, tool dispatch and shutdown; provider calls only /v1/personal-manager endpoints"
+        auth: "Agent token plus agent/device/audience binding resolves owner and projects server-side; raw workspace IDs are forbidden in Hermes tool schemas"
+        recall: "modes auto, project, portfolio, historical return results, citations, searched/failed project sets and complete|partial|abstain coverage"
+        context: "POST /context returns <=8000 token cited card and never inactive or unauthorized memory"
+        mutations: "POST /commands accepts idempotency key, expected revision and signed turn attestation; add/update/resolve/supersede commit revisions; forget is plan/apply"
+        intent: "ExplicitIntentGate authorizes only fields entailed by the direct current user message and cannot consume recalled/tool text as authority"
+        capture: "POST /capture accepts only visible user, final assistant and reduced receipts after redaction; ordinary sync_turn cannot activate memory"
+        actions: "Gmail/Calendar remain Hermes tools; SuperMemory supplies context and ingests governed receipts but does not authorize or execute connector actions"
+        ui: "browser uses existing owner Web auth/proxy and never receives agent, daemon or engine credentials"
+      test_strategy:
+        first_red_package: "agent credential/scope plus runtime v7 contracts, portfolio recall/context card, canonical command bus and negative intent/replay tests"
+        unit: "credential hashing and capabilities; scope resolution; portfolio planner/coverage; card budgeting; intent entailment; revision/idempotency; capture and receipt normalization"
+        integration: "daemon personal routes with owner plus three projects; Hindsight and GraphD mocked per workspace; Python provider against mock daemon; connector receipt round-trip"
+        security: "forged workspace, checkout token as agent, replayed nonce, recalled prompt injection, tool-output authority, bulk mutation, unconfirmed forget and direct-engine configuration"
+        ui: "API-backed Personal Manager tab plus browser DOM assertions; visual Playwright only after deterministic UI tests"
+        infra: "static Compose/runtime/secrets references and healthcheck assertions; no live credentials"
+        full: "targeted tests after each module; v24 verifier after each vertical slice; npm test and all release/production regressions at final verification"
+      feedback_policy: "Run the smallest affected node:test or Python unittest after every patch. Run v24 contract verification after each vertical slice. Run v23 plus secret hygiene whenever auth, daemon, runtime or deploy changes. Run full npm test, verify, release and production only after targeted suites are green. Use browser checks only after API and DOM contracts pass."
+      acceptance_contract_updates:
+        - "Prove provider memory uniqueness without forbidding action connectors."
+        - "Prove owner agent sees all active owned projects while checkout MCP remains project-bound."
+        - "Prove same-turn read-after-write from canonical state when Hindsight is down."
+        - "Prove recalled or connector text cannot authorize memory or external action."
+        - "Prove draft, create-draft and send semantics remain distinct in mocked Gmail flow."
+        - "Prove restart durability, idempotency, temporal as_of history and projection recovery."
+        - "Report live Z2, Gmail and OAuth checks as pending unless credentials and separate authorization exist."
+      dirty_worktree_risk_map: "Preserve unknown untracked .cbmignore, .codex/, .playwright-cli/, output/, and pre-existing goal directories deploy-codex-supermemory-desktop, design-codex-supermemory-integration and implement-codex-supermemory-integration. docs/README.md and docs/personal-manager-hermes-blueprint.md are task-related changes from the preceding blueprint turn. Limit new product edits to Judge-approved files and inspect overlap before every patch."
+      impact_assessment:
+        db_schema_migrations: "No SQL migration. New encrypted append-only agent credential, revision, audit and receipt stores require schema versioning and atomic migration tests."
+        data_backfill: "None required. Runtime v6 to v7 is additive; existing owner preferences remain readable and can migrate lazily without rewriting the vault."
+        env_secrets: "New Hermes agent token secret reference and possibly Hermes runtime credentials. Tests use generated fixtures only; no live secret values committed."
+        auth_permissions: "Material: new owner-bound pm:context, pm:recall, pm:capture, pm:write and pm:resolve capabilities; checkout permissions remain unchanged."
+        api_contract: "Material: dedicated /v1/personal-manager context, recall, get, capture, commands, operation, forget and status routes with separate middleware."
+        ui_routes: "Existing local Web server gains proxied Personal Manager reads/actions and a new tab; browser never receives agent token."
+        background_jobs: "Durable capture/action-receipt spool and asynchronous Hindsight/GraphD projection reconciliation; canonical write remains synchronous."
+        external_services: "Hermes runtime is added. Gmail/Calendar are mocked or sandboxed and remain separately installed native connectors; no live action in implementation."
+        deploy_rollback: "Additive Hermes service and runtime v7. Rollback disables Hermes/routes and returns to v6 while retaining new audit revisions; backup and restore contracts required."
+        observability: "Add hashed-cardinality metrics for prefetch, coverage, command status, replay rejection, queue depth and projection lag without content."
+        docs: "Blueprint already exists; add provider README, upstream receipt, runtime/deployment and operator documentation."
+  - id: T002
+    type: judge
+    assignee: Judge
+    status: done
+    objective: "Approve the acceptance contract and choose the largest safe red-test package."
+    inputs:
+      - "T001 receipt"
+      - "Updated acceptance-contract.md if T001 changed it"
+    constraints:
+      - "Do not implement."
+      - "Reject implementation work before tests can express the oracle."
+      - "Reject vague acceptance criteria that cannot be verified."
+      - "Choose a useful vertical slice, not tiny helper-only work."
+    expected_output:
+      - "Decision: approved | needs_more_evidence | blocked"
+      - "Approved design_concept"
+      - "Approved ubiquitous_language"
+      - "feedback_policy"
+      - "test_strategy"
+      - "module_map"
+      - "interface_contract"
+      - "architecture_review"
+      - "Exact Worker objective for red tests"
+      - "allowed_files for T003"
+      - "verify commands for T003"
+      - "stop_if conditions for T003"
+      - "impact_assessment_ref"
+    receipt:
+      result: done
+      decision: approved
+      summary: "Acceptance is concrete. Approve a complete red package for owner auth, portfolio recall, canonical mutations, API/provider, capture/action receipts and runtime v7."
+      architecture_review: "Use dedicated deep modules; daemon is composition/transport only. Reuse AEAD, redaction, locks and workspace contexts. Canonical commit precedes projections. Checkout MCP remains unchanged. Hermes has no engine credentials. Action connectors remain independent."
+      approved_design_concept: "T001 approved."
+      approved_ubiquitous_language: "T001 approved."
+      feedback_policy: "Targeted tests per patch, v24 per slice, v23/secrets for auth and deploy, full suite at T005."
+      test_strategy: "Black-box Node and Python contracts first; Hindsight, GraphD, Gmail and Calendar mocked; no live credentials."
+      module_map: "T001 approved; new modules instead of extending hotspots."
+      interface_contract: "T001 approved including 8K card, coverage states, revisions, direct-turn intent and governed receipts."
+      exact_worker_objective: "Write complete failing v2.4 tests and verifier only."
+      task_updates:
+        T003:
+          allowed_files:
+            - tests/agent-credential-store.test.mjs
+            - tests/agent-scope-resolver.test.mjs
+            - tests/personal-recall-orchestrator.test.mjs
+            - tests/personal-context-card.test.mjs
+            - tests/personal-memory-command-bus.test.mjs
+            - tests/personal-manager-capture.test.mjs
+            - tests/personal-action-receipt.test.mjs
+            - tests/personal-manager-api.test.mjs
+            - tests/codex-runtime-v7.test.mjs
+            - tests/memory-fabric-v24-acceptance.test.mjs
+            - tests/hermes-supermemory-provider.test.mjs
+            - integrations/hermes/tests/test_supermemory_fabric.py
+            - scripts/verify-memory-fabric-v24.mjs
+          verify:
+            - "node --test --test-concurrency=1 tests/agent-credential-store.test.mjs tests/agent-scope-resolver.test.mjs tests/personal-recall-orchestrator.test.mjs tests/personal-context-card.test.mjs tests/personal-memory-command-bus.test.mjs tests/personal-manager-capture.test.mjs tests/personal-action-receipt.test.mjs tests/personal-manager-api.test.mjs tests/codex-runtime-v7.test.mjs tests/memory-fabric-v24-acceptance.test.mjs tests/hermes-supermemory-provider.test.mjs"
+            - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+            - "node scripts/verify-memory-fabric-v24.mjs"
+          stop_if:
+            - "Need implementation changes before red evidence."
+            - "Need files outside allowed_files."
+            - "No meaningful failing test can be written."
+            - "Need live credentials, production data or external mutation."
+            - "Need DB/file-schema migration, data backfill, env or secret material, auth/RLS/permission expansion, external service mutation, background job, deploy, rollback, or observability work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T004:
+          allowed_files:
+            - scripts/lib/agent-credential-store.mjs
+            - scripts/lib/agent-scope-resolver.mjs
+            - scripts/lib/personal-recall-orchestrator.mjs
+            - scripts/lib/personal-context-card.mjs
+            - scripts/lib/personal-mutation-intent-gate.mjs
+            - scripts/lib/personal-memory-revision-store.mjs
+            - scripts/lib/personal-memory-command-bus.mjs
+            - scripts/lib/personal-manager-capture.mjs
+            - scripts/lib/personal-action-receipt.mjs
+            - scripts/lib/personal-manager-api.mjs
+            - scripts/lib/workspace-runtime-supervisor.mjs
+            - scripts/lib/supermemory-daemon.mjs
+            - scripts/supermemoryd.mjs
+            - scripts/lib/codex-runtime-config.mjs
+            - scripts/supermemory-app.mjs
+            - web/index.html
+            - web/app.js
+            - web/styles.css
+            - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+            - integrations/hermes/plugins/memory/supermemory_fabric/client.py
+            - integrations/hermes/plugins/memory/supermemory_fabric/schemas.py
+            - integrations/hermes/plugins/memory/supermemory_fabric/spool.py
+            - integrations/hermes/plugins/memory/supermemory_fabric/README.md
+            - integrations/hermes/plugins/memory/supermemory_fabric/upstream-receipt.json
+            - deploy/portainer/supermemory-ai-stack.yml
+            - deploy/portainer/supermemory-ai.env.example
+            - deploy/runtime/runtime-contract.production.json
+            - package.json
+            - scripts/verify-memory-fabric-v24.mjs
+            - docs/personal-manager-hermes-blueprint.md
+            - docs/README.md
+            - tests/agent-credential-store.test.mjs
+            - tests/agent-scope-resolver.test.mjs
+            - tests/personal-recall-orchestrator.test.mjs
+            - tests/personal-context-card.test.mjs
+            - tests/personal-memory-command-bus.test.mjs
+            - tests/personal-manager-capture.test.mjs
+            - tests/personal-action-receipt.test.mjs
+            - tests/personal-manager-api.test.mjs
+            - tests/codex-runtime-v7.test.mjs
+            - tests/memory-fabric-v24-acceptance.test.mjs
+            - tests/hermes-supermemory-provider.test.mjs
+            - integrations/hermes/tests/test_supermemory_fabric.py
+          verify:
+            - "node --test --test-concurrency=1 tests/agent-credential-store.test.mjs tests/agent-scope-resolver.test.mjs tests/personal-recall-orchestrator.test.mjs tests/personal-context-card.test.mjs tests/personal-memory-command-bus.test.mjs tests/personal-manager-capture.test.mjs tests/personal-action-receipt.test.mjs tests/personal-manager-api.test.mjs tests/codex-runtime-v7.test.mjs tests/memory-fabric-v24-acceptance.test.mjs tests/hermes-supermemory-provider.test.mjs"
+            - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+            - "node scripts/verify-memory-fabric-v24.mjs"
+            - "npm run verify:memory-fabric-v23"
+            - "npm run verify:secrets"
+          stop_if:
+            - "Need files outside allowed_files."
+            - "No prior red_test evidence exists."
+            - "Need live credentials or external mutation."
+            - "Verification fails twice without a clear bounded fix."
+            - "Implementation drifts outside the oracle."
+            - "Need DB/file-schema migration, data backfill, env or secret material, auth/RLS/permission expansion, external service mutation, background job, deploy, rollback, or observability work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+        T005:
+          allowed_files:
+            - docs/goals/implement-personal-manager-hermes-v24/verification.md
+          verify:
+            - "npm run verify:memory-fabric-v24"
+            - "npm run verify:memory-fabric-v23"
+            - "npm run verify:hindsight-native"
+            - "npm run verify:secrets"
+            - "npm test"
+            - "npm run verify"
+            - "npm run verify:release"
+            - "npm run verify:production"
+            - "git diff --check"
+          stop_if:
+            - "Need product files outside approved T004 boundaries."
+            - "Verification fails twice without understood cause."
+            - "A check requires live credentials or external mutation."
+            - "Need DB/file-schema migration, data backfill, env or secret material, auth/RLS/permission expansion, external service mutation, background job, deploy, rollback, or observability work outside allowed_files."
+          impact_assessment_ref: T001.receipt.impact_assessment
+  - id: T003
+    type: worker
+    worker_kind: red_test
+    assignee: Worker
+    status: done
+    objective: "Write the failing acceptance tests selected by Judge, without production implementation."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T002 approved acceptance contract"
+      - "T002 allowed_files and verify commands"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - tests/agent-credential-store.test.mjs
+      - tests/agent-scope-resolver.test.mjs
+      - tests/personal-recall-orchestrator.test.mjs
+      - tests/personal-context-card.test.mjs
+      - tests/personal-memory-command-bus.test.mjs
+      - tests/personal-manager-capture.test.mjs
+      - tests/personal-action-receipt.test.mjs
+      - tests/personal-manager-api.test.mjs
+      - tests/codex-runtime-v7.test.mjs
+      - tests/memory-fabric-v24-acceptance.test.mjs
+      - tests/hermes-supermemory-provider.test.mjs
+      - integrations/hermes/tests/test_supermemory_fabric.py
+      - scripts/verify-memory-fabric-v24.mjs
+    verify:
+      - "node --test --test-concurrency=1 tests/agent-credential-store.test.mjs tests/agent-scope-resolver.test.mjs tests/personal-recall-orchestrator.test.mjs tests/personal-context-card.test.mjs tests/personal-memory-command-bus.test.mjs tests/personal-manager-capture.test.mjs tests/personal-action-receipt.test.mjs tests/personal-manager-api.test.mjs tests/codex-runtime-v7.test.mjs tests/memory-fabric-v24-acceptance.test.mjs tests/hermes-supermemory-provider.test.mjs"
+      - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+      - "node scripts/verify-memory-fabric-v24.mjs"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "Need implementation changes before red evidence."
+      - "Need files outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need live credentials, production data or external mutation."
+      - "Need DB/file-schema migration, data backfill, env or secret material, auth/RLS/permission expansion, external service mutation, background job, deploy, rollback, or observability work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Complete v2.4 red package added without product implementation. Node, Python and static verifier fail for the intended missing modules, v7 exports, Hermes provider, Compose service and package script."
+      changed_files:
+        - tests/agent-credential-store.test.mjs
+        - tests/agent-scope-resolver.test.mjs
+        - tests/personal-recall-orchestrator.test.mjs
+        - tests/personal-context-card.test.mjs
+        - tests/personal-memory-command-bus.test.mjs
+        - tests/personal-manager-capture.test.mjs
+        - tests/personal-action-receipt.test.mjs
+        - tests/personal-manager-api.test.mjs
+        - tests/codex-runtime-v7.test.mjs
+        - tests/memory-fabric-v24-acceptance.test.mjs
+        - tests/hermes-supermemory-provider.test.mjs
+        - integrations/hermes/tests/test_supermemory_fabric.py
+        - scripts/verify-memory-fabric-v24.mjs
+      red_evidence:
+        command: "node --test --test-concurrency=1 tests/agent-credential-store.test.mjs tests/agent-scope-resolver.test.mjs tests/personal-recall-orchestrator.test.mjs tests/personal-context-card.test.mjs tests/personal-memory-command-bus.test.mjs tests/personal-manager-capture.test.mjs tests/personal-action-receipt.test.mjs tests/personal-manager-api.test.mjs tests/codex-runtime-v7.test.mjs tests/memory-fabric-v24-acceptance.test.mjs tests/hermes-supermemory-provider.test.mjs"
+        result: "failed as expected"
+        failure: "ERR_MODULE_NOT_FOUND for new deep modules; runtime v7 export absent; Hermes package absent; Compose lacks hermes; package script absent."
+      verify:
+        - "Node red suite exit 1 as expected"
+        - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric exit 1: provider package absent"
+        - "node scripts/verify-memory-fabric-v24.mjs exit 1 with explicit missing capability list"
+  - id: T004
+    type: worker
+    worker_kind: implementation
+    assignee: Worker
+    status: done
+    objective: "Implement the largest safe useful slice that makes the approved red tests pass."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T003 red test receipt"
+      - "T002 implementation boundaries"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - scripts/lib/agent-credential-store.mjs
+      - scripts/lib/agent-scope-resolver.mjs
+      - scripts/lib/personal-recall-orchestrator.mjs
+      - scripts/lib/personal-context-card.mjs
+      - scripts/lib/personal-mutation-intent-gate.mjs
+      - scripts/lib/personal-memory-revision-store.mjs
+      - scripts/lib/personal-memory-command-bus.mjs
+      - scripts/lib/personal-manager-capture.mjs
+      - scripts/lib/personal-action-receipt.mjs
+      - scripts/lib/personal-manager-api.mjs
+      - scripts/lib/workspace-runtime-supervisor.mjs
+      - scripts/lib/supermemory-daemon.mjs
+      - scripts/supermemoryd.mjs
+      - scripts/lib/codex-runtime-config.mjs
+      - scripts/supermemory-app.mjs
+      - web/index.html
+      - web/app.js
+      - web/styles.css
+      - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+      - integrations/hermes/plugins/memory/supermemory_fabric/client.py
+      - integrations/hermes/plugins/memory/supermemory_fabric/schemas.py
+      - integrations/hermes/plugins/memory/supermemory_fabric/spool.py
+      - integrations/hermes/plugins/memory/supermemory_fabric/README.md
+      - integrations/hermes/plugins/memory/supermemory_fabric/upstream-receipt.json
+      - deploy/portainer/supermemory-ai-stack.yml
+      - deploy/portainer/supermemory-ai.env.example
+      - deploy/runtime/runtime-contract.production.json
+      - package.json
+      - scripts/verify-memory-fabric-v24.mjs
+      - docs/personal-manager-hermes-blueprint.md
+      - docs/README.md
+      - tests/agent-credential-store.test.mjs
+      - tests/agent-scope-resolver.test.mjs
+      - tests/personal-recall-orchestrator.test.mjs
+      - tests/personal-context-card.test.mjs
+      - tests/personal-memory-command-bus.test.mjs
+      - tests/personal-manager-capture.test.mjs
+      - tests/personal-action-receipt.test.mjs
+      - tests/personal-manager-api.test.mjs
+      - tests/codex-runtime-v7.test.mjs
+      - tests/memory-fabric-v24-acceptance.test.mjs
+      - tests/hermes-supermemory-provider.test.mjs
+      - integrations/hermes/tests/test_supermemory_fabric.py
+    verify:
+      - "node --test --test-concurrency=1 tests/agent-credential-store.test.mjs tests/agent-scope-resolver.test.mjs tests/personal-recall-orchestrator.test.mjs tests/personal-context-card.test.mjs tests/personal-memory-command-bus.test.mjs tests/personal-manager-capture.test.mjs tests/personal-action-receipt.test.mjs tests/personal-manager-api.test.mjs tests/codex-runtime-v7.test.mjs tests/memory-fabric-v24-acceptance.test.mjs tests/hermes-supermemory-provider.test.mjs"
+      - "python3 -m unittest integrations.hermes.tests.test_supermemory_fabric"
+      - "node scripts/verify-memory-fabric-v24.mjs"
+      - "npm run verify:memory-fabric-v23"
+      - "npm run verify:secrets"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need files outside allowed_files."
+      - "No prior red_test evidence exists."
+      - "Need live credentials or external mutation."
+      - "Verification fails twice without a clear bounded fix."
+      - "Implementation drifts outside the oracle."
+      - "Need DB/file-schema migration, data backfill, env or secret material, auth/RLS/permission expansion, external service mutation, background job, deploy, rollback, or observability work outside allowed_files."
+    receipt:
+      result: done
+      summary: "Implemented the complete Personal Manager Hermes v2.4 slice and made the approved red package green."
+      changed_files:
+        - deploy/portainer/README.md
+        - deploy/portainer/supermemory-ai-stack.yml
+        - deploy/portainer/supermemory-ai.env.example
+        - deploy/runtime/runtime-contract.production.json
+        - deploy/hermes/Dockerfile
+        - deploy/hermes/entrypoint.sh
+        - deploy/hindsight/Dockerfile
+        - deploy/hindsight/entrypoint.sh
+        - docs/README.md
+        - docs/personal-manager-hermes-blueprint.md
+        - package.json
+        - scripts/configure-z2-client.mjs
+        - scripts/lib/agent-credential-store.mjs
+        - scripts/lib/agent-scope-resolver.mjs
+        - scripts/lib/canonical-codex-pipeline.mjs
+        - scripts/lib/canonical-openrouter-pipeline.mjs
+        - scripts/lib/codex-runtime-config.mjs
+        - scripts/lib/personal-action-receipt.mjs
+        - scripts/lib/personal-context-card.mjs
+        - scripts/lib/personal-manager-api.mjs
+        - scripts/lib/personal-manager-capture.mjs
+        - scripts/lib/personal-memory-command-bus.mjs
+        - scripts/lib/personal-memory-revision-store.mjs
+        - scripts/lib/personal-mutation-intent-gate.mjs
+        - scripts/lib/personal-recall-orchestrator.mjs
+        - scripts/lib/supermemory-daemon.mjs
+        - scripts/lib/workspace-runtime-context.mjs
+        - scripts/personal-manager-credential.mjs
+        - scripts/supermemory-app.mjs
+        - scripts/supermemoryd.mjs
+        - scripts/verify-memory-fabric-v24.mjs
+        - scripts/verify-memory-fabric-v22.mjs
+        - scripts/verify-memory-fabric-v23.mjs
+        - integrations/hermes/plugins/memory/supermemory_fabric/__init__.py
+        - integrations/hermes/plugins/memory/supermemory_fabric/client.py
+        - integrations/hermes/plugins/memory/supermemory_fabric/schemas.py
+        - integrations/hermes/plugins/memory/supermemory_fabric/spool.py
+        - integrations/hermes/plugins/memory/supermemory_fabric/README.md
+        - integrations/hermes/plugins/memory/supermemory_fabric/upstream-receipt.json
+        - integrations/hermes/tests/test_supermemory_fabric.py
+        - tests/agent-credential-store.test.mjs
+        - tests/agent-scope-resolver.test.mjs
+        - tests/canonical-openrouter-pipeline.test.mjs
+        - tests/codex-runtime-v7.test.mjs
+        - tests/hermes-supermemory-provider.test.mjs
+        - tests/memory-fabric-v24-acceptance.test.mjs
+        - tests/personal-action-receipt.test.mjs
+        - tests/personal-context-card.test.mjs
+        - tests/personal-manager-api.test.mjs
+        - tests/personal-manager-capture.test.mjs
+        - tests/personal-memory-command-bus.test.mjs
+        - tests/personal-recall-orchestrator.test.mjs
+        - tests/supermemory-portainer-stack.test.mjs
+        - tests/supermemoryd.test.mjs
+        - tests/z2-client-config.test.mjs
+        - web/app.js
+        - web/index.html
+        - web/styles.css
+      commands:
+        -
+          command: "npm run verify:memory-fabric-v24"
+          status: pass
+        -
+          command: "npm test"
+          status: "pass (313 passed, 0 failed, 1 live Hindsight preflight skipped)"
+        -
+          command: "docker compose --env-file deploy/portainer/supermemory-ai.env.example -f deploy/portainer/supermemory-ai-stack.yml config --quiet"
+          status: pass
+        -
+          command: "npm run verify:secrets"
+          status: pass
+        -
+          command: "node scripts/verify-supermemory-release-readiness.mjs --json"
+          status: "pass (contract-ready; live Z2 evidence absent by design)"
+        -
+          command: "git diff --check"
+          status: pass
+      red_test_evidence:
+        - "expected_fail: T003 proved missing v2.4 modules, runtime v7 exports, Hermes provider, Compose service, and package verifier before implementation."
+      green_test_evidence:
+        - "green_test status: pass; npm run verify:memory-fabric-v24 (30 Node tests, 5 Python tests)"
+        - "green_test status: pass; npm test (313 pass, 0 fail, 1 explicit live preflight skip)"
+        - "green_test status: pass; docker compose config --quiet"
+        - "green_test status: pass; npm run verify:secrets"
+        - "green_test status: pass; git diff --check"
+      design_delta:
+        before: "SuperMemory exposed project memory and Hindsight/GraphD infrastructure but no governed Hermes Personal Manager boundary or single-provider runtime v7."
+        after: "Hermes uses a dedicated owner-scoped Personal Manager API with cited recall, canonical temporal writes, trusted-turn mutation attestations, encrypted capture, retryable projections, one LLM provider, and a seven-service production contract."
+  - id: T005
+    type: worker
+    worker_kind: verification
+    assignee: Worker
+    status: queued
+    objective: "Run the full verification package, including browser or visual checks when the acceptance contract requires them."
+    inputs:
+      - "architecture_review"
+      - "interface_contract"
+      - "module_map"
+      - "test_strategy"
+      - "feedback_policy"
+      - "ubiquitous_language"
+      - "design_concept"
+      - "T004 implementation receipt"
+      - "Approved feedback_policy"
+    impact_assessment_ref: T001.receipt.impact_assessment
+    allowed_files:
+      - docs/goals/implement-personal-manager-hermes-v24/verification.md
+    verify:
+      - "npm run verify:memory-fabric-v24"
+      - "npm run verify:memory-fabric-v23"
+      - "npm run verify:hindsight-native"
+      - "npm run verify:secrets"
+      - "npm test"
+      - "npm run verify"
+      - "npm run verify:release"
+      - "npm run verify:production"
+      - "git diff --check"
+    stop_if:
+      - "Need DB migration, schema change, backfill, env/secret, auth/RLS/permission, external service, background job, deploy, or rollback work outside allowed_files."
+      - "No meaningful failing test can be written."
+      - "Need product files outside approved T004 boundaries."
+      - "Verification fails twice without understood cause."
+      - "A check requires live credentials or external mutation."
+      - "Need DB/file-schema migration, data backfill, env or secret material, auth/RLS/permission expansion, external service mutation, background job, deploy, rollback, or observability work outside allowed_files."
+    receipt: null
+  - id: T006
+    type: judge
+    assignee: Judge
+    status: queued
+    objective: "Review architecture, spec fidelity, and test evidence before shipping."
+    inputs:
+      - "T001 through T005 receipts"
+      - "Current diff"
+      - "Last verification output"
+    constraints:
+      - "Do not implement."
+      - "Reject completion if the implementation only satisfies internal tasks but not the original oracle."
+      - "Reject hidden design drift, shallow-module sprawl, or missing acceptance evidence."
+    expected_output:
+      - "approved | changes_required"
+      - "design_delta"
+      - "architecture_review"
+      - "oracle_coverage"
+      - "remaining risks"
+      - "whether another Worker slice is needed"
+    receipt: null
+
+  - id: T998
+    type: pm
+    assignee: PM
+    status: queued
+    objective: "Commit all goal-related changes and push the current branch once verification is green."
+    inputs:
+      - "Approved implementation and verification receipts"
+      - "Current git status"
+    constraints:
+      - "Do not include unrelated dirty files."
+      - "If the workspace is not a git repository, record shipping_blocker: no_git_repository."
+      - "If no GitHub remote exists, record shipping_blocker: no_github_remote."
+    expected_output:
+      - "Or shipping_blocker: no_git_repository | no_github_remote"
+      - "Unrelated dirty files left untouched"
+      - "Committed files"
+      - "Push result"
+      - "Remote branch"
+      - "Commit SHA"
+      - "commit_sha"
+      - "remote_branch or push string"
+      - "push_result"
+      - "committed_files"
+      - "unrelated_dirty_files_left_untouched"
+    receipt: null
+
+  - id: T999
+    type: judge
+    assignee: Judge
+    status: queued
+    reasoning_hint: high
+    objective: "Audit whether the full original outcome is complete."
+    inputs:
+      - "design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, and design_delta evidence"
+      - "All done task receipts"
+      - "Last verification"
+      - "Current dirty diff"
+      - "Quality checker final output"
+      - "Completed impact_assessment receipt"
+      - "T998 shipping proof when shipping is required"
+    constraints:
+      - "Reject completion if design_concept, ubiquitous_language, feedback_policy, test_strategy, module_map, interface_contract, architecture_review, or design_delta evidence is missing when workflow_safeguards requires it."
+      - "Do not implement."
+      - "Reject completion if required Worker work is still queued or active."
+      - "Reject completion unless impact_assessment covers db_schema_migrations, data_backfill, env_secrets, auth_permissions, api_contract, ui_routes, background_jobs, external_services, deploy_rollback, observability, and docs when impact assessment is required."
+      - "For read-only audit goals with no Worker tasks and no changed_files, accept audit_scope/audit_findings/review/decision evidence instead of TDD, impact_assessment, T998, commit, and push."
+      - "For verification goals, reject completion unless safe test/browser command evidence exists and no changed_files are reported."
+      - "Reject completion unless T998 has a commit SHA and successful push result, or an explicit shipping_blocker for no_git_repository/no_github_remote, when shipping is required."
+    expected_output:
+      - "design_delta"
+      - "workflow_safeguards result"
+      - "complete | not_complete"
+      - "full_outcome_complete: true | false"
+      - "missing evidence"
+      - "next task if not complete"
+    receipt: null

@@ -1,0 +1,46 @@
+{
+  "result": "done",
+  "decision": "complete",
+  "full_outcome_complete": true,
+  "review_mode": "pm_fallback_after_goal_judge_timeout",
+  "rationale": "L'objectif d'implémentation local-first est atteint. Les slices S1-S7 sont présentes, reliées par un canari unique réellement exécuté contre Codex 0.125, et les 80 AC sont couverts par des preuves sémantiques. Aucun Worker correctif requis ne reste : les écarts détectés à la première pré-release ont été fermés puis rejoués. Le produit ne prétend pas couvrir des surfaces non observées; l'installation dans le vrai profil et la confiance projet restent des actions opérateur réversibles, pas du code manquant.",
+  "requirement_mapping": {
+    "R01": "Registre project/workspace/checkout stable, testé entre init, onglets logiques et sessions.",
+    "R02": "Aliases historiques, move, rename fortement observé, worktrees et multi-root; fusion ambiguë interdite.",
+    "R03": "EventEnvelope, journal idempotent, redaction, ordering, spool chiffrée, gaps et daemon loopback.",
+    "R04": "Snapshots turn/fichier immuables, source_id stable, copies ambiguës distinctes et invalidation stale.",
+    "R05": "Archive chiffrée, candidate inactive et mémoire canonique physiquement séparées; approbation explicite.",
+    "R06": "MCP lié au projet au lancement, scope fail-closed, résultats actifs cités et fallback local explicite.",
+    "R07": "Plugin partagé hooks/MCP, adapter App Server versionné, doctor par capacités et profils dégradés honnêtes.",
+    "R08": "Vault écrit avant projection, revalidation de chaque résultat Hindsight et rebuild déterministe.",
+    "R09": "Redaction avant persistance, AEAD, chemins fingerprintés, quotas/TTL, rotation et secret gate.",
+    "R10": "Tombstone avant suppression, deny recall immédiat, retry visible, purge par portée et attestation sans contenu.",
+    "R11": "Migration dry-run, backup vérifié, IDs opaques, citations legacy intègres, idempotence et rollback.",
+    "R12": "Memories natives non autoritatives, jamais activées par l'installateur, avertissement si parallèles.",
+    "R13": "Raisonnement caché ignoré; seuls contenus visibles supportés sont capturés et aucune couverture universelle n'est revendiquée."
+  },
+  "acceptance": {
+    "total": 80,
+    "covered": 80,
+    "blocked": 0,
+    "release_gate_status": "pass"
+  },
+  "runtime_evidence": [
+    "Codex CLI 0.125.0 réellement observé.",
+    "App Server plugin/list découvre la marketplace du projet; plugin/install et un second plugin/list prouvent activation installed+enabled dans un profil isolé.",
+    "Le bridge installé produit une capture chiffrée en panne daemon; replay donne un effet logique unique et le secret canari est absent.",
+    "Le canari crée une candidate inactive, approuve, rappelle par MCP avec citation, puis invalide la source et obtient zéro recall.",
+    "La suppression produit tombstone, delete projection, purge et attestation content-free.",
+    "Le rollback retire la découverte plugin, restaure la configuration et préserve le vault.",
+    "npm test: 124/124; verifier Codex: 80/80; specs, release readiness, secrets et diff-check passent."
+  ],
+  "residual_risks": [
+    "Hook-only signifie capture partielle; le niveau rich exige que le client utilise le wrapper App Server.",
+    "Aucune UI Desktop ni IDE tierce n'a été pilotée, donc aucune observation UI n'est revendiquée.",
+    "Codex web/cloud et les clients non instrumentés restent explicitement non couverts.",
+    "Le profil utilisateur réel, ses plugins actifs et la confiance du projet doivent être revus au plan d'installation avant mutation."
+  ],
+  "missing_evidence": [],
+  "next_operator_boundary": "Planifier puis appliquer l'installation sur le vrai projet avec sauvegarde; ce passage en exploitation exige une revue opérateur du plan et ne doit pas être automatisé silencieusement.",
+  "note_needed": false
+}

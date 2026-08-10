@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supermemory.local/schemas/memory-signal.schema.json",
+  "title": "MemorySignal v1",
+  "type": "object",
+  "required": ["schema", "signal_id", "owner_id", "workspace_id", "session_id", "episode_ids", "evidence_ids", "subject_key", "memory_class", "authority_role", "text", "occurred_at", "features", "activates_memory"],
+  "properties": {
+    "schema": { "const": "supermemory.memory-signal.v1" },
+    "signal_id": { "pattern": "^msig_[0-9a-f]{64}$" },
+    "authority_role": { "enum": ["user_direct", "user_endorsement", "assistant_proposal", "action_receipt", "derived_pattern"] },
+    "activates_memory": { "const": false }
+  },
+  "additionalProperties": true
+}
