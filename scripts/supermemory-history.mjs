@@ -8,6 +8,7 @@ import {
   applyCodexHistoryImportPlan,
   buildCodexHistoryImportPlan
 } from "./lib/codex-history-import.mjs";
+import { createCodexHistoryBindingResolver, loadCodexHistoryRouting } from "./lib/codex-history-routing.mjs";
 import { resolveProjectMarkerBinding } from "./lib/project-registry.mjs";
 import { createCodexSpool } from "./lib/codex-spool.mjs";
 import { createSuperMemoryDaemonClient } from "./lib/supermemory-daemon.mjs";
@@ -23,6 +24,23 @@ function argument(argv, name, fallback = null) {
   if (index < 0) return fallback;
   const value = argv[index + 1];
   if (!value || value.startsWith("--")) fail(`history_option_missing:${name}`);
+  return value;
+}
+
+function argumentsFor(argv, name) {
+  const values = [];
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] !== name) continue;
+    const value = argv[index + 1];
+    if (!value || value.startsWith("--")) fail(`history_option_missing:${name}`);
+    values.push(value);
+  }
+  return values;
+}
+
+function integerArgument(argv, name, fallback, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const value = Number(argument(argv, name, String(fallback)));
+  if (!Number.isSafeInteger(value) || value < min || value > max) fail(`history_option_invalid:${name}`);
   return value;
 }
 
@@ -57,18 +75,39 @@ function atomicJson(filePath, value) {
   fs.chmodSync(target, 0o600);
 }
 
+function activeCodexSessionIds(directory = path.join(os.homedir(), ".codex/thread-writer-locks")) {
+  if (!fs.existsSync(directory)) return [];
+  const stat = fs.lstatSync(directory);
+  if (stat.isSymbolicLink() || !stat.isDirectory()) fail("history_lock_directory_invalid");
+  return fs.readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && !entry.isSymbolicLink() && entry.name.endsWith(".lock") && !entry.name.startsWith("."))
+    .map((entry) => entry.name.slice(0, -".lock".length));
+}
+
 const argv = process.argv.slice(2);
 const command = argv[0];
 try {
   if (!['plan', 'apply'].includes(command)) fail("history_command_invalid");
   const runtimeRoot = path.resolve(argument(argv, "--runtime-root", path.join(os.homedir(), ".supermemory/runtime/codex")));
-  const historyRoot = path.resolve(argument(argv, "--history-root", path.join(os.homedir(), ".codex/sessions")));
+  const requestedHistoryRoots = argumentsFor(argv, "--history-root");
+  const historyRoots = (requestedHistoryRoots.length ? requestedHistoryRoots : [
+    path.join(os.homedir(), ".codex/sessions"),
+    path.join(os.homedir(), ".codex/archived_sessions")
+  ]).map((root) => path.resolve(root));
   const planFile = path.resolve(argument(argv, "--plan-file", path.join(runtimeRoot, "history-import-plan.json")));
   const checkpointFile = path.resolve(argument(argv, "--checkpoint-file", path.join(runtimeRoot, "history-import-checkpoint.json")));
   if (command === "plan") {
+    const routingFile = argument(argv, "--routing-file");
+    const resolveBinding = routingFile
+      ? createCodexHistoryBindingResolver({
+          routing: loadCodexHistoryRouting(routingFile),
+          markerResolver: resolveProjectMarkerBinding
+        })
+      : resolveProjectMarkerBinding;
     const plan = buildCodexHistoryImportPlan({
-      historyRoot,
-      resolveBinding: resolveProjectMarkerBinding,
+      historyRoots,
+      resolveBinding,
+      excludedSessionIds: activeCodexSessionIds(),
       from: argument(argv, "--from"),
       to: argument(argv, "--to")
     });
@@ -85,6 +124,12 @@ try {
     );
     const endpoint = argument(argv, "--daemon-endpoint", "http://127.0.0.1:8765");
     const deviceId = argument(argv, "--device-id", "device_mac-mini-m4pro");
+    const timeoutMs = integerArgument(argv, "--timeout-ms", 30_000, { min: 1_000, max: 120_000 });
+    const maxParallelProjects = integerArgument(argv, "--max-parallel-projects", 4, { min: 1, max: 8 });
+    const checkoutDevices = new Map(plan.sessions.map((item) => [
+      item.binding.checkoutId,
+      item.binding.deviceId ?? deviceId
+    ]));
     const clients = new Map();
     const capture = async (event) => {
       let client = clients.get(event.checkout_id);
@@ -98,9 +143,13 @@ try {
           endpoint,
           authToken: daemonToken,
           encryptionKey: stateKey,
-          checkoutAuth: { checkoutId: event.checkout_id, deviceId, token: checkoutToken },
+          checkoutAuth: {
+            checkoutId: event.checkout_id,
+            deviceId: checkoutDevices.get(event.checkout_id) ?? deviceId,
+            token: checkoutToken
+          },
           spool,
-          timeoutMs: 2_000
+          timeoutMs
         });
         clients.set(event.checkout_id, client);
       }
@@ -110,7 +159,8 @@ try {
       plan,
       expectedPlanHash,
       capture,
-      checkpointFile
+      checkpointFile,
+      maxParallelProjects
     });
     process.stdout.write(`${JSON.stringify({ ok: true, ...result }, null, 2)}\n`);
   }

@@ -141,16 +141,15 @@ function eventDatePath(root, occurredAt) {
   return path.join(directory, "events.jsonl");
 }
 
-function computeOrder(records, envelope) {
-  const sessionRecords = records.filter((record) => (
-    record.envelope.workspace_id === envelope.workspace_id &&
-    record.envelope.session_id === envelope.session_id
-  ));
-  if (sessionRecords.length === 0) return "in_order";
-  const maximum = Math.max(...sessionRecords.map((record) => record.envelope.sequence));
+function computeOrder(maximum, envelope) {
+  if (maximum === undefined) return "in_order";
   if (envelope.sequence === maximum + 1) return "in_order";
   if (envelope.sequence > maximum + 1) return "gap";
   return "out_of_order";
+}
+
+function sessionKey(envelope) {
+  return `${envelope.workspace_id}\0${envelope.session_id}`;
 }
 
 function captureCoverage(envelope, orderStatus) {
@@ -198,6 +197,7 @@ export function createCodexCaptureStore({
   assertKey(encryptionKey);
   const vault = realDirectory(vaultRoot, "capture_vault");
   const eventRoot = path.join(vault, "00_inbox", "codex-events");
+  const revisionPath = path.join(eventRoot, ".journal-revision");
   const workingEnabled = workingMemory?.enabled === true || workingSetStore !== null;
   const workingStore = workingEnabled
     ? workingSetStore ?? createCodexWorkingSetStore({
@@ -209,9 +209,71 @@ export function createCodexCaptureStore({
     })
     : null;
 
-  const allRecords = () => journalFiles(eventRoot)
-    .flatMap((filePath) => readJsonLines(filePath))
-    .map(validateJournalRecord);
+  let cachedRevision = null;
+  let cachedRecords = null;
+  let recordsByEventId = new Map();
+  let maximumSequenceBySession = new Map();
+
+  const readJournalRevision = () => {
+    if (!fs.existsSync(revisionPath)) return 0;
+    const stat = fs.lstatSync(revisionPath);
+    if (stat.isSymbolicLink() || !stat.isFile()) fail("capture_journal_invalid");
+    const text = fs.readFileSync(revisionPath, "utf8").trim();
+    if (!/^(0|[1-9][0-9]*)$/.test(text)) fail("capture_journal_invalid");
+    const revision = Number(text);
+    if (!Number.isSafeInteger(revision)) fail("capture_journal_invalid");
+    return revision;
+  };
+
+  const indexRecords = (records, revision) => {
+    const byEvent = new Map();
+    const maxima = new Map();
+    for (const record of records) {
+      const eventId = record.envelope.event_id;
+      const existing = byEvent.get(eventId);
+      if (existing && (
+        existing.envelope.payload_hash !== record.envelope.payload_hash ||
+        existing.envelope.workspace_id !== record.envelope.workspace_id
+      )) fail("capture_event_id_collision");
+      byEvent.set(eventId, record);
+      const key = sessionKey(record.envelope);
+      maxima.set(key, Math.max(maxima.get(key) ?? -1, record.envelope.sequence));
+    }
+    cachedRecords = records;
+    recordsByEventId = byEvent;
+    maximumSequenceBySession = maxima;
+    cachedRevision = revision;
+    return cachedRecords;
+  };
+
+  const allRecords = () => {
+    const revision = readJournalRevision();
+    if (cachedRecords && revision === cachedRevision) return cachedRecords;
+    return indexRecords(
+      journalFiles(eventRoot)
+        .flatMap((filePath) => readJsonLines(filePath))
+        .map(validateJournalRecord),
+      revision
+    );
+  };
+
+  const commitRecordToCache = (record, revision) => {
+    if (!cachedRecords) return;
+    cachedRecords.push(record);
+    recordsByEventId.set(record.envelope.event_id, record);
+    const key = sessionKey(record.envelope);
+    maximumSequenceBySession.set(
+      key,
+      Math.max(maximumSequenceBySession.get(key) ?? -1, record.envelope.sequence)
+    );
+    cachedRevision = revision;
+  };
+
+  const bumpJournalRevision = (normalizedRoot) => {
+    const revision = readJournalRevision() + 1;
+    atomicWrite(path.join(normalizedRoot, ".journal-revision"), `${revision}\n`);
+    return revision;
+  };
 
   const writePayload = (prepared, blobRoot) => {
     const hash = prepared.envelope.payload_hash.slice("sha256:".length);
@@ -240,10 +302,8 @@ export function createCodexCaptureStore({
     return withVaultMutationLock(vault, () => {
       const normalizedRoot = ensureSafeDirectory(vault, "00_inbox/codex-events");
       const blobRoot = ensureSafeDirectory(normalizedRoot, "blobs");
-      const records = allRecords();
-      const duplicate = records.find((record) => (
-        record.envelope.event_id === prepared.envelope.event_id
-      ));
+      allRecords();
+      const duplicate = recordsByEventId.get(prepared.envelope.event_id);
       if (duplicate) {
         if (
           duplicate.envelope.payload_hash !== prepared.envelope.payload_hash ||
@@ -267,7 +327,7 @@ export function createCodexCaptureStore({
         ...prepared.envelope,
         payload_ref: `blob:${prepared.envelope.payload_hash}`
       });
-      const orderStatus = computeOrder(records, envelope);
+      const orderStatus = computeOrder(maximumSequenceBySession.get(sessionKey(envelope)), envelope);
       const journalPath = eventDatePath(normalizedRoot, envelope.occurred_at);
       const currentDay = readJsonLines(journalPath).map(validateJournalRecord);
       const record = validateJournalRecord({
@@ -283,6 +343,17 @@ export function createCodexCaptureStore({
         journalPath,
         [...currentDay, record].map((entry) => JSON.stringify(entry)).join("\n") + "\n"
       );
+      let revision;
+      try {
+        revision = bumpJournalRevision(normalizedRoot);
+      } catch (error) {
+        cachedRecords = null;
+        cachedRevision = null;
+        recordsByEventId = new Map();
+        maximumSequenceBySession = new Map();
+        throw error;
+      }
+      commitRecordToCache(record, revision);
       return {
         status: "applied",
         eventId: envelope.event_id,
@@ -298,7 +369,8 @@ export function createCodexCaptureStore({
   const projectWorkingMemory = (prepared, captureResult) => {
     if (!workingStore) return captureResult;
     try {
-      const record = allRecords().find((item) => item.envelope.event_id === prepared.envelope.event_id);
+      allRecords();
+      const record = recordsByEventId.get(prepared.envelope.event_id);
       if (!record) fail("working_source_record_missing");
       const admitted = workingStore.admit({
         record,

@@ -616,6 +616,60 @@ npm run codex -- migration-apply \
 Apply creates and verifies a complete external vault backup before importing
 legacy approved memory. Reapplying the same migration is idempotent.
 
+### Codex Conversation History Import
+
+Historical import is a separate, explicit backfill. Discovery accepts top-level
+`vscode` and `cli` rollouts only, excludes `exec`, subagent and currently locked
+sessions, and streams large JSONL files without loading them entirely in memory.
+Reasoning, tool calls, tool arguments and tool outputs are never imported.
+
+Keep the routing file outside the repository with mode `0600`. Each route binds
+one or more historical checkout roots to an already enrolled project, workspace,
+checkout and device. Use a dedicated owner fallback only for reviewed ad-hoc roots:
+
+```json
+{
+  "schema": "supermemory.codex-history-routing.v1",
+  "routes": [
+    {
+      "name": "example-project",
+      "aliases": ["/absolute/current/root", "/absolute/historical/root"],
+      "project_id": "<project-id>",
+      "workspace_id": "<workspace-id>",
+      "checkout_id": "<checkout-id>",
+      "device_id": "<enrolled-device-id>"
+    }
+  ],
+  "fallback": {
+    "name": "personal-codex",
+    "project_id": "<owner-project-id>",
+    "workspace_id": "<owner-workspace-id>",
+    "checkout_id": "<owner-checkout-id>",
+    "device_id": "<enrolled-device-id>"
+  }
+}
+```
+
+Generate and review the immutable plan before applying it. Repeat
+`--history-root` when active and archived stores are separate:
+
+```bash
+npm run history -- plan \
+  --history-root "$HOME/.codex/sessions" \
+  --history-root "$HOME/.codex/archived_sessions" \
+  --routing-file /private/path/history-routing.json
+
+npm run history -- apply \
+  --plan-hash sha256:<reviewed-plan-hash> \
+  --max-parallel-projects 4 \
+  --timeout-ms 30000
+```
+
+Apply re-hashes every source before capture, preserves chronology within each
+project, parallelizes only across projects, and resumes from a private checkpoint.
+Completion requires all planned sessions complete, zero failed sessions, an empty
+encrypted outage spool, zero capture gaps and cited recall in representative projects.
+
 ### Rollback
 
 Rollback an installation with the exact manifest identifier:
