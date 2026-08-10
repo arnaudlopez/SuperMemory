@@ -201,12 +201,22 @@ test("capture journal cache remains coherent across store instances", (t) => {
   const { vault } = fixture(t);
   const firstStore = createCodexCaptureStore({ vaultRoot: vault, encryptionKey: KEY });
   const secondStore = createCodexCaptureStore({ vaultRoot: vault, encryptionKey: KEY });
-
-  assert.equal(firstStore.stats().events, 0);
-  assert.equal(secondStore.ingest(captureInput({ sequence: 0 })).status, "applied");
-  assert.equal(firstStore.ingest(captureInput({ sequence: 0 })).status, "duplicate");
-  assert.equal(firstStore.ingest(captureInput({ sequence: 1 })).orderStatus, "in_order");
-  assert.equal(secondStore.stats().events, 2);
+  const originalReadFileSync = fs.readFileSync;
+  let journalReads = 0;
+  fs.readFileSync = function instrumentedReadFileSync(filePath, ...args) {
+    if (String(filePath).endsWith(`${path.sep}events.jsonl`)) journalReads += 1;
+    return originalReadFileSync.call(this, filePath, ...args);
+  };
+  try {
+    assert.equal(firstStore.stats().events, 0);
+    assert.equal(secondStore.ingest(captureInput({ sequence: 0 })).status, "applied");
+    assert.equal(firstStore.ingest(captureInput({ sequence: 0 })).status, "duplicate");
+    assert.equal(firstStore.ingest(captureInput({ sequence: 1 })).orderStatus, "in_order");
+    assert.equal(secondStore.stats().events, 2);
+  } finally {
+    fs.readFileSync = originalReadFileSync;
+  }
+  assert.equal(journalReads, 1);
 
   const revisionPath = path.join(vault, "00_inbox", "codex-events", ".journal-revision");
   assert.equal(fs.readFileSync(revisionPath, "utf8"), "2\n");

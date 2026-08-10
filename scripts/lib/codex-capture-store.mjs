@@ -17,6 +17,8 @@ import { withVaultMutationLock } from "./registry-transaction.mjs";
 import { createCodexWorkingSetStore } from "./codex-working-set-store.mjs";
 import { evaluateWorkingOffload } from "./codex-working-offload.mjs";
 
+const sharedJournalCaches = new Map();
+
 function fail(code) {
   const error = new Error(code);
   error.code = code;
@@ -209,10 +211,16 @@ export function createCodexCaptureStore({
     })
     : null;
 
-  let cachedRevision = null;
-  let cachedRecords = null;
-  let recordsByEventId = new Map();
-  let maximumSequenceBySession = new Map();
+  let journalCache = sharedJournalCaches.get(eventRoot);
+  if (!journalCache) {
+    journalCache = {
+      revision: null,
+      records: null,
+      recordsByEventId: new Map(),
+      maximumSequenceBySession: new Map()
+    };
+    sharedJournalCaches.set(eventRoot, journalCache);
+  }
 
   const readJournalRevision = () => {
     if (!fs.existsSync(revisionPath)) return 0;
@@ -239,16 +247,16 @@ export function createCodexCaptureStore({
       const key = sessionKey(record.envelope);
       maxima.set(key, Math.max(maxima.get(key) ?? -1, record.envelope.sequence));
     }
-    cachedRecords = records;
-    recordsByEventId = byEvent;
-    maximumSequenceBySession = maxima;
-    cachedRevision = revision;
-    return cachedRecords;
+    journalCache.records = records;
+    journalCache.recordsByEventId = byEvent;
+    journalCache.maximumSequenceBySession = maxima;
+    journalCache.revision = revision;
+    return journalCache.records;
   };
 
   const allRecords = () => {
     const revision = readJournalRevision();
-    if (cachedRecords && revision === cachedRevision) return cachedRecords;
+    if (journalCache.records && revision === journalCache.revision) return journalCache.records;
     return indexRecords(
       journalFiles(eventRoot)
         .flatMap((filePath) => readJsonLines(filePath))
@@ -258,15 +266,15 @@ export function createCodexCaptureStore({
   };
 
   const commitRecordToCache = (record, revision) => {
-    if (!cachedRecords) return;
-    cachedRecords.push(record);
-    recordsByEventId.set(record.envelope.event_id, record);
+    if (!journalCache.records) return;
+    journalCache.records.push(record);
+    journalCache.recordsByEventId.set(record.envelope.event_id, record);
     const key = sessionKey(record.envelope);
-    maximumSequenceBySession.set(
+    journalCache.maximumSequenceBySession.set(
       key,
-      Math.max(maximumSequenceBySession.get(key) ?? -1, record.envelope.sequence)
+      Math.max(journalCache.maximumSequenceBySession.get(key) ?? -1, record.envelope.sequence)
     );
-    cachedRevision = revision;
+    journalCache.revision = revision;
   };
 
   const bumpJournalRevision = (normalizedRoot) => {
@@ -303,7 +311,7 @@ export function createCodexCaptureStore({
       const normalizedRoot = ensureSafeDirectory(vault, "00_inbox/codex-events");
       const blobRoot = ensureSafeDirectory(normalizedRoot, "blobs");
       allRecords();
-      const duplicate = recordsByEventId.get(prepared.envelope.event_id);
+      const duplicate = journalCache.recordsByEventId.get(prepared.envelope.event_id);
       if (duplicate) {
         if (
           duplicate.envelope.payload_hash !== prepared.envelope.payload_hash ||
@@ -327,7 +335,10 @@ export function createCodexCaptureStore({
         ...prepared.envelope,
         payload_ref: `blob:${prepared.envelope.payload_hash}`
       });
-      const orderStatus = computeOrder(maximumSequenceBySession.get(sessionKey(envelope)), envelope);
+      const orderStatus = computeOrder(
+        journalCache.maximumSequenceBySession.get(sessionKey(envelope)),
+        envelope
+      );
       const journalPath = eventDatePath(normalizedRoot, envelope.occurred_at);
       const currentDay = readJsonLines(journalPath).map(validateJournalRecord);
       const record = validateJournalRecord({
@@ -347,10 +358,10 @@ export function createCodexCaptureStore({
       try {
         revision = bumpJournalRevision(normalizedRoot);
       } catch (error) {
-        cachedRecords = null;
-        cachedRevision = null;
-        recordsByEventId = new Map();
-        maximumSequenceBySession = new Map();
+        journalCache.records = null;
+        journalCache.revision = null;
+        journalCache.recordsByEventId = new Map();
+        journalCache.maximumSequenceBySession = new Map();
         throw error;
       }
       commitRecordToCache(record, revision);
@@ -370,7 +381,7 @@ export function createCodexCaptureStore({
     if (!workingStore) return captureResult;
     try {
       allRecords();
-      const record = recordsByEventId.get(prepared.envelope.event_id);
+      const record = journalCache.recordsByEventId.get(prepared.envelope.event_id);
       if (!record) fail("working_source_record_missing");
       const admitted = workingStore.admit({
         record,
