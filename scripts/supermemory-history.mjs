@@ -10,7 +10,6 @@ import {
 } from "./lib/codex-history-import.mjs";
 import { createCodexHistoryBindingResolver, loadCodexHistoryRouting } from "./lib/codex-history-routing.mjs";
 import { resolveProjectMarkerBinding } from "./lib/project-registry.mjs";
-import { createCodexSpool } from "./lib/codex-spool.mjs";
 import { createSuperMemoryDaemonClient } from "./lib/supermemory-daemon.mjs";
 
 function fail(code) {
@@ -103,6 +102,15 @@ async function assertDaemonReady(endpoint, daemonToken, timeoutMs) {
   if (!response.ok || body?.status !== "ready") fail("history_daemon_not_ready");
 }
 
+function failClosedHistorySpool() {
+  const reject = () => fail("history_capture_deferred");
+  return {
+    enqueue: reject,
+    enqueuePrepared: reject,
+    replay: async () => ({ replayed: 0, duplicates: 0, expired: 0, retained: 0, failed: 0 })
+  };
+}
+
 const argv = process.argv.slice(2);
 const command = argv[0];
 try {
@@ -158,7 +166,6 @@ try {
           path.join(os.homedir(), ".supermemory", "credentials", `${event.checkout_id}.token`),
           "history_checkout_token"
         );
-        const spool = createCodexSpool({ runtimeRoot, workspaceId: event.workspace_id, encryptionKey: stateKey });
         client = createSuperMemoryDaemonClient({
           endpoint,
           authToken: daemonToken,
@@ -168,7 +175,7 @@ try {
             deviceId: checkoutDevices.get(event.checkout_id) ?? deviceId,
             token: checkoutToken
           },
-          spool,
+          spool: failClosedHistorySpool(),
           timeoutMs
         });
         clients.set(event.checkout_id, client);
