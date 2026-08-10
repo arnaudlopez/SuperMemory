@@ -173,10 +173,13 @@ export async function applyCodexHistoryImportPlan({
       if (event.sequence < state.next_sequence) continue;
       try {
         const result = await capture(event);
-        if (["applied", "delivered"].includes(result.status)) summary.imported += 1;
-        else if (result.status === "duplicate") summary.duplicates += 1;
-        else if (result.status === "spooled") summary.spooled += 1;
-        else summary.failed += 1;
+        if (result?.status === "spooled") {
+          summary.spooled += 1;
+          fail("history_capture_deferred");
+        }
+        if (["applied", "delivered"].includes(result?.status)) summary.imported += 1;
+        else if (result?.status === "duplicate") summary.duplicates += 1;
+        else fail("history_capture_not_durable");
         state.next_sequence = event.sequence + 1;
         checkpoint.sessions[item.source.source_hash] = state;
         atomicJson(checkpointFile, checkpoint);

@@ -84,6 +84,25 @@ function activeCodexSessionIds(directory = path.join(os.homedir(), ".codex/threa
     .map((entry) => entry.name.slice(0, -".lock".length));
 }
 
+async function assertDaemonReady(endpoint, daemonToken, timeoutMs) {
+  let response;
+  try {
+    response = await fetch(new URL("/health", endpoint), {
+      headers: { authorization: `Bearer ${daemonToken}` },
+      signal: AbortSignal.timeout(Math.min(timeoutMs, 10_000))
+    });
+  } catch {
+    fail("history_daemon_not_ready");
+  }
+  let body = null;
+  try {
+    body = await response.json();
+  } catch {
+    fail("history_daemon_not_ready");
+  }
+  if (!response.ok || body?.status !== "ready") fail("history_daemon_not_ready");
+}
+
 const argv = process.argv.slice(2);
 const command = argv[0];
 try {
@@ -126,6 +145,7 @@ try {
     const deviceId = argument(argv, "--device-id", "device_mac-mini-m4pro");
     const timeoutMs = integerArgument(argv, "--timeout-ms", 30_000, { min: 1_000, max: 120_000 });
     const maxParallelProjects = integerArgument(argv, "--max-parallel-projects", 4, { min: 1, max: 8 });
+    await assertDaemonReady(endpoint, daemonToken, timeoutMs);
     const checkoutDevices = new Map(plan.sessions.map((item) => [
       item.binding.checkoutId,
       item.binding.deviceId ?? deviceId

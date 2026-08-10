@@ -42,6 +42,18 @@ test("history import is explicit, excludes reasoning and resumes idempotently", 
   assert.equal(plan.reader_version, "codex-rollout-jsonl.v3");
   assert.equal(plan.totals.importable, 1);
   assert.equal(plan.totals.events, 6);
+  const deferredCheckpointFile = path.join(root, "deferred-checkpoint.json");
+  await assert.rejects(
+    applyCodexHistoryImportPlan({
+      plan,
+      expectedPlanHash: plan.plan_hash,
+      checkpointFile: deferredCheckpointFile,
+      capture: async () => ({ status: "spooled", durable: true })
+    }),
+    /history_import_interrupted/
+  );
+  const deferredCheckpoint = JSON.parse(fs.readFileSync(deferredCheckpointFile, "utf8"));
+  assert.equal(deferredCheckpoint.sessions[plan.sessions[0].source.source_hash].next_sequence, 0);
   const captured = [];
   const checkpointFile = path.join(root, "checkpoint.json");
   const first = await applyCodexHistoryImportPlan({
