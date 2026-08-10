@@ -2,7 +2,7 @@ version: 2
 goal:
   slug: "implement-memory-fabric-v2-5-longitudinal-memory-consolidation"
   title: "Implement Memory Fabric v2.5 — Longitudinal Memory Consolidation"
-  status: active
+  status: complete
   created_at: "2026-08-10"
   updated_at: "2026-08-10"
   kind: specific
@@ -76,7 +76,7 @@ agents:
   worker: installed
   judge: installed
 
-active_task: T009
+active_task: null
 tasks:
   - id: T001
     type: scout
@@ -584,6 +584,9 @@ tasks:
       result: done
       summary: "Full verification and local visual inspection passed. Production live checks remain assigned to the authorized deployment stage."
       impact_assessment_ref: T001.receipt.impact_assessment
+      changed_files:
+        - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-verification.md
+        - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T005-visual-receipt.json
       green_test:
         command: "npm test"
         result: "pass: 340 passed, 0 failed, 1 skipped"
@@ -738,7 +741,7 @@ tasks:
     type: worker
     worker_kind: shipping
     assignee: Worker
-    status: active
+    status: done
     objective: "Back up and deploy runtime v8 directly to Z2, reconcile the native Home 101 Hermes provider, and prove live capture, consolidation, recall, restart and Web behavior."
     inputs:
       - "T005 verification receipt"
@@ -770,11 +773,33 @@ tasks:
       - "Need a new secret, credential, auth permission, migration, destructive backfill or service beyond the already authorized production contract."
       - "The predeployment backup cannot be verified."
       - "Any production health, scope, provider, six-service topology or rollback check fails twice without understood cause."
-    receipt: null
+    receipt:
+      result: done
+      summary: "Backed up and deployed runtime v8 directly to Z2, reconciled native Home101 Hermes, and proved live native-Hermes capture/consolidation/cited recall/restart/Web behavior."
+      changed_files:
+        - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.md
+        - docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.json
+        - output/playwright/memory-fabric-v25-production.png
+      deployment_receipt: docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.json
+      commit_sha: 68d038736f17da501df6b0049e3fa059782f173c
+      release_path: /opt/supermemory/releases/memory-fabric-v25-68d0387-20260810T1649Z
+      backup_verified: true
+      six_service_topology: true
+      native_home101_hermes: true
+      live_e2e: pass
+      restart_persistence: pass
+      browser_verification: pass
+      green_test:
+        status: pass
+        commands:
+          - "npm run verify:memory-fabric-v25"
+          - "npm test"
+          - "npm run verify:secrets"
+        result: "v2.5 22/22; 38 Node + 6 Python; full suite 342 pass, 0 fail, 1 skip; 0 secret findings"
   - id: T999
     type: judge
     assignee: Judge
-    status: queued
+    status: done
     reasoning_hint: high
     objective: "Audit whether the full original outcome is complete."
     inputs:
@@ -800,4 +825,51 @@ tasks:
       - "full_outcome_complete: true | false"
       - "missing evidence"
       - "next task if not complete"
-    receipt: null
+    receipt:
+      result: done
+      summary: "Final Judge audit finds the original v2.5 outcome complete in source and production, with verified recovery, native Hermes E2E, cited persistence after restart, and visual evidence."
+      decision: complete
+      full_outcome_complete: true
+      design_delta:
+        - "Production smoke established a single Hermes v8 canonical admission path; the legacy v2.4 compiler remains only as compatibility behavior when longitudinal memory is absent."
+        - "Recall now normalizes canonical citation objects and citation arrays at the owner/project merge boundary."
+        - "The operational UI reports pending, processed, failed and retryable work separately."
+        - "Home101 remains native Hermes and Z2 remains the six-service memory authority; no service, provider, secret or fallback was added."
+      workflow_safeguards:
+        design_concept: pass
+        ubiquitous_language: pass
+        feedback_policy: pass
+        test_strategy: pass
+        module_map: pass
+        interface_contract: pass
+        architecture_review: pass
+        design_delta: pass
+        impact_assessment: pass
+        shipping: pass
+        visual_verification: pass
+        dirty_worktree_guard: pass
+      audit_scope:
+        - "LM-AC01 through LM-AC22"
+        - "T001 through T009 receipts"
+        - "main commits 9d991b1, a60c78c, 37363cf and 68d0387"
+        - "Z2 runtime v8 and Home101 native Hermes"
+        - "backup, rollback, restart and Playwright evidence"
+      audit_findings:
+        - "No queued or active Worker task remains."
+        - "Production runtime is full, canary=false, progressive=false with one OpenAI Codex provider and gpt-5.6-luna high."
+        - "Native Hermes returned the cited consolidated preference through the production tunnel."
+        - "Post-restart recall is complete at revision 2 with two episodes and no dead letters or retryable projections."
+        - "Full suite passes 342/0/1 and secret hygiene reports zero findings."
+      missing_evidence:
+        []
+      next_task: null
+      non_blocking_observations:
+        - "Historical do_not_use smoke memories were not destructively removed without owner confirmation."
+        - "One transition-era v2.4 duplicate remains from the first production smoke before the single-admission fix; deployed v8 no longer creates such duplicates."
+      evidence:
+        deployment_receipt: docs/goals/implement-longitudinal-memory-consolidation-v25/notes/T009-deployment-receipt.json
+        final_commit_sha: 68d038736f17da501df6b0049e3fa059782f173c
+        production_screenshot: output/playwright/memory-fabric-v25-production.png
+        full_suite: "342 pass, 0 fail, 1 skipped"
+        memory_fabric_v25: 22/22
+        secret_hygiene: "724 files, 0 findings"

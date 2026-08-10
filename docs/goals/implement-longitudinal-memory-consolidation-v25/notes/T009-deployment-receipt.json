@@ -1,0 +1,129 @@
+{
+  "schema": "supermemory.memory-fabric-v2.5-deployment-receipt.v1",
+  "status": "pass",
+  "deployed_at": "2026-08-10T16:50:00Z",
+  "source": {
+    "branch": "main",
+    "commit_sha": "68d038736f17da501df6b0049e3fa059782f173c",
+    "github_push": "success",
+    "release_path": "/opt/supermemory/releases/memory-fabric-v25-68d0387-20260810T1649Z",
+    "archive_sha256": "88cc5fa96f7b14abc82e05799a468d24b5d497468824fed2f661ce3f763cb53a"
+  },
+  "backup": {
+    "application_vault_config_runtime": "/opt/supermemory/backups/pre-memory-fabric-v25-20260810T161831Z",
+    "manifest_sha256": "c03fcd796b4b591ccc20a131fa2d4b2efa265b4725807d44c28ceb58b6199d3f",
+    "verified": true,
+    "neo4j_dump": "neo4j-20260810T161621Z.dump",
+    "neo4j_verified": true
+  },
+  "z2": {
+    "runtime_contract": "supermemory.codex-runtime.v8",
+    "runtime_contract_sha256": "ce2bb1cdf6e2d2dab18446cfcb8709752892f1ba5d97dd34ceefeb6a75ed1e84",
+    "activation": "full",
+    "canary": false,
+    "progressive": false,
+    "provider": "openai-codex",
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "fallback_provider": null,
+    "service_topology": {
+      "count": 6,
+      "persistent_healthy": [
+        "hindsight",
+        "neo4j",
+        "supermemory-graphd",
+        "supermemory-daemon",
+        "supermemory-web"
+      ],
+      "oneshot_completed": "neo4j-migrate",
+      "hermes_container_present": false
+    },
+    "container_image_ids": {
+      "hindsight": "sha256:3383b630fbfd290b776f9ad4a217c621bceedb808d5bc8fa9d5cd4b08632aa7d",
+      "neo4j": "sha256:ff32db30b2baff97971e441b46bfd9c832c1b62c970398ef579244c06b21d357",
+      "graphd_and_migration": "sha256:ef1e72a8ec3ed7eece7d31fe7176b376d20c741963dff00d2d4a5b3665e88e14",
+      "daemon_and_web": "sha256:383ad686cc6730b60cc2f7ff24a8d6b7ecf4400f1b53873ca075bd5db8573f04"
+    },
+    "health": {
+      "hindsight": 200,
+      "graphd": 200,
+      "web": 200
+    }
+  },
+  "home101": {
+    "runtime": "native-hermes",
+    "tunnel": "enabled-active-loopback-127.0.0.1:18765",
+    "gateway": "enabled-active-restarted",
+    "memory_provider": "supermemory-fabric",
+    "plugin_hash_match": "5/5",
+    "token_mode": "0600",
+    "provider_status": "installed-available-active",
+    "llm_status": "openai-codex-gpt-5.6-luna-authenticated",
+    "fallback_configured": false,
+    "plugin_backup": "/home/agent/.hermes/backups/plugins/supermemory-fabric.pre-v25-20260810T1638Z",
+    "config_backup": "/home/agent/.hermes/config.yaml.pre-supermemory-20260810T164124Z",
+    "env_backup": "/home/agent/.hermes/.env.pre-supermemory-20260810T164124Z"
+  },
+  "live_e2e": {
+    "capture_status": "longitudinal_queued",
+    "memory_id": "mem_scDKrfYQ9amDrtRPmVZvPGy-Jz7fmAOL",
+    "revision": 2,
+    "episode_count": 2,
+    "evidence_count": 2,
+    "coverage": "complete",
+    "recall_cited": true,
+    "post_restart_recall": true,
+    "worker_processed": 6,
+    "worker_pending": 0,
+    "dead_letters": 0,
+    "projection_retryable": 0,
+    "native_hermes_answer_verified": true
+  },
+  "visual": {
+    "status": "pass",
+    "browser": "Playwright",
+    "url": "http://127.0.0.1:4310",
+    "artifact": "output/playwright/memory-fabric-v25-production.png",
+    "observed": [
+      "provider 2.5.0 ready",
+      "zero pending consolidation errors or retryable projections",
+      "revision 2 memory",
+      "two episodes and two proofs",
+      "activate r1 to revise r2 lineage"
+    ]
+  },
+  "production_smoke_fixes": [
+    {
+      "commit": "a60c78c38e774bededd411685e8fe251307ca496",
+      "issue": "singular canonical citation object crashed portfolio recall",
+      "resolution": "normalize singular and array citations"
+    },
+    {
+      "commit": "37363cf6ad27e855aa13a8edfb88550be2846458",
+      "issue": "Hermes v8 capture also entered the legacy v2.4 compiler path",
+      "resolution": "route each Hermes turn through one canonical longitudinal admission path"
+    },
+    {
+      "commit": "68d038736f17da501df6b0049e3fa059782f173c",
+      "issue": "UI called pending work total consolidations",
+      "resolution": "show pending, processed, errors and retryable projections separately"
+    }
+  ],
+  "validation": {
+    "memory_fabric_v25": "22/22; 38 Node tests; 6 Python tests",
+    "full_suite": "342 pass; 0 fail; 1 explicit environment skip",
+    "secret_hygiene": "724 files; 0 findings",
+    "codebase_memory_refresh": "SuperMemory fast index 11119 nodes / 18676 edges"
+  },
+  "rollback": {
+    "previous_v25_release": "/opt/supermemory/releases/memory-fabric-v25-37363cf-20260810T1633Z",
+    "pre_v25_release": "/opt/supermemory/releases/personal-manager-v24-20260810T1148Z",
+    "previous_contract": "/opt/supermemory/config/runtime-contract.pre-memory-fabric-v25-20260810T1620Z.json",
+    "full_backup": "/opt/supermemory/backups/pre-memory-fabric-v25-20260810T161831Z",
+    "neo4j_dump": "neo4j-20260810T161621Z.dump"
+  },
+  "non_blocking_observations": [
+    "Historical do_not_use smoke memories remain visible; they were not deleted without explicit owner confirmation.",
+    "The first transition capture also produced one v2.4 compiler memory before the single-admission fix; future v8 Hermes turns no longer enter that path."
+  ]
+}
